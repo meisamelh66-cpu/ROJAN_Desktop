@@ -21,6 +21,7 @@
     <ResourceDictionary Source="Shapes.xaml" />
     <ResourceDictionary Source="Shadows.xaml" />
     <ResourceDictionary Source="Controls.xaml" />
+    <ResourceDictionary Source="DashboardComponents.xaml" />
     <ResourceDictionary Source="Views.xaml" />
   </ResourceDictionary.MergedDictionaries>
 

@@ -1,26 +1,31 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Presentation.Mvvm;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 /// <summary>
-/// Drives DashboardPage. Phase 06A is layout/architecture only - every
-/// collection below is static placeholder data held directly in the
-/// ViewModel, not loaded from any service/repository. No Application or
-/// Infrastructure dependency, no persistence.
+/// Drives DashboardPage. Loads real (fake-repository-backed) data through
+/// <see cref="IDashboardQueryService"/> - the only Application dependency
+/// this ViewModel has, consistent with Presentation never reaching past
+/// Application into Domain/Infrastructure. Quick Actions remain static
+/// display data here: they are UI affordances (buttons that trigger future
+/// commands), not fetched data, so they have no repository/DTO of their
+/// own.
 /// </summary>
 public sealed class DashboardPageViewModel : ViewModelBase
 {
-    public DashboardPageViewModel()
+    private readonly IDashboardQueryService _queryService;
+    private DashboardState _state = DashboardState.Loading;
+    private string? _errorMessage;
+
+    public DashboardPageViewModel(IDashboardQueryService queryService)
     {
-        KpiCards = new ObservableCollection<KpiCardItem>
-        {
-            new("Total Bookings", "128"),
-            new("Active Clients", "42"),
-            new("Revenue (MTD)", "$12,400"),
-            new("Pending Tasks", "7"),
-        };
+        _queryService = queryService;
+
+        KpiMetrics = new ObservableCollection<KpiMetricDto>();
+        RecentActivity = new ObservableCollection<ActivityEntryDto>();
 
         QuickActions = new ObservableCollection<QuickActionItem>
         {
@@ -29,24 +34,71 @@ public sealed class DashboardPageViewModel : ViewModelBase
             new("Create Task"),
             new("View Reports"),
         };
-
-        RecentActivity = new ObservableCollection<ActivityItem>
-        {
-            new("New booking created", "2 min ago"),
-            new("Client profile updated", "1 hour ago"),
-            new("Payment received", "3 hours ago"),
-            new("Task completed", "Yesterday"),
-        };
-
         QuickActionCommand = new RelayCommand(_ => { });
+
+        LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
+
+        // Safe fire-and-forget: LoadAsync catches every failure internally
+        // and represents it via State/ErrorMessage, so there is nothing
+        // left that could become an unobserved task exception.
+        _ = LoadAsync();
     }
 
-    public ObservableCollection<KpiCardItem> KpiCards { get; }
+    public ObservableCollection<KpiMetricDto> KpiMetrics { get; }
+
+    public ObservableCollection<ActivityEntryDto> RecentActivity { get; }
 
     public ObservableCollection<QuickActionItem> QuickActions { get; }
 
-    public ObservableCollection<ActivityItem> RecentActivity { get; }
-
-    /// <summary>Bound by every Quick Action button. Intentionally a no-op - Phase 06A is layout only, no business logic.</summary>
+    /// <summary>Bound by every Quick Action button. Intentionally a no-op - Phase 06B is still layout/architecture, no business logic.</summary>
     public ICommand QuickActionCommand { get; }
+
+    /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
+    public ICommand LoadCommand { get; }
+
+    public DashboardState State
+    {
+        get => _state;
+        private set => SetProperty(ref _state, value);
+    }
+
+    public string? ErrorMessage
+    {
+        get => _errorMessage;
+        private set => SetProperty(ref _errorMessage, value);
+    }
+
+    private async Task LoadAsync()
+    {
+        State = DashboardState.Loading;
+        ErrorMessage = null;
+
+        try
+        {
+            var overview = await _queryService.GetOverviewAsync().ConfigureAwait(true);
+
+            KpiMetrics.Clear();
+            foreach (var metric in overview.KpiMetrics)
+            {
+                KpiMetrics.Add(metric);
+            }
+
+            RecentActivity.Clear();
+            foreach (var activity in overview.RecentActivity)
+            {
+                RecentActivity.Add(activity);
+            }
+
+            State = KpiMetrics.Count == 0 && RecentActivity.Count == 0
+                ? DashboardState.Empty
+                : DashboardState.Loaded;
+        }
+#pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - this is the one place a broad catch is the correct behavior, not a code smell.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+        }
+    }
 }

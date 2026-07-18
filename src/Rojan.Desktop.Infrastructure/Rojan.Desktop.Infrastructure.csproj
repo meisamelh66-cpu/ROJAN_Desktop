@@ -2,6 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rojan.Desktop.Application\Rojan.Desktop.Application.csproj" />
+    <!-- Phase 06B: Infrastructure implements IDashboardRepository, a Domain-
+         defined interface - this requires a direct reference to Domain (not
+         just the transitive one via Application), which is the correct
+         Clean Architecture shape for the repository pattern: the inner
+         layer (Domain) defines the abstraction, the outer layer
+         (Infrastructure) implements it. -->
+    <ProjectReference Include="..\Rojan.Desktop.Domain\Rojan.Desktop.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

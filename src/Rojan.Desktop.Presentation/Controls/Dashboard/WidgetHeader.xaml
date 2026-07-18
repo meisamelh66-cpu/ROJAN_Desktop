@@ -1,0 +1,24 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.WidgetHeader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!--
+        Compact per-widget title - distinct from the page-level
+        SectionHeader (which carries the rose-gold accent underline).
+        Self-sufficient: merges its own Theme.xaml dependency, same rule as
+        every other Design System component.
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <TextBlock Text="{Binding Title, ElementName=Root}"
+               Style="{StaticResource Rojan.TextStyle.CardTitle}"
+               Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+
+</UserControl>
