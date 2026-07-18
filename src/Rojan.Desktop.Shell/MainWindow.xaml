@@ -87,18 +87,19 @@
                   Background="{StaticResource Rojan.Brush.Navy}">
 
                 <!--
-                    Navigation foundation's real content target - empty
-                    until a feature phase registers a ViewModel/View pair
-                    via INavigationService.NavigateTo<TViewModel>().
+                    Navigation foundation's real content target -
+                    Phase 06A: Dashboard is now registered and navigable;
+                    the other five sections have no page yet.
                 -->
                 <ContentControl x:Name="NavigationHost" />
 
-                <!-- Placeholder proving the shell responds to sidebar selection - not a business feature. -->
+                <!-- Placeholder for the sections with no page yet - hidden once a real page (Dashboard) is showing. -->
                 <TextBlock Text="{Binding SelectedNavigationItem.Title, StringFormat={}{0} — coming soon}"
                            Style="{StaticResource Rojan.TextStyle.HeroTitle}"
                            Foreground="{StaticResource Rojan.Brush.ButtonText}"
                            HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+                           VerticalAlignment="Center"
+                           Visibility="{Binding PlaceholderVisibility}" />
             </Grid>
 
         </Grid>

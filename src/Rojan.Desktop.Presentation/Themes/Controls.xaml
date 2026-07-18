@@ -32,7 +32,12 @@
     <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.GlassBorder}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.GlassCard}" />
-    <Setter Property="Padding" Value="{StaticResource Rojan.Spacing.Large}" />
+    <!-- Literal "24" (matches Rojan.Spacing.Large's value), not a
+         StaticResource: Padding is a Thickness, and Spacing tokens are
+         plain doubles (reused for FontSize/Width/etc. too) - a boxed
+         double assigned directly to a Thickness-typed Setter throws at
+         runtime, so the two token kinds can't be interchanged here. -->
+    <Setter Property="Padding" Value="24" />
     <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationMedium}" />
   </Style>
 
