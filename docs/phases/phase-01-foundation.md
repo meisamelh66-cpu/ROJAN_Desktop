@@ -1,7 +1,7 @@
 # Phase 01 — Repository & Solution Foundation
 
 **Status:** Awaiting Approval
-**Completion:** 90%
+**Completion:** 100% (all deliverables complete; formal approval still pending)
 
 ## Objectives
 
@@ -35,29 +35,41 @@ work*, independent of that.
 - [x] **Documentation standards** — `docs/standards/documentation-standards.md`
       (defines the `docs/` structure itself, the phase-document template,
       and the ADR process every later phase follows).
-- [ ] **Initial commit** — not yet made. Per standing instruction, I don't
-      commit without being explicitly asked; everything above exists on
-      disk but is uncommitted. **This is the one deliverable I need your
-      explicit go-ahead on** — should I commit now to close out Phase 01,
-      or do you want to review the working tree first?
+- [x] **Initial commit** — made as root commit `747ee9d` ("Initial ROJAN
+      Desktop WPF .NET 8 migration successful"), explicitly requested.
+- [x] **Cleanup commit** — commit `a1d110b` removed a stray, non-conformant
+      `RojanDesktop/RojanDesktop.App` scaffold (a default VS WPF template,
+      plus its own nested `RojanDesktop.sln`) that had been committed
+      alongside the initial commit. It predated Phase 02 approval, lived
+      outside `src/`, didn't inherit `Directory.Build.props`/
+      `Directory.Packages.props`, and used non-conforming naming
+      (`RojanDesktop.App` vs. the approved `Rojan.Desktop.*` layering).
+      Root repository structure (`src/`, `tests/`, `build/`, `docs/`,
+      root `RojanDesktop.sln`) was unaffected. A handful of gitignored,
+      OS-locked build/cache artifacts under `RojanDesktop/.vs` and
+      `RojanDesktop/RojanDesktop.App/{bin,obj}` remain on disk (never
+      tracked) pending Visual Studio releasing its file lock.
 
 ## Risks
 
-1. **.NET 8 SDK is not installed on this machine** (only .NET 6.0.100 is
-   present). This doesn't block Phase 01 (nothing here requires building
-   C# code), but it **will** block Phase 02 the moment real projects are
-   created targeting `net8.0-windows` (set in `Directory.Build.props`
-   per the approved stack decision). Needs to be resolved before Phase 02
-   can produce a buildable result, not just designed on paper.
+1. ~~**.NET 8 SDK is not installed on this machine**~~ — **Resolved.**
+   Environment re-validated: `.NET 8.0.423` and `9.0.316` SDKs are now
+   installed, and Visual Studio is now `17.14.36` (previously `17.0.0`,
+   below the required 17.8). Both blocking items from
+   `docs/gates/gate-01-environment-validation.md` §1–2 are cleared on
+   live re-check. That gate document itself still shows its original
+   🔴/🟡 findings dated 2026-07-18 and has not been formally re-run/
+   updated to reflect this — worth doing before relying on it as the
+   record of truth, but no longer a blocker for Phase 02 project
+   creation in practice.
 2. **No remote repository configured.** `branch-strategy.md`'s branch
    protection rules assume a GitHub (or similar) remote that doesn't
    exist yet. Not a Phase 01 blocker, but Phase 09 (Release Engineering)
    and any CI work in the meantime depend on it existing — worth deciding
    when, not left implicit.
-3. **Nothing is committed yet** (see deliverable above) — until it is,
-   this "foundation" exists only in the working tree, not in version
-   control history, which is a real risk if anything gets discarded
-   before I'm told to commit.
+3. ~~**Nothing is committed yet**~~ — **Resolved.** Initial commit
+   `747ee9d` and cleanup commit `a1d110b` are both in `main`'s history
+   (see deliverables above).
 4. **Versioning single-source-of-truth is process-enforced, not
    tool-enforced.** Nothing currently stops a future project from
    overriding `<VersionPrefix>` locally. Acceptable at this stage (code
@@ -68,7 +80,14 @@ work*, independent of that.
 - [x] `git status` confirms the repo is standalone (resolves to its own
       `.git`, not the parent `D:\AndroidProjects` repo).
 - [x] `dotnet sln RojanDesktop.sln list` runs cleanly, confirms zero
-      projects (expected — correct for this phase).
+      projects (expected — correct for this phase). Re-confirmed after
+      the cleanup commit removed the stray nested `RojanDesktop.App`
+      scaffold and its separate `RojanDesktop.sln`, which never touched
+      this root solution.
+- [x] Environment gate: `.NET 8.0.423`/`9.0.316` SDKs and VS `17.14.36`
+      confirmed present via live check (superseding the 🔴/🟡 findings
+      recorded in `docs/gates/gate-01-environment-validation.md`, which
+      still needs a formal re-run to update its own record).
 - [x] Every `docs/standards/*.md` file cross-references the others
       correctly (no dangling references to documents that don't exist).
 - [x] `docs/architecture/00-overview.md` and `01-desktop-shell.md` (written
