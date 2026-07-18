@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rojan.Desktop.Presentation\Rojan.Desktop.Presentation.csproj" />
+    <ProjectReference Include="..\Rojan.Desktop.Infrastructure\Rojan.Desktop.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -20,7 +20,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Package versions are added here as they're introduced by an approved phase. -->
+    <!--
+      Minimum required for the Phase 02 architecture scaffolding: a test
+      framework (so the five test projects build/run at all) plus
+      NetArchTest.Rules for the dependency-direction enforcement described
+      in docs/architecture/01-desktop-shell.md §9. DI/hosting/logging/MVVM
+      toolkit choices are deferred to the phase that actually implements them.
+    -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
 </Project>

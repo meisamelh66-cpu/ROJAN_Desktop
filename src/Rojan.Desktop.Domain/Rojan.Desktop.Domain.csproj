@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rojan.Desktop.Common\Rojan.Desktop.Common.csproj" />
+  </ItemGroup>
+
+</Project>
