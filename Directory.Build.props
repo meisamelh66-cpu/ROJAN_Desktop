@@ -1,0 +1,41 @@
+<Project>
+
+  <!--
+    Shared MSBuild settings for every project in the solution. Individual
+    .csproj files should not repeat these — override only when a specific
+    project has a genuine, documented reason to differ (e.g. a test project
+    disabling a warning that's noise in test code but not production code).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Company>ROJAN</Company>
+    <Product>ROJAN Desktop</Product>
+    <Copyright>Copyright © ROJAN $([System.DateTime]::Now.Year)</Copyright>
+  </PropertyGroup>
+
+  <!--
+    Versioning: single source of truth for the whole solution, per
+    docs/standards/versioning.md. Every project inherits this unless a
+    packaging step later needs to override it for a specific artifact.
+  -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+
+</Project>

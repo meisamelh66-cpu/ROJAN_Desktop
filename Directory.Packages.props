@@ -1,0 +1,26 @@
+<Project>
+
+  <!--
+    Central Package Management (CPM). Every project references packages by
+    name only (<PackageReference Include="..." /> with no Version attribute)
+    — the version is pinned exactly once, here. This prevents the classic
+    multi-project drift where two projects end up on two different minor
+    versions of the same package with no one noticing until a runtime
+    conflict.
+
+    Empty for now — no packages have been chosen yet (Phase 02 decides the
+    DI container/MVVM toolkit, Phase 03 decides the logging/config
+    libraries). Populated incrementally as each phase's technology
+    decisions are approved, never speculatively.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Package versions are added here as they're introduced by an approved phase. -->
+  </ItemGroup>
+
+</Project>
