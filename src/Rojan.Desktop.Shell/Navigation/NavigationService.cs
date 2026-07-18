@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
@@ -28,10 +29,27 @@ public sealed class NavigationService : INavigationService
 
     public bool CanGoBack => _backStack.Count > 0;
 
-    /// <summary>Wires this service to the window's navigation content host. Called once, from <c>MainWindow</c>'s constructor.</summary>
+    /// <summary>
+    /// Wires this service to the window's navigation content host. Called
+    /// once, from <c>MainWindow</c>'s constructor - by which point
+    /// <see cref="NavigateTo{TViewModel}"/> may already have run once
+    /// (<c>MainWindowViewModel</c>'s own constructor navigates on initial
+    /// selection, and DI resolves it before <c>MainWindow</c>'s constructor
+    /// body executes). Previously this meant the pending navigation was
+    /// silently dropped - <see cref="_host"/> was still null when
+    /// <see cref="NavigateTo{TViewModel}"/> ran, so <see cref="SetContent"/>
+    /// had nothing to assign to, and nothing ever re-applied it once
+    /// attached. Fixed here: any pending <see cref="_current"/> is applied
+    /// (deferred - see <see cref="ApplyContent"/>) as soon as the host is
+    /// available.
+    /// </summary>
     internal void Attach(ContentControl host)
     {
         _host = host;
+        if (_current is not null)
+        {
+            ApplyContent(host, _current);
+        }
     }
 
     public void NavigateTo<TViewModel>() where TViewModel : ViewModelBase
@@ -60,7 +78,25 @@ public sealed class NavigationService : INavigationService
         _current = viewModel;
         if (_host is not null)
         {
-            _host.Content = viewModel;
+            ApplyContent(_host, viewModel);
         }
+    }
+
+    /// <summary>
+    /// Assigns <see cref="ContentControl.Content"/> on the Dispatcher queue
+    /// at <see cref="DispatcherPriority.Loaded"/> instead of synchronously,
+    /// so it runs after the window's own initial layout/render rather than
+    /// while <c>MainWindow</c> is still under construction. This is a
+    /// defensive precaution, not a confirmed fix: the Phase 06A.1
+    /// investigation into an intermittent, silent, several-seconds-delayed
+    /// process exit could not establish a deterministic root cause -
+    /// synchronous assignment was one candidate, tested and not reliably
+    /// reproducible as the sole trigger, but avoiding it here is cheap and
+    /// has no downside. See the Phase 06A.1 commit message for the full
+    /// investigation record.
+    /// </summary>
+    private static void ApplyContent(ContentControl host, ViewModelBase viewModel)
+    {
+        host.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => host.Content = viewModel));
     }
 }
