@@ -1,5 +1,4 @@
 <Project>
-
   <!--
     Central Package Management (CPM). Every project references packages by
     name only (<PackageReference Include="..." /> with no Version attribute)
@@ -13,12 +12,10 @@
     libraries). Populated incrementally as each phase's technology
     decisions are approved, never speculatively.
   -->
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup>
     <!--
       Minimum required for the Phase 02 architecture scaffolding: a test
@@ -28,10 +25,11 @@
       toolkit choices are deferred to the phase that actually implements them.
     -->
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
-
 </Project>

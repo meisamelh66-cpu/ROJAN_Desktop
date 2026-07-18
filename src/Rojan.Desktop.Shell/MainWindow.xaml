@@ -1,0 +1,20 @@
+<Window x:Class="Rojan.Desktop.Shell.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ROJAN Desktop"
+        Width="1280"
+        Height="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Rojan.Brush.WarmWhite}">
+
+    <!--
+        Chrome only - no business content. NavigationHost is the
+        navigation foundation's content target (Rojan.Desktop.Shell.
+        Navigation.NavigationService.Attach); nothing is navigated to yet
+        since no feature ViewModels/Views exist (Phase 03 is foundation
+        only, per docs/architecture/01-desktop-shell.md §2's Shell scope
+        table - zero business logic).
+    -->
+    <ContentControl x:Name="NavigationHost" />
+
+</Window>

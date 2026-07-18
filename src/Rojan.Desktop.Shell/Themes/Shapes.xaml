@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    ROJAN AI Design System - corner-radius tokens, ported from RojanShapes
+    (RojanTokens.kt). Raw radius values, applied per-consumer (e.g. a
+    Border's CornerRadius) rather than baked into a single shared Style,
+    since WPF has no direct equivalent of Compose's named Shape objects.
+  -->
+  <CornerRadius x:Key="Rojan.CornerRadius.GlassCard">32</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.PremiumButton">50</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Circle">100</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Small">16</CornerRadius>
+
+</ResourceDictionary>
