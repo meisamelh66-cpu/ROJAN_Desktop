@@ -1,8 +1,8 @@
 <Window x:Class="Rojan.Desktop.Shell.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:navigation="clr-namespace:Rojan.Desktop.Shell.Navigation"
-        xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls;assembly=Rojan.Desktop.Presentation"
+        xmlns:shellChrome="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:navigation="clr-namespace:Rojan.Desktop.Presentation.Navigation;assembly=Rojan.Desktop.Presentation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -13,96 +13,298 @@
         Background="{StaticResource Rojan.Brush.Navy}">
 
     <!--
-        Phase 05: Shell only consumes the ROJAN Desktop Design System
-        (Rojan.Desktop.Presentation.Themes.Controls/SectionHeader) - it no
-        longer defines its own inline styles or owns any theme resource
-        dictionary (see App.xaml).
+        Phase 07: Enterprise Navigation &amp; Module Shell. MainWindow is now
+        the permanent application frame - Header/Navigation/Workspace/
+        Status/Notification/Dialog regions - not a page-specific layout.
+        Every region reads from MainWindowViewModel; none of them know
+        which modules exist beyond what IModuleRegistry supplies through
+        it.
 
-        RTL-ready note: this layout uses Grid column ordering (which WPF
-        mirrors automatically under FlowDirection="RightToLeft") rather than
-        manual positioning - flipping the Window's FlowDirection alone
-        re-flows header/sidebar/content correctly. The one thing that does
-        NOT auto-mirror is the asymmetric BorderThickness values below
-        (e.g. "0,0,1,0") - revisit those specifically if/when RTL is
-        actually enabled, everything else needs no rework.
+        Custom title bar via WindowChrome (not WindowStyle="None" +
+        AllowsTransparency, which disables hardware-accelerated rendering
+        in a way custom WindowChrome does not) - CaptionHeight matches the
+        header's own height below, so the whole header row is the
+        draggable caption area by default; every interactive header
+        element is explicitly marked IsHitTestVisibleInChrome="True" to
+        opt back into normal click/focus behavior instead of dragging the
+        window.
+
+        RTL-ready note: unchanged from Phase 05 - Grid column ordering
+        mirrors automatically under FlowDirection="RightToLeft"; the
+        asymmetric BorderThickness values below do not and would need
+        revisiting if RTL is actually enabled.
     -->
+    <shellChrome:WindowChrome.WindowChrome>
+        <shellChrome:WindowChrome CaptionHeight="64"
+                                   ResizeBorderThickness="6"
+                                   GlassFrameThickness="0"
+                                   CornerRadius="0" />
+    </shellChrome:WindowChrome.WindowChrome>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <!-- Top header -->
+            <!-- Header region -->
             <RowDefinition Height="*" />
-            <!-- Body: sidebar + content -->
+            <!-- Body: Navigation + Workspace regions -->
+            <RowDefinition Height="Auto" />
+            <!-- Status region -->
         </Grid.RowDefinitions>
 
-        <!-- Top header -->
+        <!-- ================= Header region ================= -->
         <Border Grid.Row="0"
                 Height="64"
-                Background="{StaticResource Rojan.Brush.Navy}">
-            <StackPanel Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        Margin="24,0">
-                <Ellipse Width="12"
-                         Height="12"
-                         Fill="{StaticResource Rojan.Brush.AIGlow}"
-                         VerticalAlignment="Center" />
-                <controls:SectionHeader Title="ROJAN Desktop"
-                                         Margin="12,0,0,0"
-                                         VerticalAlignment="Center" />
-            </StackPanel>
+                Background="{StaticResource Rojan.Brush.Navy}"
+                BorderBrush="{StaticResource Rojan.Brush.RoseGoldHighlight}"
+                BorderThickness="0,0,0,2">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Brand -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Module title / breadcrumb -->
+                    <ColumnDefinition Width="*" />
+                    <!-- Draggable spacer -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Search placeholder -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Back/Forward -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Notification -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- User profile -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Window commands -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Brand -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource Rojan.Brush.AIGlow}" VerticalAlignment="Center" />
+                    <TextBlock Text="ROJAN Desktop"
+                               Style="{StaticResource Rojan.TextStyle.CardTitle}"
+                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Current module title + breadcrumb -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="32,0,0,0">
+                    <TextBlock Text="{Binding SelectedNavigationItem.Title}"
+                               Style="{StaticResource Rojan.TextStyle.Body}"
+                               Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                    <TextBlock Text="{Binding BreadcrumbText}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                </StackPanel>
+
+                <!-- Global search placeholder - not functional, UI presence only -->
+                <Border Grid.Column="3"
+                        Style="{StaticResource Rojan.Style.GlassPanel}"
+                        Width="220"
+                        Height="32"
+                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Text="Search..."
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.HintText}"
+                               VerticalAlignment="Center"
+                               Margin="12,0" />
+                </Border>
+
+                <!-- Back / Forward -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Content="&#8249;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoBackCommand}" ToolTip="Back" />
+                    <Button Content="&#8250;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoForwardCommand}" ToolTip="Forward" />
+                </StackPanel>
+
+                <!-- Notification button -->
+                <Button Grid.Column="5"
+                        Content="&#128276;"
+                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                        Command="{Binding ToggleNotificationPanelCommand}"
+                        ToolTip="Notifications"
+                        Margin="4,0,0,0"
+                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True" />
+
+                <!-- User profile placeholder - not functional, UI presence only -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Ellipse Width="28" Height="28" Fill="{StaticResource Rojan.Brush.SoftLavender}" />
+                    <TextBlock Text="Guest User"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0" />
+                </StackPanel>
+
+                <!-- Window commands -->
+                <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="MinimizeButton" Content="&#8212;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="Minimize" />
+                    <Button x:Name="MaximizeRestoreButton" Content="&#9633;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MaximizeRestoreButton_Click" ToolTip="Maximize" />
+                    <Button x:Name="CloseButton" Content="&#10005;" Style="{StaticResource Rojan.Style.WindowCloseButton}" Click="CloseButton_Click" ToolTip="Close" />
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Body -->
+        <!-- ================= Body: Navigation + Workspace regions ================= -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" />
-                <!-- Sidebar -->
+                <ColumnDefinition Width="Auto" />
+                <!-- Navigation region -->
                 <ColumnDefinition Width="*" />
-                <!-- Main content -->
+                <!-- Workspace region -->
             </Grid.ColumnDefinitions>
 
-            <!-- Sidebar navigation -->
+            <!-- Navigation region -->
             <Border Grid.Column="0"
-                    Style="{StaticResource Rojan.Style.GlassPanel}"
                     BorderThickness="0,0,1,0"
                     CornerRadius="0">
-                <ListBox x:Name="NavigationListBox"
-                         Margin="0,16,0,0"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         ItemsSource="{Binding NavigationItems}"
-                         SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
-                         ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type navigation:NavigationItem}">
-                            <TextBlock Text="{Binding Title}"
-                                       Style="{StaticResource Rojan.TextStyle.Body}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.GlassPanel}">
+                        <Setter Property="Width" Value="240" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="False">
+                                <Setter Property="Width" Value="64" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <DockPanel LastChildFill="True">
+                    <Button DockPanel.Dock="Top"
+                            Content="&#9776;"
+                            Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                            Command="{Binding ToggleSidebarCommand}"
+                            ToolTip="Collapse/expand navigation"
+                            Margin="12,16,0,8"
+                            HorizontalAlignment="Left" />
+
+                    <ListBox x:Name="NavigationListBox"
+                             DockPanel.Dock="Top"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemsSource="{Binding NavigationItems}"
+                             SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
+                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type navigation:NavigationItem}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding IconGlyph}"
+                                               FontSize="16"
+                                               Width="20"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Title}"
+                                               Margin="12,0,0,0"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
             </Border>
 
-            <!-- Main content area -->
-            <Grid Grid.Column="1"
-                  Background="{StaticResource Rojan.Brush.Navy}">
-
-                <!--
-                    Navigation foundation's real content target -
-                    Phase 06A: Dashboard is now registered and navigable;
-                    the other five sections have no page yet.
-                -->
+            <!-- Workspace region - real content target, DataTemplate-resolved per the selected module's ViewModel -->
+            <Grid Grid.Column="1" Background="{StaticResource Rojan.Brush.Navy}">
                 <ContentControl x:Name="NavigationHost" />
-
-                <!-- Placeholder for the sections with no page yet - hidden once a real page (Dashboard) is showing. -->
-                <TextBlock Text="{Binding SelectedNavigationItem.Title, StringFormat={}{0} — coming soon}"
-                           Style="{StaticResource Rojan.TextStyle.HeroTitle}"
-                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding PlaceholderVisibility}" />
             </Grid>
 
         </Grid>
+
+        <!-- ================= Status region ================= -->
+        <Border Grid.Row="2"
+                Style="{StaticResource Rojan.Style.GlassPanel}"
+                BorderThickness="0,1,0,0"
+                CornerRadius="0"
+                Height="28">
+            <TextBlock Text="{Binding StatusMessage}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       VerticalAlignment="Center"
+                       Margin="16,0" />
+        </Border>
+
+        <!-- ================= Notification region ================= -->
+        <Border Grid.Row="1"
+                Width="320"
+                MaxHeight="360"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,12,12,0">
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.GlassCard}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsNotificationPanelOpen}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel>
+                <TextBlock Text="Notifications"
+                           Style="{StaticResource Rojan.TextStyle.CardTitle}"
+                           Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                <ItemsControl ItemsSource="{Binding Notifications}" Margin="0,12,0,0">
+                    <ItemsControl.Style>
+                        <Style TargetType="ItemsControl">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasNotifications}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ItemsControl.Style>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Message}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="No notifications."
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           Margin="0,12,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasNotifications}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- ================= Dialog region ================= -->
+        <Grid Grid.Row="0" Grid.RowSpan="3">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ActiveDialog}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Border Background="{StaticResource Rojan.Brush.Navy}" Opacity="0.6" />
+            <ContentControl Content="{Binding ActiveDialog}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
     </Grid>
 
 </Window>

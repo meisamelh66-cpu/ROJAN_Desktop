@@ -1,7 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
-                    xmlns:dashboardView="clr-namespace:Rojan.Desktop.Presentation.Views.Dashboard">
+                    xmlns:dashboardView="clr-namespace:Rojan.Desktop.Presentation.Views.Dashboard"
+                    xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
+                    xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -13,6 +15,10 @@
   -->
   <DataTemplate DataType="{x:Type dashboardVm:DashboardPageViewModel}">
     <dashboardView:DashboardPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">
+    <modulesView:PlaceholderModulePage />
   </DataTemplate>
 
 </ResourceDictionary>

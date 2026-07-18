@@ -7,7 +7,9 @@ using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Presentation.DependencyInjection;
+using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Shell.Navigation;
 
 namespace Rojan.Desktop.Shell;
@@ -67,8 +69,33 @@ public partial class App
         services.AddSingleton<NavigationService>();
         services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<NavigationService>());
 
+        RegisterModules(services);
+        services.AddSingleton<IModuleRegistry, ModuleRegistry>();
+
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
+    }
+
+    /// <summary>
+    /// Every module the sidebar shows, in display order. Dashboard is the
+    /// one real module (Phase 06B); the rest are explicitly not built yet
+    /// (Phase 07 is architecture-first) and register PlaceholderModule
+    /// instead of a bespoke module class - adding their real
+    /// implementation later is a one-line swap here, nothing else in the
+    /// shell changes.
+    /// </summary>
+    private static void RegisterModules(IServiceCollection services)
+    {
+        services.AddSingleton<IModule, DashboardModule>();
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("customers", "Customers", "◈", 10)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("appointments", "Appointments", "◷", 20)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("services", "Services", "✦", 30)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "▤", 40)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "$", 50)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("employees", "Employees", "◉", 60)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "▥", 70)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("ai-center", "AI Center", "✧", 80)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("settings", "Settings", "⚙", 90)));
     }
 
     /// <summary>

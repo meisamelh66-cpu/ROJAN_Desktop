@@ -85,30 +85,66 @@
     </Setter>
   </Style>
 
-  <!-- GlassNavigationItem: sidebar menu entry - purple when selected, aqua accent on hover. -->
+  <!--
+    GlassNavigationItem: sidebar menu entry - purple when selected, aqua
+    accent on hover. The hover transition is a real animation (Phase 07 -
+    "Hover animation" requirement): a dedicated overlay Border
+    (HoverOverlay) fades its Opacity in/out via a Storyboard, rather than
+    animating the shared Background brush directly - WPF's markup compiler
+    (MC4111) rejects a Storyboard targeting a named Freezable nested inside
+    a property element; targeting a named FrameworkElement's own Opacity is
+    the standard, reliably-supported pattern. The hover MultiTrigger is
+    gated on IsSelected="False" so hovering the already-selected item never
+    layers the aqua overlay on top of the (intentionally instant, no
+    animation needed) selected-state purple.
+  -->
   <Style x:Key="Rojan.Style.GlassNavigationItem" TargetType="ListBoxItem">
     <Setter Property="Padding" Value="20,14" />
     <Setter Property="Margin" Value="12,2" />
-    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
-          <Border x:Name="ItemBorder"
-                  Background="{TemplateBinding Background}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
-                  Padding="{TemplateBinding Padding}">
-            <ContentPresenter VerticalAlignment="Center" />
-          </Border>
+          <Grid>
+            <Border x:Name="ItemBorder"
+                    Background="Transparent"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.Small}" />
+            <Border x:Name="HoverOverlay"
+                    Background="{StaticResource Rojan.Brush.AquaMint}"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                    Opacity="0" />
+            <ContentPresenter VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+          </Grid>
           <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.AquaMint}" />
-              <Setter TargetName="ItemBorder" Property="Opacity" Value="0.85" />
-            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsMouseOver" Value="True" />
+                <Condition Property="IsSelected" Value="False" />
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="HoverOverlay"
+                                      Storyboard.TargetProperty="Opacity"
+                                      To="0.85"
+                                      Duration="0:0:0.15" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="HoverOverlay"
+                                      Storyboard.TargetProperty="Opacity"
+                                      To="0"
+                                      Duration="0:0:0.15" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </MultiTrigger.ExitActions>
+            </MultiTrigger>
             <Trigger Property="IsSelected" Value="True">
               <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.VividPurple}" />
-              <Setter TargetName="ItemBorder" Property="Opacity" Value="1" />
               <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
             </Trigger>
           </ControlTemplate.Triggers>

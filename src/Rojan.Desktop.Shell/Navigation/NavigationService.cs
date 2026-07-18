@@ -1,6 +1,7 @@
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
 
@@ -14,11 +15,20 @@ namespace Rojan.Desktop.Shell.Navigation;
 /// ViewModel's type via a DataTemplate. Lives in Shell (not Presentation)
 /// because it depends on the concrete <see cref="ContentControl"/> host -
 /// ViewModels only ever see it through <see cref="INavigationService"/>.
+///
+/// History is standard browser-style: navigating to something new pushes
+/// the current entry onto the back-stack and clears the forward-stack;
+/// GoBack pushes the current entry onto the forward-stack; GoForward
+/// pushes it back onto the back-stack. Only GoBack/GoForward move entries
+/// between the two stacks - a fresh NavigateTo always clears "forward",
+/// exactly like a web browser abandons forward history once you click a
+/// new link after going back.
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly Stack<ViewModelBase> _backStack = new();
+    private readonly Stack<ViewModelBase> _forwardStack = new();
     private ContentControl? _host;
     private ViewModelBase? _current;
 
@@ -28,6 +38,8 @@ public sealed class NavigationService : INavigationService
     }
 
     public bool CanGoBack => _backStack.Count > 0;
+
+    public bool CanGoForward => _forwardStack.Count > 0;
 
     /// <summary>
     /// Wires this service to the window's navigation content host. Called
@@ -54,13 +66,12 @@ public sealed class NavigationService : INavigationService
 
     public void NavigateTo<TViewModel>() where TViewModel : ViewModelBase
     {
-        var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
-        if (_current is not null)
-        {
-            _backStack.Push(_current);
-        }
+        Navigate(_serviceProvider.GetRequiredService<TViewModel>());
+    }
 
-        SetContent(viewModel);
+    public void NavigateTo(ModuleDescriptor descriptor)
+    {
+        Navigate(descriptor.CreateViewModel(_serviceProvider));
     }
 
     public void GoBack()
@@ -70,7 +81,38 @@ public sealed class NavigationService : INavigationService
             return;
         }
 
+        if (_current is not null)
+        {
+            _forwardStack.Push(_current);
+        }
+
         SetContent(_backStack.Pop());
+    }
+
+    public void GoForward()
+    {
+        if (!CanGoForward)
+        {
+            return;
+        }
+
+        if (_current is not null)
+        {
+            _backStack.Push(_current);
+        }
+
+        SetContent(_forwardStack.Pop());
+    }
+
+    private void Navigate(ViewModelBase viewModel)
+    {
+        if (_current is not null)
+        {
+            _backStack.Push(_current);
+        }
+
+        _forwardStack.Clear();
+        SetContent(viewModel);
     }
 
     private void SetContent(ViewModelBase viewModel)
