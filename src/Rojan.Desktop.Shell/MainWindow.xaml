@@ -1,20 +1,140 @@
 <Window x:Class="Rojan.Desktop.Shell.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:navigation="clr-namespace:Rojan.Desktop.Shell.Navigation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
+        MinWidth="1024"
+        MinHeight="640"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource Rojan.Brush.WarmWhite}">
+        FlowDirection="LeftToRight"
+        Background="{StaticResource Rojan.Brush.Navy}">
 
     <!--
-        Chrome only - no business content. NavigationHost is the
-        navigation foundation's content target (Rojan.Desktop.Shell.
-        Navigation.NavigationService.Attach); nothing is navigated to yet
-        since no feature ViewModels/Views exist (Phase 03 is foundation
-        only, per docs/architecture/01-desktop-shell.md §2's Shell scope
-        table - zero business logic).
+        RTL-ready note: this layout uses Grid column ordering (which WPF
+        mirrors automatically under FlowDirection="RightToLeft") rather than
+        manual positioning - flipping the Window's FlowDirection alone
+        re-flows header/sidebar/content correctly. The one thing that does
+        NOT auto-mirror is the asymmetric BorderThickness values below
+        (e.g. "0,0,1,0") - revisit those specifically if/when RTL is
+        actually enabled, everything else needs no rework.
     -->
-    <ContentControl x:Name="NavigationHost" />
+
+    <Window.Resources>
+
+        <Style x:Key="Rojan.Style.NavigationListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="20,14" />
+            <Setter Property="Margin" Value="12,2" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.AquaMint}" />
+                                <Setter TargetName="ItemBorder" Property="Opacity" Value="0.85" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.VividPurple}" />
+                                <Setter TargetName="ItemBorder" Property="Opacity" Value="1" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!-- Top header -->
+            <RowDefinition Height="*" />
+            <!-- Body: sidebar + content -->
+        </Grid.RowDefinitions>
+
+        <!-- Top header -->
+        <Border Grid.Row="0"
+                Height="64"
+                Background="{StaticResource Rojan.Brush.Navy}"
+                BorderBrush="{StaticResource Rojan.Brush.RoseGoldHighlight}"
+                BorderThickness="0,0,0,2">
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Margin="24,0">
+                <Ellipse Width="12"
+                         Height="12"
+                         Fill="{StaticResource Rojan.Brush.AIGlow}"
+                         VerticalAlignment="Center" />
+                <TextBlock Text="ROJAN Desktop"
+                           Margin="12,0,0,0"
+                           Style="{StaticResource Rojan.TextStyle.SectionTitle}"
+                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Body -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <!-- Sidebar -->
+                <ColumnDefinition Width="*" />
+                <!-- Main content -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar navigation -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource Rojan.Brush.GlassWhite}"
+                    BorderBrush="{StaticResource Rojan.Brush.GlassBorder}"
+                    BorderThickness="0,0,1,0">
+                <ListBox x:Name="NavigationListBox"
+                         Margin="0,16,0,0"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ItemsSource="{Binding NavigationItems}"
+                         SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
+                         ItemContainerStyle="{StaticResource Rojan.Style.NavigationListBoxItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type navigation:NavigationItem}">
+                            <TextBlock Text="{Binding Title}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Main content area -->
+            <Grid Grid.Column="1"
+                  Background="{StaticResource Rojan.Brush.Navy}">
+
+                <!--
+                    Navigation foundation's real content target - empty
+                    until a feature phase registers a ViewModel/View pair
+                    via INavigationService.NavigateTo<TViewModel>().
+                -->
+                <ContentControl x:Name="NavigationHost" />
+
+                <!-- Placeholder proving the shell responds to sidebar selection - not a business feature. -->
+                <TextBlock Text="{Binding SelectedNavigationItem.Title, StringFormat={}{0} — coming soon}"
+                           Style="{StaticResource Rojan.TextStyle.HeroTitle}"
+                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+        </Grid>
+    </Grid>
 
 </Window>

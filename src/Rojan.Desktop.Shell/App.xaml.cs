@@ -67,6 +67,7 @@ public partial class App
         services.AddSingleton<NavigationService>();
         services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<NavigationService>());
 
+        services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }
 

@@ -46,6 +46,14 @@
   <Color x:Key="Rojan.Color.DisabledText">#FFC6BECF</Color>
   <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
 
+  <!--
+    Phase 04 desktop-shell highlight alias - reuses the existing approved
+    Rose token rather than inventing a new hex value, same reasoning the
+    source design system itself documents for its own aliases (e.g.
+    RojanSuccessText = RojanStatusOnline in RojanTokens.kt).
+  -->
+  <Color x:Key="Rojan.Color.RoseGoldHighlight">#FFFF8FC8</Color>
+
   <!-- Brushes -->
   <SolidColorBrush x:Key="Rojan.Brush.TextPrimary" Color="{StaticResource Rojan.Color.TextPrimary}" />
   <SolidColorBrush x:Key="Rojan.Brush.TextSecondary" Color="{StaticResource Rojan.Color.TextSecondary}" />
@@ -75,5 +83,6 @@
   <SolidColorBrush x:Key="Rojan.Brush.HintText" Color="{StaticResource Rojan.Color.HintText}" />
   <SolidColorBrush x:Key="Rojan.Brush.DisabledText" Color="{StaticResource Rojan.Color.DisabledText}" />
   <SolidColorBrush x:Key="Rojan.Brush.ButtonText" Color="{StaticResource Rojan.Color.ButtonText}" />
+  <SolidColorBrush x:Key="Rojan.Brush.RoseGoldHighlight" Color="{StaticResource Rojan.Color.RoseGoldHighlight}" />
 
 </ResourceDictionary>
