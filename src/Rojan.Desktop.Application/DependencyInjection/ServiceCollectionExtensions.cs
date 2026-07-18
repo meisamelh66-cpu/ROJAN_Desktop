@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 
 namespace Rojan.Desktop.Application.DependencyInjection;
@@ -12,6 +13,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddSingleton<IDashboardQueryService, DashboardQueryService>();
+        services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         return services;
     }
 }

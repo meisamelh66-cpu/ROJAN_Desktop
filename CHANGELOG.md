@@ -16,6 +16,11 @@ see `docs/standards/versioning.md`.
   `Directory.Packages.props`.
 - Coding standards, branch strategy, versioning, and documentation
   standards (`docs/standards/`).
+- Phase 09: Enterprise Customer CRM — first real business module built on
+  the Phase 07 module-shell architecture. Read-only customer list with
+  search and master-detail view, backed by a fake in-memory repository
+  (Domain/Application/Infrastructure/Presentation vertical slice,
+  following the same pattern as the Phase 06B Dashboard module).
 
 ## [0.1.0-alpha] - Unreleased
 

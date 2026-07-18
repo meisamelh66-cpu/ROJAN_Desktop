@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
                     xmlns:dashboardView="clr-namespace:Rojan.Desktop.Presentation.Views.Dashboard"
+                    xmlns:customersVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Customers"
+                    xmlns:customersView="clr-namespace:Rojan.Desktop.Presentation.Views.Customers"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -15,6 +17,10 @@
   -->
   <DataTemplate DataType="{x:Type dashboardVm:DashboardPageViewModel}">
     <dashboardView:DashboardPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type customersVm:CustomerPageViewModel}">
+    <customersView:CustomerPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

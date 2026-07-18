@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 namespace Rojan.Desktop.Presentation.DependencyInjection;
@@ -16,6 +17,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddTransient<DashboardPageViewModel>();
+        services.AddTransient<CustomerPageViewModel>();
         return services;
     }
 }

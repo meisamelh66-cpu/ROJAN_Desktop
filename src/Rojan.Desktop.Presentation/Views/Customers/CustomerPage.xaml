@@ -1,0 +1,187 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Customers.CustomerPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:appCustomers="clr-namespace:Rojan.Desktop.Application.Customers;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 09: Customer CRM. Master-detail layout, same two-column shape
+        as DashboardPage - a searchable customer list on the left (wrapped
+        in the existing state-aware DashboardWidget, reused unchanged from
+        the Dashboard vertical slice) and the selected customer's details on
+        the right (a static DashboardCard, since detail content has no load
+        state of its own once the list has already loaded). Read-only, no
+        create/edit/delete commands yet - consistent with Dashboard's own
+        Phase 06B scope, which shipped read-only before any write use case.
+
+        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="360" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: header, search box, customer list -->
+        <Grid Grid.Column="0" Margin="0,0,24,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <controls:SectionHeader Grid.Row="0" Title="Customers" />
+            <TextBlock Grid.Row="0"
+                       Text="Search, review, and stay on top of every client relationship."
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       Margin="0,44,0,0" />
+
+            <Border Grid.Row="1"
+                    Style="{StaticResource Rojan.Style.GlassPanel}"
+                    Padding="16,10"
+                    Margin="0,24,0,0">
+                <Grid>
+                    <TextBlock Text="Search by name, company, or email..."
+                               Foreground="{StaticResource Rojan.Brush.HintText}"
+                               FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                               FontSize="15"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                             CaretBrush="{StaticResource Rojan.Brush.VividPurple}"
+                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                             FontSize="15" />
+                </Grid>
+            </Border>
+
+            <dashboardControls:DashboardWidget Grid.Row="2"
+                                                Title="All Customers"
+                                                State="{Binding State}"
+                                                ErrorMessage="{Binding ErrorMessage}"
+                                                RetryCommand="{Binding LoadCommand}"
+                                                Margin="0,24,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="560">
+                    <ListBox ItemsSource="{Binding Customers}"
+                             SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type appCustomers:CustomerDto}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                            <Run Text="{Binding Company, Mode=OneWay}" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding Email, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Status}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </dashboardControls:DashboardWidget>
+        </Grid>
+
+        <!-- Right: selected customer's details -->
+        <dashboardControls:DashboardCard Grid.Column="1" Title="Customer Details" VerticalAlignment="Top">
+            <Grid>
+                <TextBlock Text="Select a customer to view details."
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedCustomer}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <StackPanel DataContext="{Binding SelectedCustomer}">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.CardTitle}" />
+                    <TextBlock Text="{Binding Company}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="0,2,0,0" />
+
+                    <dashboardControls:KPIValue Label="Lifetime Value" Value="{Binding LifetimeValue}" Margin="0,20,0,0" />
+
+                    <StackPanel Margin="0,20,0,0">
+                        <TextBlock Text="{Binding Email}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                        <TextBlock Text="{Binding Phone}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0" />
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   Margin="0,4,0,0">
+                            <Run Text="Status: " />
+                            <Run Text="{Binding Status, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   Margin="0,4,0,0">
+                            <Run Text="Last contacted: " />
+                            <Run Text="{Binding LastContactedAt, StringFormat={}{0:MMM d, yyyy}, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding Notes}"
+                               Style="{StaticResource Rojan.TextStyle.Body}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,20,0,0" />
+                </StackPanel>
+            </Grid>
+        </dashboardControls:DashboardCard>
+
+    </Grid>
+
+</UserControl>
