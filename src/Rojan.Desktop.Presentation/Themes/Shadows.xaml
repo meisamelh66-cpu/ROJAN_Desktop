@@ -1,0 +1,44 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Colors.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+
+  <!--
+    Shadow/elevation tokens, built from the existing approved shadow
+    colors (RojanShadowPurple/RojanShadowPink in RojanTokens.kt) rather
+    than inventing new ones - three elevation tiers for the glass surfaces
+    GlassCard/GlassPanel use, plus an accent glow variant for interactive
+    highlight states (hover/focus), reusing ShadowPink.
+  -->
+
+  <DropShadowEffect x:Key="Rojan.Effect.ElevationLow"
+                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+                     Direction="270"
+                     ShadowDepth="2"
+                     BlurRadius="8"
+                     Opacity="0.6" />
+
+  <DropShadowEffect x:Key="Rojan.Effect.ElevationMedium"
+                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+                     Direction="270"
+                     ShadowDepth="4"
+                     BlurRadius="16"
+                     Opacity="0.75" />
+
+  <DropShadowEffect x:Key="Rojan.Effect.ElevationHigh"
+                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+                     Direction="270"
+                     ShadowDepth="8"
+                     BlurRadius="24"
+                     Opacity="0.9" />
+
+  <DropShadowEffect x:Key="Rojan.Effect.GlowAccent"
+                     Color="{StaticResource Rojan.Color.ShadowPink}"
+                     Direction="0"
+                     ShadowDepth="0"
+                     BlurRadius="16"
+                     Opacity="0.8" />
+
+</ResourceDictionary>

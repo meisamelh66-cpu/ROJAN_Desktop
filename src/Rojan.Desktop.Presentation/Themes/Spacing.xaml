@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+  <!--
+    Spacing tokens. No dedicated spacing-scale file exists on the
+    ROJAN_DesignLab (Android) side to port from - individual paddings/
+    margins are embedded inline per-component there, not centralized. This
+    is a new baseline introduced for the desktop foundation: a standard
+    4pt-multiple scale, consistent with the 4-multiple convention already
+    implied by the existing corner-radius/typography values (16, 24, 32...).
+    Documented here as a new addition, not a port, so it isn't mistaken for
+    an existing approved Android token.
+  -->
+  <sys:Double x:Key="Rojan.Spacing.XSmall">4</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.Small">8</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.Medium">16</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.Large">24</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.XLarge">32</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.XXLarge">48</sys:Double>
+
+</ResourceDictionary>

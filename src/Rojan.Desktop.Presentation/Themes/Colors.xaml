@@ -10,6 +10,11 @@
     dependency between the two products (docs/architecture/00-overview.md
     Goal 1). Each Color has a matching SolidColorBrush for direct use in
     Fill/Background/Foreground bindings.
+
+    Phase 05: moved from Rojan.Desktop.Shell to this project - design
+    system resources are Presentation's concern (owned/reused by the
+    components in Controls.xaml); Shell only consumes the aggregate
+    Theme.xaml, it does not own the tokens.
   -->
 
   <!-- Text -->
@@ -47,9 +52,9 @@
   <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
 
   <!--
-    Phase 04 desktop-shell highlight alias - reuses the existing approved
-    Rose token rather than inventing a new hex value, same reasoning the
-    source design system itself documents for its own aliases (e.g.
+    Desktop-shell highlight alias - reuses the existing approved Rose
+    token rather than inventing a new hex value, same reasoning the source
+    design system itself documents for its own aliases (e.g.
     RojanSuccessText = RojanStatusOnline in RojanTokens.kt).
   -->
   <Color x:Key="Rojan.Color.RoseGoldHighlight">#FFFF8FC8</Color>

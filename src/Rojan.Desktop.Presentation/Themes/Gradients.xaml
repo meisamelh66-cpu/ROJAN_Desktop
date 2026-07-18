@@ -3,8 +3,8 @@
 
   <ResourceDictionary.MergedDictionaries>
     <!-- Colors must be merged here, not just alongside this dictionary in
-         App.xaml - a StaticResource lookup only sees a sibling dictionary's
-         keys if this dictionary merges it directly. -->
+         Theme.xaml - a StaticResource lookup only sees a sibling
+         dictionary's keys if this dictionary merges it directly. -->
     <ResourceDictionary Source="Colors.xaml" />
   </ResourceDictionary.MergedDictionaries>
 

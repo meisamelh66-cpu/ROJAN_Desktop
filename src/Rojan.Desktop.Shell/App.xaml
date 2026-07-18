@@ -6,13 +6,15 @@
          (App.xaml.cs), so the Generic Host builds/starts before any
          window is shown - see docs/architecture/01-desktop-shell.md §4/§5. -->
 
+    <!--
+         Phase 05: the design system itself (tokens + reusable components)
+         lives in Rojan.Desktop.Presentation - Shell only consumes the one
+         aggregate entry point, it does not own or duplicate any theme
+         resource dictionary. -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/Colors.xaml" />
-                <ResourceDictionary Source="Themes/Gradients.xaml" />
-                <ResourceDictionary Source="Themes/Typography.xaml" />
-                <ResourceDictionary Source="Themes/Shapes.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Rojan.Desktop.Presentation;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

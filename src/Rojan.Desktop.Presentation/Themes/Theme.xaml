@@ -1,0 +1,26 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    ROJAN Desktop Design System - single entry point. Consumers (Shell)
+    merge only this one dictionary rather than listing every token/control
+    file individually - "Shell only consumes components", it does not need
+    to know how the design system is internally organized.
+
+    Merge order matters here only for readability, not correctness - every
+    file in this set already merges its own dependencies locally (see each
+    file's own MergedDictionaries), so WPF's resource-dictionary-merge
+    de-duplication (later entries win on key collision, and there are none
+    here by design) makes the order below safe either way.
+  -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Colors.xaml" />
+    <ResourceDictionary Source="Gradients.xaml" />
+    <ResourceDictionary Source="Typography.xaml" />
+    <ResourceDictionary Source="Spacing.xaml" />
+    <ResourceDictionary Source="Shapes.xaml" />
+    <ResourceDictionary Source="Shadows.xaml" />
+    <ResourceDictionary Source="Controls.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>
