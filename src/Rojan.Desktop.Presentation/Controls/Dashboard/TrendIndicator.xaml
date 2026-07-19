@@ -6,7 +6,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="Rojan.Style.TrendGlyph" TargetType="TextBlock">

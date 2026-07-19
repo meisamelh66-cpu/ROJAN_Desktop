@@ -3,78 +3,114 @@
 
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="Colors.xaml" />
-    <ResourceDictionary Source="Gradients.xaml" />
+    <ResourceDictionary Source="Dark.xaml" />
     <ResourceDictionary Source="Typography.xaml" />
     <ResourceDictionary Source="Shapes.xaml" />
     <ResourceDictionary Source="Spacing.xaml" />
+    <ResourceDictionary Source="Icons.xaml" />
     <ResourceDictionary Source="Shadows.xaml" />
+    <ResourceDictionary Source="Elevation.xaml" />
   </ResourceDictionary.MergedDictionaries>
 
   <!--
-    ROJAN Desktop Design System - foundation reusable components.
+    Phase 16: Microsoft Fluent 2 Design System Integration - foundation
+    reusable components, rebuilt on neutral surfaces plus one restrained
+    accent instead of the prior translucent-glass/gradient look. Key
+    names are kept stable (Rojan.Style.GlassCard/GlassPanel/GlassButton/
+    GlassNavigationItem) so every existing View keeps working unchanged -
+    only what these keys resolve to changed. New form-control styles
+    (TextBox/ComboBox/DatePicker/CheckBox) are implicit (TargetType, no
+    x:Key), so every existing TextBox/ComboBox/DatePicker in every View
+    picks them up automatically the moment this dictionary is merged -
+    those controls previously had no styling at all (default Windows
+    chrome), the single biggest visual inconsistency this phase fixes.
 
-    Implemented as named Styles targeting the closest matching standard
-    WPF control (Border/Button/ListBoxItem) rather than custom control
-    classes - this is the standard WPF pattern for a design-system
-    component library and keeps every component purely declarative (no
-    code-behind, no logic), consistent with "foundation only". The one
-    genuinely composite component (SectionHeader, title + accent
-    decoration) is a UserControl instead - see Controls/SectionHeader.xaml.
-
-    Consumers apply these via Style="{StaticResource Rojan.Style.X}" on a
-    Border/Button/ListBoxItem - Shell only ever consumes these keys, it
-    does not define its own equivalents.
+    A shared FocusVisualStyle (accent-colored focus rectangle) is set at
+    the bottom of this file so every standard control gets a visible,
+    consistent keyboard-focus indicator without each Style needing to
+    define its own.
   -->
 
-  <!-- GlassCard: elevated glass surface for standalone content cards. -->
+  <!-- ============================= Accessibility ============================= -->
+  <!--
+    Shared keyboard-focus indicator - a visible accent-colored rectangle
+    around whatever standard control currently has keyboard focus.
+    Defined first so every control style below can reference it; applied
+    explicitly via each one's FocusVisualStyle setter (WPF resolves a
+    control's implicit style by its exact runtime type, so a style
+    targeting a common base class like FrameworkElement/Control does not
+    cascade into these more specific TextBox/Button/ComboBox styles -
+    explicit is the only reliable way).
+  -->
+  <Style x:Key="Rojan.Style.FocusVisual">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Rectangle Margin="-2"
+                     StrokeThickness="2"
+                     Stroke="{StaticResource Rojan.Brush.FocusRing}"
+                     SnapsToDevicePixels="True"
+                     RadiusX="4"
+                     RadiusY="4" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================= Surfaces ============================= -->
+
+  <!-- GlassCard: elevated surface for standalone content cards - the default card look used throughout every page. -->
   <Style x:Key="Rojan.Style.GlassCard" TargetType="Border">
-    <Setter Property="Background" Value="{StaticResource Rojan.Brush.GlassWhite}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.GlassBorder}" />
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.GlassCard}" />
-    <!-- Literal "24" (matches Rojan.Spacing.Large's value), not a
-         StaticResource: Padding is a Thickness, and Spacing tokens are
-         plain doubles (reused for FontSize/Width/etc. too) - a boxed
-         double assigned directly to a Thickness-typed Setter throws at
-         runtime, so the two token kinds can't be interchanged here. -->
-    <Setter Property="Padding" Value="24" />
-    <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationMedium}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Medium}" />
+    <Setter Property="Padding" Value="20" />
+    <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationCard}" />
   </Style>
 
-  <!-- GlassPanel: flat glass surface for grouping/docked chrome (sidebars, headers) - no elevation. -->
+  <!-- GlassPanel: flat neutral surface for grouping/docked chrome (sidebar, header) - no elevation, sits flush with the canvas. -->
   <Style x:Key="Rojan.Style.GlassPanel" TargetType="Border">
-    <Setter Property="Background" Value="{StaticResource Rojan.Brush.GlassWhite}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.GlassBorder}" />
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.SurfaceSecondary}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Small}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Medium}" />
   </Style>
 
-  <!-- GlassButton: primary call-to-action button, brand purple->magenta gradient, pill shape. -->
+  <!-- ============================= Buttons ============================= -->
+
+  <!--
+    GlassButton: the Fluent "Primary" button - solid accent fill, used
+    only for the one primary call-to-action per view/dialog (per Fluent 2
+    hierarchy: one Primary, everything else Secondary/Subtle). No pill
+    shape, no gradient, no hover glow - a subtle fill-color shift on
+    hover/pressed is Fluent's own primary-button feedback.
+  -->
   <Style x:Key="Rojan.Style.GlassButton" TargetType="Button">
-    <Setter Property="Background" Value="{StaticResource Rojan.Brush.ButtonGradient}" />
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
-    <Setter Property="Padding" Value="24,10" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="16,8" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border x:Name="ButtonBorder"
                   Background="{TemplateBinding Background}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.PremiumButton}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
                   Padding="{TemplateBinding Padding}">
-            <ContentPresenter HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextElement.FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                               TextElement.FontWeight="SemiBold"
-                               TextElement.FontSize="16" />
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="ButtonBorder" Property="Effect" Value="{StaticResource Rojan.Effect.GlowAccent}" />
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentHover}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.85" />
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentPressed}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
@@ -85,24 +121,62 @@
     </Setter>
   </Style>
 
+  <!-- ButtonSecondary: neutral outlined button - every non-primary action (Back, Cancel, Retry). -->
+  <Style x:Key="Rojan.Style.ButtonSecondary" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="ButtonBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.SurfaceHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.SurfacePressed}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================= Navigation ============================= -->
+
   <!--
-    GlassNavigationItem: sidebar menu entry - purple when selected, aqua
-    accent on hover. The hover transition is a real animation (Phase 07 -
-    "Hover animation" requirement): a dedicated overlay Border
-    (HoverOverlay) fades its Opacity in/out via a Storyboard, rather than
-    animating the shared Background brush directly - WPF's markup compiler
-    (MC4111) rejects a Storyboard targeting a named Freezable nested inside
-    a property element; targeting a named FrameworkElement's own Opacity is
-    the standard, reliably-supported pattern. The hover MultiTrigger is
-    gated on IsSelected="False" so hovering the already-selected item never
-    layers the aqua overlay on top of the (intentionally instant, no
-    animation needed) selected-state purple.
+    GlassNavigationItem: sidebar menu entry. Selected state is the
+    accent's one real Fluent 2 job here - a soft accent-tinted background
+    plus a 3px accent bar on the leading edge (the same "selection
+    indicator" shape Fluent's own NavigationView uses), not a solid
+    purple fill. Hover is a plain neutral surface tint, not an aqua-mint
+    animated overlay - subtler, and consistent with every other hover
+    state in this design system now.
   -->
   <Style x:Key="Rojan.Style.GlassNavigationItem" TargetType="ListBoxItem">
-    <Setter Property="Padding" Value="20,14" />
-    <Setter Property="Margin" Value="12,2" />
-    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="Margin" Value="8,1" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextSecondary}" />
     <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
@@ -110,42 +184,278 @@
             <Border x:Name="ItemBorder"
                     Background="Transparent"
                     CornerRadius="{StaticResource Rojan.CornerRadius.Small}" />
-            <Border x:Name="HoverOverlay"
-                    Background="{StaticResource Rojan.Brush.AquaMint}"
-                    CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
-                    Opacity="0" />
+            <Border x:Name="SelectionBar"
+                    Width="3"
+                    HorizontalAlignment="Left"
+                    Margin="-8,4,0,4"
+                    CornerRadius="0,2,2,0"
+                    Background="{StaticResource Rojan.Brush.Accent}"
+                    Visibility="Collapsed" />
             <ContentPresenter VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
           </Grid>
           <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="IsMouseOver" Value="True" />
-                <Condition Property="IsSelected" Value="False" />
-              </MultiTrigger.Conditions>
-              <MultiTrigger.EnterActions>
-                <BeginStoryboard>
-                  <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="HoverOverlay"
-                                      Storyboard.TargetProperty="Opacity"
-                                      To="0.85"
-                                      Duration="0:0:0.15" />
-                  </Storyboard>
-                </BeginStoryboard>
-              </MultiTrigger.EnterActions>
-              <MultiTrigger.ExitActions>
-                <BeginStoryboard>
-                  <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="HoverOverlay"
-                                      Storyboard.TargetProperty="Opacity"
-                                      To="0"
-                                      Duration="0:0:0.15" />
-                  </Storyboard>
-                </BeginStoryboard>
-              </MultiTrigger.ExitActions>
-            </MultiTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.SurfaceHover}" />
+            </Trigger>
             <Trigger Property="IsSelected" Value="True">
-              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.VividPurple}" />
-              <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentSubtle}" />
+              <Setter TargetName="SelectionBar" Property="Visibility" Value="Visible" />
+              <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================= Form controls ============================= -->
+  <!--
+    Implicit (TargetType, no x:Key) - every TextBox/ComboBox/DatePicker/
+    CheckBox in every existing View picks these up automatically once
+    this dictionary is merged. Previously unstyled (default Windows Aero
+    chrome), which read as a jarring white box against the dark theme -
+    now a consistent Fluent input across the whole app.
+  -->
+
+  <Style TargetType="TextBox">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="CaretBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+    <Setter Property="SelectionBrush" Value="{StaticResource Rojan.Brush.AccentSubtle}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Validation.ErrorTemplate">
+      <Setter.Value>
+        <ControlTemplate>
+          <Border BorderBrush="{StaticResource Rojan.Brush.ErrorText}" BorderThickness="1" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+            <AdornedElementPlaceholder />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border x:Name="Chrome"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+              <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+              <Setter TargetName="Chrome" Property="BorderThickness" Value="2" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Chrome" Property="Opacity" Value="0.5" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- DatePickerTextBox is the editable surface DatePicker shows in its closed state - styled directly so the date field matches every other input without a full DatePicker retemplate. -->
+  <Style TargetType="DatePickerTextBox">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="CaretBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="DatePickerTextBox">
+          <Grid>
+            <ScrollViewer x:Name="PART_ContentHost" Background="Transparent" Margin="0" VerticalAlignment="Center" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="DatePicker">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="CalendarStyle">
+      <Setter.Value>
+        <Style TargetType="Calendar">
+          <Setter Property="Background" Value="{StaticResource Rojan.Brush.SurfaceElevated}" />
+          <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+          <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationPopover}" />
+        </Style>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ComboBoxItem - dropdown row, same hover/selected treatment as the sidebar's nav item but without the leading selection bar (a form control, not navigation). -->
+  <Style TargetType="ComboBoxItem">
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBoxItem">
+          <Border x:Name="ItemBorder"
+                  Background="Transparent"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.SurfaceHover}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentSubtle}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="ComboBox">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <ToggleButton x:Name="ToggleButton"
+                          Focusable="False"
+                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                          ClickMode="Press">
+              <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                  <Border x:Name="Chrome"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="1"
+                                 Text="{StaticResource Rojan.Icon.ChevronDown}"
+                                 FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                 FontSize="10"
+                                 Foreground="{StaticResource Rojan.Brush.TextSecondary}"
+                                 Margin="0,0,10,0"
+                                 VerticalAlignment="Center" />
+                    </Grid>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </ToggleButton.Template>
+              <ToggleButton.Background>
+                <Binding Path="Background" RelativeSource="{RelativeSource TemplatedParent}" />
+              </ToggleButton.Background>
+              <ToggleButton.BorderBrush>
+                <Binding Path="BorderBrush" RelativeSource="{RelativeSource TemplatedParent}" />
+              </ToggleButton.BorderBrush>
+              <ToggleButton.BorderThickness>
+                <Binding Path="BorderThickness" RelativeSource="{RelativeSource TemplatedParent}" />
+              </ToggleButton.BorderThickness>
+            </ToggleButton>
+            <ContentPresenter x:Name="ContentSite"
+                               IsHitTestVisible="False"
+                               Content="{TemplateBinding SelectionBoxItem}"
+                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                               ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                               Margin="{TemplateBinding Padding}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left" />
+            <Popup x:Name="Popup"
+                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                   Placement="Bottom"
+                   AllowsTransparency="True"
+                   PopupAnimation="Slide"
+                   Focusable="False">
+              <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                      Background="{StaticResource Rojan.Brush.SurfaceElevated}"
+                      BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                      BorderThickness="1"
+                      CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                      Margin="0,4,0,0"
+                      Padding="4"
+                      Effect="{StaticResource Rojan.Effect.ElevationPopover}">
+                <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="CheckBox">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <StackPanel Orientation="Horizontal">
+            <Border x:Name="CheckBoxBorder"
+                    Width="18"
+                    Height="18"
+                    Background="{StaticResource Rojan.Brush.Surface}"
+                    BorderBrush="{StaticResource Rojan.Brush.StrokeStrong}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                    VerticalAlignment="Center">
+              <TextBlock x:Name="CheckGlyph"
+                         Text="&#xE73E;"
+                         FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                         FontSize="12"
+                         Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Visibility="Collapsed" />
+            </Border>
+            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" />
+          </StackPanel>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+              <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+              <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

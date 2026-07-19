@@ -6,13 +6,13 @@
     <!--
         Compact per-widget title - distinct from the page-level
         SectionHeader (which carries the rose-gold accent underline).
-        Self-sufficient: merges its own Theme.xaml dependency, same rule as
+        Self-sufficient: merges its own RojanTheme.xaml dependency, same rule as
         every other Design System component.
     -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

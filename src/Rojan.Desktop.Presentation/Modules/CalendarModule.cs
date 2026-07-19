@@ -16,7 +16,7 @@ namespace Rojan.Desktop.Presentation.Modules;
 /// </summary>
 public sealed class CalendarModule : IModule
 {
-    private static readonly ModuleMetadata Metadata = new("calendar", "Calendar", "▦", 25);
+    private static readonly ModuleMetadata Metadata = new("calendar", "Calendar", "", 25);
 
     public CalendarModule()
     {

@@ -3,15 +3,29 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
   <!--
-    Spacing tokens. No dedicated spacing-scale file exists on the
-    ROJAN_DesignLab (Android) side to port from - individual paddings/
-    margins are embedded inline per-component there, not centralized. This
-    is a new baseline introduced for the desktop foundation: a standard
-    4pt-multiple scale, consistent with the 4-multiple convention already
-    implied by the existing corner-radius/typography values (16, 24, 32...).
-    Documented here as a new addition, not a port, so it isn't mistaken for
-    an existing approved Android token.
+    Phase 16: one spacing scale, 4/8/12/16/24/32/48 - Fluent 2's own
+    spacing tokens follow the same 4px-multiple progression. Numeric key
+    names (Rojan.Spacing.4, .8, .12...) are the primary scale now; the
+    older semantic names (XSmall/Small/Medium/Large/XLarge/XXLarge) are
+    kept as aliases onto the closest step so nothing that already
+    referenced them breaks, but new markup should prefer the numeric
+    names - they say exactly what they are.
+
+    These are still plain doubles applied per-consumer (Width/FontSize/
+    etc.); a Thickness-typed property (Margin/Padding) can't bind a boxed
+    double directly, so those stay literal numbers matching this scale
+    rather than a StaticResource reference - same constraint noted in the
+    prior version of this file.
   -->
+  <sys:Double x:Key="Rojan.Spacing.4">4</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.8">8</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.12">12</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.16">16</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.24">24</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.32">32</sys:Double>
+  <sys:Double x:Key="Rojan.Spacing.48">48</sys:Double>
+
+  <!-- Semantic aliases, kept for compatibility - see note above. -->
   <sys:Double x:Key="Rojan.Spacing.XSmall">4</sys:Double>
   <sys:Double x:Key="Rojan.Spacing.Small">8</sys:Double>
   <sys:Double x:Key="Rojan.Spacing.Medium">16</sys:Double>

@@ -2,14 +2,21 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    ROJAN AI Design System - corner-radius tokens, ported from RojanShapes
-    (RojanTokens.kt). Raw radius values, applied per-consumer (e.g. a
-    Border's CornerRadius) rather than baked into a single shared Style,
-    since WPF has no direct equivalent of Compose's named Shape objects.
+    Phase 16: Fluent 2 corner-radius scale. Fluent 2 uses small, subtle
+    radii (4/8/12px) on nearly everything - replaces the prior "GlassCard"
+    32px pill-like rounding, which read as a mobile/marketing aesthetic
+    rather than a dense enterprise desktop app. Pill (999) is kept for the
+    rare fully-rounded case (status badges) but is no longer the default
+    button shape.
+
+    Only Themes/Controls.xaml and Themes/ShellChrome.xaml consume these -
+    both rewritten in this same phase - so no legacy-name aliases are
+    needed here (unlike Colors.xaml/Spacing.xaml, which many Views
+    reference directly).
   -->
-  <CornerRadius x:Key="Rojan.CornerRadius.GlassCard">32</CornerRadius>
-  <CornerRadius x:Key="Rojan.CornerRadius.PremiumButton">50</CornerRadius>
-  <CornerRadius x:Key="Rojan.CornerRadius.Circle">100</CornerRadius>
-  <CornerRadius x:Key="Rojan.CornerRadius.Small">16</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Small">4</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Medium">8</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Large">12</CornerRadius>
+  <CornerRadius x:Key="Rojan.CornerRadius.Pill">999</CornerRadius>
 
 </ResourceDictionary>

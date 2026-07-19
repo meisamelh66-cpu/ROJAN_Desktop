@@ -2,92 +2,55 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    ROJAN AI Design System - color tokens.
+    Phase 16: Microsoft Fluent 2 Design System Integration.
 
-    Values are ported from the approved token spec (ROJAN_DesignLab's
-    RojanTokens.kt, Design Token Specification v1.0) as an independent WPF
-    resource set - same brand values, no shared file/package/architecture
-    dependency between the two products (docs/architecture/00-overview.md
-    Goal 1). Each Color has a matching SolidColorBrush for direct use in
-    Fill/Background/Foreground bindings.
+    Theme-INVARIANT tokens only - the ROJAN accent and status colors stay
+    the same regardless of Light.xaml/Dark.xaml being active. Every
+    surface/text/stroke token that legitimately differs between light and
+    dark now lives in Dark.xaml/Light.xaml instead (each is a fully
+    self-contained Color+Brush set for its theme, the standard WPF
+    swappable-theme-dictionary pattern - RojanTheme.xaml merges whichever
+    one is active).
 
-    Phase 05: moved from Rojan.Desktop.Shell to this project - design
-    system resources are Presentation's concern (owned/reused by the
-    components in Controls.xaml); Shell only consumes the aggregate
-    Theme.xaml, it does not own the tokens.
+    This replaces the prior "glass" palette (translucent white fills, a
+    purple->magenta gradient on every surface) with Fluent 2's own
+    approach: neutral surfaces plus one restrained accent, reserved for
+    primary actions, selection, active state, progress, and focus (see
+    Controls.xaml/ShellChrome.xaml for where it's actually applied).
   -->
 
-  <!-- Text -->
-  <Color x:Key="Rojan.Color.TextPrimary">#FF000000</Color>
-  <Color x:Key="Rojan.Color.TextSecondary">#FF000000</Color>
+  <!-- ROJAN accent - the one saturated color, used only for primary/selected/active/progress/focus/links -->
+  <Color x:Key="Rojan.Color.Accent">#FF8E28E7</Color>
+  <Color x:Key="Rojan.Color.AccentHover">#FF9F49EA</Color>
+  <Color x:Key="Rojan.Color.AccentPressed">#FF7620BE</Color>
+  <Color x:Key="Rojan.Color.AccentSubtle">#1F8E28E7</Color>
+  <Color x:Key="Rojan.Color.FocusRing">#FF8E28E7</Color>
 
-  <!-- Brand -->
-  <Color x:Key="Rojan.Color.VividPurple">#FF8E28E7</Color>
-  <Color x:Key="Rojan.Color.VividMagenta">#FFFF4FA3</Color>
-  <Color x:Key="Rojan.Color.Rose">#FFFF8FC8</Color>
-  <Color x:Key="Rojan.Color.AIGlow">#FF7C4DFF</Color>
-  <Color x:Key="Rojan.Color.DeepPurple">#FF2B1F45</Color>
-  <Color x:Key="Rojan.Color.BlushPink">#FFFFC7DE</Color>
-  <Color x:Key="Rojan.Color.PearlPink">#FFFFD6E8</Color>
-  <Color x:Key="Rojan.Color.SoftLavender">#FFDCCBFF</Color>
-  <Color x:Key="Rojan.Color.AquaMint">#FFB6F5F0</Color>
-  <Color x:Key="Rojan.Color.WarmWhite">#FFFFFBFF</Color>
-  <Color x:Key="Rojan.Color.Navy">#FF18233A</Color>
-
-  <!-- Glass system -->
-  <Color x:Key="Rojan.Color.GlassWhite">#66FFFFFF</Color>
-  <Color x:Key="Rojan.Color.GlassBorder">#55FFFFFF</Color>
-
-  <!-- Shadow system (deliberately distinct, pre-saturation-boost purple - matches source token) -->
-  <Color x:Key="Rojan.Color.ShadowPurple">#668E2DE2</Color>
-  <Color x:Key="Rojan.Color.ShadowPink">#66FF4FA3</Color>
-
-  <!-- Semantic status/text -->
-  <Color x:Key="Rojan.Color.ErrorText">#FFFF5C7A</Color>
-  <Color x:Key="Rojan.Color.SuccessText">#FF16A34A</Color>
-  <Color x:Key="Rojan.Color.WarningText">#FFFFB020</Color>
-  <Color x:Key="Rojan.Color.MutedText">#FF9D8AA7</Color>
-  <Color x:Key="Rojan.Color.HintText">#FFB5A9BE</Color>
-  <Color x:Key="Rojan.Color.DisabledText">#FFC6BECF</Color>
-  <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
-
-  <!--
-    Desktop-shell highlight alias - reuses the existing approved Rose
-    token rather than inventing a new hex value, same reasoning the source
-    design system itself documents for its own aliases (e.g.
-    RojanSuccessText = RojanStatusOnline in RojanTokens.kt).
-  -->
+  <!-- Kept for the SectionHeader's small decorative underline only - a
+       secondary brand hue distinct from the interactive Accent, used in
+       exactly one place, not as a second competing accent. -->
   <Color x:Key="Rojan.Color.RoseGoldHighlight">#FFFF8FC8</Color>
 
+  <!-- Text drawn on a filled Accent surface (buttons) - white in both themes. -->
+  <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
+
+  <!-- Semantic status - kept invariant across themes for recognizability. -->
+  <Color x:Key="Rojan.Color.ErrorText">#FFE5484D</Color>
+  <Color x:Key="Rojan.Color.SuccessText">#FF3FB950</Color>
+  <Color x:Key="Rojan.Color.WarningText">#FFF2B93D</Color>
+
   <!-- Brushes -->
-  <SolidColorBrush x:Key="Rojan.Brush.TextPrimary" Color="{StaticResource Rojan.Color.TextPrimary}" />
-  <SolidColorBrush x:Key="Rojan.Brush.TextSecondary" Color="{StaticResource Rojan.Color.TextSecondary}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Accent" Color="{StaticResource Rojan.Color.Accent}" />
+  <SolidColorBrush x:Key="Rojan.Brush.AccentHover" Color="{StaticResource Rojan.Color.AccentHover}" />
+  <SolidColorBrush x:Key="Rojan.Brush.AccentPressed" Color="{StaticResource Rojan.Color.AccentPressed}" />
+  <SolidColorBrush x:Key="Rojan.Brush.AccentSubtle" Color="{StaticResource Rojan.Color.AccentSubtle}" />
+  <SolidColorBrush x:Key="Rojan.Brush.FocusRing" Color="{StaticResource Rojan.Color.FocusRing}" />
+  <SolidColorBrush x:Key="Rojan.Brush.RoseGoldHighlight" Color="{StaticResource Rojan.Color.RoseGoldHighlight}" />
 
-  <SolidColorBrush x:Key="Rojan.Brush.VividPurple" Color="{StaticResource Rojan.Color.VividPurple}" />
-  <SolidColorBrush x:Key="Rojan.Brush.VividMagenta" Color="{StaticResource Rojan.Color.VividMagenta}" />
-  <SolidColorBrush x:Key="Rojan.Brush.Rose" Color="{StaticResource Rojan.Color.Rose}" />
-  <SolidColorBrush x:Key="Rojan.Brush.AIGlow" Color="{StaticResource Rojan.Color.AIGlow}" />
-  <SolidColorBrush x:Key="Rojan.Brush.DeepPurple" Color="{StaticResource Rojan.Color.DeepPurple}" />
-  <SolidColorBrush x:Key="Rojan.Brush.BlushPink" Color="{StaticResource Rojan.Color.BlushPink}" />
-  <SolidColorBrush x:Key="Rojan.Brush.PearlPink" Color="{StaticResource Rojan.Color.PearlPink}" />
-  <SolidColorBrush x:Key="Rojan.Brush.SoftLavender" Color="{StaticResource Rojan.Color.SoftLavender}" />
-  <SolidColorBrush x:Key="Rojan.Brush.AquaMint" Color="{StaticResource Rojan.Color.AquaMint}" />
-  <SolidColorBrush x:Key="Rojan.Brush.WarmWhite" Color="{StaticResource Rojan.Color.WarmWhite}" />
-  <SolidColorBrush x:Key="Rojan.Brush.Navy" Color="{StaticResource Rojan.Color.Navy}" />
-
-  <SolidColorBrush x:Key="Rojan.Brush.GlassWhite" Color="{StaticResource Rojan.Color.GlassWhite}" />
-  <SolidColorBrush x:Key="Rojan.Brush.GlassBorder" Color="{StaticResource Rojan.Color.GlassBorder}" />
-
-  <SolidColorBrush x:Key="Rojan.Brush.ShadowPurple" Color="{StaticResource Rojan.Color.ShadowPurple}" />
-  <SolidColorBrush x:Key="Rojan.Brush.ShadowPink" Color="{StaticResource Rojan.Color.ShadowPink}" />
+  <SolidColorBrush x:Key="Rojan.Brush.ButtonText" Color="{StaticResource Rojan.Color.ButtonText}" />
 
   <SolidColorBrush x:Key="Rojan.Brush.ErrorText" Color="{StaticResource Rojan.Color.ErrorText}" />
   <SolidColorBrush x:Key="Rojan.Brush.SuccessText" Color="{StaticResource Rojan.Color.SuccessText}" />
   <SolidColorBrush x:Key="Rojan.Brush.WarningText" Color="{StaticResource Rojan.Color.WarningText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.MutedText" Color="{StaticResource Rojan.Color.MutedText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.HintText" Color="{StaticResource Rojan.Color.HintText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.DisabledText" Color="{StaticResource Rojan.Color.DisabledText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.ButtonText" Color="{StaticResource Rojan.Color.ButtonText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.RoseGoldHighlight" Color="{StaticResource Rojan.Color.RoseGoldHighlight}" />
 
 </ResourceDictionary>

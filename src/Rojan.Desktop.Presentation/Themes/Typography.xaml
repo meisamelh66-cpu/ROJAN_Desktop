@@ -2,45 +2,29 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    ROJAN AI Design System - typography scale, ported from RojanTypography
-    (RojanTokens.kt / Type.kt). Sizes are the same numeric scale as the
-    source "sp" values, not a pixel-perfect DPI conversion - the two
-    platforms are intentionally independent (docs/architecture/00-overview.md
-    Goal 1), this only keeps the visual proportions consistent.
+    Phase 16: Fluent 2 type ramp - one consistent scale, six steps
+    (Page Title / Section Title / Card Title / Subtitle / Body / Caption),
+    all on one font family. "Segoe UI Variable" is Fluent 2's default
+    system font on Windows 11; the FontFamily list below falls back to
+    "Segoe UI" (present on every Windows 8+ machine) so this renders
+    correctly even where the Variable family isn't installed - WPF tries
+    each name in order and uses the first one it can resolve.
 
-    Font family: "Segoe UI" is a placeholder, same reasoning as the Android
-    side's FontFamily.Default placeholder - the approved target is
-    Vazirmatn, deferred until real font asset integration (out of scope for
-    foundation scaffolding). Swapping this is a one-line change per style
-    once the font files exist.
+    Rojan.TextStyle.HeroTitle is kept beyond the six-step scale
+    specifically for large KPI numbers (Controls/Dashboard/KPIValue.xaml)
+    - a distinct "big number display" case, not a duplicate of PageTitle.
   -->
-  <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI</FontFamily>
+  <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI Variable, Segoe UI</FontFamily>
 
-  <Style x:Key="Rojan.TextStyle.Display" TargetType="TextBlock">
+  <Style x:Key="Rojan.TextStyle.PageTitle" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="FontSize" Value="34" />
-    <Setter Property="LineHeight" Value="42" />
-    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
-  </Style>
-
-  <Style x:Key="Rojan.TextStyle.ScreenTitle" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="FontSize" Value="30" />
-    <Setter Property="LineHeight" Value="38" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="28" />
+    <Setter Property="LineHeight" Value="36" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
   <Style x:Key="Rojan.TextStyle.SectionTitle" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="24" />
-    <Setter Property="LineHeight" Value="30" />
-    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
-  </Style>
-
-  <Style x:Key="Rojan.TextStyle.CardTitle" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="FontSize" Value="20" />
@@ -48,26 +32,26 @@
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
-  <Style x:Key="Rojan.TextStyle.HeroTitle" TargetType="TextBlock">
+  <Style x:Key="Rojan.TextStyle.CardTitle" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="FontSize" Value="32" />
-    <Setter Property="LineHeight" Value="40" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="LineHeight" Value="22" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+  </Style>
+
+  <Style x:Key="Rojan.TextStyle.Subtitle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="LineHeight" Value="20" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
   <Style x:Key="Rojan.TextStyle.Body" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="FontSize" Value="17" />
-    <Setter Property="LineHeight" Value="24" />
-    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
-  </Style>
-
-  <Style x:Key="Rojan.TextStyle.Button" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontSize" Value="14" />
     <Setter Property="LineHeight" Value="20" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
@@ -75,8 +59,17 @@
   <Style x:Key="Rojan.TextStyle.Caption" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="FontSize" Value="15" />
-    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="LineHeight" Value="16" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+  </Style>
+
+  <!-- Large numeric display (KPI values) - deliberately outside the six-step scale, see note above. -->
+  <Style x:Key="Rojan.TextStyle.HeroTitle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="32" />
+    <Setter Property="LineHeight" Value="38" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 

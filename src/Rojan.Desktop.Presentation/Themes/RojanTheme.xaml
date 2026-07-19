@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    ROJAN Desktop Design System - single entry point. Consumers (Shell,
+    every View that self-merges the design system) merge only this one
+    dictionary rather than listing every token/control file individually.
+
+    Phase 16: Microsoft Fluent 2 Design System Integration - renamed from
+    Theme.xaml to make this file's role unambiguous now that Light.xaml/
+    Dark.xaml also exist (a bare "Theme.xaml" would be confusable with a
+    single light-or-dark theme file rather than the whole design system).
+    Dark.xaml is merged as the active theme; swap it for Light.xaml here
+    to switch the entire app - see Dark.xaml's own doc comment.
+
+    Merge order matters here only for the Colors -> Dark -> Shadows ->
+    Elevation dependency chain (each later file's StaticResource lookups
+    need the earlier ones already merged into the same scope); every
+    other file in this set merges its own dependencies locally too, so
+    WPF's resource-dictionary-merge de-duplication (later entries win on
+    key collision, and there are none here by design) makes any
+    additional ordering safe either way.
+  -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Colors.xaml" />
+    <ResourceDictionary Source="Dark.xaml" />
+    <ResourceDictionary Source="Typography.xaml" />
+    <ResourceDictionary Source="Spacing.xaml" />
+    <ResourceDictionary Source="Shapes.xaml" />
+    <ResourceDictionary Source="Icons.xaml" />
+    <ResourceDictionary Source="Shadows.xaml" />
+    <ResourceDictionary Source="Elevation.xaml" />
+    <ResourceDictionary Source="Controls.xaml" />
+    <ResourceDictionary Source="ShellChrome.xaml" />
+    <ResourceDictionary Source="DashboardComponents.xaml" />
+    <ResourceDictionary Source="Views.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

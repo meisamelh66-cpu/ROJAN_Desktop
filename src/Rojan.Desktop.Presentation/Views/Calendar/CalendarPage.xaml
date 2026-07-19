@@ -16,13 +16,13 @@
         component) that reserves an Available slot or releases a Booked one
         on click, bound to the one ToggleSlotCommand.
 
-        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        Merges its own RojanTheme.xaml dependency locally (same self-sufficiency
         rule as every other Design System component).
     -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

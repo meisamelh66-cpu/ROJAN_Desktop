@@ -6,39 +6,60 @@
   </ResourceDictionary.MergedDictionaries>
 
   <!--
-    Shadow/elevation tokens, built from the existing approved shadow
-    colors (RojanShadowPurple/RojanShadowPink in RojanTokens.kt) rather
-    than inventing new ones - three elevation tiers for the glass surfaces
-    GlassCard/GlassPanel use, plus an accent glow variant for interactive
-    highlight states (hover/focus), reusing ShadowPink.
+    Phase 16: raw shadow building blocks, one per Fluent 2 depth level
+    (2/4/8/16 - Fluent's own ambient-shadow scale, minus the very top
+    "64" tier this app has no use for). Neutral black shadows, not
+    color-tinted ones - depth comes from elevation now, not from a
+    saturated glow on every surface (that's what the old
+    Rojan.Effect.ElevationMedium/GlowAccent pair did, tinted with the
+    brand purple). Available for a one-off custom effect; Controls.xaml/
+    ShellChrome.xaml consume Elevation.xaml's semantic tier names instead
+    (Rojan.Effect.ElevationCard etc.), which redeclare these same depth
+    values under a "what is this surface" name rather than a "how deep"
+    one - WPF resource dictionaries have no cheap alias mechanism for a
+    Freezable like DropShadowEffect, so the two files' values
+    intentionally match rather than one referencing the other.
   -->
 
-  <DropShadowEffect x:Key="Rojan.Effect.ElevationLow"
-                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+  <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel2"
+                     Color="Black"
+                     Direction="270"
+                     ShadowDepth="1"
+                     BlurRadius="4"
+                     Opacity="0.24" />
+
+  <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel4"
+                     Color="Black"
                      Direction="270"
                      ShadowDepth="2"
                      BlurRadius="8"
-                     Opacity="0.6" />
+                     Opacity="0.28" />
 
-  <DropShadowEffect x:Key="Rojan.Effect.ElevationMedium"
-                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+  <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel8"
+                     Color="Black"
                      Direction="270"
                      ShadowDepth="4"
                      BlurRadius="16"
-                     Opacity="0.75" />
+                     Opacity="0.32" />
 
-  <DropShadowEffect x:Key="Rojan.Effect.ElevationHigh"
-                     Color="{StaticResource Rojan.Color.ShadowPurple}"
+  <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel16"
+                     Color="Black"
                      Direction="270"
-                     ShadowDepth="8"
-                     BlurRadius="24"
-                     Opacity="0.9" />
+                     ShadowDepth="6"
+                     BlurRadius="28"
+                     Opacity="0.4" />
 
-  <DropShadowEffect x:Key="Rojan.Effect.GlowAccent"
-                     Color="{StaticResource Rojan.Color.ShadowPink}"
+  <!--
+    Accent-tinted glow - deliberately kept separate from the neutral
+    elevation shadows above. Used only for the rare interactive-highlight
+    moment (a hovered primary button), never as a substitute for
+    elevation, consistent with "accent color used sparingly."
+  -->
+  <DropShadowEffect x:Key="Rojan.Effect.FocusGlow"
+                     Color="{StaticResource Rojan.Color.Accent}"
                      Direction="0"
                      ShadowDepth="0"
-                     BlurRadius="16"
-                     Opacity="0.8" />
+                     BlurRadius="12"
+                     Opacity="0.55" />
 
 </ResourceDictionary>

@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Phase 16: Dark theme - the active default (RojanTheme.xaml merges
+    this one). Navy-tinted neutral surface ramp, not pure gray - keeps
+    ROJAN's existing Navy as the brand's dark base rather than adopting
+    Windows' own neutral palette wholesale ("Fluent 2 with ROJAN
+    identity", not a Windows clone).
+
+    Self-contained: every surface/text/stroke key a page might reference
+    is defined here (and mirrored with light-appropriate values in
+    Light.xaml) - swapping which of the two RojanTheme.xaml merges is the
+    entire theme switch, no other file needs to change. A runtime
+    light/dark toggle is not wired up (no toggle was requested this
+    phase) - same "foundation now, wire up later" pattern already used
+    elsewhere in this app (e.g. the Phase 07 dialog region before Phase
+    15 gave it a producer).
+  -->
+
+  <Color x:Key="Rojan.Color.Navy">#FF15192A</Color>
+  <Color x:Key="Rojan.Color.Surface">#FF1F2438</Color>
+  <Color x:Key="Rojan.Color.SurfaceSecondary">#FF1A1F32</Color>
+  <Color x:Key="Rojan.Color.SurfaceElevated">#FF262C46</Color>
+  <Color x:Key="Rojan.Color.SurfaceHover">#FF2A3049</Color>
+  <Color x:Key="Rojan.Color.SurfacePressed">#FF232840</Color>
+  <Color x:Key="Rojan.Color.Stroke">#21FFFFFF</Color>
+  <Color x:Key="Rojan.Color.StrokeStrong">#3DFFFFFF</Color>
+
+  <Color x:Key="Rojan.Color.TextPrimary">#FFF3F1FA</Color>
+  <Color x:Key="Rojan.Color.TextSecondary">#FFB6B2C9</Color>
+  <Color x:Key="Rojan.Color.MutedText">#FFA39DBB</Color>
+  <Color x:Key="Rojan.Color.HintText">#FF8B85A3</Color>
+  <Color x:Key="Rojan.Color.DisabledText">#FF5C5770</Color>
+
+  <SolidColorBrush x:Key="Rojan.Brush.Navy" Color="{StaticResource Rojan.Color.Navy}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
+  <SolidColorBrush x:Key="Rojan.Brush.SurfaceSecondary" Color="{StaticResource Rojan.Color.SurfaceSecondary}" />
+  <SolidColorBrush x:Key="Rojan.Brush.SurfaceElevated" Color="{StaticResource Rojan.Color.SurfaceElevated}" />
+  <SolidColorBrush x:Key="Rojan.Brush.SurfaceHover" Color="{StaticResource Rojan.Color.SurfaceHover}" />
+  <SolidColorBrush x:Key="Rojan.Brush.SurfacePressed" Color="{StaticResource Rojan.Color.SurfacePressed}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Stroke" Color="{StaticResource Rojan.Color.Stroke}" />
+  <SolidColorBrush x:Key="Rojan.Brush.StrokeStrong" Color="{StaticResource Rojan.Color.StrokeStrong}" />
+
+  <SolidColorBrush x:Key="Rojan.Brush.TextPrimary" Color="{StaticResource Rojan.Color.TextPrimary}" />
+  <SolidColorBrush x:Key="Rojan.Brush.TextSecondary" Color="{StaticResource Rojan.Color.TextSecondary}" />
+  <SolidColorBrush x:Key="Rojan.Brush.MutedText" Color="{StaticResource Rojan.Color.MutedText}" />
+  <SolidColorBrush x:Key="Rojan.Brush.HintText" Color="{StaticResource Rojan.Color.HintText}" />
+  <SolidColorBrush x:Key="Rojan.Brush.DisabledText" Color="{StaticResource Rojan.Color.DisabledText}" />
+
+</ResourceDictionary>

@@ -1,46 +1,180 @@
 <UserControl x:Class="Rojan.Desktop.Presentation.Views.BookingWorkflow.BookingWizardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:workflow="clr-namespace:Rojan.Desktop.Application.BookingWorkflow;assembly=Rojan.Desktop.Application">
+             xmlns:workflow="clr-namespace:Rojan.Desktop.Application.BookingWorkflow;assembly=Rojan.Desktop.Application"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters">
 
     <!--
-        Phase 15: Enterprise Booking Workflow & Reservation Flow. Unlike
-        every prior module's page, this is shown in Shell's dialog region
-        (see MainWindow.xaml's Dialog region + IDialogService) - a linear,
-        step-by-step flow: Customer -> Service -> Specialist -> Date ->
-        TimeSlot -> Review -> Confirmation. Each step is a StackPanel whose
-        Visibility is DataTrigger-driven off CurrentStep, the same
-        show/hide-by-DataTrigger idiom used throughout this app (e.g.
-        BookingPage's null-conditional detail panel) - no new Design
-        System component, every control here is a plain ListBox/DatePicker/
-        TextBox/Button already styled by Theme.xaml.
+        Phase 15: Enterprise Booking Workflow & Reservation Flow. Shown in
+        Shell's dialog region (see MainWindow.xaml's Dialog region +
+        IDialogService) - a linear, step-by-step flow: Customer -> Service
+        -> Specialist -> Date -> TimeSlot -> Review -> Confirmation. Each
+        step is a StackPanel whose Visibility is DataTrigger-driven off
+        CurrentStep, the same show/hide-by-DataTrigger idiom used
+        throughout this app.
 
-        Merges its own Theme.xaml dependency locally (same self-sufficiency
-        rule as every other Design System component).
+        Phase 16: Microsoft Fluent 2 Design System Integration - a Fluent
+        Wizard dialog: a real step-progress indicator (7 segments, filled
+        up to the current step via EnumAtLeastConverter - a pure
+        Presentation-layer display helper, no ViewModel/workflow change),
+        a tighter/smaller overlay (480 vs. the prior 560, less empty
+        chrome), Fluent's Primary/Secondary button hierarchy (Next/Confirm
+        Booking/Done are the one primary action per step; Back/Cancel are
+        secondary), and corrected error-state coloring (ErrorText, not the
+        decorative RoseGoldHighlight token the prior version used here by
+        mistake).
+
+        Merges its own RojanTheme.xaml dependency locally (same
+        self-sufficiency rule as every other Design System component).
     -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <converters:EnumAtLeastConverter x:Key="EnumAtLeastConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Style="{StaticResource Rojan.Style.GlassCard}" Width="560" MaxHeight="680" Padding="24">
+    <Border Background="{StaticResource Rojan.Brush.SurfaceElevated}"
+            BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+            Effect="{StaticResource Rojan.Effect.ElevationDialog}"
+            Width="480"
+            MaxHeight="600"
+            Padding="24">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <!-- Title -->
                 <RowDefinition Height="Auto" />
+                <!-- Step indicator -->
+                <RowDefinition Height="Auto" />
+                <!-- Step label / error -->
                 <RowDefinition Height="*" />
+                <!-- Step content -->
                 <RowDefinition Height="Auto" />
+                <!-- Footer buttons -->
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="New Booking" Style="{StaticResource Rojan.TextStyle.CardTitle}" />
+            <TextBlock Grid.Row="0" Text="New Booking" Style="{StaticResource Rojan.TextStyle.CardTitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
 
-            <StackPanel Grid.Row="1" Margin="0,4,0,16">
+            <!-- Step indicator: 7 segments, accent-filled up to and including the current step. -->
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Height="4" CornerRadius="2" Background="{StaticResource Rojan.Brush.Accent}" />
+                <Border Grid.Column="2" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="Service" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                <Border Grid.Column="4" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="Specialist" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                <Border Grid.Column="6" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="Date" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                <Border Grid.Column="8" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="TimeSlot" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                <Border Grid.Column="10" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="Review" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                <Border Grid.Column="12" Height="4" CornerRadius="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Stroke}" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <Binding Path="CurrentStep" Converter="{StaticResource EnumAtLeastConverter}" ConverterParameter="Confirmation" />
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+            </Grid>
+
+            <StackPanel Grid.Row="2" Margin="0,8,0,0">
                 <TextBlock Text="{Binding CurrentStep}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                 <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="{StaticResource Rojan.Brush.RoseGoldHighlight}"
+                           Foreground="{StaticResource Rojan.Brush.ErrorText}"
                            TextWrapping="Wrap"
                            Margin="0,4,0,0">
                     <TextBlock.Style>
@@ -56,7 +190,7 @@
                 </TextBlock>
             </StackPanel>
 
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="440">
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" MaxHeight="360" Margin="0,16,0,0">
                 <Grid>
 
                     <!-- Step: Customer -->
@@ -71,13 +205,13 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Who is this booking for?" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Who is this booking for?" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <ListBox ItemsSource="{Binding Customers}"
                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                                  DisplayMemberPath="FullName"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 MaxHeight="380"
+                                 MaxHeight="320"
                                  ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}" />
                     </StackPanel>
 
@@ -93,12 +227,12 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Choose a service" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Choose a service" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <ListBox ItemsSource="{Binding Services}"
                                  SelectedItem="{Binding SelectedService, Mode=TwoWay}"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 MaxHeight="380"
+                                 MaxHeight="320"
                                  ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type workflow:WorkflowServiceOptionDto}">
@@ -133,13 +267,13 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Choose a specialist" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Choose a specialist" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <ListBox ItemsSource="{Binding Specialists}"
                                  SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
                                  DisplayMemberPath="FullName"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 MaxHeight="380"
+                                 MaxHeight="320"
                                  ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}" />
                     </StackPanel>
 
@@ -155,7 +289,7 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Choose a date" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Choose a date" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <DatePicker SelectedDate="{Binding SelectedDate, Mode=TwoWay}" HorizontalAlignment="Left" Width="200" />
                     </StackPanel>
 
@@ -171,7 +305,7 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Choose a time" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Choose a time" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <TextBlock Text="No available slots for this specialist on this date."
                                    Foreground="{StaticResource Rojan.Brush.MutedText}"
                                    Margin="0,0,0,8">
@@ -190,7 +324,7 @@
                                  SelectedItem="{Binding SelectedSlot, Mode=TwoWay}"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 MaxHeight="380"
+                                 MaxHeight="320"
                                  ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type workflow:WorkflowSlotDto}">
@@ -212,7 +346,7 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Review your booking" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="Review your booking" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
                             <Run Text="Customer: " /><Run Text="{Binding SelectedCustomer.FullName, Mode=OneWay}" />
                         </TextBlock>
@@ -228,7 +362,7 @@
                         </TextBlock>
                         <StackPanel Margin="0,16,0,0">
                             <TextBlock Text="Notes" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                            <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="56" Margin="0,4,0,0" TextWrapping="Wrap" />
                         </StackPanel>
                     </StackPanel>
 
@@ -244,7 +378,14 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="Booking confirmed" Style="{StaticResource Rojan.TextStyle.CardTitle}" Margin="0,0,0,12" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="{StaticResource Rojan.Icon.CheckCircle}"
+                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                       FontSize="20"
+                                       Foreground="{StaticResource Rojan.Brush.SuccessText}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Booking confirmed" Style="{StaticResource Rojan.TextStyle.CardTitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
                         <StackPanel DataContext="{Binding Confirmation}">
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
                                 <Run Text="Customer: " /><Run Text="{Binding CustomerName, Mode=OneWay}" />
@@ -265,10 +406,10 @@
                 </Grid>
             </ScrollViewer>
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,8,0">
                     <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding CurrentStep}" Value="Confirmation">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -277,7 +418,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Back" Command="{Binding BackCommand}" Style="{StaticResource Rojan.Style.GlassButton}" Margin="0,0,8,0" />
+                <Button Content="Back" Command="{Binding BackCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
                 <Button Content="Next" Command="{Binding NextCommand}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">

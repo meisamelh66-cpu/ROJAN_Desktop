@@ -14,7 +14,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Rojan.Desktop.Presentation;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Rojan.Desktop.Presentation;component/Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

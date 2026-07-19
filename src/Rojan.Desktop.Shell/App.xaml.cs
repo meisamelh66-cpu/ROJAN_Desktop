@@ -96,12 +96,12 @@ public partial class App
         services.AddSingleton<IModule, BookingModule>();
         services.AddSingleton<IModule, CalendarModule>();
         services.AddSingleton<IModule, ServiceModule>();
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "▤", 40)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "$", 50)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "", 40)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "", 50)));
         services.AddSingleton<IModule, SpecialistModule>();
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "▥", 70)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("ai-center", "AI Center", "✧", 80)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("settings", "Settings", "⚙", 90)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "", 70)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("ai-center", "AI Center", "", 80)));
+        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("settings", "Settings", "", 90)));
     }
 
     /// <summary>

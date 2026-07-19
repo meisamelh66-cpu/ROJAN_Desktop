@@ -19,13 +19,13 @@
         Every card/widget here is DashboardCard/DashboardWidget/KPIValue -
         no new Design System components needed, same as every other module.
 
-        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        Merges its own RojanTheme.xaml dependency locally (same self-sufficiency
         rule as every other Design System component).
     -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -76,7 +76,7 @@
                              Background="Transparent"
                              BorderThickness="0"
                              Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                             CaretBrush="{StaticResource Rojan.Brush.VividPurple}"
+                             CaretBrush="{StaticResource Rojan.Brush.Accent}"
                              FontFamily="{StaticResource Rojan.FontFamily.Default}"
                              FontSize="15" />
                 </Grid>
@@ -193,12 +193,14 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appServices:AssignedSpecialistDto}">
-                                        <Border Background="{StaticResource Rojan.Brush.AquaMint}"
-                                                CornerRadius="12"
+                                        <Border Background="{StaticResource Rojan.Brush.SurfaceHover}"
+                                                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
                                                 Padding="10,4"
                                                 Margin="0,0,8,8">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" />
+                                                <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                                                 <Button Content="&#10005;"
                                                         Margin="8,0,0,0"
                                                         Padding="0"

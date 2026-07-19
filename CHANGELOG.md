@@ -121,6 +121,26 @@ see `docs/standards/versioning.md`.
   is no database transaction spanning both. No database, no API, no
   payments, no notifications, no Shell architecture change. 278/278
   tests passing (46 new).
+- Phase 16: Microsoft Fluent 2 Design System Integration — a UI/UX-only
+  sprint, no business functionality: replaced the prior "glass" visual
+  language (translucent white fills, a purple→magenta gradient on nearly
+  every surface, 32px pill-shaped cards) with Microsoft Fluent 2 -
+  neutral navy-tinted surfaces plus one restrained ROJAN accent color,
+  reserved for primary actions, selection, and focus. Rebuilt the entire
+  `Themes/` token set (`Colors`/`Dark`/`Light`/`Typography`/`Spacing`/
+  `Shapes`/`Shadows`/`Elevation`/`Icons`/`RojanTheme`, renamed from
+  `Theme.xaml`); added implicit `TextBox`/`ComboBox`/`DatePicker`/
+  `CheckBox` styles (previously completely unstyled - default Windows
+  chrome against a dark theme, the single biggest visual inconsistency
+  fixed); redesigned the sidebar's selection indicator and every
+  sidebar/header/chrome icon onto one consistent glyph set (Segoe Fluent
+  Icons, no new package dependency); redesigned the Booking Wizard
+  dialog with a real Fluent step-progress indicator and Primary/
+  Secondary button hierarchy. Zero Domain/Application/Infrastructure/
+  workflow changes - Presentation (Themes/Controls/Views/a new
+  Converters folder) and Shell (MainWindow.xaml, module icon-glyph
+  string literals) only. 278/278 tests passing (unchanged from Phase 15
+  - no ViewModel behavior changed).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

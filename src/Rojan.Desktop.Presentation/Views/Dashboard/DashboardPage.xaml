@@ -18,13 +18,13 @@
         Assistant panel remain static (no repository data), so they use the
         state-less DashboardCard.
 
-        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        Merges its own RojanTheme.xaml dependency locally (same self-sufficiency
         rule as every other Design System component).
     -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

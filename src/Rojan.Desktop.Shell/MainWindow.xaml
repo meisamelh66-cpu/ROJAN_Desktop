@@ -20,6 +20,13 @@
         which modules exist beyond what IModuleRegistry supplies through
         it.
 
+        Phase 16: Microsoft Fluent 2 Design System Integration - neutral
+        surfaces, one accent (selected nav item, the brand status dot),
+        and one consistent icon family (Segoe Fluent Icons, see
+        Themes/Icons.xaml) replacing the prior mixed Unicode/emoji glyph
+        set. Structure/bindings/commands are unchanged from Phase 07 -
+        this is a visual pass only.
+
         Custom title bar via WindowChrome (not WindowStyle="None" +
         AllowsTransparency, which disables hardware-accelerated rendering
         in a way custom WindowChrome does not) - CaptionHeight matches the
@@ -35,7 +42,7 @@
         revisiting if RTL is actually enabled.
     -->
     <shellChrome:WindowChrome.WindowChrome>
-        <shellChrome:WindowChrome CaptionHeight="64"
+        <shellChrome:WindowChrome CaptionHeight="56"
                                    ResizeBorderThickness="6"
                                    GlassFrameThickness="0"
                                    CornerRadius="0" />
@@ -53,11 +60,11 @@
 
         <!-- ================= Header region ================= -->
         <Border Grid.Row="0"
-                Height="64"
-                Background="{StaticResource Rojan.Brush.Navy}"
-                BorderBrush="{StaticResource Rojan.Brush.RoseGoldHighlight}"
-                BorderThickness="0,0,0,2">
-            <Grid Margin="16,0">
+                Height="56"
+                Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
+                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <!-- Brand -->
@@ -79,19 +86,19 @@
 
                 <!-- Brand -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="10" Height="10" Fill="{StaticResource Rojan.Brush.AIGlow}" VerticalAlignment="Center" />
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" />
                     <TextBlock Text="ROJAN Desktop"
                                Style="{StaticResource Rojan.TextStyle.CardTitle}"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                               Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center" />
                 </StackPanel>
 
                 <!-- Current module title + breadcrumb -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="32,0,0,0">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="24,0,0,0">
                     <TextBlock Text="{Binding SelectedNavigationItem.Title}"
-                               Style="{StaticResource Rojan.TextStyle.Body}"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                               Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                               Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                     <TextBlock Text="{Binding BreadcrumbText}"
                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -100,46 +107,64 @@
                 <!-- Global search placeholder - not functional, UI presence only -->
                 <Border Grid.Column="3"
                         Style="{StaticResource Rojan.Style.GlassPanel}"
-                        Width="220"
+                        Width="240"
                         Height="32"
                         shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <TextBlock Text="Search..."
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.HintText}"
-                               VerticalAlignment="Center"
-                               Margin="12,0" />
+                    <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Search}"
+                                   FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                   FontSize="13"
+                                   Foreground="{StaticResource Rojan.Brush.HintText}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Search"
+                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                                   Foreground="{StaticResource Rojan.Brush.HintText}"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
                 </Border>
 
                 <!-- Back / Forward -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Content="&#8249;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoBackCommand}" ToolTip="Back" />
-                    <Button Content="&#8250;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoForwardCommand}" ToolTip="Forward" />
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="8,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoBackCommand}" ToolTip="Back">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Back}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                    </Button>
+                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoForwardCommand}" ToolTip="Forward">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Forward}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                    </Button>
                 </StackPanel>
 
                 <!-- Notification button -->
                 <Button Grid.Column="5"
-                        Content="&#128276;"
                         Style="{StaticResource Rojan.Style.ChromeIconButton}"
                         Command="{Binding ToggleNotificationPanelCommand}"
                         ToolTip="Notifications"
                         Margin="4,0,0,0"
-                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True" />
+                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Text="{StaticResource Rojan.Icon.Notification}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                </Button>
 
                 <!-- User profile placeholder - not functional, UI presence only -->
                 <StackPanel Grid.Column="6" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Ellipse Width="28" Height="28" Fill="{StaticResource Rojan.Brush.SoftLavender}" />
+                    <Ellipse Width="26" Height="26" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
                     <TextBlock Text="Guest User"
                                Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                               Foreground="{StaticResource Rojan.Brush.TextSecondary}"
                                VerticalAlignment="Center"
                                Margin="8,0,0,0" />
                 </StackPanel>
 
                 <!-- Window commands -->
                 <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button x:Name="MinimizeButton" Content="&#8212;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="Minimize" />
-                    <Button x:Name="MaximizeRestoreButton" Content="&#9633;" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MaximizeRestoreButton_Click" ToolTip="Maximize" />
-                    <Button x:Name="CloseButton" Content="&#10005;" Style="{StaticResource Rojan.Style.WindowCloseButton}" Click="CloseButton_Click" ToolTip="Close" />
+                    <Button x:Name="MinimizeButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="Minimize">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Minimize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
+                    </Button>
+                    <Button x:Name="MaximizeRestoreButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MaximizeRestoreButton_Click" ToolTip="Maximize">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Maximize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" />
+                    </Button>
+                    <Button x:Name="CloseButton" Style="{StaticResource Rojan.Style.WindowCloseButton}" Click="CloseButton_Click" ToolTip="Close">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Close}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -155,26 +180,29 @@
 
             <!-- Navigation region -->
             <Border Grid.Column="0"
+                    Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
+                    BorderBrush="{StaticResource Rojan.Brush.Stroke}"
                     BorderThickness="0,0,1,0"
                     CornerRadius="0">
                 <Border.Style>
-                    <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.GlassPanel}">
-                        <Setter Property="Width" Value="240" />
+                    <Style TargetType="Border">
+                        <Setter Property="Width" Value="232" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="False">
-                                <Setter Property="Width" Value="64" />
+                                <Setter Property="Width" Value="56" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
                 <DockPanel LastChildFill="True">
                     <Button DockPanel.Dock="Top"
-                            Content="&#9776;"
                             Style="{StaticResource Rojan.Style.ChromeIconButton}"
                             Command="{Binding ToggleSidebarCommand}"
                             ToolTip="Collapse/expand navigation"
-                            Margin="12,16,0,8"
-                            HorizontalAlignment="Left" />
+                            Margin="12,12,0,8"
+                            HorizontalAlignment="Left">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Menu}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                    </Button>
 
                     <ListBox x:Name="NavigationListBox"
                              DockPanel.Dock="Top"
@@ -187,7 +215,8 @@
                             <DataTemplate DataType="{x:Type navigation:NavigationItem}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding IconGlyph}"
-                                               FontSize="16"
+                                               FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                               FontSize="15"
                                                Width="20"
                                                TextAlignment="Center"
                                                VerticalAlignment="Center" />
@@ -220,10 +249,11 @@
 
         <!-- ================= Status region ================= -->
         <Border Grid.Row="2"
-                Style="{StaticResource Rojan.Style.GlassPanel}"
+                Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
+                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
                 BorderThickness="0,1,0,0"
                 CornerRadius="0"
-                Height="28">
+                Height="26">
             <TextBlock Text="{Binding StatusMessage}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
@@ -251,7 +281,7 @@
             <StackPanel>
                 <TextBlock Text="Notifications"
                            Style="{StaticResource Rojan.TextStyle.CardTitle}"
-                           Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                 <ItemsControl ItemsSource="{Binding Notifications}" Margin="0,12,0,0">
                     <ItemsControl.Style>
                         <Style TargetType="ItemsControl">
@@ -267,7 +297,7 @@
                         <DataTemplate>
                             <TextBlock Text="{Binding Message}"
                                        Style="{StaticResource Rojan.TextStyle.Body}"
-                                       Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,8" />
                         </DataTemplate>
@@ -301,7 +331,7 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <Border Background="{StaticResource Rojan.Brush.Navy}" Opacity="0.6" />
+            <Border Background="{StaticResource Rojan.Brush.Navy}" Opacity="0.5" />
             <ContentControl Content="{Binding ActiveDialog}" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
 
