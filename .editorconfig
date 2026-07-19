@@ -99,3 +99,9 @@ csharp_space_after_keywords_in_control_flow_statements = true
 # Test methods commonly use descriptive_names_with_underscores
 # (e.g. MethodName_Scenario_ExpectedResult) — exempt from PascalCase-only.
 dotnet_naming_rule.types_pascal_case.severity = warning
+# CA1707 ("remove underscores from member names") is the analyzer that
+# actually enforces PascalCase-only under TreatWarningsAsErrors - the
+# naming-style rule above alone does not suppress it. Without this, the
+# MethodUnderTest_Scenario_ExpectedResult convention coding-standards.md
+# §7 mandates cannot build.
+dotnet_diagnostic.CA1707.severity = none

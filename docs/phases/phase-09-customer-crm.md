@@ -1,5 +1,14 @@
 # Phase 09 — Enterprise Customer CRM
 
+> **Naming note:** this document's filename and this heading are kept
+> exactly as originally committed (see `docs/standards/branch-strategy.md`
+> git-workflow rules on not renaming things after the fact). "Phase 09" is
+> reserved for Release Engineering per `branch-strategy.md`/`versioning.md`;
+> this module collides with that reservation and is referred to as
+> **Phase 10** everywhere else going forward. See
+> `docs/adr/0001-phase-09-naming-collision.md` for the full context and
+> decision.
+
 **Status:** Awaiting Approval
 **Completion:** 100%
 

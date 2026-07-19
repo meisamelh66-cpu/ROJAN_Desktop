@@ -20,7 +20,22 @@ see `docs/standards/versioning.md`.
   the Phase 07 module-shell architecture. Read-only customer list with
   search and master-detail view, backed by a fake in-memory repository
   (Domain/Application/Infrastructure/Presentation vertical slice,
-  following the same pattern as the Phase 06B Dashboard module).
+  following the same pattern as the Phase 06B Dashboard module). Referred
+  to as Phase 10 going forward — see
+  `docs/adr/0001-phase-09-naming-collision.md`.
+- Phase 08: Testing Strategy — 36 tests across `Domain.Tests`,
+  `Application.Tests`, `Infrastructure.Tests`, `Presentation.Tests`, and
+  `ArchitectureTests`, covering the Dashboard and Customer CRM vertical
+  slices. Architecture tests enforce dependency direction and ViewModel
+  testability as executable checks. No new NuGet packages — built on the
+  `xunit` setup already pinned in `Directory.Packages.props`.
+
+### Fixed
+- `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
+  closing a gap where the documented
+  `MethodUnderTest_Scenario_ExpectedResult` test-naming convention
+  (`coding-standards.md` §7) could not actually build under
+  `TreatWarningsAsErrors`.
 
 ## [0.1.0-alpha] - Unreleased
 
