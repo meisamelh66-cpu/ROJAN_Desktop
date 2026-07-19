@@ -4,6 +4,7 @@ using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
+using Rojan.Desktop.Presentation.ViewModels.HR;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Services;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<CalendarPageViewModel>();
         services.AddTransient<InventoryPageViewModel>();
         services.AddTransient<AccountingPageViewModel>();
+        services.AddTransient<HrPageViewModel>();
         return services;
     }
 }

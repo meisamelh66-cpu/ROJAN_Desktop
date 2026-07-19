@@ -205,6 +205,55 @@ see `docs/standards/versioning.md`.
   invoice list/detail, and a full POS sale (cart → payment → receipt)
   that correctly decremented Inventory stock and updated the Revenue
   KPIs.
+- Phase 19: Enterprise Staff, HR & Commission Management — ninth real
+  business module (`Rojan.Desktop.*.HR`), a genuinely new "Staff & HR"
+  sidebar entry (no placeholder existed to swap, same as Calendar in
+  Phase 15) - the widest vertical slice in this app: `Employee`/
+  `EmployeeProfile`/`Shift`/`ShiftAssignment`/`Attendance`/`LeaveRequest`/
+  `CommissionRule`/`CommissionTransaction`/`PayrollSummary` Domain
+  entities (nine aggregate types in one repository interface) plus
+  `EmployeeStatusRules`/`AttendanceRules`/`CommissionCalculator`/
+  `PayrollCalculator` Domain rules; `IEmployeeQueryService`/
+  `IEmployeeCommandService`/`IAttendanceQueryService`/
+  `IAttendanceCommandService`/`IShiftQueryService`/`IShiftCommandService`/
+  `ICommissionQueryService`/`ICommissionCommandService`/
+  `IPayrollQueryService`/`IPayrollCommandService` Application layer (ten
+  services). The headline integration:
+  `CommissionCommandService.GenerateCommissionsFromAccountingAsync`
+  scans Accounting's own `IInvoiceQueryService` for paid/partially-paid
+  invoices, resolves each one's booking via Bookings'
+  `IBookingQueryService` to find the specialist who performed the
+  service, matches that specialist to an employee, and generates a
+  `CommissionTransaction` via `Domain.HR.CommissionCalculator` - reading
+  Accounting and Bookings only through their own published query
+  services, never modifying either module's code, and safe to call
+  repeatedly (already-processed invoices are skipped). `FakeHrRepository`
+  (20 seed employees - 5 cross-referencing real Specialist seed ids,
+  attendance/shift/leave history, 4 pre-seeded commission transactions
+  deliberately leaving one real paid Accounting invoice unprocessed so
+  the live generator has something real to do, 2 payroll summaries).
+  Presentation: one `HrPage` with HR Dashboard KPI cards always visible
+  (Employees/Present Today/Late Today/On Leave/Payroll This Month/
+  Commission This Month/Average Attendance) plus six switchable sections
+  (Employees/Attendance/Shifts/Leave/Commission/Payroll), each a
+  master list plus a minimal quick-add form, and the selected employee's
+  `EmployeeProfileViewModel` always visible on the right - same
+  master-detail shape as every other module. No new Design System
+  components - every control reuses Phase 16/17A's Fluent styles
+  unchanged. No changes to Architecture, Navigation mechanics, or any
+  existing module's business logic. 574/574 tests passing (125 new).
+  Runtime-verified end-to-end: every Dashboard KPI matched seed data
+  exactly (20 employees, 3 present, 2 late, 1 on leave, $42.12 commission
+  this month, 77.8% average attendance), all six sections rendered
+  correctly, and "Generate Commissions from Accounting" correctly
+  produced one new commission live (Priya Nair, 12% of a real $518.40
+  Accounting invoice = $62.21) from a real unprocessed invoice/booking
+  pair. One real bug found and fixed during verification: a `DataTrigger`
+  inside a `Button` `Style` illegally tried to set that same element's
+  `Style` property to swap Primary/Secondary looks, which WPF disallows
+  and threw at runtime - fixed by having the trigger set the individual
+  Background/Foreground/BorderThickness properties instead of swapping
+  styles.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

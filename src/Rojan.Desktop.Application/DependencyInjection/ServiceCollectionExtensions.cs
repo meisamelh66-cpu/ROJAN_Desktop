@@ -5,6 +5,7 @@ using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
+using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
@@ -46,6 +47,16 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInvoiceCommandService, InvoiceCommandService>();
         services.AddSingleton<IPaymentQueryService, PaymentQueryService>();
         services.AddSingleton<IPaymentCommandService, PaymentCommandService>();
+        services.AddSingleton<IEmployeeQueryService, EmployeeQueryService>();
+        services.AddSingleton<IEmployeeCommandService, EmployeeCommandService>();
+        services.AddSingleton<IAttendanceQueryService, AttendanceQueryService>();
+        services.AddSingleton<IAttendanceCommandService, AttendanceCommandService>();
+        services.AddSingleton<IShiftQueryService, ShiftQueryService>();
+        services.AddSingleton<IShiftCommandService, ShiftCommandService>();
+        services.AddSingleton<ICommissionQueryService, CommissionQueryService>();
+        services.AddSingleton<ICommissionCommandService, CommissionCommandService>();
+        services.AddSingleton<IPayrollQueryService, PayrollQueryService>();
+        services.AddSingleton<IPayrollCommandService, PayrollCommandService>();
         return services;
     }
 }
