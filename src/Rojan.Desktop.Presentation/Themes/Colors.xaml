@@ -6,7 +6,7 @@
 
     Theme-INVARIANT tokens only - the ROJAN accent and status colors stay
     the same regardless of Light.xaml/Dark.xaml being active. Every
-    surface/text/stroke token that legitimately differs between light and
+    surface/text/border token that legitimately differs between light and
     dark now lives in Dark.xaml/Light.xaml instead (each is a fully
     self-contained Color+Brush set for its theme, the standard WPF
     swappable-theme-dictionary pattern - RojanTheme.xaml merges whichever
@@ -17,6 +17,13 @@
     approach: neutral surfaces plus one restrained accent, reserved for
     primary actions, selection, active state, progress, and focus (see
     Controls.xaml/ShellChrome.xaml for where it's actually applied).
+
+    Phase 17A: status tokens renamed Error/Success/Warning (were
+    ErrorText/SuccessText/WarningText) - part of the compliance audit's
+    strict semantic-token list; the "Text" suffix implied foreground-only
+    use, but these are also used for borders/fills (e.g. the low-stock
+    warning border), so the shorter name is both what was requested and
+    more accurate.
   -->
 
   <!-- ROJAN accent - the one saturated color, used only for primary/selected/active/progress/focus/links -->
@@ -34,10 +41,13 @@
   <!-- Text drawn on a filled Accent surface (buttons) - white in both themes. -->
   <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
 
+  <!-- Modal scrim - a plain black smoke layer behind dialogs, deliberately theme-invariant (it darkens whatever is beneath it, not a themed surface itself), same as Fluent 2's own Smoke token. -->
+  <Color x:Key="Rojan.Color.Scrim">#FF000000</Color>
+
   <!-- Semantic status - kept invariant across themes for recognizability. -->
-  <Color x:Key="Rojan.Color.ErrorText">#FFE5484D</Color>
-  <Color x:Key="Rojan.Color.SuccessText">#FF3FB950</Color>
-  <Color x:Key="Rojan.Color.WarningText">#FFF2B93D</Color>
+  <Color x:Key="Rojan.Color.Error">#FFE5484D</Color>
+  <Color x:Key="Rojan.Color.Success">#FF3FB950</Color>
+  <Color x:Key="Rojan.Color.Warning">#FFF2B93D</Color>
 
   <!-- Brushes -->
   <SolidColorBrush x:Key="Rojan.Brush.Accent" Color="{StaticResource Rojan.Color.Accent}" />
@@ -48,9 +58,10 @@
   <SolidColorBrush x:Key="Rojan.Brush.RoseGoldHighlight" Color="{StaticResource Rojan.Color.RoseGoldHighlight}" />
 
   <SolidColorBrush x:Key="Rojan.Brush.ButtonText" Color="{StaticResource Rojan.Color.ButtonText}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Scrim" Color="{StaticResource Rojan.Color.Scrim}" />
 
-  <SolidColorBrush x:Key="Rojan.Brush.ErrorText" Color="{StaticResource Rojan.Color.ErrorText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.SuccessText" Color="{StaticResource Rojan.Color.SuccessText}" />
-  <SolidColorBrush x:Key="Rojan.Brush.WarningText" Color="{StaticResource Rojan.Color.WarningText}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Error" Color="{StaticResource Rojan.Color.Error}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Success" Color="{StaticResource Rojan.Color.Success}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Warning" Color="{StaticResource Rojan.Color.Warning}" />
 
 </ResourceDictionary>

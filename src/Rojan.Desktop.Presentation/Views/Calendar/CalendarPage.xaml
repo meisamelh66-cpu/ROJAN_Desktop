@@ -10,8 +10,8 @@
         other module, this page is not a list-plus-detail split - a day's
         availability grid *is* the page. Top: specialist + date picker and
         the resolved working-hours caption. Below: the generated slot grid,
-        each slot a single GlassButton-based tile (reusing the shared
-        GlassButton visual template via BasedOn, with a DataTrigger
+        each slot a single ButtonPrimary-based tile (reusing the shared
+        ButtonPrimary visual template via BasedOn, with a DataTrigger
         overriding only Background per Status - no new Design System
         component) that reserves an Available slot or releases a Booked one
         on click, bound to the one ToggleSlotCommand.
@@ -86,14 +86,14 @@
                                     MinWidth="110"
                                     Margin="0,0,10,10">
                                 <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
-                                        <Setter Property="Background" Value="{StaticResource Rojan.Brush.SuccessText}" />
+                                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
+                                        <Setter Property="Background" Value="{StaticResource Rojan.Brush.Success}" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Status}" Value="Booked">
                                                 <Setter Property="Background" Value="{StaticResource Rojan.Brush.MutedText}" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Status}" Value="Unavailable">
-                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.DisabledText}" />
+                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Disabled}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

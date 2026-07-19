@@ -87,14 +87,14 @@
 
                     <Button Content="Add Customer"
                             Command="{Binding CreateCustomerCommand}"
-                            Style="{StaticResource Rojan.Style.GlassButton}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
             <Border Grid.Row="2"
-                    Style="{StaticResource Rojan.Style.GlassPanel}"
+                    Style="{StaticResource Rojan.Style.Panel}"
                     Padding="16,10"
                     Margin="0,24,0,0">
                 <Grid>
@@ -135,7 +135,7 @@
                              SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                              Background="Transparent"
                              BorderThickness="0"
-                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                             ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type appCustomers:CustomerDto}">
                                 <Grid>
@@ -209,7 +209,7 @@
                                           Width="150" />
                                 <Button Content="Save Changes"
                                         Command="{Binding SaveChangesCommand}"
-                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="12,0,0,0" />
                             </StackPanel>
                         </StackPanel>
@@ -249,7 +249,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appCustomers:CustomerTagDto}">
                                         <Border Background="{StaticResource Rojan.Brush.SurfaceHover}"
-                                                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                                                BorderBrush="{StaticResource Rojan.Brush.Border}"
                                                 BorderThickness="1"
                                                 CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
                                                 Padding="10,4"
@@ -275,7 +275,7 @@
                                 <TextBox Text="{Binding NewTagText, UpdateSourceTrigger=PropertyChanged}" Width="160" />
                                 <Button Content="Add Tag"
                                         Command="{Binding AddTagCommand}"
-                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="8,0,0,0" />
                             </StackPanel>
                         </StackPanel>
@@ -288,7 +288,7 @@
                                 <TextBox Text="{Binding NewNoteText, UpdateSourceTrigger=PropertyChanged}" Width="230" />
                                 <Button Content="Add Note"
                                         Command="{Binding AddNoteCommand}"
-                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="8,0,0,0" />
                             </StackPanel>
 

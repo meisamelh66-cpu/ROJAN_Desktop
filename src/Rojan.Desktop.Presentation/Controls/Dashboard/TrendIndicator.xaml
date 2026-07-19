@@ -15,11 +15,11 @@
                 <Setter Property="FontSize" Value="13" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Up">
-                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.SuccessText}" />
+                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
                         <Setter Property="Text" Value="&#9650;" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Down">
-                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ErrorText}" />
+                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
                         <Setter Property="Text" Value="&#9660;" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Flat">
@@ -32,10 +32,10 @@
             <Style x:Key="Rojan.Style.TrendPercentage" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Up">
-                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.SuccessText}" />
+                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Down">
-                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ErrorText}" />
+                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Flat">
                         <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />

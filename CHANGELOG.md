@@ -160,6 +160,25 @@ see `docs/standards/versioning.md`.
   reusing every Phase 16 Fluent control and token unchanged - no Design
   System changes this phase. No database, no API, no external
   integrations. 362/362 tests passing (84 new).
+- Phase 17A: Microsoft Fluent 2 Compliance Audit & Final UI Polish — a
+  UI-only refinement pass, no business features, architecture frozen:
+  renamed every design token to the strict semantic set a Fluent 2 audit
+  expects (`Background`/`Border`/`BorderStrong`/`Disabled`/`Error`/
+  `Success`/`Warning`, dropping the old `Navy`/`Stroke`/`*Text` naming;
+  new dedicated `Card` and `Scrim` tokens); renamed the typography scale
+  to `Display`/`Title`/`SectionHeader`/`Subtitle`/`Body`/`Caption`
+  (removing an orphaned, never-consumed `PageTitle` step this audit
+  caught); renamed every remaining `Glass*`-prefixed style key
+  (`GlassCard`/`GlassPanel`/`GlassButton`/`GlassNavigationItem` →
+  `Card`/`Panel`/`ButtonPrimary`/`NavigationItem`) across all 11
+  consuming files, since a style still named "Glass" read as legacy even
+  though its value had already been fully Fluent 2 since Phase 16;
+  closed a real accessibility gap - `ComboBox`, `CheckBox`, and the
+  window close button had no disabled-state visual treatment at all;
+  reduced the dialog scrim from a theme-tinted 50% to a proper neutral
+  black 40%. Zero Domain/Application/Infrastructure/business-rule
+  changes - Presentation `Themes/` and one Shell markup file only.
+  362/362 tests passing (unchanged - no ViewModel behavior changed).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

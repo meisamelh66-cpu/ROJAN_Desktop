@@ -48,7 +48,7 @@
             <Button Grid.Row="0"
                     Content="New Booking (Wizard)"
                     Command="{Binding OpenWizardCommand}"
-                    Style="{StaticResource Rojan.Style.GlassButton}"
+                    Style="{StaticResource Rojan.Style.ButtonPrimary}"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top" />
 
@@ -94,7 +94,7 @@
 
                     <Button Content="Add Booking"
                             Command="{Binding CreateBookingCommand}"
-                            Style="{StaticResource Rojan.Style.GlassButton}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
                 </StackPanel>
@@ -111,7 +111,7 @@
                              SelectedItem="{Binding SelectedBooking, Mode=TwoWay}"
                              Background="Transparent"
                              BorderThickness="0"
-                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                             ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type appBookings:BookingDto}">
                                 <Grid>
@@ -170,7 +170,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Rojan.TextStyle.CardTitle}" />
+                    <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" />
                     <TextBlock Text="{Binding ServiceName}"
                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                Foreground="{StaticResource Rojan.Brush.MutedText}"
@@ -207,15 +207,15 @@
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                         <Button Content="Confirm"
                                 Command="{Binding DataContext.ConfirmBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.GlassButton}"
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 Margin="0,0,8,0" />
                         <Button Content="Complete"
                                 Command="{Binding DataContext.CompleteBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.GlassButton}"
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 Margin="0,0,8,0" />
                         <Button Content="Cancel"
                                 Command="{Binding DataContext.CancelBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.GlassButton}" />
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

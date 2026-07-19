@@ -3,7 +3,7 @@
 
   <!--
     Phase 16: Fluent 2 corner-radius scale. Fluent 2 uses small, subtle
-    radii (4/8/12px) on nearly everything - replaces the prior "GlassCard"
+    radii (4/8/12px) on nearly everything - replaces the prior "Glass"-era Card style's
     32px pill-like rounding, which read as a mobile/marketing aesthetic
     rather than a dense enterprise desktop app. Pill (999) is kept for the
     rare fully-rounded case (status badges) but is no longer the default

@@ -84,7 +84,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
                                 <Button Content="{Binding Label}"
-                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
                                         Margin="0,0,12,12" />
@@ -132,7 +132,7 @@
                                TextWrapping="Wrap"
                                Margin="0,0,0,16" />
                     <Button Content="Ask AI"
-                            Style="{StaticResource Rojan.Style.GlassButton}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             IsEnabled="False"
                             HorizontalAlignment="Left" />
                 </StackPanel>

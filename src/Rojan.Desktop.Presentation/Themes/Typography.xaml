@@ -2,29 +2,44 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    Phase 16: Fluent 2 type ramp - one consistent scale, six steps
-    (Page Title / Section Title / Card Title / Subtitle / Body / Caption),
-    all on one font family. "Segoe UI Variable" is Fluent 2's default
-    system font on Windows 11; the FontFamily list below falls back to
-    "Segoe UI" (present on every Windows 8+ machine) so this renders
-    correctly even where the Variable family isn't installed - WPF tries
-    each name in order and uses the first one it can resolve.
+    Phase 16: Fluent 2 type ramp, one consistent scale on one font family.
+    "Segoe UI Variable" is Fluent 2's default system font on Windows 11;
+    the FontFamily list below falls back to "Segoe UI" (present on every
+    Windows 8+ machine) so this renders correctly even where the Variable
+    family isn't installed - WPF tries each name in order and uses the
+    first one it can resolve.
 
-    Rojan.TextStyle.HeroTitle is kept beyond the six-step scale
-    specifically for large KPI numbers (Controls/Dashboard/KPIValue.xaml)
-    - a distinct "big number display" case, not a duplicate of PageTitle.
+    Phase 17A: renamed to the exact six-step scale a Fluent 2 compliance
+    audit expects - Display / Title / Subtitle / SectionHeader / Body /
+    Caption. Two renames map onto how these were actually already being
+    used in practice (not new roles, just names that now say what they
+    are): SectionTitle -> Title, since the only real consumer
+    (Controls/SectionHeader.xaml, the once-per-page heading like
+    "Dashboard"/"Inventory") is genuinely the page title, not a
+    sub-section one; CardTitle -> SectionHeader, since its real consumer
+    (Controls/Dashboard/WidgetHeader.xaml, the heading inside every
+    DashboardCard/DashboardWidget) is exactly a "Section" heading in the
+    Window -> Navigation -> Page -> Section -> Card -> Content hierarchy.
+    The prior "PageTitle" step (28px) is removed - it had no actual
+    consumer since Phase 16 introduced it, an orphaned token this audit
+    caught rather than a role this app needs a seventh name for.
+    HeroTitle -> Display (large KPI numbers, kept beyond the six-step
+    body-copy scale for the same "big number display" reasoning as
+    before, just renamed to match the requested name).
   -->
   <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI Variable, Segoe UI</FontFamily>
 
-  <Style x:Key="Rojan.TextStyle.PageTitle" TargetType="TextBlock">
+  <!-- Large numeric display (KPI values) - deliberately outside the six-step body-copy scale, see note above. -->
+  <Style x:Key="Rojan.TextStyle.Display" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="28" />
-    <Setter Property="LineHeight" Value="36" />
+    <Setter Property="FontSize" Value="32" />
+    <Setter Property="LineHeight" Value="38" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
-  <Style x:Key="Rojan.TextStyle.SectionTitle" TargetType="TextBlock">
+  <!-- Page title - one per page, via Controls/SectionHeader.xaml. -->
+  <Style x:Key="Rojan.TextStyle.Title" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="FontSize" Value="20" />
@@ -32,7 +47,8 @@
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
-  <Style x:Key="Rojan.TextStyle.CardTitle" TargetType="TextBlock">
+  <!-- Section heading - one per Card/Widget, via Controls/Dashboard/WidgetHeader.xaml. -->
+  <Style x:Key="Rojan.TextStyle.SectionHeader" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="FontSize" Value="16" />
@@ -61,15 +77,6 @@
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="LineHeight" Value="16" />
-    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
-  </Style>
-
-  <!-- Large numeric display (KPI values) - deliberately outside the six-step scale, see note above. -->
-  <Style x:Key="Rojan.TextStyle.HeroTitle" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="32" />
-    <Setter Property="LineHeight" Value="38" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 

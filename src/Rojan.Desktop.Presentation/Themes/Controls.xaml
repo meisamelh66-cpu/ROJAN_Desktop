@@ -16,9 +16,12 @@
     Phase 16: Microsoft Fluent 2 Design System Integration - foundation
     reusable components, rebuilt on neutral surfaces plus one restrained
     accent instead of the prior translucent-glass/gradient look. Key
-    names are kept stable (Rojan.Style.GlassCard/GlassPanel/GlassButton/
-    GlassNavigationItem) so every existing View keeps working unchanged -
-    only what these keys resolve to changed. New form-control styles
+    key names were "Glass*" through Phase 16 (kept stable then so every
+    existing View kept working unchanged while only what they resolved to
+    changed); Phase 17A's compliance audit renamed them to their current
+    plain Fluent names (Card/Panel/ButtonPrimary/NavigationItem) since a
+    style still called "Glass" read as legacy even once fully re-skinned.
+    New form-control styles
     (TextBox/ComboBox/DatePicker/CheckBox) are implicit (TargetType, no
     x:Key), so every existing TextBox/ComboBox/DatePicker in every View
     picks them up automatically the moment this dictionary is merged -
@@ -59,20 +62,20 @@
 
   <!-- ============================= Surfaces ============================= -->
 
-  <!-- GlassCard: elevated surface for standalone content cards - the default card look used throughout every page. -->
-  <Style x:Key="Rojan.Style.GlassCard" TargetType="Border">
-    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
+  <!-- Card: elevated surface for standalone content cards - the default card look used throughout every page. Uses the dedicated Card token (not the more generic Surface, which form controls/panels use) - same value today, but named for its place in the Window -> Navigation -> Page -> Section -> Card -> Content hierarchy. -->
+  <Style x:Key="Rojan.Style.Card" TargetType="Border">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Card}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Border}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Medium}" />
     <Setter Property="Padding" Value="20" />
     <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationCard}" />
   </Style>
 
-  <!-- GlassPanel: flat neutral surface for grouping/docked chrome (sidebar, header) - no elevation, sits flush with the canvas. -->
-  <Style x:Key="Rojan.Style.GlassPanel" TargetType="Border">
+  <!-- Panel: flat neutral surface for grouping/docked chrome (sidebar, header) - no elevation, sits flush with the canvas. -->
+  <Style x:Key="Rojan.Style.Panel" TargetType="Border">
     <Setter Property="Background" Value="{StaticResource Rojan.Brush.SurfaceSecondary}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Border}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Medium}" />
   </Style>
@@ -80,13 +83,13 @@
   <!-- ============================= Buttons ============================= -->
 
   <!--
-    GlassButton: the Fluent "Primary" button - solid accent fill, used
+    ButtonPrimary: the Fluent "Primary" button - solid accent fill, used
     only for the one primary call-to-action per view/dialog (per Fluent 2
     hierarchy: one Primary, everything else Secondary/Subtle). No pill
     shape, no gradient, no hover glow - a subtle fill-color shift on
     hover/pressed is Fluent's own primary-button feedback.
   -->
-  <Style x:Key="Rojan.Style.GlassButton" TargetType="Button">
+  <Style x:Key="Rojan.Style.ButtonPrimary" TargetType="Button">
     <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
@@ -130,7 +133,7 @@
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Padding" Value="16,8" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.BorderStrong}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
     <Setter Property="Template">
@@ -163,7 +166,7 @@
   <!-- ============================= Navigation ============================= -->
 
   <!--
-    GlassNavigationItem: sidebar menu entry. Selected state is the
+    NavigationItem: sidebar menu entry. Selected state is the
     accent's one real Fluent 2 job here - a soft accent-tinted background
     plus a 3px accent bar on the leading edge (the same "selection
     indicator" shape Fluent's own NavigationView uses), not a solid
@@ -171,7 +174,7 @@
     animated overlay - subtler, and consistent with every other hover
     state in this design system now.
   -->
-  <Style x:Key="Rojan.Style.GlassNavigationItem" TargetType="ListBoxItem">
+  <Style x:Key="Rojan.Style.NavigationItem" TargetType="ListBoxItem">
     <Setter Property="Padding" Value="16,10" />
     <Setter Property="Margin" Value="8,1" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextSecondary}" />
@@ -226,12 +229,12 @@
     <Setter Property="FontSize" Value="14" />
     <Setter Property="Padding" Value="10,7" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.BorderStrong}" />
     <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
     <Setter Property="Validation.ErrorTemplate">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{StaticResource Rojan.Brush.ErrorText}" BorderThickness="1" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+          <Border BorderBrush="{StaticResource Rojan.Brush.Error}" BorderThickness="1" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
             <AdornedElementPlaceholder />
           </Border>
         </ControlTemplate>
@@ -256,7 +259,7 @@
               <Setter TargetName="Chrome" Property="BorderThickness" Value="2" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-              <Setter TargetName="Chrome" Property="Opacity" Value="0.5" />
+              <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -286,7 +289,7 @@
   <Style TargetType="DatePicker">
     <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.BorderStrong}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontSize" Value="14" />
@@ -297,7 +300,7 @@
         <Style TargetType="Calendar">
           <Setter Property="Background" Value="{StaticResource Rojan.Brush.SurfaceElevated}" />
           <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
-          <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Stroke}" />
+          <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Border}" />
           <Setter Property="BorderThickness" Value="1" />
           <Setter Property="Effect" Value="{StaticResource Rojan.Effect.ElevationPopover}" />
         </Style>
@@ -335,7 +338,7 @@
   <Style TargetType="ComboBox">
     <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
     <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
-    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.StrokeStrong}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.BorderStrong}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontSize" Value="14" />
@@ -374,6 +377,9 @@
                     <Trigger Property="IsMouseOver" Value="True">
                       <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
                     </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                    </Trigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>
               </ToggleButton.Template>
@@ -403,7 +409,7 @@
                    Focusable="False">
               <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                       Background="{StaticResource Rojan.Brush.SurfaceElevated}"
-                      BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                      BorderBrush="{StaticResource Rojan.Brush.Border}"
                       BorderThickness="1"
                       CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
                       Margin="0,4,0,0"
@@ -433,7 +439,7 @@
                     Width="18"
                     Height="18"
                     Background="{StaticResource Rojan.Brush.Surface}"
-                    BorderBrush="{StaticResource Rojan.Brush.StrokeStrong}"
+                    BorderBrush="{StaticResource Rojan.Brush.BorderStrong}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
                     VerticalAlignment="Center">
@@ -456,6 +462,9 @@
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

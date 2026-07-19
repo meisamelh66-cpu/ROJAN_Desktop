@@ -10,7 +10,7 @@
         MinHeight="640"
         WindowStartupLocation="CenterScreen"
         FlowDirection="LeftToRight"
-        Background="{StaticResource Rojan.Brush.Navy}">
+        Background="{StaticResource Rojan.Brush.Background}">
 
     <!--
         Phase 07: Enterprise Navigation &amp; Module Shell. MainWindow is now
@@ -62,7 +62,7 @@
         <Border Grid.Row="0"
                 Height="56"
                 Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
-                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                BorderBrush="{StaticResource Rojan.Brush.Border}"
                 BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
@@ -88,7 +88,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse Width="8" Height="8" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" />
                     <TextBlock Text="ROJAN Desktop"
-                               Style="{StaticResource Rojan.TextStyle.CardTitle}"
+                               Style="{StaticResource Rojan.TextStyle.SectionHeader}"
                                Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center" />
@@ -106,7 +106,7 @@
 
                 <!-- Global search placeholder - not functional, UI presence only -->
                 <Border Grid.Column="3"
-                        Style="{StaticResource Rojan.Style.GlassPanel}"
+                        Style="{StaticResource Rojan.Style.Panel}"
                         Width="240"
                         Height="32"
                         shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -181,7 +181,7 @@
             <!-- Navigation region -->
             <Border Grid.Column="0"
                     Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
-                    BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                    BorderBrush="{StaticResource Rojan.Brush.Border}"
                     BorderThickness="0,0,1,0"
                     CornerRadius="0">
                 <Border.Style>
@@ -210,7 +210,7 @@
                              BorderThickness="0"
                              ItemsSource="{Binding NavigationItems}"
                              SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
-                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                             ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type navigation:NavigationItem}">
                                 <StackPanel Orientation="Horizontal">
@@ -241,7 +241,7 @@
             </Border>
 
             <!-- Workspace region - real content target, DataTemplate-resolved per the selected module's ViewModel -->
-            <Grid Grid.Column="1" Background="{StaticResource Rojan.Brush.Navy}">
+            <Grid Grid.Column="1" Background="{StaticResource Rojan.Brush.Background}">
                 <ContentControl x:Name="NavigationHost" />
             </Grid>
 
@@ -250,7 +250,7 @@
         <!-- ================= Status region ================= -->
         <Border Grid.Row="2"
                 Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
-                BorderBrush="{StaticResource Rojan.Brush.Stroke}"
+                BorderBrush="{StaticResource Rojan.Brush.Border}"
                 BorderThickness="0,1,0,0"
                 CornerRadius="0"
                 Height="26">
@@ -269,7 +269,7 @@
                 VerticalAlignment="Top"
                 Margin="0,12,12,0">
             <Border.Style>
-                <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.GlassCard}">
+                <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.Card}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsNotificationPanelOpen}" Value="True">
@@ -280,7 +280,7 @@
             </Border.Style>
             <StackPanel>
                 <TextBlock Text="Notifications"
-                           Style="{StaticResource Rojan.TextStyle.CardTitle}"
+                           Style="{StaticResource Rojan.TextStyle.SectionHeader}"
                            Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                 <ItemsControl ItemsSource="{Binding Notifications}" Margin="0,12,0,0">
                     <ItemsControl.Style>
@@ -331,7 +331,8 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <Border Background="{StaticResource Rojan.Brush.Navy}" Opacity="0.5" />
+            <!-- Fluent modal scrim: a plain black smoke layer (not the theme Background brush, which would tint the whole window with itself), at a Fluent-appropriate 40% rather than the heavier 50% used before this audit. -->
+            <Border Background="{StaticResource Rojan.Brush.Scrim}" Opacity="0.4" />
             <ContentControl Content="{Binding ActiveDialog}" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
 

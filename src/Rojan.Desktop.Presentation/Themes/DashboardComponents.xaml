@@ -17,12 +17,12 @@
     get a real Content property for free; visuals live entirely here.
   -->
 
-  <!-- DashboardCard: static titled GlassCard wrapper, no load state. -->
+  <!-- DashboardCard: static titled Card wrapper, no load state. -->
   <Style TargetType="{x:Type dashboard:DashboardCard}">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type dashboard:DashboardCard}">
-          <Border Style="{StaticResource Rojan.Style.GlassCard}">
+          <Border Style="{StaticResource Rojan.Style.Card}">
             <StackPanel>
               <dashboard:WidgetHeader x:Name="Header"
                                        Title="{TemplateBinding Title}"
@@ -40,12 +40,12 @@
     </Setter>
   </Style>
 
-  <!-- DashboardWidget: state-aware GlassCard wrapper for repository-backed content. -->
+  <!-- DashboardWidget: state-aware Card wrapper for repository-backed content. -->
   <Style TargetType="{x:Type dashboard:DashboardWidget}">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type dashboard:DashboardWidget}">
-          <Border Style="{StaticResource Rojan.Style.GlassCard}">
+          <Border Style="{StaticResource Rojan.Style.Card}">
             <StackPanel>
               <dashboard:WidgetHeader x:Name="Header"
                                        Title="{TemplateBinding Title}"
@@ -66,10 +66,10 @@
               <StackPanel x:Name="ErrorPanel" Visibility="Collapsed">
                 <TextBlock Text="{TemplateBinding ErrorMessage}"
                            Style="{StaticResource Rojan.TextStyle.Body}"
-                           Foreground="{StaticResource Rojan.Brush.ErrorText}"
+                           Foreground="{StaticResource Rojan.Brush.Error}"
                            TextWrapping="Wrap" />
                 <Button Content="Retry"
-                        Style="{StaticResource Rojan.Style.GlassButton}"
+                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
                         Command="{TemplateBinding RetryCommand}"
                         Margin="0,12,0,0"
                         HorizontalAlignment="Left" />

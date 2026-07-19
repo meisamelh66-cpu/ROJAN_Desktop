@@ -16,7 +16,7 @@
                    Style="{StaticResource Rojan.TextStyle.Caption}"
                    Foreground="{StaticResource Rojan.Brush.MutedText}" />
         <TextBlock Text="{Binding Value, ElementName=Root}"
-                   Style="{StaticResource Rojan.TextStyle.HeroTitle}"
+                   Style="{StaticResource Rojan.TextStyle.Display}"
                    Foreground="{StaticResource Rojan.Brush.ButtonText}"
                    Margin="0,8,0,0" />
     </StackPanel>
