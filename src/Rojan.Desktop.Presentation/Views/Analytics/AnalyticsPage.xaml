@@ -1,0 +1,149 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Analytics.AnalyticsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:analyticsControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Analytics"
+             xmlns:analyticsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Analytics"
+             xmlns:appReporting="clr-namespace:Rojan.Desktop.Application.Reporting;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 20: Enterprise Reporting & Analytics Platform - Analytics
+        Dashboard. Period switcher (Daily/Weekly/Monthly, same DataTrigger
+        "selected button" pattern every other module's section switcher
+        uses) drives the KPI Engine's eight cards and three native charts
+        (SimpleBarChart - no external charting library anywhere in this
+        app). KPI trend glyphs are rendered inline via DataTriggers on
+        Application.Reporting.TrendDirection directly, rather than reusing
+        Controls.Dashboard.TrendIndicator (which binds
+        Application.Dashboard.TrendDirection - a different, unrelated
+        enum type despite the identical name, per that module's own
+        "Application owns its own copy" convention).
+
+        Merges its own RojanTheme.xaml dependency locally (same
+        self-sufficiency rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <controls:SectionHeader Grid.Row="0" Title="Analytics" />
+            <TextBlock Grid.Row="0"
+                       Text="Reusable KPI Engine and cross-module charts."
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       Margin="0,44,0,0" />
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
+                <Button Content="Daily" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Daily}" Margin="0,0,8,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedPeriod}" Value="Daily">
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Weekly" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Weekly}" Margin="0,0,8,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedPeriod}" Value="Weekly">
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Monthly" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Monthly}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedPeriod}" Value="Monthly">
+                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+            <!-- KPI Cards -->
+            <dashboardControls:DashboardWidget Grid.Row="2"
+                                                Title="KPI Cards"
+                                                State="{Binding State}"
+                                                ErrorMessage="{Binding ErrorMessage}"
+                                                RetryCommand="{Binding LoadCommand}"
+                                                Margin="0,16,0,0">
+                <ItemsControl ItemsSource="{Binding Kpis}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type appReporting:KpiValueDto}">
+                            <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16" Margin="0,0,12,12" Width="200">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Style="{StaticResource Rojan.TextStyle.Display}" Margin="0,8,0,0">
+                                        <Run Text="{Binding Unit, Mode=OneWay}" />
+                                        <Run Text="{Binding Value, Mode=OneWay, StringFormat=N0}" />
+                                    </TextBlock>
+                                    <TextBlock Margin="0,8,0,0">
+                                        <Run Text="{Binding ChangePercent, Mode=OneWay, StringFormat={}{0:0.0}%}" />
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Trend}" Value="Up">
+                                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Trend}" Value="Down">
+                                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </dashboardControls:DashboardWidget>
+
+            <!-- Chart Area -->
+            <ItemsControl Grid.Row="3" ItemsSource="{Binding Charts}" Margin="0,16,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type appReporting:ChartDefinitionDto}">
+                        <dashboardControls:DashboardCard Margin="0,0,0,16">
+                            <analyticsControls:SimpleBarChart Chart="{Binding}" />
+                        </dashboardControls:DashboardCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

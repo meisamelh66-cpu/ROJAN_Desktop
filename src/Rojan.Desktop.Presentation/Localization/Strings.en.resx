@@ -135,6 +135,9 @@
   <data name="Nav_Reports" xml:space="preserve">
     <value>Reports</value>
   </data>
+  <data name="Nav_Analytics" xml:space="preserve">
+    <value>Analytics</value>
+  </data>
   <data name="Nav_AiCenter" xml:space="preserve">
     <value>AI Center</value>
   </data>

@@ -7,6 +7,7 @@ using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
 
@@ -57,6 +58,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICommissionCommandService, CommissionCommandService>();
         services.AddSingleton<IPayrollQueryService, PayrollQueryService>();
         services.AddSingleton<IPayrollCommandService, PayrollCommandService>();
+        services.AddSingleton<IReportCatalogQueryService, ReportCatalogQueryService>();
+        services.AddSingleton<IReportExecutionQueryService, ReportExecutionQueryService>();
+        services.AddSingleton<IReportSnapshotQueryService, ReportSnapshotQueryService>();
+        services.AddSingleton<IReportSnapshotCommandService, ReportSnapshotCommandService>();
+        services.AddSingleton<IKpiEngineQueryService, KpiEngineQueryService>();
+        services.AddSingleton<IAnalyticsQueryService, AnalyticsQueryService>();
+        services.AddSingleton<IReportExportService, ReportExportService>();
         return services;
     }
 }

@@ -6,7 +6,9 @@ using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
+using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
+using Rojan.Desktop.Presentation.ViewModels.Reporting;
 using Rojan.Desktop.Presentation.ViewModels.Services;
 using Rojan.Desktop.Presentation.ViewModels.Settings;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -35,6 +37,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AccountingPageViewModel>();
         services.AddTransient<HrPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
+        services.AddTransient<ReportingPageViewModel>();
+        services.AddTransient<AnalyticsPageViewModel>();
         services.AddSingleton<ICultureService, CultureService>();
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();

@@ -139,6 +139,8 @@ public static class Strings
 
     public static string Nav_Reports => Get(nameof(Nav_Reports));
 
+    public static string Nav_Analytics => Get(nameof(Nav_Analytics));
+
     public static string Nav_AiCenter => Get(nameof(Nav_AiCenter));
 
     public static string Nav_Settings => Get(nameof(Nav_Settings));

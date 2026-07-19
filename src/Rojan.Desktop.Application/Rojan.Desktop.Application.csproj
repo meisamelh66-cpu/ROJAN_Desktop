@@ -8,4 +8,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Lets Rojan.Desktop.Application.Tests exercise internal Reporting
+         helpers (ReportFilterSet, MoneyParser, ReportingMapper) directly,
+         same reasoning as Shell's InternalsVisibleTo to Shell.Tests. -->
+    <InternalsVisibleTo Include="Rojan.Desktop.Application.Tests" />
+  </ItemGroup>
+
 </Project>

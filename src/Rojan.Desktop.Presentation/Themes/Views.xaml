@@ -22,6 +22,10 @@
                     xmlns:hrView="clr-namespace:Rojan.Desktop.Presentation.Views.HR"
                     xmlns:settingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Settings"
                     xmlns:settingsView="clr-namespace:Rojan.Desktop.Presentation.Views.Settings"
+                    xmlns:reportingVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Reporting"
+                    xmlns:reportingView="clr-namespace:Rojan.Desktop.Presentation.Views.Reporting"
+                    xmlns:analyticsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Analytics"
+                    xmlns:analyticsView="clr-namespace:Rojan.Desktop.Presentation.Views.Analytics"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -79,6 +83,18 @@
 
   <DataTemplate DataType="{x:Type settingsVm:SettingsPageViewModel}">
     <settingsView:SettingsPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type reportingVm:ReportingPageViewModel}">
+    <reportingView:ReportingPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type reportingVm:ExportDialogViewModel}">
+    <reportingView:ExportDialogView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type analyticsVm:AnalyticsPageViewModel}">
+    <analyticsView:AnalyticsPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

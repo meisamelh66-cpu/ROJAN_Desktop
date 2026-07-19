@@ -1,0 +1,48 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Reporting.ExportDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Phase 20's Export Dialog - shown in Shell's dialog region (see
+        MainWindow.xaml's Dialog region + IDialogService), same
+        "self-sufficient card shown via ActiveDialog" shape as
+        Accounting.PosCheckoutView.
+
+        Merges its own RojanTheme.xaml dependency locally (same
+        self-sufficiency rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Rojan.Brush.SurfaceElevated}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+            Effect="{StaticResource Rojan.Effect.ElevationDialog}"
+            Width="420"
+            Padding="24">
+        <StackPanel>
+            <TextBlock Text="Export Report" Style="{StaticResource Rojan.TextStyle.Title}" />
+            <TextBlock Text="{Binding ReportName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,4,0,0" />
+
+            <TextBlock Text="Format" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,16,0,0" />
+            <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding SelectedFormat, Mode=TwoWay}" Margin="0,4,0,0" />
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       TextWrapping="Wrap"
+                       Margin="0,12,0,0" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Close" Command="{Binding CloseCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
+                <Button Content="Export" Command="{Binding ExportCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

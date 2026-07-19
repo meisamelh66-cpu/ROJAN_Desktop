@@ -147,6 +147,9 @@
   <data name="Nav_Reports" xml:space="preserve">
     <value>گزارش‌ها</value>
   </data>
+  <data name="Nav_Analytics" xml:space="preserve">
+    <value>تحلیل‌ها</value>
+  </data>
   <data name="Nav_AiCenter" xml:space="preserve">
     <value>مرکز هوش مصنوعی</value>
   </data>

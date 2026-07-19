@@ -308,6 +308,85 @@ see `docs/standards/versioning.md`.
   persists and applies Arabic + RTL; the navigation region's asymmetric
   `BorderThickness` (right-only in LTR) was confirmed to mirror
   automatically under RTL, same as WPF's Grid column mirroring.
+- Phase 20: Enterprise Reporting & Analytics Platform — a new,
+  read-only aggregation layer over every existing module, with two new
+  sidebar entries: Reporting (replaces the "reports" placeholder) and
+  Analytics (a genuinely new entry). Domain.Reporting adds eleven
+  entities/DTO-shaped records (`ReportDefinition`, `ReportColumn`,
+  `ReportFilter`, `ReportRow`, `ReportResult`, `ReportSnapshot`,
+  `KpiDefinition`, `KpiValue`, `ChartDefinition`, `ChartSeries`,
+  `AnalyticsSummary`), six enums, and genuine Domain logic
+  (`TrendCalculator`, `DateRangeRules`) — `IReportingRepository` only
+  owns the report catalog and report-run history
+  (`ReportSnapshot`); every other number it shows is read live through
+  eight sibling modules' own Application-layer query services
+  (Customers, Bookings, Calendar-adjacent Specialists/Services,
+  Inventory, Accounting, HR), never their repositories directly, same
+  cross-slice composition pattern `Accounting.InvoiceQueryService` and
+  `HR.CommissionCommandService` already established. Fifteen reports
+  (Revenue, Sales, Appointments, Customer Growth, Customer Retention,
+  Service Popularity, Specialist Performance, Inventory Valuation, Low
+  Stock, Payroll Summary, Commission Summary, Attendance Summary,
+  Daily/Weekly/Monthly Dashboard) run through one
+  `ReportExecutionQueryService`, each a real aggregation branch over
+  live data — not fixtures. A reusable KPI Engine
+  (`IKpiEngineQueryService`, eight `KpiType`s) and Analytics Dashboard
+  (`IAnalyticsQueryService`) share one `AnalyticsAggregator` core so
+  both compute identical numbers for identical periods. Three
+  Chart Area charts (Revenue by day, Appointments by status, Top
+  Services) render through a new `SimpleBarChart` control — native
+  proportional bars, no external charting library anywhere in this
+  app, per this phase's explicit scope. A Filter Engine
+  (`ReportFilterSet`, generic `FilterType`/value pairs covering all
+  eight filter dimensions) and Export architecture
+  (`IReportExportService` — Csv genuinely writes a file, Pdf/Excel/Print
+  are honest `Success: false` stubs, never a silent no-op) round out
+  the platform. Report generation is fully asynchronous and
+  cancellable (`CancellationTokenSource` wired from the Report
+  Viewer's Cancel button through to every repository call) and never
+  blocks the UI thread. New Presentation surfaces: Reporting page
+  (Catalog/Report Viewer/Saved Reports/Recent Reports sections, a
+  generic Filter Panel, a dynamically-columned results grid, an Export
+  Dialog shown through the existing dialog framework) and an Analytics
+  Dashboard (Daily/Weekly/Monthly period switcher, eight KPI cards,
+  three charts). No changes to Domain/Application business logic in
+  any existing module, Navigation mechanics, the Localization
+  Platform's architecture, or the Fluent 2 Design System — existing
+  modules were read from, never modified. 735/735 tests passing (116
+  new: Domain 13, Application 62 including a full aggregation-logic
+  suite for `ReportExecutionQueryService`/`KpiEngineQueryService`/
+  `AnalyticsQueryService`/`ReportExportService` against real seeded
+  data via stubbed sibling query services, Infrastructure 14,
+  Presentation 27 across the new Reporting/Analytics ViewModels).
+  `ArchitectureTests` (4, unchanged) confirm the new module respects
+  the same dependency-direction rules as every other slice. Two real
+  bugs found and fixed during runtime verification: (1) the Analytics
+  Dashboard's KPI Engine took 15-20+ seconds to first paint because
+  `AnalyticsAggregator` awaited eight-plus independent repository
+  calls sequentially, each carrying `FakeXxxRepository`'s own
+  artificial network-latency delay, compounded by an N+1
+  per-employee attendance loop and three redundant aggregation runs
+  per page load — fixed by parallelizing every independent fetch with
+  `Task.WhenAll` (including the attendance loop and the KPI Engine's
+  current/previous-period pair), cutting first paint to under a
+  second. (2) `SimpleBarChart`'s bars never rendered despite
+  `Rebuild()` correctly populating its `Bars` collection every time
+  (confirmed via runtime tracing) - the `ItemsControl` bound to
+  `Bars` via `{Binding Bars, ElementName=Root}` proved unreliable once
+  `SimpleBarChart` was itself hosted inside an outer `ItemsControl`'s
+  own `DataTemplate` (the Chart Area) - fixed by assigning
+  `ItemsSource` directly in code-behind instead of through the
+  `ElementName` binding, which sidesteps the resolution issue
+  entirely since `ItemsControl` still tracks the same
+  `ObservableCollection`'s future `Add`/`Clear` calls regardless.
+  Re-verified clean end-to-end via UI Automation after both fixes:
+  Revenue Report ran and displayed 6 real rows totaling $1,372.68
+  across 8 invoices; CSV export produced a real file (also covered by
+  an automated test asserting file contents); a run was pinned via
+  "Recent Reports" → Saved Reports and appeared alongside the two
+  pre-seeded saved snapshots; the Analytics Dashboard's Weekly period
+  switch correctly recomputed all eight KPIs and three charts against
+  a full week of seeded data.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
