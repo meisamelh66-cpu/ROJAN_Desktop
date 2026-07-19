@@ -6,8 +6,8 @@ namespace Rojan.Desktop.Application.Customers;
 /// Default <see cref="ICustomerQueryService"/> implementation - fetches
 /// from <see cref="DomainCustomers.ICustomerRepository"/> (Application is
 /// allowed to depend on Domain) and maps every Domain type to its
-/// Application-owned equivalent, so nothing Domain-shaped ever crosses into
-/// Presentation.
+/// Application-owned equivalent via <see cref="CustomerMapper"/>, so
+/// nothing Domain-shaped ever crosses into Presentation.
 /// </summary>
 public sealed class CustomerQueryService : ICustomerQueryService
 {
@@ -21,25 +21,32 @@ public sealed class CustomerQueryService : ICustomerQueryService
     public async Task<IReadOnlyList<CustomerDto>> GetCustomersAsync(CancellationToken cancellationToken = default)
     {
         var customers = await _repository.GetCustomersAsync(cancellationToken).ConfigureAwait(true);
-        return customers.Select(Map).ToList();
+        return customers.Select(CustomerMapper.MapCustomer).ToList();
     }
 
-    private static CustomerDto Map(DomainCustomers.Customer customer) => new(
-        customer.Id,
-        customer.FullName,
-        customer.Company,
-        customer.Email,
-        customer.Phone,
-        MapStatus(customer.Status),
-        customer.LifetimeValue,
-        customer.LastContactedAt,
-        customer.Notes);
-
-    private static CustomerStatus MapStatus(DomainCustomers.CustomerStatus status) => status switch
+    /// <summary>
+    /// Composes over <see cref="DomainCustomers.ICustomerRepository.GetCustomersAsync"/>
+    /// rather than a dedicated repository search method - search is a
+    /// read-composition concern Application owns, not a new Domain
+    /// contract, keeping the repository's own surface minimal (same
+    /// reasoning that keeps Domain a thin data+contract layer everywhere
+    /// else in this vertical slice).
+    /// </summary>
+    public async Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(string searchText, CancellationToken cancellationToken = default)
     {
-        DomainCustomers.CustomerStatus.Lead => CustomerStatus.Lead,
-        DomainCustomers.CustomerStatus.Active => CustomerStatus.Active,
-        DomainCustomers.CustomerStatus.Inactive => CustomerStatus.Inactive,
-        _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown domain customer status."),
-    };
+        var customers = await _repository.GetCustomersAsync(cancellationToken).ConfigureAwait(true);
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return customers.Select(CustomerMapper.MapCustomer).ToList();
+        }
+
+        return customers
+            .Where(customer =>
+                customer.FullName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Company.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .Select(CustomerMapper.MapCustomer)
+            .ToList();
+    }
 }

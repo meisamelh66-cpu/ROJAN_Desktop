@@ -14,6 +14,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IDashboardQueryService, DashboardQueryService>();
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
+        services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
+        services.AddSingleton<ICustomerCommandService, CustomerCommandService>();
         return services;
     }
 }

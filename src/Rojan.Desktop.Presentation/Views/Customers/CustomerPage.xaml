@@ -6,14 +6,18 @@
              xmlns:appCustomers="clr-namespace:Rojan.Desktop.Application.Customers;assembly=Rojan.Desktop.Application">
 
     <!--
-        Phase 09: Customer CRM. Master-detail layout, same two-column shape
-        as DashboardPage - a searchable customer list on the left (wrapped
-        in the existing state-aware DashboardWidget, reused unchanged from
-        the Dashboard vertical slice) and the selected customer's details on
-        the right (a static DashboardCard, since detail content has no load
-        state of its own once the list has already loaded). Read-only, no
-        create/edit/delete commands yet - consistent with Dashboard's own
-        Phase 06B scope, which shipped read-only before any write use case.
+        Phase 09/10: Customer CRM -> Customer 360. Master-detail layout:
+        a searchable customer list plus a "New Customer" form on the left
+        (both wrapped in the existing state-aware DashboardWidget/
+        DashboardCard, reused unchanged from the Dashboard vertical slice),
+        and the selected customer's full 360 profile on the right -
+        statistics cards, an editable status, tags, notes, and the activity
+        timeline - bound to CustomerPageViewModel.Profile
+        (CustomerProfileViewModel), null when nothing is selected.
+
+        No new Design System components: every card/widget/value here is
+        DashboardCard/DashboardWidget/KPIValue, the same three components
+        Phase 06B built for Dashboard.
 
         Merges its own Theme.xaml dependency locally (same self-sufficiency
         rule as every other Design System component).
@@ -29,12 +33,13 @@
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="420" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: header, search box, customer list -->
+        <!-- Left: header, add-customer form, search box, customer list -->
         <Grid Grid.Column="0" Margin="0,0,24,0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -47,7 +52,48 @@
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
-            <Border Grid.Row="1"
+            <!-- Add Customer: the Create command's one Presentation entry point -->
+            <dashboardControls:DashboardCard Grid.Row="1" Title="Add Customer" Margin="0,24,0,0">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="Full name" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewCustomerFullName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock Text="Company" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewCustomerCompany, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
+                            <TextBlock Text="Email" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewCustomerEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
+                            <TextBlock Text="Phone" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewCustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="Add Customer"
+                            Command="{Binding CreateCustomerCommand}"
+                            Style="{StaticResource Rojan.Style.GlassButton}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+            <Border Grid.Row="2"
                     Style="{StaticResource Rojan.Style.GlassPanel}"
                     Padding="16,10"
                     Margin="0,24,0,0">
@@ -78,13 +124,13 @@
                 </Grid>
             </Border>
 
-            <dashboardControls:DashboardWidget Grid.Row="2"
+            <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="All Customers"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,24,0,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="560">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
                     <ListBox ItemsSource="{Binding Customers}"
                              SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                              Background="Transparent"
@@ -118,17 +164,17 @@
             </dashboardControls:DashboardWidget>
         </Grid>
 
-        <!-- Right: selected customer's details -->
-        <dashboardControls:DashboardCard Grid.Column="1" Title="Customer Details" VerticalAlignment="Top">
+        <!-- Right: Customer 360 profile for the selected customer -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="Select a customer to view details."
+                <TextBlock Text="Select a customer to view their 360 profile."
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedCustomer}" Value="{x:Null}">
+                                <DataTrigger Binding="{Binding Profile}" Value="{x:Null}">
                                     <Setter Property="Visibility" Value="Visible" />
                                 </DataTrigger>
                             </Style.Triggers>
@@ -136,7 +182,7 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <StackPanel DataContext="{Binding SelectedCustomer}">
+                <StackPanel DataContext="{Binding Profile}">
                     <StackPanel.Style>
                         <Style TargetType="StackPanel">
                             <Setter Property="Visibility" Value="Visible" />
@@ -148,39 +194,148 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.CardTitle}" />
-                    <TextBlock Text="{Binding Company}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                               Margin="0,2,0,0" />
+                    <!-- Identity + editable status -->
+                    <dashboardControls:DashboardCard Title="{Binding Customer.FullName}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Customer.Company}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{Binding Customer.Email}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0" />
+                            <TextBlock Text="{Binding Customer.Phone}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0" />
 
-                    <dashboardControls:KPIValue Label="Lifetime Value" Value="{Binding LifetimeValue}" Margin="0,20,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <ComboBox ItemsSource="{Binding AvailableStatuses}"
+                                          SelectedItem="{Binding EditableStatus, Mode=TwoWay}"
+                                          Width="150" />
+                                <Button Content="Save Changes"
+                                        Command="{Binding SaveChangesCommand}"
+                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Margin="12,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
 
-                    <StackPanel Margin="0,20,0,0">
-                        <TextBlock Text="{Binding Email}" Style="{StaticResource Rojan.TextStyle.Body}" />
-                        <TextBlock Text="{Binding Phone}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0" />
-                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
-                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                   Margin="0,4,0,0">
-                            <Run Text="Status: " />
-                            <Run Text="{Binding Status, Mode=OneWay}" />
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
-                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                   Margin="0,4,0,0">
-                            <Run Text="Last contacted: " />
-                            <Run Text="{Binding LastContactedAt, StringFormat={}{0:MMM d, yyyy}, Mode=OneWay}" />
-                        </TextBlock>
-                    </StackPanel>
+                    <!-- Statistics cards -->
+                    <dashboardControls:DashboardWidget Title="Statistics"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <ItemsControl ItemsSource="{Binding Statistics}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appCustomers:CustomerStatDto}">
+                                    <dashboardControls:DashboardCard Width="170" Margin="0,0,12,12">
+                                        <dashboardControls:KPIValue Label="{Binding Label}" Value="{Binding Value}" />
+                                    </dashboardControls:DashboardCard>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
 
-                    <TextBlock Text="{Binding Notes}"
-                               Style="{StaticResource Rojan.TextStyle.Body}"
-                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                               TextWrapping="Wrap"
-                               Margin="0,20,0,0" />
+                    <!-- Tags -->
+                    <dashboardControls:DashboardCard Title="Tags" Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding Tags}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appCustomers:CustomerTagDto}">
+                                        <Border Background="{StaticResource Rojan.Brush.SoftLavender}"
+                                                CornerRadius="12"
+                                                Padding="10,4"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Label}" Style="{StaticResource Rojan.TextStyle.Caption}" />
+                                                <Button Content="&#10005;"
+                                                        Margin="8,0,0,0"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        FontSize="11"
+                                                        Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <TextBox Text="{Binding NewTagText, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                                <Button Content="Add Tag"
+                                        Command="{Binding AddTagCommand}"
+                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Margin="8,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Notes -->
+                    <dashboardControls:DashboardCard Title="Notes" Margin="0,16,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Text="{Binding NewNoteText, UpdateSourceTrigger=PropertyChanged}" Width="230" />
+                                <Button Content="Add Note"
+                                        Command="{Binding AddNoteCommand}"
+                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Margin="8,0,0,0" />
+                            </StackPanel>
+
+                            <ItemsControl ItemsSource="{Binding Notes}" Margin="0,12,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appCustomers:CustomerNoteDto}">
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{Binding Text}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:MMM d, yyyy}}"
+                                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Timeline -->
+                    <dashboardControls:DashboardWidget Title="Timeline"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,32">
+                        <ItemsControl ItemsSource="{Binding Activity}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appCustomers:CustomerActivityDto}">
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Description}"
+                                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OccurredAt, StringFormat={}{0:MMM d, t}}"
+                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                   Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+
                 </StackPanel>
             </Grid>
-        </dashboardControls:DashboardCard>
+        </ScrollViewer>
 
     </Grid>
 

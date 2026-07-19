@@ -37,6 +37,17 @@ see `docs/standards/versioning.md`.
   packaging — no installer, a deliberate scope decision per
   `docs/phases/phase-09-release-engineering.md`). No new NuGet packages,
   no third-party GitHub Actions.
+- Phase 10: Enterprise Customer CRM Expansion — Customer 360 profile
+  (statistics cards, tags, notes, activity timeline, editable status,
+  new-customer form) on top of the existing Customer CRM vertical slice.
+  New Domain entities (`CustomerTag`, `CustomerNote`, `CustomerActivity`),
+  expanded `CustomerStatus` (`Lead`/`Prospect`/`Active`/`Vip`/`Inactive`/
+  `Churned`), the codebase's first command service
+  (`ICustomerCommandService`) alongside a new profile query
+  (`ICustomerProfileQueryService`) and search query
+  (`ICustomerQueryService.SearchCustomersAsync`). `FakeCustomerRepository`
+  is now mutable in-memory state (still no database, no API). No Shell/
+  navigation changes. 82/82 tests passing (46 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

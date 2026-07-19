@@ -7,29 +7,45 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 
 /// <summary>
-/// Drives CustomerPage. Loads real (fake-repository-backed) data through
-/// <see cref="ICustomerQueryService"/> - the only Application dependency
-/// this ViewModel has, consistent with Presentation never reaching past
-/// Application into Domain/Infrastructure. Reuses <see cref="DashboardState"/>
-/// rather than a duplicate enum: it already models exactly the four states
-/// a repository-backed load can be in, and reusing it lets this page reuse
-/// <c>DashboardWidget</c> (Controls/Dashboard) unchanged.
+/// Drives CustomerPage - the customer list/search on the left, and (Phase
+/// 10) the Customer 360 <see cref="CustomerProfileViewModel"/> for
+/// whichever customer is selected on the right. Depends only on
+/// Application services (<see cref="ICustomerQueryService"/>,
+/// <see cref="ICustomerProfileQueryService"/>, <see cref="ICustomerCommandService"/>),
+/// consistent with Presentation never reaching past Application into
+/// Domain/Infrastructure. Reuses <see cref="DashboardState"/> rather than a
+/// duplicate enum, same reasoning as every other page ViewModel.
 /// </summary>
 public sealed class CustomerPageViewModel : ViewModelBase
 {
     private readonly ICustomerQueryService _queryService;
-    private IReadOnlyList<CustomerDto> _allCustomers = [];
+    private readonly ICustomerProfileQueryService _profileQueryService;
+    private readonly ICustomerCommandService _commandService;
+
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private string _searchText = string.Empty;
     private CustomerDto? _selectedCustomer;
+    private CustomerProfileViewModel? _profile;
+    private string _newCustomerFullName = string.Empty;
+    private string _newCustomerCompany = string.Empty;
+    private string _newCustomerEmail = string.Empty;
+    private string _newCustomerPhone = string.Empty;
 
-    public CustomerPageViewModel(ICustomerQueryService queryService)
+    public CustomerPageViewModel(
+        ICustomerQueryService queryService,
+        ICustomerProfileQueryService profileQueryService,
+        ICustomerCommandService commandService)
     {
         _queryService = queryService;
+        _profileQueryService = profileQueryService;
+        _commandService = commandService;
 
         Customers = new ObservableCollection<CustomerDto>();
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
+        CreateCustomerCommand = new AsyncRelayCommand(
+            _ => CreateCustomerAsync(),
+            _ => !string.IsNullOrWhiteSpace(NewCustomerFullName));
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, so there is nothing
@@ -41,6 +57,8 @@ public sealed class CustomerPageViewModel : ViewModelBase
 
     /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
     public ICommand LoadCommand { get; }
+
+    public ICommand CreateCustomerCommand { get; }
 
     public DashboardState State
     {
@@ -61,7 +79,7 @@ public sealed class CustomerPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _searchText, value))
             {
-                ApplyFilter();
+                _ = SearchAsync(value);
             }
         }
     }
@@ -69,7 +87,46 @@ public sealed class CustomerPageViewModel : ViewModelBase
     public CustomerDto? SelectedCustomer
     {
         get => _selectedCustomer;
-        set => SetProperty(ref _selectedCustomer, value);
+        set
+        {
+            if (SetProperty(ref _selectedCustomer, value))
+            {
+                Profile = value is null
+                    ? null
+                    : new CustomerProfileViewModel(value.Id, _profileQueryService, _commandService);
+            }
+        }
+    }
+
+    /// <summary>Customer 360 profile for <see cref="SelectedCustomer"/> - null when nothing is selected.</summary>
+    public CustomerProfileViewModel? Profile
+    {
+        get => _profile;
+        private set => SetProperty(ref _profile, value);
+    }
+
+    public string NewCustomerFullName
+    {
+        get => _newCustomerFullName;
+        set => SetProperty(ref _newCustomerFullName, value);
+    }
+
+    public string NewCustomerCompany
+    {
+        get => _newCustomerCompany;
+        set => SetProperty(ref _newCustomerCompany, value);
+    }
+
+    public string NewCustomerEmail
+    {
+        get => _newCustomerEmail;
+        set => SetProperty(ref _newCustomerEmail, value);
+    }
+
+    public string NewCustomerPhone
+    {
+        get => _newCustomerPhone;
+        set => SetProperty(ref _newCustomerPhone, value);
     }
 
     private async Task LoadAsync()
@@ -79,10 +136,10 @@ public sealed class CustomerPageViewModel : ViewModelBase
 
         try
         {
-            _allCustomers = await _queryService.GetCustomersAsync().ConfigureAwait(true);
-            ApplyFilter();
+            var customers = await _queryService.GetCustomersAsync().ConfigureAwait(true);
+            ReplaceAll(customers);
 
-            State = _allCustomers.Count == 0
+            State = customers.Count == 0
                 ? DashboardState.Empty
                 : DashboardState.Loaded;
         }
@@ -95,19 +152,57 @@ public sealed class CustomerPageViewModel : ViewModelBase
         }
     }
 
-    private void ApplyFilter()
+    /// <summary>
+    /// Runs the search through <see cref="ICustomerQueryService.SearchCustomersAsync"/>
+    /// rather than filtering a client-side cache - Search is now a real
+    /// Application use case (Phase 10), not View-layer logic. Guards
+    /// against out-of-order completions: if the user kept typing after
+    /// this call started, <paramref name="searchText"/> no longer matches
+    /// <see cref="SearchText"/> by the time the result arrives, and the
+    /// stale result is discarded.
+    /// </summary>
+    private async Task SearchAsync(string searchText)
     {
-        var filtered = string.IsNullOrWhiteSpace(SearchText)
-            ? _allCustomers
-            : _allCustomers
-                .Where(customer =>
-                    customer.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                    customer.Company.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                    customer.Email.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+        try
+        {
+            var results = await _queryService.SearchCustomersAsync(searchText).ConfigureAwait(true);
+            if (!string.Equals(searchText, SearchText, StringComparison.Ordinal))
+            {
+                return;
+            }
 
+            ReplaceAll(results);
+        }
+#pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must surface as the Error state, not crash the page.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
+            {
+                ErrorMessage = exception.Message;
+                State = DashboardState.Error;
+            }
+        }
+    }
+
+    private async Task CreateCustomerAsync()
+    {
+        var request = new CreateCustomerRequest(NewCustomerFullName, NewCustomerCompany, NewCustomerEmail, NewCustomerPhone, string.Empty);
+        var created = await _commandService.CreateCustomerAsync(request).ConfigureAwait(true);
+
+        NewCustomerFullName = string.Empty;
+        NewCustomerCompany = string.Empty;
+        NewCustomerEmail = string.Empty;
+        NewCustomerPhone = string.Empty;
+
+        await LoadAsync().ConfigureAwait(true);
+        SelectedCustomer = Customers.FirstOrDefault(customer => customer.Id == created.Id);
+    }
+
+    private void ReplaceAll(IReadOnlyList<CustomerDto> customers)
+    {
         Customers.Clear();
-        foreach (var customer in filtered)
+        foreach (var customer in customers)
         {
             Customers.Add(customer);
         }

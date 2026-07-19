@@ -9,13 +9,18 @@ public sealed class CustomerPageViewModelTests
     private static CustomerDto MakeCustomer(string id, string fullName, string company = "", string email = "") =>
         new(id, fullName, company, email, string.Empty, CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty);
 
+    /// <summary>A profile query stub that never fails, used by tests that don't assert on Profile - Profile is constructed as a side effect of selection, and its own errors are contained internally (CustomerProfileViewModel catches them itself).</summary>
+    private static StubCustomerProfileQueryService MakeProfileQueryService() =>
+        new((customerId, _) => Task.FromResult(new CustomerProfileDto(
+            MakeCustomer(customerId, "Placeholder"), [], [], [], [])));
+
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
     {
         var tcs = new TaskCompletionSource<IReadOnlyList<CustomerDto>>();
         var queryService = new StubCustomerQueryService(_ => tcs.Task);
 
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -26,11 +31,12 @@ public sealed class CustomerPageViewModelTests
         var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
 
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal(customers, sut.Customers);
         Assert.Equal(customers[0], sut.SelectedCustomer);
+        Assert.NotNull(sut.Profile);
     }
 
     [Fact]
@@ -38,10 +44,11 @@ public sealed class CustomerPageViewModelTests
     {
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
 
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Empty, sut.State);
         Assert.Null(sut.SelectedCustomer);
+        Assert.Null(sut.Profile);
     }
 
     [Fact]
@@ -50,7 +57,7 @@ public sealed class CustomerPageViewModelTests
         var queryService = new StubCustomerQueryService(
             _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
 
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -66,7 +73,7 @@ public sealed class CustomerPageViewModelTests
             MakeCustomer("customer-3", "Sophia Reyes", company: "Reyes Beauty Studio"),
         };
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         sut.SearchText = "reyes";
 
@@ -82,7 +89,7 @@ public sealed class CustomerPageViewModelTests
             MakeCustomer("customer-2", "Noah Bennett"),
         };
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
         sut.SelectedCustomer = customers[0];
 
         sut.SearchText = "Noah";
@@ -95,12 +102,13 @@ public sealed class CustomerPageViewModelTests
     {
         var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         sut.SearchText = "no-such-customer";
 
         Assert.Empty(sut.Customers);
         Assert.Null(sut.SelectedCustomer);
+        Assert.Null(sut.Profile);
     }
 
     [Fact]
@@ -111,7 +119,7 @@ public sealed class CustomerPageViewModelTests
         var queryService = new StubCustomerQueryService(_ => shouldFail
             ? Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom"))
             : Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
-        var sut = new CustomerPageViewModel(queryService);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;
@@ -120,5 +128,57 @@ public sealed class CustomerPageViewModelTests
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Null(sut.ErrorMessage);
         Assert.Equal(customers, sut.Customers);
+    }
+
+    [Fact]
+    public void SelectedCustomer_SetToNull_ClearsProfile()
+    {
+        var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+        Assert.NotNull(sut.Profile);
+
+        sut.SelectedCustomer = null;
+
+        Assert.Null(sut.Profile);
+    }
+
+    [Fact]
+    public void CreateCustomerCommand_FullNameIsEmpty_CanExecuteIsFalse()
+    {
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        Assert.False(sut.CreateCustomerCommand.CanExecute(null));
+
+        sut.NewCustomerFullName = "Grace Kim";
+
+        Assert.True(sut.CreateCustomerCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void CreateCustomerCommand_Executed_CallsCommandServiceReloadsListAndSelectsNewCustomer()
+    {
+        var existing = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(existing.ToList()));
+        var commandService = new StubCustomerCommandService
+        {
+            OnCustomerCreated = (_, dto) => existing.Add(dto),
+        };
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), commandService)
+        {
+            NewCustomerFullName = "Grace Kim",
+            NewCustomerCompany = "Kim Aesthetics",
+            NewCustomerEmail = "grace.kim@example.com",
+            NewCustomerPhone = "555-0199",
+        };
+
+        sut.CreateCustomerCommand.Execute(null);
+
+        var request = Assert.Single(commandService.CreateRequests);
+        Assert.Equal("Grace Kim", request.FullName);
+        Assert.Equal("Kim Aesthetics", request.Company);
+        Assert.Equal(string.Empty, sut.NewCustomerFullName);
+        Assert.Equal("new-customer", sut.SelectedCustomer?.Id);
     }
 }

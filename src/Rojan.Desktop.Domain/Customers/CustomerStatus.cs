@@ -4,6 +4,9 @@ namespace Rojan.Desktop.Domain.Customers;
 public enum CustomerStatus
 {
     Lead,
+    Prospect,
     Active,
+    Vip,
     Inactive,
+    Churned,
 }
