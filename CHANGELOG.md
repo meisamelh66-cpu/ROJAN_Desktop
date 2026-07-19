@@ -48,6 +48,15 @@ see `docs/standards/versioning.md`.
   (`ICustomerQueryService.SearchCustomersAsync`). `FakeCustomerRepository`
   is now mutable in-memory state (still no database, no API). No Shell/
   navigation changes. 82/82 tests passing (46 new).
+- Phase 11: Enterprise Booking Module Foundation — third real business
+  module (`Rojan.Desktop.*.Bookings`), same vertical-slice pattern as
+  Dashboard and Customer CRM: `Booking`/`BookingStatus` Domain entities,
+  `IBookingQueryService`/`IBookingCommandService` Application layer,
+  mutable in-memory `FakeBookingRepository` (8 seed bookings), and a
+  list/detail/create/status-transition Presentation UI. Wired into Shell
+  navigation — the `"appointments"` placeholder sidebar entry is now the
+  real `BookingModule`, renamed to "Bookings". No database, no API, no
+  external integrations. 121/121 tests passing (39 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

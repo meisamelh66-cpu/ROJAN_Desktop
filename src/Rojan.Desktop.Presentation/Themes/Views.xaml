@@ -4,6 +4,8 @@
                     xmlns:dashboardView="clr-namespace:Rojan.Desktop.Presentation.Views.Dashboard"
                     xmlns:customersVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Customers"
                     xmlns:customersView="clr-namespace:Rojan.Desktop.Presentation.Views.Customers"
+                    xmlns:bookingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Bookings"
+                    xmlns:bookingsView="clr-namespace:Rojan.Desktop.Presentation.Views.Bookings"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -21,6 +23,10 @@
 
   <DataTemplate DataType="{x:Type customersVm:CustomerPageViewModel}">
     <customersView:CustomerPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type bookingsVm:BookingPageViewModel}">
+    <bookingsView:BookingPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 
@@ -16,6 +17,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
         services.AddSingleton<ICustomerCommandService, CustomerCommandService>();
+        services.AddSingleton<IBookingQueryService, BookingQueryService>();
+        services.AddSingleton<IBookingCommandService, BookingCommandService>();
         return services;
     }
 }

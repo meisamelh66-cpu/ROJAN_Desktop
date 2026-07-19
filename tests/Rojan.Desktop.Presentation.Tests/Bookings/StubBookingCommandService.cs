@@ -1,0 +1,32 @@
+using Rojan.Desktop.Application.Bookings;
+
+namespace Rojan.Desktop.Presentation.Tests.Bookings;
+
+/// <summary>Records every call it receives so ViewModel tests can assert a command was invoked with the right arguments - same reasoning as Customers.StubCustomerCommandService.</summary>
+internal sealed class StubBookingCommandService : IBookingCommandService
+{
+    public List<CreateBookingRequest> CreateRequests { get; } = [];
+
+    public List<(string BookingId, BookingStatus Status)> UpdateStatusCalls { get; } = [];
+
+    /// <summary>Optional hook run after a booking is created, before the DTO is returned - lets a test mirror the created booking into whatever backing list the paired query-service stub reads from.</summary>
+    public Action<CreateBookingRequest, BookingDto>? OnBookingCreated { get; set; }
+
+    public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
+    {
+        CreateRequests.Add(request);
+        var dto = new BookingDto(
+            "new-booking", string.Empty, request.CustomerName, request.ServiceName, request.SpecialistName,
+            request.ScheduledAt, request.DurationMinutes, BookingStatus.Pending, request.Notes);
+        OnBookingCreated?.Invoke(request, dto);
+        return Task.FromResult(dto);
+    }
+
+    public Task<BookingDto> UpdateBookingStatusAsync(string bookingId, BookingStatus status, CancellationToken cancellationToken = default)
+    {
+        UpdateStatusCalls.Add((bookingId, status));
+        return Task.FromResult(new BookingDto(
+            bookingId, string.Empty, "Test Customer", "Test Service", string.Empty,
+            DateTimeOffset.UnixEpoch, 60, status, string.Empty));
+    }
+}
