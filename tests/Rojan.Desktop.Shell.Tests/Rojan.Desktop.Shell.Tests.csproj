@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Phase 19A: Shell.Localization (LanguagePackManager, LocalizationService)
+         is the first Shell-owned code with dedicated unit tests - both classes
+         expose an internal constructor taking an explicit path specifically so
+         pack discovery and settings persistence can be tested against a temp
+         directory instead of the real AppContext.BaseDirectory/LocalAppData. -->
+    <ProjectReference Include="..\..\src\Rojan.Desktop.Shell\Rojan.Desktop.Shell.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:dashboard="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard">
+                    xmlns:dashboard="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+                    xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="Colors.xaml" />
@@ -52,13 +53,13 @@
                                        Margin="0,0,0,16" />
 
               <TextBlock x:Name="LoadingText"
-                         Text="Loading..."
+                         Text="{x:Static loc:Strings.Common_Loading}"
                          Style="{StaticResource Rojan.TextStyle.Body}"
                          Foreground="{StaticResource Rojan.Brush.MutedText}"
                          Visibility="Collapsed" />
 
               <TextBlock x:Name="EmptyText"
-                         Text="No data available."
+                         Text="{x:Static loc:Strings.Common_NoDataAvailable}"
                          Style="{StaticResource Rojan.TextStyle.Body}"
                          Foreground="{StaticResource Rojan.Brush.MutedText}"
                          Visibility="Collapsed" />
@@ -68,7 +69,7 @@
                            Style="{StaticResource Rojan.TextStyle.Body}"
                            Foreground="{StaticResource Rojan.Brush.Error}"
                            TextWrapping="Wrap" />
-                <Button Content="Retry"
+                <Button Content="{x:Static loc:Strings.Common_Retry}"
                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                         Command="{TemplateBinding RetryCommand}"
                         Margin="0,12,0,0"

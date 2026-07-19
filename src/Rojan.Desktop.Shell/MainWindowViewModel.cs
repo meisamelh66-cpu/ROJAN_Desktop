@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
@@ -27,7 +28,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private bool _canGoBack;
     private bool _canGoForward;
     private bool _isNotificationPanelOpen;
-    private string _statusMessage = "Ready";
+    private string _statusMessage = Strings.Common_Ready;
     private object? _activeDialog;
 
     public MainWindowViewModel(IModuleRegistry moduleRegistry, INavigationService navigationService)
@@ -80,9 +81,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
             if (SetProperty(ref _selectedNavigationItem, value))
             {
                 Navigate(() => _navigationService.NavigateTo(value.Descriptor));
-                StatusMessage = $"Viewing {value.Title}";
+                StatusMessage = Strings.Common_ViewingFormat.Replace("{0}", value.Title, StringComparison.Ordinal);
                 Breadcrumbs.Clear();
-                Breadcrumbs.Add("Home");
+                Breadcrumbs.Add(Strings.Common_Home);
                 Breadcrumbs.Add(value.Title);
                 OnPropertyChanged(nameof(BreadcrumbText));
             }

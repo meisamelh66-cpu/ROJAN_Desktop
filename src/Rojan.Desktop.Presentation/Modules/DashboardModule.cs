@@ -1,3 +1,4 @@
+using Rojan.Desktop.Presentation.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -6,7 +7,7 @@ namespace Rojan.Desktop.Presentation.Modules;
 /// <summary>The one real module today - wraps the existing DI-registered <see cref="DashboardPageViewModel"/> rather than constructing it directly, since it has real dependencies (IDashboardQueryService).</summary>
 public sealed class DashboardModule : IModule
 {
-    private static readonly ModuleMetadata Metadata = new("dashboard", "Dashboard", "", 0);
+    private static readonly ModuleMetadata Metadata = new("dashboard", Strings.Nav_Dashboard, string.Empty, 0);
 
     public DashboardModule()
     {

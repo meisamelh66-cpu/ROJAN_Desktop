@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common_Search" xml:space="preserve">
+    <value>بحث</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="Common_Forward" xml:space="preserve">
+    <value>تقدم</value>
+  </data>
+  <data name="Common_Notifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="Common_GuestUser" xml:space="preserve">
+    <value>مستخدم زائر</value>
+  </data>
+  <data name="Common_Minimize" xml:space="preserve">
+    <value>تصغير</value>
+  </data>
+  <data name="Common_Maximize" xml:space="preserve">
+    <value>تكبير</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="Common_CollapseExpandNavigation" xml:space="preserve">
+    <value>طي/توسيع التنقل</value>
+  </data>
+  <data name="Common_NoNotifications" xml:space="preserve">
+    <value>لا توجد إشعارات.</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>جارٍ التحميل...</value>
+  </data>
+  <data name="Common_NoDataAvailable" xml:space="preserve">
+    <value>لا توجد بيانات متاحة.</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>إعادة المحاولة</value>
+  </data>
+  <data name="Common_Ready" xml:space="preserve">
+    <value>جاهز</value>
+  </data>
+  <data name="Common_Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+  <data name="Common_ViewingFormat" xml:space="preserve">
+    <value>عرض {0}</value>
+  </data>
+  <data name="Common_ErrorDialogMessage" xml:space="preserve">
+    <value>حدث خطأ ما. سيحاول روجان ديسكتوب مواصلة العمل.</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>إليك ما يحدث اليوم.</value>
+  </data>
+  <data name="Dashboard_KeyMetrics" xml:space="preserve">
+    <value>المقاييس الرئيسية</value>
+  </data>
+  <data name="Dashboard_QuickActions" xml:space="preserve">
+    <value>إجراءات سريعة</value>
+  </data>
+  <data name="Dashboard_RecentActivity" xml:space="preserve">
+    <value>النشاط الأخير</value>
+  </data>
+  <data name="Dashboard_AiAssistant" xml:space="preserve">
+    <value>مساعد الذكاء الاصطناعي</value>
+  </data>
+  <data name="Dashboard_ComingSoon" xml:space="preserve">
+    <value>قريباً.</value>
+  </data>
+  <data name="Dashboard_AskAi" xml:space="preserve">
+    <value>اسأل الذكاء الاصطناعي</value>
+  </data>
+  <data name="Dashboard_QuickAction_NewBooking" xml:space="preserve">
+    <value>حجز جديد</value>
+  </data>
+  <data name="Dashboard_QuickAction_AddClient" xml:space="preserve">
+    <value>إضافة عميل</value>
+  </data>
+  <data name="Dashboard_QuickAction_CreateTask" xml:space="preserve">
+    <value>إنشاء مهمة</value>
+  </data>
+  <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
+    <value>عرض التقارير</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+  <data name="Nav_Customers" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Nav_Bookings" xml:space="preserve">
+    <value>الحجوزات</value>
+  </data>
+  <data name="Nav_Calendar" xml:space="preserve">
+    <value>التقويم</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>الخدمات</value>
+  </data>
+  <data name="Nav_Inventory" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Nav_Accounting" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="Nav_StaffHr" xml:space="preserve">
+    <value>الموظفون والموارد البشرية</value>
+  </data>
+  <data name="Nav_Specialists" xml:space="preserve">
+    <value>المختصون</value>
+  </data>
+  <data name="Nav_Reports" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="Nav_AiCenter" xml:space="preserve">
+    <value>مركز الذكاء الاصطناعي</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>الإعدادات</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>الإعدادات</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>إدارة تفضيلات التطبيق.</value>
+  </data>
+  <data name="Settings_Language_SectionTitle" xml:space="preserve">
+    <value>اللغة</value>
+  </data>
+  <data name="Settings_Language_BuiltIn" xml:space="preserve">
+    <value>مدمج</value>
+  </data>
+  <data name="Settings_Language_InstalledPacks" xml:space="preserve">
+    <value>حزم اللغات المثبتة</value>
+  </data>
+  <data name="Settings_Language_AvailableLanguages" xml:space="preserve">
+    <value>اللغات المتاحة</value>
+  </data>
+  <data name="Settings_Language_Download" xml:space="preserve">
+    <value>تنزيل</value>
+  </data>
+  <data name="Settings_Language_Install" xml:space="preserve">
+    <value>تثبيت</value>
+  </data>
+  <data name="Settings_Language_Remove" xml:space="preserve">
+    <value>إزالة</value>
+  </data>
+  <data name="Settings_Language_Update" xml:space="preserve">
+    <value>تحديث</value>
+  </data>
+  <data name="Settings_Language_ComingSoon" xml:space="preserve">
+    <value>تنزيل حزم اللغات غير متاح بعد - هذا هو الأساس فقط.</value>
+  </data>
+  <data name="Settings_Language_Apply" xml:space="preserve">
+    <value>تطبيق اللغة</value>
+  </data>
+  <data name="Settings_Language_RestartRequired" xml:space="preserve">
+    <value>يلزم إعادة التشغيل لتطبيق اللغة الجديدة.</value>
+  </data>
+  <data name="Settings_Language_RestartNow" xml:space="preserve">
+    <value>إعادة التشغيل الآن</value>
+  </data>
+  <data name="Settings_Language_CurrentFormat" xml:space="preserve">
+    <value>اللغة الحالية: {0}</value>
+  </data>
+  <data name="Settings_Language_NoPacksInstalled" xml:space="preserve">
+    <value>لم يتم تثبيت أي حزم لغات إضافية.</value>
+  </data>
+</root>

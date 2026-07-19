@@ -254,6 +254,60 @@ see `docs/standards/versioning.md`.
   and threw at runtime - fixed by having the trigger set the individual
   Background/Foreground/BorderThickness properties instead of swapping
   styles.
+- Phase 19A: Enterprise Globalization & Localization Platform — the
+  complete localization architecture: `LocalizationService`,
+  `CultureService`, `ResourceManager`-backed `Strings` (hand-written
+  resx wrapper), `LanguagePackManager`, `IDateProvider`/
+  `PersianCalendarProvider`/`GregorianCalendarProvider`,
+  `ICurrencyFormatter` (Toman/Rial/USD/EUR, Latin/Persian/Arabic digit
+  glyphs), and RTL/LTR infrastructure (`FlowDirection` set once from
+  `ILocalizationService.CurrentLanguage`, cascading automatically through
+  WPF's layout system — no per-View changes needed). Three built-in
+  languages (Persian default/RTL, English, Arabic/RTL), each shipping as
+  a real `Languages/*.pack` JSON manifest (not a hardcoded list) so pack
+  discovery is provably automatic; a fourth, deliberately-partial
+  `de-DE.pack` demo proves the "future packs load their own resources"
+  mechanism (`Strings.SetPackOverrides`) actually works, with undefined
+  keys honestly falling through to the compiled resx. Language changes
+  persist to `%LocalAppData%\RojanDesktop\settings.json` and take effect
+  on next launch (restart-required, not live, by design). Language Store
+  Foundation (`ILanguagePackRepository`) ships as
+  `LocalOnlyLanguagePackRepository` — an always-empty catalog whose
+  install/remove throw `NotSupportedException` rather than silently
+  no-op, per this phase's explicit "do not connect to servers yet" scope.
+  Fully migrated: Application Shell, Navigation, Dashboard, the new
+  Settings module (Language section: built-in languages, installed
+  packs, Apply + restart flow, Available Languages foundation UI), the
+  shared `DashboardWidget` style, and the dialog framework. Business
+  modules (Customers, Bookings, Calendar, Specialists, Services,
+  Inventory, Accounting, HR) are deliberately deferred to Phase 19B —
+  see `docs/phases/phase-19A-globalization-platform.md`'s migration
+  report for a per-module remaining-string estimate. No changes to
+  Domain, Application business logic, Navigation mechanics, or the
+  Fluent 2 Design System. 619/619 tests passing (45 new, including a new
+  `Rojan.Desktop.Shell.Tests` project — the first with dedicated
+  Shell-owned-class coverage). One real runtime bug found and fixed
+  during verification: `App.OnStartup` was `async void`, so its first
+  `await` returned control to WPF's `Application.Run()` before culture
+  was set; WPF then started the Dispatcher's main message loop against
+  an `ExecutionContext` baseline captured at that pre-culture-change
+  moment, and every later dispatcher operation replayed from that stale
+  baseline — `CurrentUICulture` silently reverting to the OS default
+  mid-session despite having "already" been set. Fixed by making
+  `OnStartup` fully synchronous (blocking via `GetAwaiter().GetResult()`)
+  through the startup-critical section, so culture is durably set before
+  the method returns control to the framework. A related bug (the
+  Reports/AI Center placeholder nav titles frozen in the OS-default
+  culture) was fixed by registering them as DI factories instead of
+  eagerly-constructed instances, so `Strings.Nav_Reports`/`Nav_AiCenter`
+  evaluate lazily at first resolve instead of during `ConfigureServices`
+  (before culture is set). Runtime-verified end-to-end via UI Automation:
+  first launch defaults to Persian + RTL (sidebar mirrors to the right,
+  breadcrumb reads right-to-left); switching to English and restarting
+  persists and applies English + LTR; switching to Arabic and restarting
+  persists and applies Arabic + RTL; the navigation region's asymmetric
+  `BorderThickness` (right-only in LTR) was confirmed to mirror
+  automatically under RTL, same as WPF's Grid column mirroring.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

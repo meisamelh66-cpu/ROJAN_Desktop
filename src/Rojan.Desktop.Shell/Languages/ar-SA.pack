@@ -1,0 +1,13 @@
+{
+  "code": "ar-SA",
+  "nativeName": "العربية",
+  "englishName": "Arabic",
+  "isRightToLeft": true,
+  "fontFamily": "Segoe UI, Tahoma",
+  "numberDigits": "Arabic",
+  "defaultCurrencyCode": "Usd",
+  "dateProviderId": "Gregorian",
+  "packVersion": "1.0.0",
+  "compatibilityVersion": "1.0",
+  "isBuiltIn": true
+}

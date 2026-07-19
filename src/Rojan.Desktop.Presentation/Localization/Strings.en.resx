@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common_Forward" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="Common_Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Common_GuestUser" xml:space="preserve">
+    <value>Guest User</value>
+  </data>
+  <data name="Common_Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="Common_Maximize" xml:space="preserve">
+    <value>Maximize</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Common_CollapseExpandNavigation" xml:space="preserve">
+    <value>Collapse/expand navigation</value>
+  </data>
+  <data name="Common_NoNotifications" xml:space="preserve">
+    <value>No notifications.</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Common_NoDataAvailable" xml:space="preserve">
+    <value>No data available.</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Common_Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Common_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Common_ViewingFormat" xml:space="preserve">
+    <value>Viewing {0}</value>
+  </data>
+  <data name="Common_ErrorDialogMessage" xml:space="preserve">
+    <value>Something went wrong. ROJAN Desktop will try to continue running.</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>Here's what's happening today.</value>
+  </data>
+  <data name="Dashboard_KeyMetrics" xml:space="preserve">
+    <value>Key Metrics</value>
+  </data>
+  <data name="Dashboard_QuickActions" xml:space="preserve">
+    <value>Quick Actions</value>
+  </data>
+  <data name="Dashboard_RecentActivity" xml:space="preserve">
+    <value>Recent Activity</value>
+  </data>
+  <data name="Dashboard_AiAssistant" xml:space="preserve">
+    <value>AI Assistant</value>
+  </data>
+  <data name="Dashboard_ComingSoon" xml:space="preserve">
+    <value>Coming soon.</value>
+  </data>
+  <data name="Dashboard_AskAi" xml:space="preserve">
+    <value>Ask AI</value>
+  </data>
+  <data name="Dashboard_QuickAction_NewBooking" xml:space="preserve">
+    <value>New Booking</value>
+  </data>
+  <data name="Dashboard_QuickAction_AddClient" xml:space="preserve">
+    <value>Add Client</value>
+  </data>
+  <data name="Dashboard_QuickAction_CreateTask" xml:space="preserve">
+    <value>Create Task</value>
+  </data>
+  <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
+    <value>View Reports</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Nav_Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Nav_Bookings" xml:space="preserve">
+    <value>Bookings</value>
+  </data>
+  <data name="Nav_Calendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Nav_Inventory" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Nav_Accounting" xml:space="preserve">
+    <value>Accounting</value>
+  </data>
+  <data name="Nav_StaffHr" xml:space="preserve">
+    <value>Staff &amp; HR</value>
+  </data>
+  <data name="Nav_Specialists" xml:space="preserve">
+    <value>Specialists</value>
+  </data>
+  <data name="Nav_Reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="Nav_AiCenter" xml:space="preserve">
+    <value>AI Center</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>Manage application preferences.</value>
+  </data>
+  <data name="Settings_Language_SectionTitle" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_Language_BuiltIn" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="Settings_Language_InstalledPacks" xml:space="preserve">
+    <value>Installed Language Packs</value>
+  </data>
+  <data name="Settings_Language_AvailableLanguages" xml:space="preserve">
+    <value>Available Languages</value>
+  </data>
+  <data name="Settings_Language_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Settings_Language_Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Settings_Language_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Settings_Language_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Settings_Language_ComingSoon" xml:space="preserve">
+    <value>Language pack downloads are not available yet - this is the framework foundation only.</value>
+  </data>
+  <data name="Settings_Language_Apply" xml:space="preserve">
+    <value>Apply Language</value>
+  </data>
+  <data name="Settings_Language_RestartRequired" xml:space="preserve">
+    <value>Restart required to apply the new language.</value>
+  </data>
+  <data name="Settings_Language_RestartNow" xml:space="preserve">
+    <value>Restart Now</value>
+  </data>
+  <data name="Settings_Language_CurrentFormat" xml:space="preserve">
+    <value>Current language: {0}</value>
+  </data>
+  <data name="Settings_Language_NoPacksInstalled" xml:space="preserve">
+    <value>No additional language packs installed.</value>
+  </data>
+</root>

@@ -1,3 +1,4 @@
+using Rojan.Desktop.Presentation.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 
@@ -6,7 +7,7 @@ namespace Rojan.Desktop.Presentation.Modules;
 /// <summary>Phase 09's real module - replaces the PlaceholderModule that previously registered the "customers" sidebar entry, one-for-one, per the swap documented on <see cref="PlaceholderModule"/>.</summary>
 public sealed class CustomerModule : IModule
 {
-    private static readonly ModuleMetadata Metadata = new("customers", "Customers", "", 10);
+    private static readonly ModuleMetadata Metadata = new("customers", Strings.Nav_Customers, string.Empty, 10);
 
     public CustomerModule()
     {

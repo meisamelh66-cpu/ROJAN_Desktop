@@ -14,4 +14,18 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Phase 19A: Language Pack manifests - LanguagePackManager scans this
+         folder (copied next to the exe) at startup so installing a new
+         language is "drop a .pack file in", no code change. -->
+    <None Include="Languages\*.pack" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lets Rojan.Desktop.Shell.Tests construct LanguagePackManager/LocalizationService
+         via their internal (path-overriding) constructors instead of the real
+         AppContext.BaseDirectory/LocalAppData. -->
+    <InternalsVisibleTo Include="Rojan.Desktop.Shell.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,30 @@
+{
+  "code": "de-DE",
+  "nativeName": "Deutsch",
+  "englishName": "German",
+  "isRightToLeft": false,
+  "fontFamily": "Segoe UI",
+  "numberDigits": "Latin",
+  "defaultCurrencyCode": "Eur",
+  "dateProviderId": "Gregorian",
+  "packVersion": "0.1.0",
+  "compatibilityVersion": "1.0",
+  "isBuiltIn": false,
+  "strings": {
+    "Dashboard_Title": "Dashboard",
+    "Dashboard_Subtitle": "Hier ist, was heute passiert.",
+    "Dashboard_KeyMetrics": "Kennzahlen",
+    "Dashboard_QuickActions": "Schnellaktionen",
+    "Dashboard_RecentActivity": "Letzte Aktivität",
+    "Common_Search": "Suchen",
+    "Common_GuestUser": "Gastbenutzer",
+    "Common_Loading": "Wird geladen...",
+    "Common_Retry": "Wiederholen",
+    "Common_Ready": "Bereit",
+    "Common_Home": "Startseite",
+    "Nav_Dashboard": "Dashboard",
+    "Nav_Settings": "Einstellungen",
+    "Settings_Title": "Einstellungen",
+    "Settings_Language_SectionTitle": "Sprache"
+  }
+}

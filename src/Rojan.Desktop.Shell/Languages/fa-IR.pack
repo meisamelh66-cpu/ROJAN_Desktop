@@ -1,0 +1,13 @@
+{
+  "code": "fa-IR",
+  "nativeName": "فارسی",
+  "englishName": "Persian",
+  "isRightToLeft": true,
+  "fontFamily": "Vazirmatn, Segoe UI",
+  "numberDigits": "Persian",
+  "defaultCurrencyCode": "Toman",
+  "dateProviderId": "Persian",
+  "packVersion": "1.0.0",
+  "compatibilityVersion": "1.0",
+  "isBuiltIn": true
+}

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Dashboard;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -29,10 +30,10 @@ public sealed class DashboardPageViewModel : ViewModelBase
 
         QuickActions = new ObservableCollection<QuickActionItem>
         {
-            new("New Booking"),
-            new("Add Client"),
-            new("Create Task"),
-            new("View Reports"),
+            new(Strings.Dashboard_QuickAction_NewBooking),
+            new(Strings.Dashboard_QuickAction_AddClient),
+            new(Strings.Dashboard_QuickAction_CreateTask),
+            new(Strings.Dashboard_QuickAction_ViewReports),
         };
         QuickActionCommand = new RelayCommand(_ => { });
 

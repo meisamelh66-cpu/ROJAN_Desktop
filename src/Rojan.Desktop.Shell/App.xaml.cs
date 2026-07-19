@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -8,8 +9,10 @@ using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Shell.Navigation;
 
@@ -28,7 +31,7 @@ public partial class App
 {
     private IHost? _host;
 
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(StartupEventArgs e)
     {
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
@@ -38,7 +41,36 @@ public partial class App
             .ConfigureServices(ConfigureServices)
             .Build();
 
-        await _host.StartAsync();
+        // Blocking (not awaiting) is deliberate here, not an oversight: this
+        // method must stay synchronous end-to-end. WPF's Application.Run()
+        // calls OnStartup() and then immediately starts pumping the
+        // Dispatcher's main message loop - if OnStartup were async and
+        // yielded at an await, control would return to Application.Run()
+        // before culture is set, the Dispatcher loop would start pumping
+        // against the ExecutionContext baseline captured at that (pre-
+        // culture-change) moment, and every later DispatcherOperation
+        // would silently replay from that stale baseline - CurrentUICulture
+        // reverting to the OS-default mid-session despite having "already"
+        // been set. Confirmed by instrumenting Dispatcher.Hooks during
+        // Phase 19A: with an async OnStartup, operations posted while
+        // CurrentUICulture was correctly fa-IR still started executing
+        // under en-US. Blocking here happens before any Dispatcher loop is
+        // pumping, so there is no synchronization-context deadlock risk.
+        _host.StartAsync().GetAwaiter().GetResult();
+
+        // Phase 19A: language must be resolved and the process culture set
+        // before anything XAML-related is constructed - MainWindow (and
+        // every {x:Static loc:Strings.Key} reference its tree contains)
+        // is built by the very next line, so this has to run first.
+        var localizationService = _host.Services.GetRequiredService<ILocalizationService>();
+        localizationService.InitializeAsync().GetAwaiter().GetResult();
+
+        var cultureService = _host.Services.GetRequiredService<ICultureService>();
+        var culture = cultureService.GetCultureInfo(localizationService.CurrentLanguage.Code);
+        Thread.CurrentThread.CurrentCulture = culture;
+        Thread.CurrentThread.CurrentUICulture = culture;
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
 
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
@@ -70,6 +102,14 @@ public partial class App
         services.AddSingleton<NavigationService>();
         services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<NavigationService>());
 
+        // Phase 19A: same "interface in Presentation, concrete
+        // implementation in Shell" split as Navigation/Dialogs above -
+        // these need file-system access (persisted selection, the
+        // Languages/ folder) that only the composition root should own.
+        services.AddSingleton<ILanguagePackManager, LanguagePackManager>();
+        services.AddSingleton<ILocalizationService, LocalizationService>();
+        services.AddSingleton<ILanguagePackRepository, LocalOnlyLanguagePackRepository>();
+
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();
 
@@ -82,14 +122,15 @@ public partial class App
     /// Every module the sidebar shows, in display order. Dashboard (Phase
     /// 06B), Customers (Phase 09/10), Bookings (Phase 11), Calendar (Phase
     /// 14), Specialists (Phase 12), Services (Phase 13), Inventory (Phase
-    /// 17), Accounting (Phase 18), and Staff &amp; HR (Phase 19) are the
-    /// real modules; the rest are explicitly not built yet (Phase 07 is
-    /// architecture-first) and register PlaceholderModule instead of a
-    /// bespoke module class - adding their real implementation later is a
-    /// one-line swap here, nothing else in the shell changes. Calendar and
-    /// HR have no placeholder to swap - each is a genuinely new entry,
-    /// added the same way (see CalendarModule's/HrModule's own doc
-    /// comments).
+    /// 17), Accounting (Phase 18), Staff &amp; HR (Phase 19), and Settings
+    /// (Phase 19A - the Language section this same phase adds) are the
+    /// real modules; Reports and AI Center are explicitly not built yet
+    /// (Phase 07 is architecture-first) and register PlaceholderModule
+    /// instead of a bespoke module class - adding their real
+    /// implementation later is a one-line swap here, nothing else in the
+    /// shell changes. Every title now resolves through <see cref="Strings"/>
+    /// (Phase 19A) rather than a literal - the whole sidebar localizes
+    /// with the rest of the app.
     /// </summary>
     private static void RegisterModules(IServiceCollection services)
     {
@@ -102,9 +143,16 @@ public partial class App
         services.AddSingleton<IModule, AccountingModule>();
         services.AddSingleton<IModule, HrModule>();
         services.AddSingleton<IModule, SpecialistModule>();
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "", 70)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("ai-center", "AI Center", "", 80)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("settings", "Settings", "", 90)));
+        // Registered as factories (not eagerly-constructed instances) so
+        // Strings.Nav_Reports/Nav_AiCenter evaluate lazily at first resolve
+        // (after OnStartup sets CurrentUICulture), matching every other
+        // module's static-field-on-first-touch timing - an eager `new
+        // PlaceholderModule(...)` here would run during ConfigureServices,
+        // before culture is set, freezing these two titles in whatever the
+        // OS-default culture was.
+        services.AddSingleton<IModule>(_ => new PlaceholderModule(new ModuleMetadata("reports", Strings.Nav_Reports, string.Empty, 70)));
+        services.AddSingleton<IModule>(_ => new PlaceholderModule(new ModuleMetadata("ai-center", Strings.Nav_AiCenter, string.Empty, 80)));
+        services.AddSingleton<IModule, SettingsModule>();
     }
 
     /// <summary>
@@ -153,8 +201,13 @@ public partial class App
 
     private static void ShowErrorDialog(Exception exception)
     {
+        // "ROJAN Desktop" (both the message text and the dialog title) is
+        // the product's brand name, not UI chrome text - left as a
+        // literal, same reasoning the header's own brand TextBlock uses,
+        // consistent with how brand names are conventionally not
+        // translated.
         MessageBox.Show(
-            $"Something went wrong. ROJAN Desktop will try to continue running.{Environment.NewLine}{Environment.NewLine}{exception.Message}",
+            $"{Strings.Common_ErrorDialogMessage}{Environment.NewLine}{Environment.NewLine}{exception.Message}",
             "ROJAN Desktop",
             MessageBoxButton.OK,
             MessageBoxImage.Error);

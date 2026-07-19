@@ -1,0 +1,201 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Settings.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             xmlns:settingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Settings">
+
+    <!--
+        Phase 19A: Enterprise Globalization & Localization Platform. The
+        real "settings" module, replacing the PlaceholderModule that held
+        that sidebar slot since Phase 07 - its one section today is
+        Language, the reference migration's proving ground: built-in
+        languages plus any installed pack (see ILanguagePackManager),
+        applying one persists the selection and requires a restart (never
+        live), and "Available Languages" is the LANGUAGE STORE
+        FOUNDATION requirement's foundation-only UI - every action there
+        reports Strings.Settings_Language_ComingSoon rather than silently
+        doing nothing, since no online store exists yet by design.
+
+        Every string here comes from Strings.* - this page (alongside
+        Shell chrome and Dashboard) is Phase 19A's proof that "no
+        hardcoded UI text" actually works end to end.
+
+        Merges its own RojanTheme.xaml dependency locally (same
+        self-sufficiency rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="32" MaxWidth="720" HorizontalAlignment="Left">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Settings_Title}" />
+            <TextBlock Grid.Row="0"
+                       Text="{x:Static loc:Strings.Settings_Subtitle}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       Margin="0,44,0,0" />
+
+            <!-- Language section -->
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Settings_Language_SectionTitle}" Margin="0,24,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentLanguageDisplay}" Style="{StaticResource Rojan.TextStyle.Body}" />
+
+                    <TextBlock Text="{x:Static loc:Strings.Settings_Language_BuiltIn}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="0,16,0,0" />
+                    <ListBox ItemsSource="{Binding BuiltInLanguages}"
+                             SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                             DisplayMemberPath="NativeName"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Margin="0,4,0,0"
+                             ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}" />
+
+                    <StackPanel Margin="0,16,0,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding InstalledPacks.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="{x:Static loc:Strings.Settings_Language_InstalledPacks}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <ListBox ItemsSource="{Binding InstalledPacks}"
+                                 SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Margin="0,4,0,0"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type loc:LanguageInfo}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding NativeName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1"
+                                                Content="{x:Static loc:Strings.Settings_Language_Remove}"
+                                                Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                Command="{Binding DataContext.RemovePackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <Button Content="{x:Static loc:Strings.Settings_Language_Apply}"
+                            Command="{Binding ApplyLanguageCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Warning}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Button Content="{x:Static loc:Strings.Settings_Language_RestartNow}"
+                            Command="{Binding RestartCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+            <!-- Available Languages (LANGUAGE STORE FOUNDATION) -->
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Settings_Language_AvailableLanguages}" Margin="0,16,0,32">
+                <StackPanel>
+                    <TextBlock Text="{x:Static loc:Strings.Settings_Language_ComingSoon}"
+                               Style="{StaticResource Rojan.TextStyle.Body}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="{x:Static loc:Strings.Settings_Language_NoPacksInstalled}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="0,12,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding AvailableLanguagePacks.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <ItemsControl ItemsSource="{Binding AvailableLanguagePacks}" Margin="0,12,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type loc:LanguagePackCatalogEntry}">
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding NativeName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1"
+                                            Content="{x:Static loc:Strings.Settings_Language_Download}"
+                                            Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                            Margin="0,0,8,0"
+                                            Command="{Binding DataContext.DownloadOrInstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="2"
+                                            Content="{x:Static loc:Strings.Settings_Language_Install}"
+                                            Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                            Command="{Binding DataContext.DownloadOrInstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+        </Grid>
+    </ScrollViewer>
+
+</UserControl>

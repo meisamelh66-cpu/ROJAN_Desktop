@@ -20,6 +20,8 @@
                     xmlns:accountingView="clr-namespace:Rojan.Desktop.Presentation.Views.Accounting"
                     xmlns:hrVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.HR"
                     xmlns:hrView="clr-namespace:Rojan.Desktop.Presentation.Views.HR"
+                    xmlns:settingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Settings"
+                    xmlns:settingsView="clr-namespace:Rojan.Desktop.Presentation.Views.Settings"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -73,6 +75,10 @@
 
   <DataTemplate DataType="{x:Type hrVm:HrPageViewModel}">
     <hrView:HrPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type settingsVm:SettingsPageViewModel}">
+    <settingsView:SettingsPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

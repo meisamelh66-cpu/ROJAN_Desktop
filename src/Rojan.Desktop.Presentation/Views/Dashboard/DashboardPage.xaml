@@ -4,7 +4,8 @@
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
-             xmlns:appDashboard="clr-namespace:Rojan.Desktop.Application.Dashboard;assembly=Rojan.Desktop.Application">
+             xmlns:appDashboard="clr-namespace:Rojan.Desktop.Application.Dashboard;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 06B: every placeholder Border/Style block from Phase 06A is
@@ -40,14 +41,14 @@
             <StackPanel Grid.Column="0" Margin="0,0,24,0">
 
                 <!-- Welcome / header section -->
-                <controls:SectionHeader Title="Dashboard" />
-                <TextBlock Text="Here's what's happening today."
+                <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
+                <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
                            Style="{StaticResource Rojan.TextStyle.Caption}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            Margin="0,4,0,0" />
 
                 <!-- KPI cards region -->
-                <dashboardControls:DashboardWidget Title="Key Metrics"
+                <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
                                                     State="{Binding State}"
                                                     ErrorMessage="{Binding ErrorMessage}"
                                                     RetryCommand="{Binding LoadCommand}"
@@ -74,7 +75,7 @@
                 </dashboardControls:DashboardWidget>
 
                 <!-- Quick Actions region: static, no repository data -->
-                <dashboardControls:DashboardCard Title="Quick Actions" Margin="0,24,0,0">
+                <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Dashboard_QuickActions}" Margin="0,24,0,0">
                     <ItemsControl ItemsSource="{Binding QuickActions}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -94,7 +95,7 @@
                 </dashboardControls:DashboardCard>
 
                 <!-- Recent Activity region -->
-                <dashboardControls:DashboardWidget Title="Recent Activity"
+                <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_RecentActivity}"
                                                     State="{Binding State}"
                                                     ErrorMessage="{Binding ErrorMessage}"
                                                     RetryCommand="{Binding LoadCommand}"
@@ -124,14 +125,14 @@
             </StackPanel>
 
             <!-- Right: AI Assistant panel placeholder - static, no repository data -->
-            <dashboardControls:DashboardCard Grid.Column="1" Title="AI Assistant" VerticalAlignment="Top">
+            <dashboardControls:DashboardCard Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top">
                 <StackPanel>
-                    <TextBlock Text="Coming soon."
+                    <TextBlock Text="{x:Static loc:Strings.Dashboard_ComingSoon}"
                                Style="{StaticResource Rojan.TextStyle.Body}"
                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                TextWrapping="Wrap"
                                Margin="0,0,0,16" />
-                    <Button Content="Ask AI"
+                    <Button Content="{x:Static loc:Strings.Dashboard_AskAi}"
                             Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             IsEnabled="False"
                             HorizontalAlignment="Left" />

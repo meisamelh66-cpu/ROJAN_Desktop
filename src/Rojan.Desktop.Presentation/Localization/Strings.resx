@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!--
+    Phase 19A: Enterprise Globalization & Localization Platform. This is
+    the NEUTRAL resx - .NET's ResourceManager always needs one to compile
+    the satellite-assembly chain against, and since Persian must always be
+    the first-launch language (see docs/phases/phase-19A-globalization-platform.md),
+    its content is the Persian strings, not English - Strings.en.resx and
+    Strings.ar.resx are the satellites. Hand-maintained (no Visual Studio
+    resx designer available in this environment) - see Strings.cs for the
+    hand-written strongly-typed wrapper that reads these via
+    System.Resources.ResourceManager, the same underlying mechanism the
+    VS-generated Designer.cs would produce.
+  -->
+  <data name="Common_Search" xml:space="preserve">
+    <value>جستجو</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>بازگشت</value>
+  </data>
+  <data name="Common_Forward" xml:space="preserve">
+    <value>پیشرفت</value>
+  </data>
+  <data name="Common_Notifications" xml:space="preserve">
+    <value>اعلان‌ها</value>
+  </data>
+  <data name="Common_GuestUser" xml:space="preserve">
+    <value>کاربر مهمان</value>
+  </data>
+  <data name="Common_Minimize" xml:space="preserve">
+    <value>کوچک کردن</value>
+  </data>
+  <data name="Common_Maximize" xml:space="preserve">
+    <value>بزرگ کردن</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>بستن</value>
+  </data>
+  <data name="Common_CollapseExpandNavigation" xml:space="preserve">
+    <value>جمع/باز کردن ناوبری</value>
+  </data>
+  <data name="Common_NoNotifications" xml:space="preserve">
+    <value>اعلانی وجود ندارد.</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>در حال بارگذاری...</value>
+  </data>
+  <data name="Common_NoDataAvailable" xml:space="preserve">
+    <value>داده‌ای موجود نیست.</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>تلاش مجدد</value>
+  </data>
+  <data name="Common_Ready" xml:space="preserve">
+    <value>آماده</value>
+  </data>
+  <data name="Common_Home" xml:space="preserve">
+    <value>خانه</value>
+  </data>
+  <data name="Common_ViewingFormat" xml:space="preserve">
+    <value>در حال مشاهده {0}</value>
+  </data>
+  <data name="Common_ErrorDialogMessage" xml:space="preserve">
+    <value>مشکلی پیش آمد. روژان دسکتاپ سعی می‌کند به کار خود ادامه دهد.</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>ذخیره</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>انصراف</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>امروز چه خبر است.</value>
+  </data>
+  <data name="Dashboard_KeyMetrics" xml:space="preserve">
+    <value>شاخص‌های کلیدی</value>
+  </data>
+  <data name="Dashboard_QuickActions" xml:space="preserve">
+    <value>اقدامات سریع</value>
+  </data>
+  <data name="Dashboard_RecentActivity" xml:space="preserve">
+    <value>فعالیت‌های اخیر</value>
+  </data>
+  <data name="Dashboard_AiAssistant" xml:space="preserve">
+    <value>دستیار هوش مصنوعی</value>
+  </data>
+  <data name="Dashboard_ComingSoon" xml:space="preserve">
+    <value>به‌زودی.</value>
+  </data>
+  <data name="Dashboard_AskAi" xml:space="preserve">
+    <value>پرسش از هوش مصنوعی</value>
+  </data>
+  <data name="Dashboard_QuickAction_NewBooking" xml:space="preserve">
+    <value>رزرو جدید</value>
+  </data>
+  <data name="Dashboard_QuickAction_AddClient" xml:space="preserve">
+    <value>افزودن مشتری</value>
+  </data>
+  <data name="Dashboard_QuickAction_CreateTask" xml:space="preserve">
+    <value>ایجاد وظیفه</value>
+  </data>
+  <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
+    <value>مشاهده گزارش‌ها</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
+  <data name="Nav_Customers" xml:space="preserve">
+    <value>مشتریان</value>
+  </data>
+  <data name="Nav_Bookings" xml:space="preserve">
+    <value>رزروها</value>
+  </data>
+  <data name="Nav_Calendar" xml:space="preserve">
+    <value>تقویم</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>خدمات</value>
+  </data>
+  <data name="Nav_Inventory" xml:space="preserve">
+    <value>موجودی</value>
+  </data>
+  <data name="Nav_Accounting" xml:space="preserve">
+    <value>حسابداری</value>
+  </data>
+  <data name="Nav_StaffHr" xml:space="preserve">
+    <value>کارکنان و منابع انسانی</value>
+  </data>
+  <data name="Nav_Specialists" xml:space="preserve">
+    <value>متخصصان</value>
+  </data>
+  <data name="Nav_Reports" xml:space="preserve">
+    <value>گزارش‌ها</value>
+  </data>
+  <data name="Nav_AiCenter" xml:space="preserve">
+    <value>مرکز هوش مصنوعی</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>مدیریت تنظیمات برنامه.</value>
+  </data>
+  <data name="Settings_Language_SectionTitle" xml:space="preserve">
+    <value>زبان</value>
+  </data>
+  <data name="Settings_Language_BuiltIn" xml:space="preserve">
+    <value>داخلی</value>
+  </data>
+  <data name="Settings_Language_InstalledPacks" xml:space="preserve">
+    <value>بسته‌های زبان نصب‌شده</value>
+  </data>
+  <data name="Settings_Language_AvailableLanguages" xml:space="preserve">
+    <value>زبان‌های موجود</value>
+  </data>
+  <data name="Settings_Language_Download" xml:space="preserve">
+    <value>دانلود</value>
+  </data>
+  <data name="Settings_Language_Install" xml:space="preserve">
+    <value>نصب</value>
+  </data>
+  <data name="Settings_Language_Remove" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Settings_Language_Update" xml:space="preserve">
+    <value>به‌روزرسانی</value>
+  </data>
+  <data name="Settings_Language_ComingSoon" xml:space="preserve">
+    <value>دانلود بسته‌های زبان هنوز در دسترس نیست - این فقط زیرساخت پایه است.</value>
+  </data>
+  <data name="Settings_Language_Apply" xml:space="preserve">
+    <value>اعمال زبان</value>
+  </data>
+  <data name="Settings_Language_RestartRequired" xml:space="preserve">
+    <value>برای اعمال زبان جدید، راه‌اندازی مجدد لازم است.</value>
+  </data>
+  <data name="Settings_Language_RestartNow" xml:space="preserve">
+    <value>راه‌اندازی مجدد</value>
+  </data>
+  <data name="Settings_Language_CurrentFormat" xml:space="preserve">
+    <value>زبان فعلی: {0}</value>
+  </data>
+  <data name="Settings_Language_NoPacksInstalled" xml:space="preserve">
+    <value>هیچ بسته زبان اضافی نصب نشده است.</value>
+  </data>
+</root>
