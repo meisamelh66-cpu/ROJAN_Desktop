@@ -57,6 +57,18 @@ see `docs/standards/versioning.md`.
   navigation — the `"appointments"` placeholder sidebar entry is now the
   real `BookingModule`, renamed to "Bookings". No database, no API, no
   external integrations. 121/121 tests passing (39 new).
+- Phase 12: Enterprise Specialist Management Foundation — fourth real
+  business module (`Rojan.Desktop.*.Specialists`), same vertical-slice
+  pattern as Dashboard, Customer CRM, and Bookings:
+  `Specialist`/`SpecialistStatus`/`SpecialistSkill` Domain entities,
+  `ISpecialistQueryService` (list + search)/`ISpecialistProfileQueryService`/
+  `ISpecialistCommandService` Application layer, mutable in-memory
+  `FakeSpecialistRepository` (5 seed specialists covering every status),
+  and a directory/profile/search/status/skills Presentation UI. Wired
+  into Shell navigation — the `"employees"` placeholder sidebar entry is
+  now the real `SpecialistModule`, renamed to "Specialists". No database,
+  no API, no external integrations, no Calendar, no Payroll. 165/165
+  tests passing (44 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

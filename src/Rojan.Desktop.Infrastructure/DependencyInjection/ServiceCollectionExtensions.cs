@@ -2,9 +2,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Domain.Bookings;
 using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
+using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
+using Rojan.Desktop.Infrastructure.Specialists;
 
 namespace Rojan.Desktop.Infrastructure.DependencyInjection;
 
@@ -19,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDashboardRepository, FakeDashboardRepository>();
         services.AddSingleton<ICustomerRepository, FakeCustomerRepository>();
         services.AddSingleton<IBookingRepository, FakeBookingRepository>();
+        services.AddSingleton<ISpecialistRepository, FakeSpecialistRepository>();
         return services;
     }
 }

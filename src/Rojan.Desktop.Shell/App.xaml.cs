@@ -78,11 +78,12 @@ public partial class App
 
     /// <summary>
     /// Every module the sidebar shows, in display order. Dashboard (Phase
-    /// 06B), Customers (Phase 09/10), and Bookings (Phase 11) are the real
-    /// modules; the rest are explicitly not built yet (Phase 07 is
-    /// architecture-first) and register PlaceholderModule instead of a
-    /// bespoke module class - adding their real implementation later is a
-    /// one-line swap here, nothing else in the shell changes.
+    /// 06B), Customers (Phase 09/10), Bookings (Phase 11), and Specialists
+    /// (Phase 12) are the real modules; the rest are explicitly not built
+    /// yet (Phase 07 is architecture-first) and register PlaceholderModule
+    /// instead of a bespoke module class - adding their real
+    /// implementation later is a one-line swap here, nothing else in the
+    /// shell changes.
     /// </summary>
     private static void RegisterModules(IServiceCollection services)
     {
@@ -92,7 +93,7 @@ public partial class App
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("services", "Services", "✦", 30)));
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "▤", 40)));
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "$", 50)));
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("employees", "Employees", "◉", 60)));
+        services.AddSingleton<IModule, SpecialistModule>();
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "▥", 70)));
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("ai-center", "AI Center", "✧", 80)));
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("settings", "Settings", "⚙", 90)));
