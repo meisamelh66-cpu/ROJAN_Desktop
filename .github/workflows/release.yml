@@ -1,0 +1,82 @@
+name: Release
+
+# Packaging/release pipeline. Triggers only on a vMAJOR.MINOR.PATCH[-PRE]
+# tag pushed to main, per docs/standards/versioning.md §6 ("tag creation
+# triggers the packaging/release pipeline"). Never runs on ordinary
+# commits - a tag is a deliberate, reviewed act (version-bump PR merged,
+# then tag created manually), not something CI decides on its own.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  package-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RojanDesktop.sln
+
+      # A tag build is independently re-verified here, never assumed green
+      # because some earlier PR's CI passed - tags can be pushed from any
+      # state of main.
+      - name: Build (Release)
+        run: dotnet build RojanDesktop.sln --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test RojanDesktop.sln
+          --configuration Release
+          --no-build
+          --logger trx
+          --results-directory TestResults
+
+      - name: Resolve version from Directory.Build.props
+        id: version
+        shell: pwsh
+        run: |
+          $version = & ./build/get-version.ps1
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      # Directory.Build.props is the single source of truth
+      # (versioning.md §2) - a tag that doesn't match it must never
+      # produce a release, since that would mean the tag was cut against
+      # the wrong commit or the version bump PR was skipped.
+      - name: Verify tag matches project version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $expected = "v${{ steps.version.outputs.version }}"
+          if ($tag -ne $expected) {
+            Write-Error "Tag '$tag' does not match Directory.Build.props version '$expected'."
+            exit 1
+          }
+
+      - name: Publish and package (ZIP)
+        shell: pwsh
+        run: ./build/publish.ps1 -Version "${{ steps.version.outputs.version }}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RojanDesktop-${{ steps.version.outputs.version }}-win-x64
+          path: artifacts/*.zip
+
+      # gh is preinstalled on GitHub-hosted runners - no third-party
+      # marketplace action needed to publish the release.
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $zip = Get-ChildItem artifacts/*.zip | Select-Object -First 1
+          gh release create "${{ github.ref_name }}" $zip.FullName --title "${{ github.ref_name }}" --generate-notes

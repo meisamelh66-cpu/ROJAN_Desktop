@@ -50,6 +50,7 @@ bld/
 
 # Publish / packaging output
 publish/
+artifacts/
 *.publish.xml
 *.azurePubxml
 *.pubxml

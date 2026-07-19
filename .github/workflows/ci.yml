@@ -1,0 +1,57 @@
+name: CI
+
+# PR/branch gate - turns branch-strategy.md's "every PR into main must
+# build and pass the architecture tests" from a manual pre-merge check
+# into an automatic one. Never publishes anything - see release.yml for
+# the tag-triggered packaging pipeline.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - 'phase/**'
+      - 'feature/**'
+      - 'fix/**'
+
+jobs:
+  build-and-test:
+    # net8.0-windows/WPF cannot build or run on Linux/macOS runners.
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RojanDesktop.sln
+
+      # Release, not Debug: Release is what ships, so it's the one
+      # configuration actually worth validating. TreatWarningsAsErrors
+      # (Directory.Build.props) makes this step the real warning gate -
+      # no extra flag needed here.
+      - name: Build (Release)
+        run: dotnet build RojanDesktop.sln --configuration Release --no-restore
+
+      # Runs all five Phase 08 test projects, including ArchitectureTests -
+      # satisfies branch-strategy.md's "must pass the architecture tests"
+      # requirement as part of the same command, not a bespoke step.
+      - name: Test
+        run: >
+          dotnet test RojanDesktop.sln
+          --configuration Release
+          --no-build
+          --logger trx
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults

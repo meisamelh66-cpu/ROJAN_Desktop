@@ -29,6 +29,14 @@ see `docs/standards/versioning.md`.
   slices. Architecture tests enforce dependency direction and ViewModel
   testability as executable checks. No new NuGet packages — built on the
   `xunit` setup already pinned in `Directory.Packages.props`.
+- Phase 09: Release Engineering — `.github/workflows/ci.yml` (build+test
+  gate on every PR/branch push) and `.github/workflows/release.yml`
+  (tag-triggered packaging, gated on the tag matching
+  `Directory.Build.props`'s version exactly). `build/get-version.ps1` and
+  `build/publish.ps1` (self-contained, single-file, `win-x64`, ZIP-only
+  packaging — no installer, a deliberate scope decision per
+  `docs/phases/phase-09-release-engineering.md`). No new NuGet packages,
+  no third-party GitHub Actions.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
