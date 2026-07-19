@@ -96,7 +96,7 @@ public partial class App
         services.AddSingleton<IModule, BookingModule>();
         services.AddSingleton<IModule, CalendarModule>();
         services.AddSingleton<IModule, ServiceModule>();
-        services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "", 40)));
+        services.AddSingleton<IModule, InventoryModule>();
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "", 50)));
         services.AddSingleton<IModule, SpecialistModule>();
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("reports", "Reports", "", 70)));

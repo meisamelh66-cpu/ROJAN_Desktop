@@ -3,11 +3,13 @@ using Rojan.Desktop.Domain.Bookings;
 using Rojan.Desktop.Domain.Calendar;
 using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
+using Rojan.Desktop.Domain.Inventory;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
+using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Specialists;
 using DomainServices = Rojan.Desktop.Domain.Services;
 using InfraServices = Rojan.Desktop.Infrastructure.Services;
@@ -31,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISpecialistRepository, FakeSpecialistRepository>();
         services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
         services.AddSingleton<ICalendarRepository, FakeCalendarRepository>();
+        services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
         return services;
     }
 }

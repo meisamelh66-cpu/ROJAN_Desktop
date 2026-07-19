@@ -14,6 +14,8 @@
                     xmlns:specialistsView="clr-namespace:Rojan.Desktop.Presentation.Views.Specialists"
                     xmlns:servicesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Services"
                     xmlns:servicesView="clr-namespace:Rojan.Desktop.Presentation.Views.Services"
+                    xmlns:inventoryVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Inventory"
+                    xmlns:inventoryView="clr-namespace:Rojan.Desktop.Presentation.Views.Inventory"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -51,6 +53,10 @@
 
   <DataTemplate DataType="{x:Type servicesVm:ServicePageViewModel}">
     <servicesView:ServicePage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type inventoryVm:InventoryPageViewModel}">
+    <inventoryView:InventoryPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

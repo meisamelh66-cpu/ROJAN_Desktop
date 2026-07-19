@@ -4,6 +4,7 @@ using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
+using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
 
@@ -36,6 +37,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICalendarQueryService, CalendarQueryService>();
         services.AddSingleton<ICalendarCommandService, CalendarCommandService>();
         services.AddSingleton<IBookingWorkflowService, BookingWorkflowService>();
+        services.AddSingleton<IProductQueryService, ProductQueryService>();
+        services.AddSingleton<IProductProfileQueryService, ProductProfileQueryService>();
+        services.AddSingleton<IInventoryQueryService, InventoryQueryService>();
+        services.AddSingleton<IInventoryCommandService, InventoryCommandService>();
         return services;
     }
 }

@@ -141,6 +141,25 @@ see `docs/standards/versioning.md`.
   Converters folder) and Shell (MainWindow.xaml, module icon-glyph
   string literals) only. 278/278 tests passing (unchanged from Phase 15
   - no ViewModel behavior changed).
+- Phase 17: Enterprise Inventory & Product Management — seventh real
+  business module (`Rojan.Desktop.*.Inventory`), same vertical-slice
+  pattern as every prior module, replacing the "inventory" placeholder
+  sidebar entry one-for-one: `Product`/`ProductCategory`/`Supplier`/
+  `InventoryItem`/`StockTransaction`/`ServiceProductMapping` Domain
+  entities (six aggregate types in one slice - the widest single
+  repository interface in this app) plus a new `StockTransactionRules`
+  Domain rule governing how each transaction type moves on-hand
+  quantity; `IProductQueryService` (list/search/category/supplier
+  options)/`IProductProfileQueryService`/`IInventoryQueryService`
+  (low-stock monitoring)/`IInventoryCommandService` (product/category/
+  supplier creation, validated stock transactions, service-to-product
+  mapping) Application layer; `FakeInventoryRepository` (6 categories,
+  4 suppliers, 10 products, 4 deliberately low-stock, service mappings
+  cross-referencing the real Services module seed ids); a catalog/
+  quick-add/profile/stock-transaction/service-mapping Presentation UI
+  reusing every Phase 16 Fluent control and token unchanged - no Design
+  System changes this phase. No database, no API, no external
+  integrations. 362/362 tests passing (84 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
