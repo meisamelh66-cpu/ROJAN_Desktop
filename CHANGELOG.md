@@ -179,6 +179,32 @@ see `docs/standards/versioning.md`.
   black 40%. Zero Domain/Application/Infrastructure/business-rule
   changes - Presentation `Themes/` and one Shell markup file only.
   362/362 tests passing (unchanged - no ViewModel behavior changed).
+- Phase 18: Enterprise POS & Accounting Foundation — eighth real business
+  module (`Rojan.Desktop.*.Accounting`), same vertical-slice pattern as
+  every prior module, replacing the "accounting" placeholder sidebar
+  entry one-for-one: `Invoice`/`InvoiceItem`/`Payment`/`Receipt`/
+  `CashSession` Domain entities (five aggregate types in one slice) with
+  new `InvoiceCalculator`/`InvoicePaymentRules` Domain rules - the first
+  module to use `decimal` for money instead of the display-only
+  string-money convention every prior module used, since this is the
+  first module doing genuine monetary arithmetic; `IInvoiceQueryService`/
+  `IInvoiceCommandService`/`IPaymentQueryService`/`IPaymentCommandService`
+  Application layer, composing over Customers/Bookings/Services/
+  Inventory's own query services for the POS checkout's cart options and
+  over Inventory's command service to decrement stock on product sale
+  (the "Integrate with Booking, Customer, Inventory" requirement);
+  `FakeAccountingRepository` (8 seed invoices spanning every status,
+  cross-referencing real Booking/Customer/Service/Product seed ids, 6
+  payments, 6 receipts, 2 cash sessions); Presentation: `AccountingPage`
+  (Revenue KPI cards, searchable invoice list, read-only invoice detail
+  panel) plus `PosCheckoutView` - a Cart → Payment → Receipt wizard-
+  dialog fulfilling both the "POS checkout page" and "Payment dialog"
+  deliverables in one dialog surface, reusing the existing
+  `IDialogService`. No database, no API, no online payment. 449/449
+  tests passing (87 new). Runtime-verified end-to-end: KPI cards,
+  invoice list/detail, and a full POS sale (cart → payment → receipt)
+  that correctly decremented Inventory stock and updated the Revenue
+  KPIs.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

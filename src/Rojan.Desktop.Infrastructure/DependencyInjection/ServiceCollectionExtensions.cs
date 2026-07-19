@@ -1,10 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.Bookings;
 using Rojan.Desktop.Domain.Calendar;
 using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.Inventory;
 using Rojan.Desktop.Domain.Specialists;
+using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Customers;
@@ -34,6 +36,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
         services.AddSingleton<ICalendarRepository, FakeCalendarRepository>();
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
+        services.AddSingleton<IAccountingRepository, FakeAccountingRepository>();
         return services;
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
@@ -28,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ServicePageViewModel>();
         services.AddTransient<CalendarPageViewModel>();
         services.AddTransient<InventoryPageViewModel>();
+        services.AddTransient<AccountingPageViewModel>();
         return services;
     }
 }

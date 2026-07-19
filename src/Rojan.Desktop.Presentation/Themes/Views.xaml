@@ -16,6 +16,8 @@
                     xmlns:servicesView="clr-namespace:Rojan.Desktop.Presentation.Views.Services"
                     xmlns:inventoryVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Inventory"
                     xmlns:inventoryView="clr-namespace:Rojan.Desktop.Presentation.Views.Inventory"
+                    xmlns:accountingVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Accounting"
+                    xmlns:accountingView="clr-namespace:Rojan.Desktop.Presentation.Views.Accounting"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -57,6 +59,14 @@
 
   <DataTemplate DataType="{x:Type inventoryVm:InventoryPageViewModel}">
     <inventoryView:InventoryPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type accountingVm:AccountingPageViewModel}">
+    <accountingView:AccountingPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type accountingVm:PosCheckoutViewModel}">
+    <accountingView:PosCheckoutView />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">
