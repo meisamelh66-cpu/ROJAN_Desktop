@@ -8,6 +8,8 @@
                     xmlns:bookingsView="clr-namespace:Rojan.Desktop.Presentation.Views.Bookings"
                     xmlns:specialistsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Specialists"
                     xmlns:specialistsView="clr-namespace:Rojan.Desktop.Presentation.Views.Specialists"
+                    xmlns:servicesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Services"
+                    xmlns:servicesView="clr-namespace:Rojan.Desktop.Presentation.Views.Services"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -33,6 +35,10 @@
 
   <DataTemplate DataType="{x:Type specialistsVm:SpecialistPageViewModel}">
     <specialistsView:SpecialistPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type servicesVm:ServicePageViewModel}">
+    <servicesView:ServicePage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

@@ -7,12 +7,17 @@ using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Specialists;
+using DomainServices = Rojan.Desktop.Domain.Services;
+using InfraServices = Rojan.Desktop.Infrastructure.Services;
 
 namespace Rojan.Desktop.Infrastructure.DependencyInjection;
 
 /// <summary>
 /// Composition entry point for this layer. <c>Shell</c>'s composition root
-/// calls this without knowing what, if anything, it registers.
+/// calls this without knowing what, if anything, it registers. The
+/// Services vertical slice is aliased to avoid any visual confusion with
+/// <see cref="IServiceCollection"/>/<see cref="ServiceCollectionExtensions"/>
+/// in this same file - same names, unrelated concepts.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -22,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICustomerRepository, FakeCustomerRepository>();
         services.AddSingleton<IBookingRepository, FakeBookingRepository>();
         services.AddSingleton<ISpecialistRepository, FakeSpecialistRepository>();
+        services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
         return services;
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
+using Rojan.Desktop.Presentation.ViewModels.Services;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
 
 namespace Rojan.Desktop.Presentation.DependencyInjection;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<CustomerPageViewModel>();
         services.AddTransient<BookingPageViewModel>();
         services.AddTransient<SpecialistPageViewModel>();
+        services.AddTransient<ServicePageViewModel>();
         return services;
     }
 }

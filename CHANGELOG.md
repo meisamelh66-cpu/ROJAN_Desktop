@@ -69,6 +69,21 @@ see `docs/standards/versioning.md`.
   now the real `SpecialistModule`, renamed to "Specialists". No database,
   no API, no external integrations, no Calendar, no Payroll. 165/165
   tests passing (44 new).
+- Phase 13: Enterprise Service Catalog & Availability Foundation — fifth
+  real business module (`Rojan.Desktop.*.Services`), same vertical-slice
+  pattern as Dashboard, Customer CRM, Bookings, and Specialists:
+  `Service`/`ServiceCategory`/`ServiceStatus`/`SpecialistService` (the
+  specialist-to-service assignment mapping) Domain entities,
+  `IServiceQueryService` (list + search)/`IServiceProfileQueryService`/
+  `IServiceCommandService` (specialist assignment only - no catalog
+  create/update commands were requested) Application layer, mutable
+  in-memory `FakeServiceRepository` (9 seed services covering every
+  category and status), and a catalog/search/category/duration/price/
+  assigned-specialists Presentation UI. Wired into Shell navigation — the
+  `"services"` placeholder sidebar entry is now the real `ServiceModule`
+  (no rename needed, the placeholder was already named "Services"). No
+  database, no API, no external integrations, no Calendar, no Payment.
+  207/207 tests passing (42 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

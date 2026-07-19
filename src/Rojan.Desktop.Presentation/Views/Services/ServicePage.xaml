@@ -1,0 +1,233 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Services.ServicePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:appServices="clr-namespace:Rojan.Desktop.Application.Services;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 13: Service Catalog & Availability Foundation. Same
+        master-detail shape as CustomerPage/SpecialistPage: a searchable
+        catalog on the left, and the selected service's profile (category,
+        duration/price, description, assigned specialists) on the right,
+        bound to ServicePageViewModel.Profile (ServiceProfileViewModel),
+        null when nothing is selected. No "Add Service" form (unlike
+        Customers/Bookings/Specialists) - catalog authoring wasn't
+        requested for this phase, only browse/search plus specialist
+        assignment.
+
+        Every card/widget here is DashboardCard/DashboardWidget/KPIValue -
+        no new Design System components needed, same as every other module.
+
+        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="380" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: header, search box, service catalog -->
+        <Grid Grid.Column="0" Margin="0,0,24,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <controls:SectionHeader Grid.Row="0" Title="Services" />
+            <TextBlock Grid.Row="0"
+                       Text="Browse the catalog and manage specialist assignments."
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       Margin="0,44,0,0" />
+
+            <Border Grid.Row="1"
+                    Style="{StaticResource Rojan.Style.GlassPanel}"
+                    Padding="16,10"
+                    Margin="0,24,0,0">
+                <Grid>
+                    <TextBlock Text="Search by name, category, or description..."
+                               Foreground="{StaticResource Rojan.Brush.HintText}"
+                               FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                               FontSize="15"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                             CaretBrush="{StaticResource Rojan.Brush.VividPurple}"
+                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                             FontSize="15" />
+                </Grid>
+            </Border>
+
+            <dashboardControls:DashboardWidget Grid.Row="2"
+                                                Title="All Services"
+                                                State="{Binding State}"
+                                                ErrorMessage="{Binding ErrorMessage}"
+                                                RetryCommand="{Binding LoadCommand}"
+                                                Margin="0,24,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="560">
+                    <ListBox ItemsSource="{Binding Services}"
+                             SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type appServices:ServiceDto}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                            <Run Text="{Binding Category, Mode=OneWay}" />
+                                            <Run Text=" · " />
+                                            <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
+                                            <Run Text=" min · " />
+                                            <Run Text="{Binding Price, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Status}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </dashboardControls:DashboardWidget>
+        </Grid>
+
+        <!-- Right: selected service's profile - category, duration/price, description, assigned specialists -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <TextBlock Text="Select a service to view its profile."
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Profile}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <StackPanel DataContext="{Binding Profile}">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- Identity + category/status -->
+                    <dashboardControls:DashboardCard Title="{Binding Service.Name}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                <Run Text="{Binding Service.Category, Mode=OneWay}" />
+                                <Run Text=" · " />
+                                <Run Text="{Binding Service.Status, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding Service.Description}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,12,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Duration and price display -->
+                    <dashboardControls:DashboardWidget Title="Details"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <dashboardControls:KPIValue Label="Duration" Value="{Binding Service.DurationMinutes, StringFormat={}{0} min}" Margin="0,0,32,0" />
+                            <dashboardControls:KPIValue Label="Price" Value="{Binding Service.Price}" />
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Assigned specialists -->
+                    <dashboardControls:DashboardCard Title="Assigned Specialists" Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding AssignedSpecialists}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appServices:AssignedSpecialistDto}">
+                                        <Border Background="{StaticResource Rojan.Brush.AquaMint}"
+                                                CornerRadius="12"
+                                                Padding="10,4"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" />
+                                                <Button Content="&#10005;"
+                                                        Margin="8,0,0,0"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        FontSize="11"
+                                                        Command="{Binding DataContext.UnassignSpecialistCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <TextBox Text="{Binding NewSpecialistName, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                                <Button Content="Assign"
+                                        Command="{Binding AssignSpecialistCommand}"
+                                        Style="{StaticResource Rojan.Style.GlassButton}"
+                                        Margin="8,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+    </Grid>
+
+</UserControl>
