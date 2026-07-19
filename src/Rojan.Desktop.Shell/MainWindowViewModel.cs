@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
@@ -12,9 +13,13 @@ namespace Rojan.Desktop.Shell;
 /// dialog host). No business logic - lives in Shell (not Presentation)
 /// because it is specific to this window's frame, not a reusable page
 /// ViewModel, the same reasoning that keeps the concrete NavigationService
-/// and ModuleRegistry in Shell.
+/// and ModuleRegistry in Shell. Implements <see cref="IDialogService"/>
+/// directly (same alias-registration pattern App.xaml.cs already uses for
+/// NavigationService/INavigationService) - Phase 15 is the first producer
+/// of <see cref="ActiveDialog"/>, filling in the extension point that
+/// property's doc comment has named since Phase 07.
 /// </summary>
-public sealed class MainWindowViewModel : ViewModelBase
+public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 {
     private readonly INavigationService _navigationService;
     private NavigationItem _selectedNavigationItem = null!;
@@ -114,12 +119,16 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _statusMessage, value);
     }
 
-    /// <summary>Dialog region host - null means nothing is shown. No producer exists yet (Phase 07 is architecture-first); a future IDialogService sets this.</summary>
+    /// <summary>Dialog region host - null means nothing is shown. Set via <see cref="ShowDialog"/>/<see cref="CloseDialog"/>, its <see cref="IDialogService"/> implementation.</summary>
     public object? ActiveDialog
     {
         get => _activeDialog;
         set => SetProperty(ref _activeDialog, value);
     }
+
+    public void ShowDialog(object viewModel) => ActiveDialog = viewModel;
+
+    public void CloseDialog() => ActiveDialog = null;
 
     public ICommand SelectNavigationItemCommand { get; }
 

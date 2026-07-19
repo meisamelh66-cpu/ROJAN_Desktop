@@ -22,24 +22,32 @@ public sealed class FakeBookingRepository : IBookingRepository
     {
         var now = DateTimeOffset.Now;
 
+        // ServiceId/SpecialistId are populated only where the booking's
+        // free-text ServiceName/SpecialistName cleanly matches a real
+        // catalog entry (Services.FakeServiceRepository /
+        // Specialists.FakeSpecialistRepository) - "Corporate Group
+        // Styling" (booking-3) predates the Service catalog (Phase 11
+        // vs. Phase 13) and isn't one of the nine seeded services, so it
+        // deliberately keeps an empty ServiceId/"$0" Price rather than
+        // fabricating a false link.
         _bookings =
         [
-            new Booking("booking-1", string.Empty, "Amelia Hart", "Colour Touch-Up", "Jordan Lee",
-                now.AddDays(2), 90, BookingStatus.Confirmed, "Regular colour touch-up client."),
-            new Booking("booking-2", string.Empty, "Sophia Reyes", "Full Package - Balayage & Style", "Jordan Lee",
-                now.AddDays(5), 150, BookingStatus.Pending, "VIP tier - full package monthly."),
-            new Booking("booking-3", string.Empty, "Olivia Chen", "Corporate Group Styling", "Priya Nair",
-                now.AddDays(9), 240, BookingStatus.Pending, "Corporate account - team of six."),
-            new Booking("booking-4", string.Empty, "Noah Bennett", "Consultation", "Priya Nair",
-                now.AddDays(3), 30, BookingStatus.Pending, "First-time consultation."),
-            new Booking("booking-5", string.Empty, "Amelia Hart", "Manicure", "Casey Morgan",
-                now.AddDays(-5), 45, BookingStatus.Completed, string.Empty),
-            new Booking("booking-6", string.Empty, "Sophia Reyes", "Facial Renewal", "Casey Morgan",
-                now.AddDays(-10), 60, BookingStatus.Completed, string.Empty),
-            new Booking("booking-7", string.Empty, "Liam Foster", "Haircut & Style", "Jordan Lee",
-                now.AddDays(-95), 60, BookingStatus.Completed, string.Empty),
-            new Booking("booking-8", string.Empty, "Ethan Brooks", "Haircut & Style", "Priya Nair",
-                now.AddDays(-1), 60, BookingStatus.Cancelled, "Cancelled - rescheduling pending."),
+            new Booking("booking-1", string.Empty, "Amelia Hart", "service-2", "Colour Touch-Up", "specialist-1", "Jordan Lee",
+                now.AddDays(2), 90, "$120", BookingStatus.Confirmed, "Regular colour touch-up client."),
+            new Booking("booking-2", string.Empty, "Sophia Reyes", "service-3", "Full Package - Balayage & Style", "specialist-1", "Jordan Lee",
+                now.AddDays(5), 150, "$220", BookingStatus.Pending, "VIP tier - full package monthly."),
+            new Booking("booking-3", string.Empty, "Olivia Chen", string.Empty, "Corporate Group Styling", "specialist-2", "Priya Nair",
+                now.AddDays(9), 240, "$0", BookingStatus.Pending, "Corporate account - team of six."),
+            new Booking("booking-4", string.Empty, "Noah Bennett", "service-7", "Consultation", "specialist-2", "Priya Nair",
+                now.AddDays(3), 30, "$0", BookingStatus.Pending, "First-time consultation."),
+            new Booking("booking-5", string.Empty, "Amelia Hart", "service-4", "Manicure", "specialist-3", "Casey Morgan",
+                now.AddDays(-5), 45, "$40", BookingStatus.Completed, string.Empty),
+            new Booking("booking-6", string.Empty, "Sophia Reyes", "service-5", "Facial Renewal", "specialist-3", "Casey Morgan",
+                now.AddDays(-10), 60, "$85", BookingStatus.Completed, string.Empty),
+            new Booking("booking-7", string.Empty, "Liam Foster", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee",
+                now.AddDays(-95), 60, "$65", BookingStatus.Completed, string.Empty),
+            new Booking("booking-8", string.Empty, "Ethan Brooks", "service-1", "Haircut & Style", "specialist-2", "Priya Nair",
+                now.AddDays(-1), 60, "$65", BookingStatus.Cancelled, "Cancelled - rescheduling pending."),
         ];
     }
 

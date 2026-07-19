@@ -14,4 +14,10 @@ internal sealed class StubBookingQueryService : IBookingQueryService
 
     public Task<IReadOnlyList<BookingDto>> GetBookingsAsync(CancellationToken cancellationToken = default) =>
         _getBookings(cancellationToken);
+
+    public async Task<BookingDto?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default)
+    {
+        var bookings = await _getBookings(cancellationToken).ConfigureAwait(true);
+        return bookings.FirstOrDefault(booking => booking.Id == bookingId);
+    }
 }

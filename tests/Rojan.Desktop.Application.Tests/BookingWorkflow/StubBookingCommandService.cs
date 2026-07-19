@@ -1,26 +1,28 @@
 using Rojan.Desktop.Application.Bookings;
 
-namespace Rojan.Desktop.Presentation.Tests.Bookings;
+namespace Rojan.Desktop.Application.Tests.BookingWorkflow;
 
-/// <summary>Records every call it receives so ViewModel tests can assert a command was invoked with the right arguments - same reasoning as Customers.StubCustomerCommandService.</summary>
+/// <summary>Call-recording <see cref="IBookingCommandService"/> test double, with a switch to make <see cref="CreateBookingAsync"/> throw - needed to exercise <see cref="Rojan.Desktop.Application.BookingWorkflow.BookingWorkflowService.CreateBookingAsync"/>'s calendar-reservation rollback path.</summary>
 internal sealed class StubBookingCommandService : IBookingCommandService
 {
     public List<CreateBookingRequest> CreateRequests { get; } = [];
 
     public List<(string BookingId, BookingStatus Status)> UpdateStatusCalls { get; } = [];
 
-    /// <summary>Optional hook run after a booking is created, before the DTO is returned - lets a test mirror the created booking into whatever backing list the paired query-service stub reads from.</summary>
-    public Action<CreateBookingRequest, BookingDto>? OnBookingCreated { get; set; }
+    public bool ThrowOnCreate { get; set; }
 
     public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
+        if (ThrowOnCreate)
+        {
+            throw new InvalidOperationException("Booking could not be created.");
+        }
+
         CreateRequests.Add(request);
-        var dto = new BookingDto(
-            "new-booking", request.CustomerId, request.CustomerName, request.ServiceId, request.ServiceName,
+        return Task.FromResult(new BookingDto(
+            "booking-new", request.CustomerId, request.CustomerName, request.ServiceId, request.ServiceName,
             request.SpecialistId, request.SpecialistName, request.ScheduledAt, request.DurationMinutes,
-            request.Price, BookingStatus.Pending, request.Notes);
-        OnBookingCreated?.Invoke(request, dto);
-        return Task.FromResult(dto);
+            request.Price, BookingStatus.Pending, request.Notes));
     }
 
     public Task<BookingDto> UpdateBookingStatusAsync(string bookingId, BookingStatus status, CancellationToken cancellationToken = default)

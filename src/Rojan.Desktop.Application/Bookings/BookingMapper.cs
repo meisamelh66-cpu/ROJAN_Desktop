@@ -9,10 +9,13 @@ internal static class BookingMapper
         booking.Id,
         booking.CustomerId,
         booking.CustomerName,
+        booking.ServiceId,
         booking.ServiceName,
+        booking.SpecialistId,
         booking.SpecialistName,
         booking.ScheduledAt,
         booking.DurationMinutes,
+        booking.Price,
         MapStatus(booking.Status),
         booking.Notes);
 
@@ -20,8 +23,10 @@ internal static class BookingMapper
     {
         DomainBookings.BookingStatus.Pending => BookingStatus.Pending,
         DomainBookings.BookingStatus.Confirmed => BookingStatus.Confirmed,
+        DomainBookings.BookingStatus.InProgress => BookingStatus.InProgress,
         DomainBookings.BookingStatus.Completed => BookingStatus.Completed,
         DomainBookings.BookingStatus.Cancelled => BookingStatus.Cancelled,
+        DomainBookings.BookingStatus.NoShow => BookingStatus.NoShow,
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown domain booking status."),
     };
 
@@ -29,8 +34,10 @@ internal static class BookingMapper
     {
         BookingStatus.Pending => DomainBookings.BookingStatus.Pending,
         BookingStatus.Confirmed => DomainBookings.BookingStatus.Confirmed,
+        BookingStatus.InProgress => DomainBookings.BookingStatus.InProgress,
         BookingStatus.Completed => DomainBookings.BookingStatus.Completed,
         BookingStatus.Cancelled => DomainBookings.BookingStatus.Cancelled,
+        BookingStatus.NoShow => DomainBookings.BookingStatus.NoShow,
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown application booking status."),
     };
 }

@@ -51,8 +51,8 @@ public sealed class FakeBookingRepositoryTests
     public async Task CreateBookingAsync_NewBooking_BecomesVisibleViaGetBookingsAsync()
     {
         var sut = new FakeBookingRepository();
-        var booking = new Booking("booking-new", string.Empty, "Test Customer", "Test Service", string.Empty,
-            DateTimeOffset.UnixEpoch, 60, BookingStatus.Pending, string.Empty);
+        var booking = new Booking("booking-new", string.Empty, "Test Customer", string.Empty, "Test Service", string.Empty, string.Empty,
+            DateTimeOffset.UnixEpoch, 60, "$0", BookingStatus.Pending, string.Empty);
 
         await sut.CreateBookingAsync(booking);
         var bookings = await sut.GetBookingsAsync();

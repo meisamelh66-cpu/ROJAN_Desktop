@@ -1,28 +1,35 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Bookings;
+using Rojan.Desktop.Application.BookingWorkflow;
+using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Mvvm;
+using Rojan.Desktop.Presentation.ViewModels.BookingWorkflow;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Bookings;
 
 /// <summary>
-/// Drives BookingPage - the booking list on the left, a new-booking form,
-/// and the selected booking's details plus status-transition actions on
-/// the right. Depends only on Application services
-/// (<see cref="IBookingQueryService"/>, <see cref="IBookingCommandService"/>),
-/// consistent with Presentation never reaching past Application into
-/// Domain/Infrastructure. Reuses <see cref="DashboardState"/> rather than a
-/// duplicate enum, same reasoning as every other page ViewModel in this app.
-/// Foundation scope (Phase 11): no calendar view, no conflict detection,
-/// no cross-slice link to a real Customer record (CustomerName is free
-/// text) - a working vertical slice end to end, not the full booking
-/// management experience.
+/// Drives BookingPage - the booking list on the left, a free-text
+/// new-booking quick-add form, and the selected booking's details plus
+/// status-transition actions on the right. Depends only on Application
+/// services (<see cref="IBookingQueryService"/>,
+/// <see cref="IBookingCommandService"/>, <see cref="IBookingWorkflowService"/>)
+/// plus <see cref="IDialogService"/>, consistent with Presentation never
+/// reaching past Application into Domain/Infrastructure. Reuses
+/// <see cref="DashboardState"/> rather than a duplicate enum, same
+/// reasoning as every other page ViewModel in this app.
+/// <see cref="OpenWizardCommand"/> (Phase 15) opens the guided,
+/// real-cross-slice-data Booking Wizard as a dialog - the quick-add form
+/// stays as-is (free text, foundation scope) alongside it, not replaced by
+/// it.
 /// </summary>
 public sealed class BookingPageViewModel : ViewModelBase
 {
     private readonly IBookingQueryService _queryService;
     private readonly IBookingCommandService _commandService;
+    private readonly IBookingWorkflowService _workflowService;
+    private readonly IDialogService _dialogService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -33,14 +40,21 @@ public sealed class BookingPageViewModel : ViewModelBase
     private DateTime? _newBookingDate = DateTime.Today.AddDays(1);
     private int _newBookingDurationMinutes = 60;
 
-    public BookingPageViewModel(IBookingQueryService queryService, IBookingCommandService commandService)
+    public BookingPageViewModel(
+        IBookingQueryService queryService,
+        IBookingCommandService commandService,
+        IBookingWorkflowService workflowService,
+        IDialogService dialogService)
     {
         _queryService = queryService;
         _commandService = commandService;
+        _workflowService = workflowService;
+        _dialogService = dialogService;
 
         Bookings = new ObservableCollection<BookingDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
+        OpenWizardCommand = new RelayCommand(_ => OpenWizard());
         CreateBookingCommand = new AsyncRelayCommand(
             _ => CreateBookingAsync(),
             _ => !string.IsNullOrWhiteSpace(NewBookingCustomerName)
@@ -68,6 +82,9 @@ public sealed class BookingPageViewModel : ViewModelBase
 
     /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
     public ICommand LoadCommand { get; }
+
+    /// <summary>Opens the Booking Wizard dialog - real Customer/Service/Specialist/Calendar-backed booking creation, distinct from the free-text quick-add form on this same page.</summary>
+    public ICommand OpenWizardCommand { get; }
 
     public ICommand CreateBookingCommand { get; }
 
@@ -184,6 +201,12 @@ public sealed class BookingPageViewModel : ViewModelBase
 
         await LoadAsync().ConfigureAwait(true);
         SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id);
+    }
+
+    private void OpenWizard()
+    {
+        var wizard = new BookingWizardViewModel(_workflowService, _dialogService, () => _ = LoadAsync());
+        _dialogService.ShowDialog(wizard);
     }
 
     private async Task ChangeStatusAsync(BookingStatus status)

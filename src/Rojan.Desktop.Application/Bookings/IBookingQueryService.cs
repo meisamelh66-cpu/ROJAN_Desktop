@@ -4,4 +4,7 @@ namespace Rojan.Desktop.Application.Bookings;
 public interface IBookingQueryService
 {
     public Task<IReadOnlyList<BookingDto>> GetBookingsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Single-booking lookup - backs <c>BookingWorkflowService.CancelBookingAsync</c>, which needs a booking's specialist/schedule to release the matching calendar slot. Returns null if no booking with that id exists.</summary>
+    public Task<BookingDto?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default);
 }

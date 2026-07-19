@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Presentation.DependencyInjection;
+using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Shell.Modules;
@@ -73,6 +74,7 @@ public partial class App
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();
 
         services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<MainWindowViewModel>());
         services.AddSingleton<MainWindow>();
     }
 

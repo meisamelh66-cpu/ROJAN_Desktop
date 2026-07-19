@@ -1,0 +1,323 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.BookingWorkflow.BookingWizardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:workflow="clr-namespace:Rojan.Desktop.Application.BookingWorkflow;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 15: Enterprise Booking Workflow & Reservation Flow. Unlike
+        every prior module's page, this is shown in Shell's dialog region
+        (see MainWindow.xaml's Dialog region + IDialogService) - a linear,
+        step-by-step flow: Customer -> Service -> Specialist -> Date ->
+        TimeSlot -> Review -> Confirmation. Each step is a StackPanel whose
+        Visibility is DataTrigger-driven off CurrentStep, the same
+        show/hide-by-DataTrigger idiom used throughout this app (e.g.
+        BookingPage's null-conditional detail panel) - no new Design
+        System component, every control here is a plain ListBox/DatePicker/
+        TextBox/Button already styled by Theme.xaml.
+
+        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource Rojan.Style.GlassCard}" Width="560" MaxHeight="680" Padding="24">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="New Booking" Style="{StaticResource Rojan.TextStyle.CardTitle}" />
+
+            <StackPanel Grid.Row="1" Margin="0,4,0,16">
+                <TextBlock Text="{Binding CurrentStep}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="{StaticResource Rojan.Brush.RoseGoldHighlight}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding State}" Value="Error">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="440">
+                <Grid>
+
+                    <!-- Step: Customer -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Customer">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Who is this booking for?" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <ListBox ItemsSource="{Binding Customers}"
+                                 SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                                 DisplayMemberPath="FullName"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 MaxHeight="380"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}" />
+                    </StackPanel>
+
+                    <!-- Step: Service -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Service">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Choose a service" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <ListBox ItemsSource="{Binding Services}"
+                                 SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 MaxHeight="380"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type workflow:WorkflowServiceOptionDto}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
+                                                <Run Text=" min" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Price}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <!-- Step: Specialist -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Specialist">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Choose a specialist" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <ListBox ItemsSource="{Binding Specialists}"
+                                 SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
+                                 DisplayMemberPath="FullName"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 MaxHeight="380"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}" />
+                    </StackPanel>
+
+                    <!-- Step: Date -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Date">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Choose a date" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <DatePicker SelectedDate="{Binding SelectedDate, Mode=TwoWay}" HorizontalAlignment="Left" Width="200" />
+                    </StackPanel>
+
+                    <!-- Step: TimeSlot -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="TimeSlot">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Choose a time" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Text="No available slots for this specialist on this date."
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   Margin="0,0,0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State}" Value="Empty">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ListBox ItemsSource="{Binding AvailableSlots}"
+                                 SelectedItem="{Binding SelectedSlot, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 MaxHeight="380"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.GlassNavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type workflow:WorkflowSlotDto}">
+                                    <TextBlock Text="{Binding Start, StringFormat={}{0:t}}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <!-- Step: Review -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Review">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Review your booking" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,8" />
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                            <Run Text="Customer: " /><Run Text="{Binding SelectedCustomer.FullName, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                            <Run Text="Service: " /><Run Text="{Binding SelectedService.Name, Mode=OneWay}" />
+                            <Run Text=" (" /><Run Text="{Binding SelectedService.Price, Mode=OneWay}" /><Run Text=")" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                            <Run Text="Specialist: " /><Run Text="{Binding SelectedSpecialist.FullName, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                            <Run Text="When: " /><Run Text="{Binding SelectedSlot.Start, StringFormat={}{0:MMM d, yyyy t}, Mode=OneWay}" />
+                        </TextBlock>
+                        <StackPanel Margin="0,16,0,0">
+                            <TextBlock Text="Notes" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Step: Confirmation -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentStep}" Value="Confirmation">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Booking confirmed" Style="{StaticResource Rojan.TextStyle.CardTitle}" Margin="0,0,0,12" />
+                        <StackPanel DataContext="{Binding Confirmation}">
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
+                                <Run Text="Customer: " /><Run Text="{Binding CustomerName, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                                <Run Text="Service: " /><Run Text="{Binding ServiceName, Mode=OneWay}" />
+                                <Run Text=" (" /><Run Text="{Binding Price, Mode=OneWay}" /><Run Text=")" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                                <Run Text="Specialist: " /><Run Text="{Binding SpecialistName, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                                <Run Text="When: " /><Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,8,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentStep}" Value="Confirmation">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Back" Command="{Binding BackCommand}" Style="{StaticResource Rojan.Style.GlassButton}" Margin="0,0,8,0" />
+                <Button Content="Next" Command="{Binding NextCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentStep}" Value="Review">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentStep}" Value="Confirmation">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Confirm Booking" Command="{Binding ConfirmBookingCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentStep}" Value="Review">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Done" Command="{Binding DoneCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentStep}" Value="Confirmation">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</UserControl>

@@ -101,6 +101,26 @@ see `docs/standards/versioning.md`.
   root mechanism every other module uses. No database, no API, no
   external calendar sync, no full booking wizard. 232/232 tests passing
   (25 new).
+- Phase 15: Enterprise Booking Workflow & Reservation Flow — the first
+  Application-layer use case that coordinates multiple vertical slices
+  at once: new `Rojan.Desktop.Application.BookingWorkflow` slice
+  (`IBookingWorkflowService`/`BookingWorkflowService`) composing
+  Customers, Services, Specialists, Calendar, and Bookings Application
+  services to power a guided Booking Wizard (Customer → Service →
+  Specialist → Date → TimeSlot → Review → Confirmation), shown as a
+  dialog via a new `IDialogService` - the first producer of
+  `MainWindowViewModel.ActiveDialog`, an extension point reserved since
+  Phase 07. `Booking` expanded with `ServiceId`/`SpecialistId`/`Price`;
+  `BookingStatus` expanded to a full six-value lifecycle
+  (`Pending`/`Confirmed`/`InProgress`/`Completed`/`Cancelled`/`NoShow`)
+  governed by a new `BookingRules` Domain validation class, now enforced
+  by `BookingCommandService` on every write. The existing free-text
+  quick-add form on the Bookings page is untouched, not replaced.
+  Creating a booking through the wizard reserves the matching calendar
+  slot first and rolls it back if the booking write fails, since there
+  is no database transaction spanning both. No database, no API, no
+  payments, no notifications, no Shell architecture change. 278/278
+  tests passing (46 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

@@ -23,4 +23,10 @@ public sealed class BookingQueryService : IBookingQueryService
         var bookings = await _repository.GetBookingsAsync(cancellationToken).ConfigureAwait(true);
         return bookings.Select(BookingMapper.MapBooking).ToList();
     }
+
+    public async Task<BookingDto?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default)
+    {
+        var booking = await _repository.GetBookingByIdAsync(bookingId, cancellationToken).ConfigureAwait(true);
+        return booking is null ? null : BookingMapper.MapBooking(booking);
+    }
 }

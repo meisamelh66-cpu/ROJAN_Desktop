@@ -5,9 +5,12 @@ public sealed record BookingDto(
     string Id,
     string CustomerId,
     string CustomerName,
+    string ServiceId,
     string ServiceName,
+    string SpecialistId,
     string SpecialistName,
     DateTimeOffset ScheduledAt,
     int DurationMinutes,
+    string Price,
     BookingStatus Status,
     string Notes);

@@ -6,6 +6,8 @@
                     xmlns:customersView="clr-namespace:Rojan.Desktop.Presentation.Views.Customers"
                     xmlns:bookingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Bookings"
                     xmlns:bookingsView="clr-namespace:Rojan.Desktop.Presentation.Views.Bookings"
+                    xmlns:bookingWorkflowVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.BookingWorkflow"
+                    xmlns:bookingWorkflowView="clr-namespace:Rojan.Desktop.Presentation.Views.BookingWorkflow"
                     xmlns:calendarVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Calendar"
                     xmlns:calendarView="clr-namespace:Rojan.Desktop.Presentation.Views.Calendar"
                     xmlns:specialistsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Specialists"
@@ -33,6 +35,10 @@
 
   <DataTemplate DataType="{x:Type bookingsVm:BookingPageViewModel}">
     <bookingsView:BookingPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type bookingWorkflowVm:BookingWizardViewModel}">
+    <bookingWorkflowView:BookingWizardView />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type calendarVm:CalendarPageViewModel}">

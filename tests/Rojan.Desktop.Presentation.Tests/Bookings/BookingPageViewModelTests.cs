@@ -1,4 +1,6 @@
 using Rojan.Desktop.Application.Bookings;
+using Rojan.Desktop.Presentation.Tests.BookingWorkflow;
+using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -7,7 +9,15 @@ namespace Rojan.Desktop.Presentation.Tests.Bookings;
 public sealed class BookingPageViewModelTests
 {
     private static BookingDto MakeBooking(string id, string customerName, BookingStatus status = BookingStatus.Pending) =>
-        new(id, string.Empty, customerName, "Test Service", "Test Specialist", DateTimeOffset.UnixEpoch, 60, status, string.Empty);
+        new(id, string.Empty, customerName, string.Empty, "Test Service", string.Empty, "Test Specialist",
+            DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty);
+
+    private static BookingPageViewModel MakeSut(
+        StubBookingQueryService queryService,
+        StubBookingCommandService? commandService = null,
+        StubBookingWorkflowService? workflowService = null,
+        StubDialogService? dialogService = null) =>
+        new(queryService, commandService ?? new StubBookingCommandService(), workflowService ?? new StubBookingWorkflowService(), dialogService ?? new StubDialogService());
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -15,7 +25,7 @@ public sealed class BookingPageViewModelTests
         var tcs = new TaskCompletionSource<IReadOnlyList<BookingDto>>();
         var queryService = new StubBookingQueryService(_ => tcs.Task);
 
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -26,7 +36,7 @@ public sealed class BookingPageViewModelTests
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
 
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal(bookings, sut.Bookings);
@@ -38,7 +48,7 @@ public sealed class BookingPageViewModelTests
     {
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
 
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Empty, sut.State);
         Assert.Null(sut.SelectedBooking);
@@ -50,7 +60,7 @@ public sealed class BookingPageViewModelTests
         var queryService = new StubBookingQueryService(
             _ => Task.FromException<IReadOnlyList<BookingDto>>(new InvalidOperationException("boom")));
 
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -64,7 +74,7 @@ public sealed class BookingPageViewModelTests
         var queryService = new StubBookingQueryService(_ => shouldFail
             ? Task.FromException<IReadOnlyList<BookingDto>>(new InvalidOperationException("boom"))
             : Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;
@@ -79,7 +89,7 @@ public sealed class BookingPageViewModelTests
     public void CreateBookingCommand_RequiredFieldsMissing_CanExecuteIsFalse()
     {
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.False(sut.CreateBookingCommand.CanExecute(null));
 
@@ -93,12 +103,10 @@ public sealed class BookingPageViewModelTests
     public void CreateBookingCommand_DateIsNull_CanExecuteIsFalse()
     {
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService())
-        {
-            NewBookingCustomerName = "Grace Kim",
-            NewBookingServiceName = "Facial",
-            NewBookingDate = null,
-        };
+        var sut = MakeSut(queryService);
+        sut.NewBookingCustomerName = "Grace Kim";
+        sut.NewBookingServiceName = "Facial";
+        sut.NewBookingDate = null;
 
         Assert.False(sut.CreateBookingCommand.CanExecute(null));
     }
@@ -112,12 +120,10 @@ public sealed class BookingPageViewModelTests
         {
             OnBookingCreated = (_, dto) => existing.Add(dto),
         };
-        var sut = new BookingPageViewModel(queryService, commandService)
-        {
-            NewBookingCustomerName = "Grace Kim",
-            NewBookingServiceName = "Facial",
-            NewBookingSpecialistName = "Casey Morgan",
-        };
+        var sut = MakeSut(queryService, commandService);
+        sut.NewBookingCustomerName = "Grace Kim";
+        sut.NewBookingServiceName = "Facial";
+        sut.NewBookingSpecialistName = "Casey Morgan";
 
         sut.CreateBookingCommand.Execute(null);
 
@@ -136,7 +142,7 @@ public sealed class BookingPageViewModelTests
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(expectedCanExecute, sut.ConfirmBookingCommand.CanExecute(null));
     }
@@ -150,7 +156,7 @@ public sealed class BookingPageViewModelTests
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(expectedCanExecute, sut.CompleteBookingCommand.CanExecute(null));
     }
@@ -164,7 +170,7 @@ public sealed class BookingPageViewModelTests
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
-        var sut = new BookingPageViewModel(queryService, new StubBookingCommandService());
+        var sut = MakeSut(queryService);
 
         Assert.Equal(expectedCanExecute, sut.CancelBookingCommand.CanExecute(null));
     }
@@ -175,12 +181,25 @@ public sealed class BookingPageViewModelTests
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Pending) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
         var commandService = new StubBookingCommandService();
-        var sut = new BookingPageViewModel(queryService, commandService);
+        var sut = MakeSut(queryService, commandService);
 
         sut.ConfirmBookingCommand.Execute(null);
 
         var call = Assert.Single(commandService.UpdateStatusCalls);
         Assert.Equal("booking-1", call.BookingId);
         Assert.Equal(BookingStatus.Confirmed, call.Status);
+    }
+
+    [Fact]
+    public void OpenWizardCommand_Executed_ShowsBookingWizardViewModelViaDialogService()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var dialogService = new StubDialogService();
+        var sut = MakeSut(queryService, dialogService: dialogService);
+
+        sut.OpenWizardCommand.Execute(null);
+
+        var shown = Assert.Single(dialogService.ShownDialogs);
+        Assert.IsType<Rojan.Desktop.Presentation.ViewModels.BookingWorkflow.BookingWizardViewModel>(shown);
     }
 }
