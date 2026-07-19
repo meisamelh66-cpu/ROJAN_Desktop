@@ -84,6 +84,23 @@ see `docs/standards/versioning.md`.
   (no rename needed, the placeholder was already named "Services"). No
   database, no API, no external integrations, no Calendar, no Payment.
   207/207 tests passing (42 new).
+- Phase 14: Enterprise Calendar & Availability Engine Foundation — sixth
+  real business module (`Rojan.Desktop.*.Calendar`), same vertical-slice
+  pattern as every prior module: `WorkingSchedule`/`TimeSlot`/
+  `AvailabilitySlot`/`AvailabilityStatus` Domain types,
+  `ICalendarQueryService` (30-minute slot generation across a
+  specialist's working hours plus conflict detection against existing
+  booked ranges)/`ICalendarCommandService` (reserve/release a single
+  slot, with a write-time conflict re-check) Application layer, mutable
+  in-memory `FakeCalendarRepository` (weekly schedules for the three
+  Active specialists, seeded conflicts computed relative to "today"),
+  and a daily-availability grid Presentation UI - not a list-plus-detail
+  split like every other module, a single day's slot grid *is* the page.
+  Wired into Shell navigation as a genuinely new sidebar entry (no
+  placeholder was named "Calendar") via the same one-line composition-
+  root mechanism every other module uses. No database, no API, no
+  external calendar sync, no full booking wizard. 232/232 tests passing
+  (25 new).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

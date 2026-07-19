@@ -1,0 +1,120 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Calendar.CalendarPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:appCalendar="clr-namespace:Rojan.Desktop.Application.Calendar;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 14: Calendar & Availability Engine Foundation. Unlike every
+        other module, this page is not a list-plus-detail split - a day's
+        availability grid *is* the page. Top: specialist + date picker and
+        the resolved working-hours caption. Below: the generated slot grid,
+        each slot a single GlassButton-based tile (reusing the shared
+        GlassButton visual template via BasedOn, with a DataTrigger
+        overriding only Background per Status - no new Design System
+        component) that reserves an Available slot or releases a Booked one
+        on click, bound to the one ToggleSlotCommand.
+
+        Merges its own Theme.xaml dependency locally (same self-sufficiency
+        rule as every other Design System component).
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:SectionHeader Grid.Row="0" Title="Calendar" />
+        <TextBlock Grid.Row="0"
+                   Text="View a specialist's daily availability and manage slot reservations."
+                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                   Margin="0,44,0,0" />
+
+        <!-- Specialist + date picker -->
+        <dashboardControls:DashboardCard Grid.Row="1" Title="Specialist &amp; Date" Margin="0,24,0,0">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="0,0,24,0">
+                        <TextBlock Text="Specialist" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <ComboBox ItemsSource="{Binding Specialists}"
+                                  SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"
+                                  Width="200"
+                                  Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <DatePicker SelectedDate="{Binding SelectedDate, Mode=TwoWay}" Width="160" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock Text="{Binding WorkingHoursText}"
+                           Style="{StaticResource Rojan.TextStyle.Body}"
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           Margin="0,16,0,0" />
+            </StackPanel>
+        </dashboardControls:DashboardCard>
+
+        <!-- Availability grid -->
+        <dashboardControls:DashboardWidget Grid.Row="2"
+                                            Title="Availability"
+                                            State="{Binding State}"
+                                            ErrorMessage="{Binding ErrorMessage}"
+                                            RetryCommand="{Binding LoadCommand}"
+                                            Margin="0,24,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
+                <ItemsControl ItemsSource="{Binding Slots}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type appCalendar:AvailabilitySlotDto}">
+                            <Button Command="{Binding DataContext.ToggleSlotCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}"
+                                    MinWidth="110"
+                                    Margin="0,0,10,10">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.GlassButton}">
+                                        <Setter Property="Background" Value="{StaticResource Rojan.Brush.SuccessText}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="Booked">
+                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.MutedText}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Unavailable">
+                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.DisabledText}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Start, StringFormat={}{0:h:mm tt}}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding Status}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </dashboardControls:DashboardWidget>
+
+    </Grid>
+
+</UserControl>

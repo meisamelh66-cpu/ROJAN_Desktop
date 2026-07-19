@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Bookings;
+using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Specialists;
@@ -31,6 +32,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppServices.IServiceQueryService, AppServices.ServiceQueryService>();
         services.AddSingleton<AppServices.IServiceProfileQueryService, AppServices.ServiceProfileQueryService>();
         services.AddSingleton<AppServices.IServiceCommandService, AppServices.ServiceCommandService>();
+        services.AddSingleton<ICalendarQueryService, CalendarQueryService>();
+        services.AddSingleton<ICalendarCommandService, CalendarCommandService>();
         return services;
     }
 }

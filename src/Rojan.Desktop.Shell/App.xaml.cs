@@ -78,18 +78,21 @@ public partial class App
 
     /// <summary>
     /// Every module the sidebar shows, in display order. Dashboard (Phase
-    /// 06B), Customers (Phase 09/10), Bookings (Phase 11), Specialists
-    /// (Phase 12), and Services (Phase 13) are the real modules; the rest
-    /// are explicitly not built yet (Phase 07 is architecture-first) and
-    /// register PlaceholderModule instead of a bespoke module class -
-    /// adding their real implementation later is a one-line swap here,
-    /// nothing else in the shell changes.
+    /// 06B), Customers (Phase 09/10), Bookings (Phase 11), Calendar (Phase
+    /// 14), Specialists (Phase 12), and Services (Phase 13) are the real
+    /// modules; the rest are explicitly not built yet (Phase 07 is
+    /// architecture-first) and register PlaceholderModule instead of a
+    /// bespoke module class - adding their real implementation later is a
+    /// one-line swap here, nothing else in the shell changes. Calendar has
+    /// no placeholder to swap - it is a genuinely new entry, added the
+    /// same way (see CalendarModule's own doc comment).
     /// </summary>
     private static void RegisterModules(IServiceCollection services)
     {
         services.AddSingleton<IModule, DashboardModule>();
         services.AddSingleton<IModule, CustomerModule>();
         services.AddSingleton<IModule, BookingModule>();
+        services.AddSingleton<IModule, CalendarModule>();
         services.AddSingleton<IModule, ServiceModule>();
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("inventory", "Inventory", "▤", 40)));
         services.AddSingleton<IModule>(new PlaceholderModule(new ModuleMetadata("accounting", "Accounting", "$", 50)));
