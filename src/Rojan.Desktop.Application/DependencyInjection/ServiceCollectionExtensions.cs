@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Accounting;
+using Rojan.Desktop.Application.AI;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
@@ -10,6 +11,7 @@ using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
+using AiProviders = Rojan.Desktop.Application.AI.Providers;
 
 namespace Rojan.Desktop.Application.DependencyInjection;
 
@@ -65,6 +67,24 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IKpiEngineQueryService, KpiEngineQueryService>();
         services.AddSingleton<IAnalyticsQueryService, AnalyticsQueryService>();
         services.AddSingleton<IReportExportService, ReportExportService>();
+        services.AddSingleton<IPromptTemplateRepository, PromptTemplateRepository>();
+        services.AddSingleton<IConversationManager, ConversationManager>();
+        services.AddSingleton<IAIHistoryService, AIHistoryService>();
+        services.AddSingleton<ITokenUsageTracker, TokenUsageTracker>();
+        services.AddSingleton<IAIConfigurationService, AIConfigurationService>();
+        services.AddSingleton<IAISettingsService, AISettingsService>();
+        services.AddSingleton<IIntentClassifier, IntentClassifier>();
+        services.AddSingleton<IResponseFormatter, ResponseFormatter>();
+        services.AddSingleton<IContextProvider, ContextProvider>();
+        services.AddSingleton<IAnalyticsContextProvider, AnalyticsContextProvider>();
+        services.AddSingleton<IPromptBuilder, PromptBuilder>();
+        services.AddSingleton<IInsightEngine, InsightEngine>();
+        services.AddSingleton<IBusinessHealthService, BusinessHealthService>();
+        services.AddSingleton<IRecommendationEngine, RecommendationEngine>();
+        services.AddSingleton<INotificationInsightService, NotificationInsightService>();
+        services.AddSingleton<ISummaryEngine, SummaryEngine>();
+        services.AddSingleton<AiProviders.IAIProvider, AiProviders.MockAIProvider>();
+        services.AddSingleton<IAIService, AIOrchestrator>();
         return services;
     }
 }

@@ -123,15 +123,14 @@ public partial class App
     /// 06B), Customers (Phase 09/10), Bookings (Phase 11), Calendar (Phase
     /// 14), Specialists (Phase 12), Services (Phase 13), Inventory (Phase
     /// 17), Accounting (Phase 18), Staff &amp; HR (Phase 19), Settings
-    /// (Phase 19A), and Reporting/Analytics (Phase 20 - Reporting replaces
-    /// the "reports" placeholder one-for-one, Analytics is a genuinely new
-    /// entry, same as Calendar/HR before it) are the real modules; AI
-    /// Center is still explicitly not built yet (Phase 07 is
-    /// architecture-first) and registers PlaceholderModule instead of a
-    /// bespoke module class - adding its real implementation later is a
-    /// one-line swap here, nothing else in the shell changes. Every title
-    /// resolves through <see cref="Strings"/> (Phase 19A) rather than a
-    /// literal - the whole sidebar localizes with the rest of the app.
+    /// (Phase 19A), Reporting/Analytics (Phase 20 - Reporting replaces the
+    /// "reports" placeholder one-for-one, Analytics is a genuinely new
+    /// entry, same as Calendar/HR before it), and AI Center (Phase 21 -
+    /// AiCenterModule replaces the "ai-center" placeholder one-for-one,
+    /// the same swap ReportingModule made in Phase 20) are all real
+    /// modules now. Every title resolves through <see cref="Strings"/>
+    /// (Phase 19A) rather than a literal - the whole sidebar localizes
+    /// with the rest of the app.
     /// </summary>
     private static void RegisterModules(IServiceCollection services)
     {
@@ -146,16 +145,7 @@ public partial class App
         services.AddSingleton<IModule, SpecialistModule>();
         services.AddSingleton<IModule, ReportingModule>();
         services.AddSingleton<IModule, AnalyticsModule>();
-        // Registered as a factory (not an eagerly-constructed instance) so
-        // Strings.Nav_AiCenter evaluates lazily at first resolve (after
-        // OnStartup sets CurrentUICulture), matching every other module's
-        // static-field-on-first-touch timing - an eager `new
-        // PlaceholderModule(...)` here would run during ConfigureServices,
-        // before culture is set, freezing this title in whatever the
-        // OS-default culture was (the same bug Phase 19A found and fixed
-        // for the "reports" placeholder, which no longer exists now that
-        // ReportingModule has replaced it).
-        services.AddSingleton<IModule>(_ => new PlaceholderModule(new ModuleMetadata("ai-center", Strings.Nav_AiCenter, string.Empty, 80)));
+        services.AddSingleton<IModule, AiCenterModule>();
         services.AddSingleton<IModule, SettingsModule>();
     }
 

@@ -387,6 +387,90 @@ see `docs/standards/versioning.md`.
   pre-seeded saved snapshots; the Analytics Dashboard's Weekly period
   switch correctly recomputed all eight KPIs and three charts against
   a full week of seeded data.
+- Phase 21: ROJAN AI Center — a new, cross-cutting AI module composing
+  every existing business module without creating tight coupling. New
+  `Domain.AI` (nineteen records/enums/static-logic types, including
+  `BusinessHealthCalculator` — weighted, clamped 0-100 composite score
+  — and `ConversationRules` — pin cap, title derivation) plus
+  `IAIRepository`, which (same "compute fresh, don't own the source
+  data" reasoning `Reporting.IReportingRepository` established in
+  Phase 20) owns only what is genuinely local to AI Center:
+  conversations, prompt templates, provider/model selection, token
+  usage history, and feature settings — Insights/Recommendations/
+  Suggested Tasks/Smart Notifications/Business Health Score are
+  computed fresh on every request from sibling modules' own
+  Application-layer query services, never persisted.
+  `Application.AI` adds seventeen services: a reusable Prompt System
+  (`IPromptBuilder` composing System/Developer/User/Business Context/
+  Analytics Context/Language Context/Session Context blocks via
+  `IIntentClassifier`, `IContextProvider`, `IAnalyticsContextProvider`,
+  and `IPromptTemplateRepository`), a Conversation System
+  (`IConversationManager` — sessions, messages, pin/unpin capped at
+  10, search, export, clear-unpinned-only; `IAIHistoryService` — a
+  read-only composition over it for Recent/Pinned/Search views), a
+  Provider abstraction (`IAIProvider` — `CompleteAsync` plus a genuine
+  `IAsyncEnumerable<string>` `StreamCompleteAsync` — and the only
+  concrete implementation, `MockAIProvider`: deterministic,
+  keyword-derived replies, real word-by-word streaming, ~4-char/token
+  estimation; **no API keys anywhere**, OpenAI/Anthropic/AzureOpenAI/
+  LocalModel are abstraction-only per this phase's explicit
+  instruction), five analytical engines (`IInsightEngine` — one
+  insight per KPI plus a Commission insight, Trend/Risk/Opportunity/
+  Info severity classified from trend direction and change magnitude;
+  `IRecommendationEngine` — recommendations from Risk/Opportunity/
+  Critical insights, Suggested Tasks from the High/Urgent-priority
+  subset with priority-scaled due dates; `ISummaryEngine` — Daily/
+  Executive Summary; `IBusinessHealthService` — a five-component
+  weighted score over live Revenue/Appointments/Retention/Attendance/
+  Inventory KPIs; `INotificationInsightService` — a thin Risk/
+  Critical/Opportunity filter over `IInsightEngine`), and the
+  composition root (`AIOrchestrator`/`IAIService`) wiring the Prompt
+  System, the active `IAIProvider`, `IResponseFormatter`,
+  `IConversationManager`, and `ITokenUsageTracker` into one
+  async/cancellable `SendMessageAsync`/`StreamMessageAsync` pipeline.
+  New Presentation surface: **AI Center** (`AiCenterModule`, replaces
+  the `"ai-center"` placeholder one-for-one, same swap `ReportingModule`
+  made in Phase 20) — Home (Business Health Score, Daily Summary,
+  Smart Notifications), Chat (the Business Assistant, session-aware),
+  Insights (Insight Dashboard across every category), Recommendations
+  (Recommendations Panel + Action Center's Suggested Tasks), History
+  (search, pin/unpin, export, clear, Conversation Viewer), and Settings
+  (feature toggles, Model Selector, Usage Dashboard, Prompt Templates).
+  876/876 tests passing (141 new): `Domain.Tests` (+2:
+  `BusinessHealthCalculatorTests`, `ConversationRulesTests`),
+  `Application.Tests` (+14 test classes covering `AIMapper`,
+  `ConversationManager`, `InsightEngine`, `RecommendationEngine`,
+  `NotificationInsightService`, `BusinessHealthService`,
+  `SummaryEngine`, `MockAIProvider` — including genuine streaming and
+  cancellation behavior — `IntentClassifier`, `ResponseFormatter`,
+  `TokenUsageTracker`, `AIConfigurationService`, `AISettingsService`,
+  and `AIOrchestrator` end-to-end against a real `ConversationManager`
+  + `MockAIProvider` pipeline), `Infrastructure.Tests` (+1:
+  `FakeAIRepositoryTests`), `Presentation.Tests` (+1:
+  `AiCenterPageViewModelTests` — Load, Chat send, new/switch/pin/
+  delete conversation, search, clear history, export, settings save,
+  model configuration save, all driven through a real
+  `ConversationManager`/`AIHistoryService`/`TokenUsageTracker` stack
+  over a test-local in-memory repository). `ArchitectureTests` (4,
+  unchanged) confirm `Domain.AI`/`Application.AI`/the new Presentation
+  surface respect the same dependency-direction rules as every other
+  slice. Runtime verified end-to-end via UI Automation: navigated to
+  AI Center → Business Health Score rendered a real weighted score
+  (79.9/100) with five live components; Daily Summary and Smart
+  Notifications showed real narrative text and severity-classified
+  alerts computed from live Reporting/HR data; Chat resumed the most
+  recently active seeded conversation, sent a new message, and
+  received a real Mock-provider reply; Insights/Recommendations/
+  History/Settings all rendered live data (recommendations, suggested
+  tasks, pinned/recent conversations, feature toggles, Model
+  Selector). One real bug found and fixed during this pass: the Home
+  section's `TextBlock` showing the Business Health Score number used
+  a non-existent `Rojan.TextStyle.Heading` resource key — WPF resolves
+  `StaticResource` lazily enough that this didn't fail the build, only
+  at runtime on first navigation to AI Center (a cascade of
+  `StaticResourceExtension` exceptions) — fixed by using
+  `Rojan.TextStyle.Display`, the same style `Dashboard.KPIValue`
+  already uses for headline numbers; re-verified clean afterward.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

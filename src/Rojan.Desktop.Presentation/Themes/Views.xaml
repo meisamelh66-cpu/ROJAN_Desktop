@@ -26,6 +26,8 @@
                     xmlns:reportingView="clr-namespace:Rojan.Desktop.Presentation.Views.Reporting"
                     xmlns:analyticsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Analytics"
                     xmlns:analyticsView="clr-namespace:Rojan.Desktop.Presentation.Views.Analytics"
+                    xmlns:aiVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.AI"
+                    xmlns:aiView="clr-namespace:Rojan.Desktop.Presentation.Views.AI"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
 
@@ -95,6 +97,10 @@
 
   <DataTemplate DataType="{x:Type analyticsVm:AnalyticsPageViewModel}">
     <analyticsView:AnalyticsPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type aiVm:AiCenterPageViewModel}">
+    <aiView:AiCenterPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
+using Rojan.Desktop.Presentation.ViewModels.AI;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
@@ -39,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ReportingPageViewModel>();
         services.AddTransient<AnalyticsPageViewModel>();
+        services.AddTransient<AiCenterPageViewModel>();
         services.AddSingleton<ICultureService, CultureService>();
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();
