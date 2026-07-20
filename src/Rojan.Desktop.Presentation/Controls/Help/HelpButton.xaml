@@ -1,0 +1,112 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Help.HelpButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             x:Name="Root">
+
+    <!--
+        Phase 26.3: Smart Help Button. A compact, Fluent-2-styled circular
+        icon button - reuses the existing design-system tokens only
+        (Rojan.Brush.SurfaceHover/SurfacePressed/Border/Accent/TextSecondary,
+        Rojan.CornerRadius.Pill, Rojan.FontFamily.Icons) rather than
+        introducing a new visual style, per this phase's "Use existing
+        theme tokens... Do not introduce new visual styles" requirement.
+        Just a specially-shaped Button underneath - Command/CommandParameter
+        pass straight through, so it is keyboard-accessible (Tab/Enter/
+        Space, a visible focus ring) for free. Hover/press feedback is a
+        genuine animated scale+background transition (Trigger.EnterActions/
+        ExitActions + Storyboard), not an instant Setter swap - "proper
+        hover animation" per this phase's requirement, matching the same
+        short (120ms) easing every other Fluent control transition in this
+        app already uses.
+    -->
+    <Button x:Name="InnerButton"
+            Command="{Binding Command, ElementName=Root}"
+            CommandParameter="{Binding CommandParameter, ElementName=Root}"
+            Width="28"
+            Height="28"
+            Padding="0"
+            Cursor="Hand"
+            Focusable="True"
+            ToolTip="{x:Static loc:Strings.Help_Button_Tooltip}"
+            AutomationProperties.Name="{x:Static loc:Strings.Help_Button_Tooltip}">
+        <Button.Template>
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="Chrome"
+                        BorderBrush="{StaticResource Rojan.Brush.Border}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.Background>
+                        <!-- A local, non-frozen SolidColorBrush - unlike the shorthand Background="Transparent" (which resolves to the shared, frozen Brushes.Transparent instance), this one can have its Color animated below. -->
+                        <SolidColorBrush Color="Transparent" />
+                    </Border.Background>
+                    <Border.RenderTransform>
+                        <ScaleTransform x:Name="ChromeScale" ScaleX="1" ScaleY="1" />
+                    </Border.RenderTransform>
+                    <TextBlock Text="{StaticResource Rojan.Icon.Help}"
+                               FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                               FontSize="14"
+                               Foreground="{StaticResource Rojan.Brush.TextSecondary}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetName="Chrome"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="{StaticResource Rojan.Color.SurfaceHover}"
+                                                    Duration="0:0:0.12" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleX" To="1.08" Duration="0:0:0.12" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleY" To="1.08" Duration="0:0:0.12" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetName="Chrome"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="Transparent"
+                                                    Duration="0:0:0.12" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetName="Chrome"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="{StaticResource Rojan.Color.SurfacePressed}"
+                                                    Duration="0" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12" />
+                                    <DoubleAnimation Storyboard.TargetName="ChromeScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+                        <Setter TargetName="Chrome" Property="BorderThickness" Value="2" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+
+</UserControl>

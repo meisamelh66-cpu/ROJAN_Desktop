@@ -790,6 +790,46 @@ see `docs/standards/versioning.md`.
   lavender chrome on every page, cards read as soft off-white rather
   than stark white, text contrast and primary-button accent color
   unchanged.
+- Phase 26 ROJAN Smart Context Help (SCH) — a centralized, reusable Help
+  engine: context/module/page detection, localized content resolution,
+  a Fluent-2-styled Help button and dialog, instant keyword search with
+  highlighting, and back/forward/breadcrumb/related-topics/favorites/
+  recently-viewed navigation. `Domain.Help` (`HelpTopic`, `HelpShortcut`,
+  `IHelpRepository`, `HelpContentRules` — pure context resolution +
+  version compatibility) and `Application.Help`
+  (`IHelpQueryService`/`HelpQueryService`, `IHelpSearchService`/
+  `HelpSearchService` — culture-aware weighted search with per-field
+  highlight spans, `IHelpFavoritesStore`, `IHelpRecentlyViewedStore`)
+  are new, dependency-clean layers. `Infrastructure.Help.HelpTopicRegistry`
+  seeds real, substantive Persian/English/Arabic content (~98 new
+  `Strings.cs`/resx entries) for 6 flagship modules (Dashboard,
+  Customers, Bookings, Inventory, Accounting, Services) plus one generic
+  fallback topic — the remaining 8 modules resolve to that fallback, the
+  same "flagship subset now, documented boundary for the rest" pattern
+  Phase 22A/23/24 already established. `Presentation.Help.HelpContentResolver`
+  is the one place a topic's `KeyPrefix` becomes localized display text
+  (via a new `Strings.GetByKey` wrapper), keeping Domain/Application/
+  Infrastructure free of literal strings entirely.
+  `Controls.Help.HelpButton` (animated Fluent-2 icon button) and
+  `Views.Help.ContextHelpDialogView` (scrollable dialog with focus
+  trapping, ESC/scrim-close scoped only to itself so no other existing
+  dialog's behavior changes) plug into the app's existing dialog-region
+  chrome unchanged. `MainWindowViewModel.OpenHelpCommand` constructs
+  `HelpDialogViewModel` via `new` — the same established
+  constructed-by-its-opener shape as `PosCheckoutViewModel`/
+  `ExportDialogViewModel` — rather than a DI registration, since it
+  needs a runtime module/page context. AI Help, Smart Suggestions,
+  Context Prediction, Natural Language Questions, and Interactive
+  Walkthrough are extension points only (a "coming soon" placeholder
+  section in the dialog) — no AI implementation, per spec. No existing
+  page's layout, colors, spacing, or controls changed. 61 new tests
+  (1023 → 1084), full suite passes, zero warnings, zero errors,
+  `ArchitectureTests` included. Runtime-verified via UI Automation: the
+  Help button opens the dialog with correctly localized content in
+  every section, search returns ranked/highlighted results, and
+  clicking a Related Topic link navigates the dialog in place and
+  correctly enables Back — see
+  `docs/phases/phase-26-smart-context-help.md`.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

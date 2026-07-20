@@ -5,6 +5,7 @@
         xmlns:navigation="clr-namespace:Rojan.Desktop.Presentation.Navigation;assembly=Rojan.Desktop.Presentation"
         xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization;assembly=Rojan.Desktop.Presentation"
         xmlns:appOrg="clr-namespace:Rojan.Desktop.Application.Organizations;assembly=Rojan.Desktop.Application"
+        xmlns:helpControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Help;assembly=Rojan.Desktop.Presentation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -175,7 +176,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Back / Forward -->
+                <!-- Back / Forward / Help -->
                 <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="8,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoBackCommand}" ToolTip="{x:Static loc:Strings.Common_Back}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Back}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
@@ -183,6 +184,10 @@
                     <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoForwardCommand}" ToolTip="{x:Static loc:Strings.Common_Forward}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Forward}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
                     </Button>
+                    <!-- Phase 26.3: Smart Help Button - contextual to whichever module is currently selected. -->
+                    <helpControls:HelpButton Margin="4,0,0,0"
+                                              Command="{Binding OpenHelpCommand}"
+                                              CommandParameter="{Binding SelectedNavigationItem.Descriptor.Metadata.Id}" />
                 </StackPanel>
 
                 <!--
@@ -488,8 +493,18 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <!-- Fluent modal scrim: a plain black smoke layer (not the theme Background brush, which would tint the whole window with itself), at a Fluent-appropriate 40% rather than the heavier 50% used before this audit. -->
-            <Border Background="{StaticResource Rojan.Brush.Scrim}" Opacity="0.4" />
+            <!--
+                Fluent modal scrim: a plain black smoke layer (not the theme
+                Background brush, which would tint the whole window with
+                itself), at a Fluent-appropriate 40% rather than the heavier
+                50% used before this audit. Phase 26.4: outside-click-to-close
+                is wired here (MainWindow.xaml.cs's Scrim_MouseLeftButtonDown)
+                scoped specifically to the Context Help Dialog - every other
+                existing dialog (e.g. PosCheckoutView's multi-step sale) keeps
+                its prior behavior of not closing on a scrim click, since that
+                could silently discard in-progress work.
+            -->
+            <Border x:Name="Scrim" Background="{StaticResource Rojan.Brush.Scrim}" Opacity="0.4" MouseLeftButtonDown="Scrim_MouseLeftButtonDown" />
             <ContentControl Content="{Binding ActiveDialog}" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
 

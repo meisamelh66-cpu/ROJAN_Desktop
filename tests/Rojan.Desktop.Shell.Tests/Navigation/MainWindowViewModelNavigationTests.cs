@@ -22,12 +22,25 @@ public sealed class MainWindowViewModelNavigationTests
 
     private static OrganizationQueryService CreateOrganizationQueryService() => new(new FakeOrganizationRepository());
 
+    private static MainWindowViewModel CreateViewModel(StubModuleRegistry moduleRegistry, StubCurrentSessionService session) =>
+        new(
+            moduleRegistry,
+            new StubNavigationService(),
+            new PermissionEngine(),
+            session,
+            CreateOrganizationQueryService(),
+            TestHelpServices.QueryService,
+            TestHelpServices.ContentResolver,
+            TestHelpServices.SearchService,
+            TestHelpServices.CreateFavoritesStore(),
+            TestHelpServices.CreateRecentlyViewedStore());
+
     [Fact]
     public void NavigationItems_ModuleWithNoRequiredPermission_IsAlwaysVisible()
     {
         var modules = new[] { Module("dashboard") };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 
         Assert.Single(viewModel.NavigationItems);
         Assert.Equal("dashboard", viewModel.NavigationItems[0].Descriptor.Metadata.Id);
@@ -38,7 +51,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 
         Assert.DoesNotContain(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
     }
@@ -48,7 +61,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.PlatformOwner };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 
         Assert.Contains(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
     }
@@ -58,7 +71,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
         Assert.DoesNotContain(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
 
         session.CurrentRole = WorkspaceRole.PlatformOwner;
@@ -72,7 +85,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.PlatformOwner };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
         viewModel.SelectedNavigationItem = viewModel.NavigationItems.Single(item => item.Descriptor.Metadata.Id == "organizations");
 
         session.CurrentRole = WorkspaceRole.Support;

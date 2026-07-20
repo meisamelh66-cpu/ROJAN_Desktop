@@ -1527,4 +1527,326 @@
   <data name="Enum_Consultation" xml:space="preserve">
     <value>مشاوره</value>
   </data>
+  <data name="Help_Button_Tooltip" xml:space="preserve">
+    <value>راهنما</value>
+  </data>
+  <data name="Help_Search_Placeholder" xml:space="preserve">
+    <value>جستجو در موضوعات راهنما...</value>
+  </data>
+  <data name="Help_Search_NoResults" xml:space="preserve">
+    <value>نتیجه‌ای یافت نشد.</value>
+  </data>
+  <data name="Help_Search_RecentSearches" xml:space="preserve">
+    <value>جستجوهای اخیر</value>
+  </data>
+  <data name="Help_Section_Purpose" xml:space="preserve">
+    <value>هدف</value>
+  </data>
+  <data name="Help_Section_Overview" xml:space="preserve">
+    <value>مرور کلی</value>
+  </data>
+  <data name="Help_Section_WhenToUse" xml:space="preserve">
+    <value>چه زمانی استفاده کنیم</value>
+  </data>
+  <data name="Help_Section_Steps" xml:space="preserve">
+    <value>مراحل گام‌به‌گام</value>
+  </data>
+  <data name="Help_Section_Tips" xml:space="preserve">
+    <value>نکات</value>
+  </data>
+  <data name="Help_Section_Warnings" xml:space="preserve">
+    <value>هشدارها</value>
+  </data>
+  <data name="Help_Section_BestPractices" xml:space="preserve">
+    <value>بهترین شیوه‌ها</value>
+  </data>
+  <data name="Help_Section_Notes" xml:space="preserve">
+    <value>یادداشت‌ها</value>
+  </data>
+  <data name="Help_Section_Shortcuts" xml:space="preserve">
+    <value>میانبرهای صفحه‌کلید</value>
+  </data>
+  <data name="Help_Section_RelatedTopics" xml:space="preserve">
+    <value>موضوعات مرتبط</value>
+  </data>
+  <data name="Help_Section_AiSuggestions" xml:space="preserve">
+    <value>پیشنهادهای هوش مصنوعی</value>
+  </data>
+  <data name="Help_AiSuggestions_ComingSoon" xml:space="preserve">
+    <value>پیشنهادهای مبتنی بر هوش مصنوعی در به‌روزرسانی‌های آینده ارائه می‌شوند.</value>
+  </data>
+  <data name="Help_Nav_Back" xml:space="preserve">
+    <value>بازگشت</value>
+  </data>
+  <data name="Help_Nav_Forward" xml:space="preserve">
+    <value>جلو</value>
+  </data>
+  <data name="Help_Nav_RecentlyViewed" xml:space="preserve">
+    <value>بازدیدهای اخیر</value>
+  </data>
+  <data name="Help_Nav_AddFavorite" xml:space="preserve">
+    <value>افزودن به علاقه‌مندی‌ها</value>
+  </data>
+  <data name="Help_Nav_RemoveFavorite" xml:space="preserve">
+    <value>حذف از علاقه‌مندی‌ها</value>
+  </data>
+  <data name="Help_Breadcrumb_Home" xml:space="preserve">
+    <value>خانه راهنما</value>
+  </data>
+  <data name="Help_Shortcut_CloseDialog" xml:space="preserve">
+    <value>بستن این پنجره</value>
+  </data>
+  <data name="Help_Dashboard_Title" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
+  <data name="Help_Dashboard_Subtitle" xml:space="preserve">
+    <value>نمای کلی کسب‌وکار شما</value>
+  </data>
+  <data name="Help_Dashboard_Description" xml:space="preserve">
+    <value>داشبورد اولین صفحه‌ای است که پس از ورود مشاهده می‌کنید و مهم‌ترین اطلاعات همه ماژول‌ها را در یک مکان خلاصه می‌کند.</value>
+  </data>
+  <data name="Help_Dashboard_Purpose" xml:space="preserve">
+    <value>ارائه تصویری سریع و دقیق از عملکرد امروز کسب‌وکار بدون نیاز به مراجعه به ماژول‌های جداگانه.</value>
+  </data>
+  <data name="Help_Dashboard_Overview" xml:space="preserve">
+    <value>کارت‌های شاخص‌های کلیدی، رزروها، مشتریان فعال، درآمد و وظایف در انتظار را همراه با روند تغییرات نشان می‌دهند. اقدامات سریع امکان دسترسی مستقیم به کارهای پرتکرار را فراهم می‌کنند و فعالیت‌های اخیر آخرین تغییرات برنامه را فهرست می‌کند.</value>
+  </data>
+  <data name="Help_Dashboard_WhenToUse" xml:space="preserve">
+    <value>هر روز صبح یا هر زمان که بخواهید بررسی سریعی از سلامت کسب‌وکار داشته باشید بدون بررسی گزارش‌ها، داشبورد را باز کنید.</value>
+  </data>
+  <data name="Help_Dashboard_Steps" xml:space="preserve">
+    <value>کارت‌های شاخص‌های کلیدی را در بالای صفحه بررسی کنید تا اعداد امروز را ببینید.
+از دکمه‌های اقدام سریع برای ایجاد رزرو، افزودن مشتری یا ایجاد وظیفه استفاده کنید.
+به فعالیت‌های اخیر پایین صفحه اسکرول کنید تا آخرین تغییرات را ببینید.</value>
+  </data>
+  <data name="Help_Dashboard_Tips" xml:space="preserve">
+    <value>فلش‌های روند کنار هر شاخص نشان می‌دهند که نسبت به دوره قبل بهبود یافته یا کاهش پیدا کرده است.
+بخش دستیار هوش مصنوعی در سمت راست، در به‌روزرسانی‌های آینده بینش‌های هوشمند نمایش خواهد داد.</value>
+  </data>
+  <data name="Help_Dashboard_Warnings" xml:space="preserve">
+    <value>اطلاعات داشبورد هنگام بارگذاری صفحه به‌روزرسانی می‌شود - اگر ویجتی خطا نشان داد، از گزینه تلاش مجدد استفاده کنید.</value>
+  </data>
+  <data name="Help_Dashboard_BestPractices" xml:space="preserve">
+    <value>هر روز ابتدا داشبورد را بررسی کنید تا هر موضوعی که نیاز به توجه دارد پیش از فوریت یافتن شناسایی شود.</value>
+  </data>
+  <data name="Help_Dashboard_Notes" xml:space="preserve">
+    <value>ممکن است برخی شاخص‌ها هنگام اولین بازکردن داشبورد در هر نشست کمی طول بکشد تا بارگذاری شوند.</value>
+  </data>
+  <data name="Help_Customers_Title" xml:space="preserve">
+    <value>مشتریان</value>
+  </data>
+  <data name="Help_Customers_Subtitle" xml:space="preserve">
+    <value>جستجو، بررسی و مدیریت هر رابطه با مشتری</value>
+  </data>
+  <data name="Help_Customers_Description" xml:space="preserve">
+    <value>ماژول مشتریان، سیستم مدیریت ارتباط با مشتری (CRM) شماست - پروفایل کامل هر مشتری، آمار، برچسب‌ها، یادداشت‌ها و تاریخچه فعالیت در یک مکان.</value>
+  </data>
+  <data name="Help_Customers_Purpose" xml:space="preserve">
+    <value>نگهداری سابقه‌ای کامل و قابل جستجو از هر مشتری تا هر عضو تیم بتواند به سرعت رابطه را درک کند.</value>
+  </data>
+  <data name="Help_Customers_Overview" xml:space="preserve">
+    <value>سمت چپ فهرست همه مشتریان را همراه با جستجو نشان می‌دهد؛ سمت راست پروفایل ۳۶۰ درجه کامل مشتری انتخاب‌شده شامل وضعیت، آمار، برچسب‌ها، یادداشت‌ها و جدول زمانی فعالیت‌های اخیر را نمایش می‌دهد.</value>
+  </data>
+  <data name="Help_Customers_WhenToUse" xml:space="preserve">
+    <value>هرگاه نیاز به افزودن مشتری جدید، جستجوی اطلاعات تماس، به‌روزرسانی وضعیت یا بررسی سابقه پیش از تماس یا قرار ملاقات دارید از این ماژول استفاده کنید.</value>
+  </data>
+  <data name="Help_Customers_Steps" xml:space="preserve">
+    <value>از جعبه جستجو برای یافتن مشتری بر اساس نام، شرکت یا ایمیل استفاده کنید.
+یک مشتری را از فهرست انتخاب کنید تا پروفایل کامل او در سمت راست باز شود.
+وضعیت را به‌روزرسانی کنید، برچسب اضافه کنید یا مستقیماً از پنل پروفایل یادداشت بنویسید.
+از فرم افزودن مشتری برای ثبت مشتری کاملاً جدید استفاده کنید.</value>
+  </data>
+  <data name="Help_Customers_Tips" xml:space="preserve">
+    <value>برچسب‌ها به شما کمک می‌کنند مشتریان را (مثلاً ویژه، سرنخ) برای شناسایی سریع بصری در فهرست دسته‌بندی کنید.
+کارت‌های آمار به‌طور خودکار با تغییر رزروها و خریدهای مشتری به‌روزرسانی می‌شوند.</value>
+  </data>
+  <data name="Help_Customers_Warnings" xml:space="preserve">
+    <value>تغییر وضعیت مشتری بر نحوه شمارش او در گزارش‌ها تأثیر می‌گذارد - پیش از ذخیره مطمئن شوید.</value>
+  </data>
+  <data name="Help_Customers_BestPractices" xml:space="preserve">
+    <value>پس از هر تعامل مهم یک یادداشت اضافه کنید تا کل تیم در جریان باشد.</value>
+  </data>
+  <data name="Help_Customers_Notes" xml:space="preserve">
+    <value>سوابق مشتریان بر اساس سطح دسترسی شما بین شعبه‌های سازمان به اشتراک گذاشته می‌شود.</value>
+  </data>
+  <data name="Help_Bookings_Title" xml:space="preserve">
+    <value>رزروها</value>
+  </data>
+  <data name="Help_Bookings_Subtitle" xml:space="preserve">
+    <value>زمان‌بندی و پیگیری هر نوبت</value>
+  </data>
+  <data name="Help_Bookings_Description" xml:space="preserve">
+    <value>ماژول رزروها چرخه کامل نوبت‌ها را از ایجاد تا تکمیل یا لغو مدیریت می‌کند.</value>
+  </data>
+  <data name="Help_Bookings_Purpose" xml:space="preserve">
+    <value>اطمینان از اینکه هر نوبت بدون تداخل یا پیگیری ازدست‌رفته، زمان‌بندی و پیگیری می‌شود.</value>
+  </data>
+  <data name="Help_Bookings_Overview" xml:space="preserve">
+    <value>رزرو جدید را مستقیماً از فرم ایجاد کنید یا از ویزارد رزرو برای یک روند گام‌به‌گام هدایت‌شده استفاده کنید. فهرست سمت چپ همه رزروها را نشان می‌دهد؛ پنل سمت راست جزئیات کامل و اقدامات وضعیت رزرو انتخاب‌شده را نمایش می‌دهد.</value>
+  </data>
+  <data name="Help_Bookings_WhenToUse" xml:space="preserve">
+    <value>برای زمان‌بندی نوبت جدید، بررسی برنامه امروز یا به‌روزرسانی وضعیت یک رزرو در حین پیشرفت آن از این ماژول استفاده کنید.</value>
+  </data>
+  <data name="Help_Bookings_Steps" xml:space="preserve">
+    <value>روی «رزرو جدید (ویزارد)» کلیک کنید برای یک روند رزرو هدایت‌شده گام‌به‌گام، یا فرم سریع را برای ثبت سریع پر کنید.
+یک رزرو را از فهرست انتخاب کنید تا جزئیات کامل آن را ببینید.
+از تأیید، تکمیل یا لغو برای پیشبرد رزرو در چرخه آن استفاده کنید.</value>
+  </data>
+  <data name="Help_Bookings_Tips" xml:space="preserve">
+    <value>ویزارد رزرو به‌طور خودکار در دسترس بودن متخصص را بررسی می‌کند تا از رزرو دوگانه جلوگیری شود.
+مدت زمان بر حسب دقیقه نشان داده می‌شود و مستقیماً در کل زمان نوبت مشتری تأثیر می‌گذارد.</value>
+  </data>
+  <data name="Help_Bookings_Warnings" xml:space="preserve">
+    <value>لغو یک رزرو قابل بازگشت نیست - پیش از لغو با مشتری هماهنگ کنید.</value>
+  </data>
+  <data name="Help_Bookings_BestPractices" xml:space="preserve">
+    <value>رزرو را به‌محض ایجاد تأیید کنید تا برنامه، واقعیت را به‌درستی منعکس کند.</value>
+  </data>
+  <data name="Help_Bookings_Notes" xml:space="preserve">
+    <value>رزروهای تکمیل‌شده مستقیماً به محاسبات حسابداری و کمیسیون وارد می‌شوند.</value>
+  </data>
+  <data name="Help_Inventory_Title" xml:space="preserve">
+    <value>موجودی</value>
+  </data>
+  <data name="Help_Inventory_Subtitle" xml:space="preserve">
+    <value>پیگیری محصولات، سطح موجودی و تأمین‌کنندگان</value>
+  </data>
+  <data name="Help_Inventory_Description" xml:space="preserve">
+    <value>ماژول موجودی، فهرست محصولات، سطوح موجودی، تأمین‌کنندگان، دسته‌بندی‌ها و خدماتی که از موجودی استفاده می‌کنند را مدیریت می‌کند.</value>
+  </data>
+  <data name="Help_Inventory_Purpose" xml:space="preserve">
+    <value>جلوگیری از اتمام موجودی و ارائه دید کامل از آنچه دارید، آنچه کم است و منبع تأمین آن.</value>
+  </data>
+  <data name="Help_Inventory_Overview" xml:space="preserve">
+    <value>خلاصه کالاهای کم‌موجود مواردی که نیاز به توجه دارند را مشخص می‌کند. دسته‌بندی‌ها، تأمین‌کنندگان و محصولات جدید را از فرم‌های افزودن سریع اضافه کنید. هر محصول را انتخاب کنید تا سطح موجودی، تراکنش‌های اخیر و خدمات مرتبط آن را ببینید.</value>
+  </data>
+  <data name="Help_Inventory_WhenToUse" xml:space="preserve">
+    <value>برای افزودن موجودی جدید، ثبت فروش یا تأمین مجدد، بررسی کالاهای رو به اتمام یا پیوند محصول به خدماتی که آن را مصرف می‌کنند از این ماژول استفاده کنید.</value>
+  </data>
+  <data name="Help_Inventory_Steps" xml:space="preserve">
+    <value>اگر دسته‌بندی و تأمین‌کننده هنوز وجود ندارند، ابتدا آن‌ها را اضافه کنید.
+از فرم محصول جدید برای ثبت کالا همراه با کد کالا، قیمت و تعداد اولیه استفاده کنید.
+هر بار که موجودی تغییر می‌کند، یک تراکنش (تأمین مجدد، فروش، اصلاحیه) ثبت کنید.
+محصول را در بخش خدمات مرتبط به خدماتی که آن را مصرف می‌کنند پیوند دهید.</value>
+  </data>
+  <data name="Help_Inventory_Tips" xml:space="preserve">
+    <value>تعداد کالاهای کم‌موجود به‌طور خودکار با ثبت تراکنش‌ها به‌روزرسانی می‌شود.
+کدهای کالا باید یکتا و یکدست باشند تا جستجو سریع‌تر انجام شود.</value>
+  </data>
+  <data name="Help_Inventory_Warnings" xml:space="preserve">
+    <value>ثبت تراکنش با نوع نادرست (مثلاً فروخته‌شده به‌جای اصلاحیه) گزارش‌های موجودی شما را دچار انحراف می‌کند.</value>
+  </data>
+  <data name="Help_Inventory_BestPractices" xml:space="preserve">
+    <value>شمارش موجودی را به‌طور منظم با شمارش فیزیکی مطابقت دهید تا مغایرت‌ها زود شناسایی شوند.</value>
+  </data>
+  <data name="Help_Inventory_Notes" xml:space="preserve">
+    <value>آستانه سفارش مجدد تعیین می‌کند که چه زمانی یک محصول در خلاصه کالاهای کم‌موجود ظاهر شود.</value>
+  </data>
+  <data name="Help_Accounting_Title" xml:space="preserve">
+    <value>حسابداری</value>
+  </data>
+  <data name="Help_Accounting_Subtitle" xml:space="preserve">
+    <value>فاکتورها، پرداخت‌ها و پرداخت در نقطه فروش</value>
+  </data>
+  <data name="Help_Accounting_Description" xml:space="preserve">
+    <value>ماژول حسابداری فاکتورها، پرداخت‌ها، رسیدها و روند پرداخت در نقطه فروش (POS) را مدیریت می‌کند.</value>
+  </data>
+  <data name="Help_Accounting_Purpose" xml:space="preserve">
+    <value>ارائه دیدی دقیق و لحظه‌ای از درآمد، مانده‌های پرداخت‌نشده و سابقه هر تراکنش.</value>
+  </data>
+  <data name="Help_Accounting_Overview" xml:space="preserve">
+    <value>کارت‌های شاخص درآمد، مجموع، امروز و مانده پرداخت‌نشده را خلاصه می‌کنند. «فروش جدید (صندوق فروش)» یک روند پرداخت هدایت‌شده را باز می‌کند. فهرست فاکتورها در سمت چپ به جزئیات کامل اقلام، پرداخت‌ها و رسیدها در سمت راست پیوند دارد.</value>
+  </data>
+  <data name="Help_Accounting_WhenToUse" xml:space="preserve">
+    <value>برای پردازش فروش جدید، جستجوی یک فاکتور، ثبت پرداخت یا بررسی مانده‌های پرداخت‌نشده از این ماژول استفاده کنید.</value>
+  </data>
+  <data name="Help_Accounting_Steps" xml:space="preserve">
+    <value>روی «فروش جدید (صندوق فروش)» کلیک کنید تا پرداخت هدایت‌شده آغاز شود: محصولات یا خدمات را اضافه کنید، روش پرداخت را انتخاب کنید و از مشتری دریافت کنید.
+یک فاکتور را از فهرست انتخاب کنید تا اقلام، پرداخت‌ها و رسیدهای آن را بررسی کنید.
+اگر فروشی نیاز به ابطال دارد از «لغو فاکتور» استفاده کنید.</value>
+  </data>
+  <data name="Help_Accounting_Tips" xml:space="preserve">
+    <value>روند صندوق فروش پس از وارد کردن مبلغ دریافتی، مبلغ باقیمانده را به‌طور خودکار محاسبه می‌کند.
+مانده پرداخت‌نشده در کارت درآمد، فاکتورهایی را که هنوز باید وصول شوند برجسته می‌کند.</value>
+  </data>
+  <data name="Help_Accounting_Warnings" xml:space="preserve">
+    <value>لغو یک فاکتور قابل بازگشت نیست - پیش از تأیید مطمئن شوید فاکتور درست انتخاب شده است.</value>
+  </data>
+  <data name="Help_Accounting_BestPractices" xml:space="preserve">
+    <value>درآمد روزانه را در پایان هر شیفت با خلاصه صندوق فروش مطابقت دهید.</value>
+  </data>
+  <data name="Help_Accounting_Notes" xml:space="preserve">
+    <value>یک رزرو تکمیل‌شده می‌تواند مستقیماً به یک فروش در صندوق فروش پیوند داده شود تا از ورود مجدد اطلاعات مشتری و خدمات جلوگیری شود.</value>
+  </data>
+  <data name="Help_Services_Title" xml:space="preserve">
+    <value>خدمات</value>
+  </data>
+  <data name="Help_Services_Subtitle" xml:space="preserve">
+    <value>مرور و مدیریت فهرست خدمات و متخصصان</value>
+  </data>
+  <data name="Help_Services_Description" xml:space="preserve">
+    <value>ماژول خدمات، فهرست خدمات قابل رزرو شما - دسته‌بندی، مدت زمان، قیمت‌گذاری و اینکه کدام متخصصان می‌توانند هر خدمت را انجام دهند - است.</value>
+  </data>
+  <data name="Help_Services_Purpose" xml:space="preserve">
+    <value>نگهداری منوی خدماتی دقیق و منظم که رزروها، صندوق فروش و گزارش‌ها همگی به آن متکی هستند.</value>
+  </data>
+  <data name="Help_Services_Overview" xml:space="preserve">
+    <value>فهرست سمت چپ بر اساس نام یا دسته‌بندی قابل جستجو است. انتخاب یک خدمت، پروفایل کامل آن - دسته‌بندی، وضعیت، مدت زمان، قیمت، توضیحات و متخصصان اختصاص‌یافته - را نشان می‌دهد.</value>
+  </data>
+  <data name="Help_Services_WhenToUse" xml:space="preserve">
+    <value>برای بررسی قیمت یا مدت زمان یک خدمت، یا اختصاص متخصصی که می‌تواند آن را انجام دهد از این ماژول استفاده کنید.</value>
+  </data>
+  <data name="Help_Services_Steps" xml:space="preserve">
+    <value>از جعبه جستجو برای یافتن خدمت بر اساس نام یا دسته‌بندی استفاده کنید.
+یک خدمت را انتخاب کنید تا پروفایل کامل آن در سمت راست نمایش داده شود.
+از فیلد تخصیص برای افزودن متخصصی که می‌تواند این خدمت را انجام دهد استفاده کنید.</value>
+  </data>
+  <data name="Help_Services_Tips" xml:space="preserve">
+    <value>مدت زمان تعیین‌شده در اینجا همان چیزی است که ویزارد رزرو برای بررسی دردسترس‌بودن متخصص استفاده می‌کند.
+دسته‌بندی خدمات را برای فیلتر کردن و گزارش‌گیری گروه‌بندی می‌کند.</value>
+  </data>
+  <data name="Help_Services_Warnings" xml:space="preserve">
+    <value>حذف یک متخصص از یک خدمت، رزروهای موجود او برای آن خدمت را لغو نمی‌کند.</value>
+  </data>
+  <data name="Help_Services_BestPractices" xml:space="preserve">
+    <value>قیمت‌گذاری و مدت زمان را به‌روز نگه دارید - این‌ها مستقیماً در فاکتورها و زمان‌بندی جریان می‌یابند.</value>
+  </data>
+  <data name="Help_Services_Notes" xml:space="preserve">
+    <value>وضعیت یک خدمت (مانند فعال، فصلی، متوقف‌شده) تعیین می‌کند که آیا می‌توان آن را برای رزروهای جدید انتخاب کرد یا نه.</value>
+  </data>
+  <data name="Help_Default_Title" xml:space="preserve">
+    <value>راهنما</value>
+  </data>
+  <data name="Help_Default_Subtitle" xml:space="preserve">
+    <value>راهنمایی برای این صفحه</value>
+  </data>
+  <data name="Help_Default_Description" xml:space="preserve">
+    <value>این صفحه هنوز موضوع راهنمای اختصاصی ندارد. در ادامه چند نکته کلی برای استفاده از ROJAN Desktop آمده است.</value>
+  </data>
+  <data name="Help_Default_Purpose" xml:space="preserve">
+    <value>ارائه راهنمایی پایه تا زمانی که موضوعی اختصاصی برای این صفحه منتشر شود.</value>
+  </data>
+  <data name="Help_Default_Overview" xml:space="preserve">
+    <value>هر ماژول در ROJAN Desktop از یک الگوی مشابه پیروی می‌کند: فهرستی قابل جستجو در یک سمت و جزئیات کامل مورد انتخاب‌شده در سمت دیگر. به دنبال اقدامات سریع، نشان‌های وضعیت و دکمه‌های عملیات برای کارهای پرتکرار باشید.</value>
+  </data>
+  <data name="Help_Default_WhenToUse" xml:space="preserve">
+    <value>هر زمان که به صفحه‌ای بدون موضوع راهنمای اختصاصی رسیدید از این راهنمایی کلی استفاده کنید.</value>
+  </data>
+  <data name="Help_Default_Steps" xml:space="preserve">
+    <value>به دنبال جعبه جستجو برای فیلتر کردن فهرست در این صفحه باشید.
+یک مورد را از فهرست انتخاب کنید تا جزئیات کامل آن را ببینید.
+از دکمه‌های عملیات در پنل جزئیات برای ایجاد تغییرات استفاده کنید.</value>
+  </data>
+  <data name="Help_Default_Tips" xml:space="preserve">
+    <value>روی یک نشان وضعیت یا آیکون نگه دارید تا معنای آن را ببینید.</value>
+  </data>
+  <data name="Help_Default_Warnings" xml:space="preserve">
+    <value>اقداماتی که قابل بازگشت نیستند (مانند لغو یا حذف) معمولاً ابتدا تأیید می‌خواهند.</value>
+  </data>
+  <data name="Help_Default_BestPractices" xml:space="preserve">
+    <value>اگر مطمئن نیستید یک فیلد چه کاری انجام می‌دهد، موضوعات مرتبط را برای ماژولی با روند مشابه بررسی کنید.</value>
+  </data>
+  <data name="Help_Default_Notes" xml:space="preserve">
+    <value>راهنمای دقیق‌تر برای این صفحه برای به‌روزرسانی‌های آینده برنامه‌ریزی شده است.</value>
+  </data>
 </root>

@@ -25,7 +25,12 @@ public sealed class MainWindowViewModelBranchSwitcherTests
             new StubNavigationService(),
             new PermissionEngine(),
             session,
-            new OrganizationQueryService(new FakeOrganizationRepository()));
+            new OrganizationQueryService(new FakeOrganizationRepository()),
+            TestHelpServices.QueryService,
+            TestHelpServices.ContentResolver,
+            TestHelpServices.SearchService,
+            TestHelpServices.CreateFavoritesStore(),
+            TestHelpServices.CreateRecentlyViewedStore());
 
     [Fact]
     public void BranchGroups_LoadsEveryOrganizationWithItsOwnBranchesOnly()

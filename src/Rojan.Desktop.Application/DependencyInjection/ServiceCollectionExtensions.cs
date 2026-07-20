@@ -8,6 +8,7 @@ using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Security;
@@ -148,6 +149,16 @@ public static class ServiceCollectionExtensions
         // establishes for infrastructure-free logic living in Application
         // rather than Infrastructure.
         services.AddSingleton<IRetryPolicy, RetryPolicy>();
+
+        // Phase 26: Smart Context Help. HelpQueryService needs Infrastructure's
+        // IHelpRepository (registered in AddInfrastructure()) but is itself
+        // pure orchestration/mapping, same "interface+impl both in
+        // Application, concrete repository comes from Infrastructure at
+        // resolution time" shape every other module's QueryService uses.
+        // HelpSearchService is pure matching/scoring logic with no I/O -
+        // same reasoning RetryPolicy above already establishes.
+        services.AddSingleton<IHelpQueryService, HelpQueryService>();
+        services.AddSingleton<IHelpSearchService, HelpSearchService>();
 
         return services;
     }

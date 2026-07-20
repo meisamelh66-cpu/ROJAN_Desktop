@@ -31,7 +31,9 @@
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
                     xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules"
                     xmlns:organizationsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Organizations"
-                    xmlns:organizationsView="clr-namespace:Rojan.Desktop.Presentation.Views.Organizations">
+                    xmlns:organizationsView="clr-namespace:Rojan.Desktop.Presentation.Views.Organizations"
+                    xmlns:helpVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Help"
+                    xmlns:helpView="clr-namespace:Rojan.Desktop.Presentation.Views.Help">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -111,6 +113,10 @@
 
   <DataTemplate DataType="{x:Type organizationsVm:OrganizationPageViewModel}">
     <organizationsView:OrganizationPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type helpVm:HelpDialogViewModel}">
+    <helpView:ContextHelpDialogView />
   </DataTemplate>
 
 </ResourceDictionary>

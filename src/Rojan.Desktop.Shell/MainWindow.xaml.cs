@@ -1,6 +1,8 @@
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Shell;
 using Rojan.Desktop.Presentation.Localization;
+using Rojan.Desktop.Presentation.ViewModels.Help;
 using Rojan.Desktop.Shell.Navigation;
 
 namespace Rojan.Desktop.Shell;
@@ -32,6 +34,7 @@ public partial class MainWindow : Window
         DataContext = viewModel;
         navigationService.Attach(NavigationHost);
         FlowDirection = cultureService.GetFlowDirection(localizationService.CurrentLanguage.IsRightToLeft);
+        PreviewKeyDown += OnPreviewKeyDown;
     }
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -54,5 +57,24 @@ public partial class MainWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         SystemCommands.CloseWindow(this);
+    }
+
+    /// <summary>Phase 26.4: ESC closes the Context Help Dialog specifically - scoped to <see cref="HelpDialogViewModel"/> so no other dialog's ESC behavior (unspecified today) changes.</summary>
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && DataContext is MainWindowViewModel { ActiveDialog: HelpDialogViewModel } viewModel)
+        {
+            viewModel.CloseDialog();
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Phase 26.4: outside-click (scrim click) closes the Context Help Dialog specifically - see Scrim's own doc comment in MainWindow.xaml for why this is not made generic to every dialog.</summary>
+    private void Scrim_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { ActiveDialog: HelpDialogViewModel } viewModel)
+        {
+            viewModel.CloseDialog();
+        }
     }
 }

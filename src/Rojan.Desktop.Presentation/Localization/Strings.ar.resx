@@ -1515,4 +1515,326 @@
   <data name="Enum_Consultation" xml:space="preserve">
     <value>استشارة</value>
   </data>
+  <data name="Help_Button_Tooltip" xml:space="preserve">
+    <value>مساعدة</value>
+  </data>
+  <data name="Help_Search_Placeholder" xml:space="preserve">
+    <value>البحث في مواضيع المساعدة...</value>
+  </data>
+  <data name="Help_Search_NoResults" xml:space="preserve">
+    <value>لم يتم العثور على نتائج.</value>
+  </data>
+  <data name="Help_Search_RecentSearches" xml:space="preserve">
+    <value>عمليات البحث الأخيرة</value>
+  </data>
+  <data name="Help_Section_Purpose" xml:space="preserve">
+    <value>الغرض</value>
+  </data>
+  <data name="Help_Section_Overview" xml:space="preserve">
+    <value>نظرة عامة</value>
+  </data>
+  <data name="Help_Section_WhenToUse" xml:space="preserve">
+    <value>متى تستخدم هذا</value>
+  </data>
+  <data name="Help_Section_Steps" xml:space="preserve">
+    <value>التعليمات خطوة بخطوة</value>
+  </data>
+  <data name="Help_Section_Tips" xml:space="preserve">
+    <value>نصائح</value>
+  </data>
+  <data name="Help_Section_Warnings" xml:space="preserve">
+    <value>تحذيرات</value>
+  </data>
+  <data name="Help_Section_BestPractices" xml:space="preserve">
+    <value>أفضل الممارسات</value>
+  </data>
+  <data name="Help_Section_Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="Help_Section_Shortcuts" xml:space="preserve">
+    <value>اختصارات لوحة المفاتيح</value>
+  </data>
+  <data name="Help_Section_RelatedTopics" xml:space="preserve">
+    <value>مواضيع ذات صلة</value>
+  </data>
+  <data name="Help_Section_AiSuggestions" xml:space="preserve">
+    <value>اقتراحات الذكاء الاصطناعي</value>
+  </data>
+  <data name="Help_AiSuggestions_ComingSoon" xml:space="preserve">
+    <value>الاقتراحات المدعومة بالذكاء الاصطناعي قادمة في تحديث مستقبلي.</value>
+  </data>
+  <data name="Help_Nav_Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="Help_Nav_Forward" xml:space="preserve">
+    <value>للأمام</value>
+  </data>
+  <data name="Help_Nav_RecentlyViewed" xml:space="preserve">
+    <value>المشاهدة مؤخراً</value>
+  </data>
+  <data name="Help_Nav_AddFavorite" xml:space="preserve">
+    <value>إضافة إلى المفضلة</value>
+  </data>
+  <data name="Help_Nav_RemoveFavorite" xml:space="preserve">
+    <value>إزالة من المفضلة</value>
+  </data>
+  <data name="Help_Breadcrumb_Home" xml:space="preserve">
+    <value>الصفحة الرئيسية للمساعدة</value>
+  </data>
+  <data name="Help_Shortcut_CloseDialog" xml:space="preserve">
+    <value>إغلاق هذه النافذة</value>
+  </data>
+  <data name="Help_Dashboard_Title" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+  <data name="Help_Dashboard_Subtitle" xml:space="preserve">
+    <value>نظرة عامة على أعمالك</value>
+  </data>
+  <data name="Help_Dashboard_Description" xml:space="preserve">
+    <value>لوحة التحكم هي أول شاشة تراها بعد تسجيل الدخول. تلخص أهم المعلومات من كل وحدة في مكان واحد.</value>
+  </data>
+  <data name="Help_Dashboard_Purpose" xml:space="preserve">
+    <value>منحك لمحة سريعة ودقيقة عن أداء العمل اليوم دون الحاجة إلى التنقل بين الوحدات الفردية.</value>
+  </data>
+  <data name="Help_Dashboard_Overview" xml:space="preserve">
+    <value>تعرض بطاقات المؤشرات الرئيسية الحجوزات والعملاء النشطين والإيرادات والمهام المعلقة مع مؤشرات الاتجاه. تتيح لك الإجراءات السريعة الانتقال مباشرة إلى المهام الشائعة. يسرد النشاط الأخير آخر التغييرات في التطبيق.</value>
+  </data>
+  <data name="Help_Dashboard_WhenToUse" xml:space="preserve">
+    <value>افتح لوحة التحكم عند بدء يومك، أو عندما تريد فحصاً سريعاً لصحة العمل دون البحث في التقارير.</value>
+  </data>
+  <data name="Help_Dashboard_Steps" xml:space="preserve">
+    <value>راجع بطاقات المؤشرات الرئيسية في الأعلى لمعرفة أرقام اليوم.
+استخدم زر إجراء سريع لبدء حجز جديد أو إضافة عميل أو إنشاء مهمة.
+مرر لأسفل إلى النشاط الأخير لرؤية ما تغير مؤخراً.</value>
+  </data>
+  <data name="Help_Dashboard_Tips" xml:space="preserve">
+    <value>تُظهر أسهم الاتجاه بجانب كل مؤشر ما إذا كان قد تحسن أو تراجع مقارنة بالفترة السابقة.
+ستعرض لوحة المساعد التجاري على اليمين رؤى مدعومة بالذكاء الاصطناعي في تحديث مستقبلي.</value>
+  </data>
+  <data name="Help_Dashboard_Warnings" xml:space="preserve">
+    <value>تتحدث أرقام لوحة التحكم عند تحميل الصفحة - استخدم إعادة المحاولة إذا أظهر أحد العناصر خطأ بدلاً من البيانات.</value>
+  </data>
+  <data name="Help_Dashboard_BestPractices" xml:space="preserve">
+    <value>تحقق من لوحة التحكم أولاً كل يوم لاكتشاف أي شيء يحتاج إلى اهتمام قبل أن يصبح عاجلاً.</value>
+  </data>
+  <data name="Help_Dashboard_Notes" xml:space="preserve">
+    <value>قد تستغرق بعض المؤشرات لحظة للتحميل عند فتح لوحة التحكم لأول مرة في الجلسة.</value>
+  </data>
+  <data name="Help_Customers_Title" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Help_Customers_Subtitle" xml:space="preserve">
+    <value>البحث ومراجعة وإدارة كل علاقة مع العميل</value>
+  </data>
+  <data name="Help_Customers_Description" xml:space="preserve">
+    <value>وحدة العملاء هي نظام إدارة علاقات العملاء (CRM) الخاص بك - ملف تعريف كامل لكل عميل وإحصائيات ووسوم وملاحظات وسجل نشاط في مكان واحد.</value>
+  </data>
+  <data name="Help_Customers_Purpose" xml:space="preserve">
+    <value>الحفاظ على سجل كامل وقابل للبحث لكل عميل حتى يتمكن أي عضو في الفريق من فهم العلاقة بسرعة.</value>
+  </data>
+  <data name="Help_Customers_Overview" xml:space="preserve">
+    <value>يعرض الجانب الأيسر قائمة بجميع العملاء مع خاصية البحث؛ يعرض الجانب الأيمن الملف الشخصي الكامل للعميل المحدد بزاوية 360 درجة، بما في ذلك الحالة والإحصائيات والوسوم والملاحظات والجدول الزمني للنشاط الأخير.</value>
+  </data>
+  <data name="Help_Customers_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الوحدة عندما تحتاج إلى إضافة عميل جديد أو البحث عن تفاصيل الاتصال أو تحديث حالته أو مراجعة سجله قبل مكالمة أو موعد.</value>
+  </data>
+  <data name="Help_Customers_Steps" xml:space="preserve">
+    <value>استخدم مربع البحث للعثور على عميل بالاسم أو الشركة أو البريد الإلكتروني.
+حدد عميلاً من القائمة لفتح ملفه الشخصي الكامل على اليمين.
+قم بتحديث حالته أو إضافة وسوم أو إضافة ملاحظة مباشرة من لوحة الملف الشخصي.
+استخدم نموذج إضافة عميل لتسجيل عميل جديد تماماً.</value>
+  </data>
+  <data name="Help_Customers_Tips" xml:space="preserve">
+    <value>تساعدك الوسوم على تصنيف العملاء (مثل مميز، عميل محتمل) للتعرف البصري السريع في القائمة.
+تتحدث بطاقات الإحصائيات تلقائياً مع تغير حجوزات العميل ومشترياته.</value>
+  </data>
+  <data name="Help_Customers_Warnings" xml:space="preserve">
+    <value>تغيير حالة العميل يؤثر على كيفية احتسابه في التقارير - تأكد قبل الحفظ.</value>
+  </data>
+  <data name="Help_Customers_BestPractices" xml:space="preserve">
+    <value>أضف ملاحظة بعد كل تفاعل مهم حتى يبقى الفريق بأكمله على اطلاع.</value>
+  </data>
+  <data name="Help_Customers_Notes" xml:space="preserve">
+    <value>تتم مشاركة سجلات العملاء عبر فروع المؤسسة وفقاً لمستوى صلاحياتك.</value>
+  </data>
+  <data name="Help_Bookings_Title" xml:space="preserve">
+    <value>الحجوزات</value>
+  </data>
+  <data name="Help_Bookings_Subtitle" xml:space="preserve">
+    <value>جدولة وتتبع كل موعد</value>
+  </data>
+  <data name="Help_Bookings_Description" xml:space="preserve">
+    <value>تدير وحدة الحجوزات دورة حياة الموعد الكاملة، من الإنشاء إلى الإكمال أو الإلغاء.</value>
+  </data>
+  <data name="Help_Bookings_Purpose" xml:space="preserve">
+    <value>ضمان جدولة وتتبع وحل كل موعد دون تعارضات أو متابعات فائتة.</value>
+  </data>
+  <data name="Help_Bookings_Overview" xml:space="preserve">
+    <value>أنشئ حجزاً جديداً مباشرة من النموذج، أو استخدم معالج الحجز الموجه للحصول على مسار خطوة بخطوة. تعرض القائمة على اليسار جميع الحجوزات؛ تعرض اللوحة على اليمين التفاصيل الكاملة وإجراءات الحالة للحجز المحدد.</value>
+  </data>
+  <data name="Help_Bookings_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الوحدة لجدولة موعد جديد أو التحقق من جدول اليوم أو تحديث حالة حجز أثناء تقدمه.</value>
+  </data>
+  <data name="Help_Bookings_Steps" xml:space="preserve">
+    <value>انقر فوق "حجز جديد (المعالج)" للحصول على مسار حجز موجه خطوة بخطوة، أو املأ النموذج السريع لإدخال سريع.
+حدد حجزاً من القائمة لعرض تفاصيله الكاملة.
+استخدم تأكيد أو إكمال أو إلغاء لنقل الحجز عبر دورة حياته.</value>
+  </data>
+  <data name="Help_Bookings_Tips" xml:space="preserve">
+    <value>يتحقق معالج الحجز تلقائياً من توفر الأخصائي لتجنب الحجز المزدوج.
+تُعرض المدة بالدقائق وتؤثر مباشرة على إجمالي وقت موعد العميل.</value>
+  </data>
+  <data name="Help_Bookings_Warnings" xml:space="preserve">
+    <value>لا يمكن التراجع عن إلغاء الحجز - قم بالتنسيق مع العميل قبل الإلغاء.</value>
+  </data>
+  <data name="Help_Bookings_BestPractices" xml:space="preserve">
+    <value>أكد الحجز فور إنشائه حتى يعكس الجدول الواقع بدقة.</value>
+  </data>
+  <data name="Help_Bookings_Notes" xml:space="preserve">
+    <value>تغذي الحجوزات المكتملة مباشرة حسابات المحاسبة والعمولة.</value>
+  </data>
+  <data name="Help_Inventory_Title" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Help_Inventory_Subtitle" xml:space="preserve">
+    <value>تتبع المنتجات ومستويات المخزون ومصادر الموردين</value>
+  </data>
+  <data name="Help_Inventory_Description" xml:space="preserve">
+    <value>تدير وحدة المخزون كتالوج المنتجات ومستويات المخزون والموردين والفئات والخدمات التي تستهلك المخزون.</value>
+  </data>
+  <data name="Help_Inventory_Purpose" xml:space="preserve">
+    <value>منع نفاد المخزون ومنحك رؤية كاملة لما تملكه وما ينخفض وأصله.</value>
+  </data>
+  <data name="Help_Inventory_Overview" xml:space="preserve">
+    <value>يحدد ملخص المخزون المنخفض العناصر التي تحتاج إلى اهتمام. أضف الفئات والموردين والمنتجات الجديدة من نماذج الإضافة السريعة. حدد أي منتج لرؤية مستوى مخزونه ومعاملاته الأخيرة وخدماته المرتبطة.</value>
+  </data>
+  <data name="Help_Inventory_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الوحدة لإضافة مخزون جديد أو تسجيل بيع أو إعادة تخزين أو التحقق مما ينخفض أو ربط منتج بالخدمات التي تستهلكه.</value>
+  </data>
+  <data name="Help_Inventory_Steps" xml:space="preserve">
+    <value>أضف فئة ومورداً أولاً إذا لم يكونا موجودين بالفعل.
+استخدم نموذج منتج جديد لتسجيل عنصر برمز المنتج وسعره وكميته الأولية.
+سجل معاملة (إعادة تخزين، بيع، تسوية) كلما تغير المخزون.
+اربط المنتج بأي خدمات تستهلكه ضمن الخدمات المرتبطة.</value>
+  </data>
+  <data name="Help_Inventory_Tips" xml:space="preserve">
+    <value>يتحدث عدد العناصر منخفضة المخزون تلقائياً مع تسجيل المعاملات.
+يجب أن تكون رموز المنتجات فريدة ومتسقة لجعل البحث أسرع.</value>
+  </data>
+  <data name="Help_Inventory_Warnings" xml:space="preserve">
+    <value>تسجيل معاملة بنوع خاطئ (مثل مباع بدلاً من تسوية) سيشوه تقارير مخزونك.</value>
+  </data>
+  <data name="Help_Inventory_BestPractices" xml:space="preserve">
+    <value>قم بتسوية أعداد المخزون بانتظام مقابل الجرد الفعلي لاكتشاف التناقضات مبكراً.</value>
+  </data>
+  <data name="Help_Inventory_Notes" xml:space="preserve">
+    <value>يحدد حد إعادة الطلب متى يظهر المنتج في ملخص المخزون المنخفض.</value>
+  </data>
+  <data name="Help_Accounting_Title" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="Help_Accounting_Subtitle" xml:space="preserve">
+    <value>الفواتير والمدفوعات والدفع في نقطة البيع</value>
+  </data>
+  <data name="Help_Accounting_Description" xml:space="preserve">
+    <value>تدير وحدة المحاسبة الفواتير والمدفوعات والإيصالات وتدفق الدفع في نقطة البيع (POS).</value>
+  </data>
+  <data name="Help_Accounting_Purpose" xml:space="preserve">
+    <value>منحك رؤية دقيقة وفورية للإيرادات والأرصدة المستحقة وسجل كل معاملة.</value>
+  </data>
+  <data name="Help_Accounting_Overview" xml:space="preserve">
+    <value>تلخص بطاقات مؤشرات الإيرادات الإجمالي وإيرادات اليوم والرصيد المستحق. يفتح "بيع جديد (نقطة البيع)" تدفق دفع موجهاً. ترتبط قائمة الفواتير على اليسار بتفاصيل بنود الفاتورة والمدفوعات والإيصالات الكاملة على اليمين.</value>
+  </data>
+  <data name="Help_Accounting_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الوحدة لمعالجة بيع جديد أو البحث عن فاتورة أو تسجيل دفعة أو مراجعة الأرصدة المستحقة.</value>
+  </data>
+  <data name="Help_Accounting_Steps" xml:space="preserve">
+    <value>انقر فوق "بيع جديد (نقطة البيع)" لبدء دفع موجه: أضف منتجات/خدمات، اختر طريقة دفع، واحصل على المبلغ من العميل.
+حدد فاتورة من القائمة لمراجعة بنودها ومدفوعاتها وإيصالاتها.
+استخدم "إلغاء الفاتورة" إذا احتاج بيع إلى الإبطال.</value>
+  </data>
+  <data name="Help_Accounting_Tips" xml:space="preserve">
+    <value>يحسب تدفق نقطة البيع المبلغ المتبقي تلقائياً بمجرد إدخال المبلغ المدفوع.
+يبرز الرصيد المستحق في بطاقة الإيرادات الفواتير التي لا تزال بحاجة إلى التحصيل.</value>
+  </data>
+  <data name="Help_Accounting_Warnings" xml:space="preserve">
+    <value>لا يمكن التراجع عن إلغاء الفاتورة - تأكد من أنها الفاتورة الصحيحة قبل التأكيد.</value>
+  </data>
+  <data name="Help_Accounting_BestPractices" xml:space="preserve">
+    <value>قم بتسوية الإيرادات اليومية مقابل ملخص نقطة البيع في نهاية كل وردية.</value>
+  </data>
+  <data name="Help_Accounting_Notes" xml:space="preserve">
+    <value>يمكن ربط حجز مكتمل مباشرة ببيع في نقطة البيع لتوفير إعادة إدخال تفاصيل العميل والخدمة.</value>
+  </data>
+  <data name="Help_Services_Title" xml:space="preserve">
+    <value>الخدمات</value>
+  </data>
+  <data name="Help_Services_Subtitle" xml:space="preserve">
+    <value>تصفح وإدارة كتالوج الخدمات والأخصائيين</value>
+  </data>
+  <data name="Help_Services_Description" xml:space="preserve">
+    <value>وحدة الخدمات هي كتالوج الخدمات القابلة للحجز لديك - الفئات والمدة والتسعير وأي الأخصائيين يمكنهم أداء كل خدمة.</value>
+  </data>
+  <data name="Help_Services_Purpose" xml:space="preserve">
+    <value>الحفاظ على قائمة خدمات دقيقة ومنظمة تعتمد عليها الحجوزات ونقطة البيع والتقارير جميعها.</value>
+  </data>
+  <data name="Help_Services_Overview" xml:space="preserve">
+    <value>الكتالوج على اليسار قابل للبحث بالاسم أو الفئة. يعرض تحديد خدمة ملفها الشخصي الكامل - الفئة والحالة والمدة والسعر والوصف والأخصائيين المعينين لها.</value>
+  </data>
+  <data name="Help_Services_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الوحدة للبحث عن سعر خدمة أو مدتها، أو لتعيين أخصائي يمكنه أداءها.</value>
+  </data>
+  <data name="Help_Services_Steps" xml:space="preserve">
+    <value>استخدم مربع البحث للعثور على خدمة بالاسم أو الفئة.
+حدد خدمة لعرض ملفها الشخصي الكامل على اليمين.
+استخدم حقل التعيين لإضافة أخصائي يمكنه أداء هذه الخدمة.</value>
+  </data>
+  <data name="Help_Services_Tips" xml:space="preserve">
+    <value>المدة المحددة هنا هي ما يستخدمه معالج الحجز للتحقق من توفر الأخصائي.
+تجمع الفئة الخدمات معاً للتصفية والتقارير.</value>
+  </data>
+  <data name="Help_Services_Warnings" xml:space="preserve">
+    <value>إزالة أخصائي من خدمة لا يلغي حجوزاته الحالية لها.</value>
+  </data>
+  <data name="Help_Services_BestPractices" xml:space="preserve">
+    <value>حافظ على تحديث التسعير والمدة - فهما يؤثران مباشرة على الفواتير والجدولة.</value>
+  </data>
+  <data name="Help_Services_Notes" xml:space="preserve">
+    <value>تتحكم حالة الخدمة (مثل نشطة، موسمية، متوقفة) فيما إذا كان يمكن اختيارها لحجوزات جديدة.</value>
+  </data>
+  <data name="Help_Default_Title" xml:space="preserve">
+    <value>مساعدة</value>
+  </data>
+  <data name="Help_Default_Subtitle" xml:space="preserve">
+    <value>إرشادات لهذه الشاشة</value>
+  </data>
+  <data name="Help_Default_Description" xml:space="preserve">
+    <value>لا تحتوي هذه الشاشة على موضوع مساعدة مخصص بعد. فيما يلي بعض النصائح العامة لاستخدام ROJAN Desktop.</value>
+  </data>
+  <data name="Help_Default_Purpose" xml:space="preserve">
+    <value>توفير إرشادات أساسية حتى يتم نشر موضوع مخصص لهذه الشاشة.</value>
+  </data>
+  <data name="Help_Default_Overview" xml:space="preserve">
+    <value>تتبع كل وحدة في ROJAN Desktop نفس النمط: قائمة قابلة للبحث على جانب، وتفاصيل كاملة للعنصر المحدد على الجانب الآخر. ابحث عن الإجراءات السريعة وشارات الحالة وأزرار الإجراءات للمهام الشائعة.</value>
+  </data>
+  <data name="Help_Default_WhenToUse" xml:space="preserve">
+    <value>استخدم هذه الإرشادات العامة كلما وصلت إلى شاشة بدون موضوع مساعدة مخصص خاص بها.</value>
+  </data>
+  <data name="Help_Default_Steps" xml:space="preserve">
+    <value>ابحث عن مربع بحث لتصفية القائمة في هذه الشاشة.
+حدد عنصراً من القائمة لرؤية تفاصيله الكاملة.
+استخدم أزرار الإجراءات في لوحة التفاصيل لإجراء تغييرات.</value>
+  </data>
+  <data name="Help_Default_Tips" xml:space="preserve">
+    <value>مرر فوق شارة حالة أو أيقونة لمعرفة معناها.</value>
+  </data>
+  <data name="Help_Default_Warnings" xml:space="preserve">
+    <value>الإجراءات التي لا يمكن التراجع عنها (مثل الإلغاء أو الحذف) عادة ما تطلب تأكيداً أولاً.</value>
+  </data>
+  <data name="Help_Default_BestPractices" xml:space="preserve">
+    <value>إذا لم تكن متأكداً مما يفعله حقل ما، تحقق من المواضيع ذات الصلة لوحدة تغطي سير عمل مشابه.</value>
+  </data>
+  <data name="Help_Default_Notes" xml:space="preserve">
+    <value>من المخطط تقديم مساعدة أكثر تفصيلاً لهذه الشاشة في تحديث مستقبلي.</value>
+  </data>
 </root>

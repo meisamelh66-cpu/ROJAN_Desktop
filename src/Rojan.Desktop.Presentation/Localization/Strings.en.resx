@@ -1515,4 +1515,326 @@
   <data name="Enum_Consultation" xml:space="preserve">
     <value>Consultation</value>
   </data>
+  <data name="Help_Button_Tooltip" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Help_Search_Placeholder" xml:space="preserve">
+    <value>Search help topics...</value>
+  </data>
+  <data name="Help_Search_NoResults" xml:space="preserve">
+    <value>No results found.</value>
+  </data>
+  <data name="Help_Search_RecentSearches" xml:space="preserve">
+    <value>Recent Searches</value>
+  </data>
+  <data name="Help_Section_Purpose" xml:space="preserve">
+    <value>Purpose</value>
+  </data>
+  <data name="Help_Section_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Help_Section_WhenToUse" xml:space="preserve">
+    <value>When to Use</value>
+  </data>
+  <data name="Help_Section_Steps" xml:space="preserve">
+    <value>Step-by-Step Instructions</value>
+  </data>
+  <data name="Help_Section_Tips" xml:space="preserve">
+    <value>Tips</value>
+  </data>
+  <data name="Help_Section_Warnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="Help_Section_BestPractices" xml:space="preserve">
+    <value>Best Practices</value>
+  </data>
+  <data name="Help_Section_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Help_Section_Shortcuts" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+  </data>
+  <data name="Help_Section_RelatedTopics" xml:space="preserve">
+    <value>Related Topics</value>
+  </data>
+  <data name="Help_Section_AiSuggestions" xml:space="preserve">
+    <value>AI Suggestions</value>
+  </data>
+  <data name="Help_AiSuggestions_ComingSoon" xml:space="preserve">
+    <value>AI-powered suggestions are coming in a future update.</value>
+  </data>
+  <data name="Help_Nav_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Help_Nav_Forward" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="Help_Nav_RecentlyViewed" xml:space="preserve">
+    <value>Recently Viewed</value>
+  </data>
+  <data name="Help_Nav_AddFavorite" xml:space="preserve">
+    <value>Add to Favorites</value>
+  </data>
+  <data name="Help_Nav_RemoveFavorite" xml:space="preserve">
+    <value>Remove from Favorites</value>
+  </data>
+  <data name="Help_Breadcrumb_Home" xml:space="preserve">
+    <value>Help Home</value>
+  </data>
+  <data name="Help_Shortcut_CloseDialog" xml:space="preserve">
+    <value>Close this dialog</value>
+  </data>
+  <data name="Help_Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Help_Dashboard_Subtitle" xml:space="preserve">
+    <value>Your business at a glance</value>
+  </data>
+  <data name="Help_Dashboard_Description" xml:space="preserve">
+    <value>The Dashboard is the first screen you see after signing in. It summarizes what matters most across every module in one place.</value>
+  </data>
+  <data name="Help_Dashboard_Purpose" xml:space="preserve">
+    <value>Give you a fast, accurate snapshot of today's business performance without navigating into individual modules.</value>
+  </data>
+  <data name="Help_Dashboard_Overview" xml:space="preserve">
+    <value>Key Metrics cards show bookings, active clients, revenue, and pending tasks with trend indicators. Quick Actions let you jump straight into common tasks. Recent Activity lists the latest changes across the app.</value>
+  </data>
+  <data name="Help_Dashboard_WhenToUse" xml:space="preserve">
+    <value>Open the Dashboard whenever you start your day, or whenever you want a quick health check of the business without digging through reports.</value>
+  </data>
+  <data name="Help_Dashboard_Steps" xml:space="preserve">
+    <value>Review the Key Metrics cards at the top for today's numbers.
+Use a Quick Action button to start a new booking, add a customer, or create a task.
+Scroll down to Recent Activity to see what changed recently.</value>
+  </data>
+  <data name="Help_Dashboard_Tips" xml:space="preserve">
+    <value>Trend arrows next to each metric show whether it improved or declined compared to the previous period.
+The Business Assistant panel on the right will surface AI-powered insights in a future update.</value>
+  </data>
+  <data name="Help_Dashboard_Warnings" xml:space="preserve">
+    <value>Dashboard figures refresh when the page loads - use Retry if a widget shows an error instead of data.</value>
+  </data>
+  <data name="Help_Dashboard_BestPractices" xml:space="preserve">
+    <value>Check the Dashboard first thing each day to catch anything that needs attention before it becomes urgent.</value>
+  </data>
+  <data name="Help_Dashboard_Notes" xml:space="preserve">
+    <value>Some metrics may take a moment to load the first time you open the Dashboard in a session.</value>
+  </data>
+  <data name="Help_Customers_Title" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Help_Customers_Subtitle" xml:space="preserve">
+    <value>Search, review, and manage every client relationship</value>
+  </data>
+  <data name="Help_Customers_Description" xml:space="preserve">
+    <value>The Customers module is your CRM - every client's profile, statistics, tags, notes, and activity history in one place.</value>
+  </data>
+  <data name="Help_Customers_Purpose" xml:space="preserve">
+    <value>Keep a complete, searchable record of every customer so any team member can quickly understand the relationship.</value>
+  </data>
+  <data name="Help_Customers_Overview" xml:space="preserve">
+    <value>The left side lists every customer with search; the right side shows the selected customer's full 360 profile, including status, statistics, tags, notes, and a timeline of recent activity.</value>
+  </data>
+  <data name="Help_Customers_WhenToUse" xml:space="preserve">
+    <value>Use this module whenever you need to add a new customer, look up contact details, update their status, or review their history before a call or appointment.</value>
+  </data>
+  <data name="Help_Customers_Steps" xml:space="preserve">
+    <value>Use the search box to find a customer by name, company, or email.
+Select a customer from the list to open their full profile on the right.
+Update their status, add tags, or add a note directly from the profile panel.
+Use the Add Customer form to register a brand-new client.</value>
+  </data>
+  <data name="Help_Customers_Tips" xml:space="preserve">
+    <value>Tags help you segment customers (e.g. VIP, Lead) for quick visual identification in the list.
+The Statistics cards update automatically as the customer's bookings and purchases change.</value>
+  </data>
+  <data name="Help_Customers_Warnings" xml:space="preserve">
+    <value>Changing a customer's status affects how they're counted in reports - confirm before saving.</value>
+  </data>
+  <data name="Help_Customers_BestPractices" xml:space="preserve">
+    <value>Add a note after every meaningful interaction so the whole team stays informed.</value>
+  </data>
+  <data name="Help_Customers_Notes" xml:space="preserve">
+    <value>Customer records are shared across the organization's branches according to your permission level.</value>
+  </data>
+  <data name="Help_Bookings_Title" xml:space="preserve">
+    <value>Bookings</value>
+  </data>
+  <data name="Help_Bookings_Subtitle" xml:space="preserve">
+    <value>Schedule and track every appointment</value>
+  </data>
+  <data name="Help_Bookings_Description" xml:space="preserve">
+    <value>The Bookings module manages the full appointment lifecycle, from creation to completion or cancellation.</value>
+  </data>
+  <data name="Help_Bookings_Purpose" xml:space="preserve">
+    <value>Ensure every appointment is scheduled, tracked, and resolved without conflicts or missed follow-ups.</value>
+  </data>
+  <data name="Help_Bookings_Overview" xml:space="preserve">
+    <value>Create a new booking directly from the form, or use the guided Booking Wizard for a step-by-step flow. The list on the left shows every booking; the panel on the right shows full details and status actions for the selected one.</value>
+  </data>
+  <data name="Help_Bookings_WhenToUse" xml:space="preserve">
+    <value>Use this module to schedule a new appointment, check today's schedule, or update a booking's status as it progresses.</value>
+  </data>
+  <data name="Help_Bookings_Steps" xml:space="preserve">
+    <value>Click New Booking (Wizard) for a guided step-by-step booking flow, or fill in the quick form for a fast entry.
+Select a booking from the list to view its full details.
+Use Confirm, Complete, or Cancel to move the booking through its lifecycle.</value>
+  </data>
+  <data name="Help_Bookings_Tips" xml:space="preserve">
+    <value>The Booking Wizard checks specialist availability automatically so you avoid double-booking.
+Duration is shown in minutes and factors directly into the customer's total appointment time.</value>
+  </data>
+  <data name="Help_Bookings_Warnings" xml:space="preserve">
+    <value>Cancelling a booking cannot be undone - confirm with the customer before cancelling.</value>
+  </data>
+  <data name="Help_Bookings_BestPractices" xml:space="preserve">
+    <value>Confirm a booking as soon as it's created so the schedule reflects reality accurately.</value>
+  </data>
+  <data name="Help_Bookings_Notes" xml:space="preserve">
+    <value>Completed bookings feed directly into Accounting and Commission calculations.</value>
+  </data>
+  <data name="Help_Inventory_Title" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Help_Inventory_Subtitle" xml:space="preserve">
+    <value>Track products, stock levels, and supplier sourcing</value>
+  </data>
+  <data name="Help_Inventory_Description" xml:space="preserve">
+    <value>The Inventory module manages your product catalog, stock levels, suppliers, categories, and the services that consume stock.</value>
+  </data>
+  <data name="Help_Inventory_Purpose" xml:space="preserve">
+    <value>Prevent stockouts and give you full visibility into what you have, what you're low on, and where it comes from.</value>
+  </data>
+  <data name="Help_Inventory_Overview" xml:space="preserve">
+    <value>The Low Stock summary flags items needing attention. Add categories, suppliers, and new products from the quick-add forms. Select any product to see its stock level, recent transactions, and linked services.</value>
+  </data>
+  <data name="Help_Inventory_WhenToUse" xml:space="preserve">
+    <value>Use this module to add new stock, record a sale or restock, check what's running low, or link a product to the services that consume it.</value>
+  </data>
+  <data name="Help_Inventory_Steps" xml:space="preserve">
+    <value>Add a category and supplier first if they don't already exist.
+Use the New Product form to register an item with its SKU, price, and initial quantity.
+Record a transaction (restock, sale, adjustment) whenever stock changes.
+Link the product to any services that consume it under Linked Services.</value>
+  </data>
+  <data name="Help_Inventory_Tips" xml:space="preserve">
+    <value>The Low Stock Items count updates automatically as transactions are recorded.
+SKU codes should be unique and consistent to make searching faster.</value>
+  </data>
+  <data name="Help_Inventory_Warnings" xml:space="preserve">
+    <value>Recording a transaction with the wrong type (e.g. Sold instead of Adjustment) will skew your stock reports.</value>
+  </data>
+  <data name="Help_Inventory_BestPractices" xml:space="preserve">
+    <value>Reconcile stock counts regularly against a physical count to catch discrepancies early.</value>
+  </data>
+  <data name="Help_Inventory_Notes" xml:space="preserve">
+    <value>Reorder Threshold determines when a product appears in the Low Stock summary.</value>
+  </data>
+  <data name="Help_Accounting_Title" xml:space="preserve">
+    <value>Accounting</value>
+  </data>
+  <data name="Help_Accounting_Subtitle" xml:space="preserve">
+    <value>Invoices, payments, and point-of-sale checkout</value>
+  </data>
+  <data name="Help_Accounting_Description" xml:space="preserve">
+    <value>The Accounting module handles invoices, payments, receipts, and the point-of-sale checkout flow.</value>
+  </data>
+  <data name="Help_Accounting_Purpose" xml:space="preserve">
+    <value>Give you an accurate, real-time view of revenue, outstanding balances, and every transaction's paper trail.</value>
+  </data>
+  <data name="Help_Accounting_Overview" xml:space="preserve">
+    <value>Revenue KPI cards summarize total, today's, and outstanding revenue. New Sale (POS) opens a guided checkout flow. The invoice list on the left links to full line-item, payment, and receipt detail on the right.</value>
+  </data>
+  <data name="Help_Accounting_WhenToUse" xml:space="preserve">
+    <value>Use this module to process a new sale, look up an invoice, record a payment, or review outstanding balances.</value>
+  </data>
+  <data name="Help_Accounting_Steps" xml:space="preserve">
+    <value>Click New Sale (POS) to start a guided checkout: add products/services, choose a payment method, and charge the customer.
+Select an invoice from the list to review its line items, payments, and receipts.
+Use Cancel Invoice if a sale needs to be voided.</value>
+  </data>
+  <data name="Help_Accounting_Tips" xml:space="preserve">
+    <value>The POS flow calculates change due automatically once you enter the amount tendered.
+Outstanding balance on the Revenue card highlights invoices that still need to be collected.</value>
+  </data>
+  <data name="Help_Accounting_Warnings" xml:space="preserve">
+    <value>Cancelling an invoice cannot be reversed - make sure it's the correct one before confirming.</value>
+  </data>
+  <data name="Help_Accounting_BestPractices" xml:space="preserve">
+    <value>Reconcile daily revenue against the POS summary at the end of each shift.</value>
+  </data>
+  <data name="Help_Accounting_Notes" xml:space="preserve">
+    <value>A completed booking can be linked directly into a POS sale to save re-entering customer and service details.</value>
+  </data>
+  <data name="Help_Services_Title" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Help_Services_Subtitle" xml:space="preserve">
+    <value>Browse and manage your service catalog and specialists</value>
+  </data>
+  <data name="Help_Services_Description" xml:space="preserve">
+    <value>The Services module is your catalog of bookable services - categories, duration, pricing, and which specialists can perform each one.</value>
+  </data>
+  <data name="Help_Services_Purpose" xml:space="preserve">
+    <value>Keep an accurate, organized service menu that Bookings, the POS, and Reporting all rely on.</value>
+  </data>
+  <data name="Help_Services_Overview" xml:space="preserve">
+    <value>The catalog on the left is searchable by name or category. Selecting a service shows its full profile - category, status, duration, price, description, and the specialists assigned to it.</value>
+  </data>
+  <data name="Help_Services_WhenToUse" xml:space="preserve">
+    <value>Use this module to look up a service's price or duration, or to assign a specialist who can perform it.</value>
+  </data>
+  <data name="Help_Services_Steps" xml:space="preserve">
+    <value>Use the search box to find a service by name or category.
+Select a service to view its full profile on the right.
+Use the Assign field to add a specialist who can perform this service.</value>
+  </data>
+  <data name="Help_Services_Tips" xml:space="preserve">
+    <value>Duration set here is what the Booking Wizard uses to check specialist availability.
+Category groups services together for filtering and reporting.</value>
+  </data>
+  <data name="Help_Services_Warnings" xml:space="preserve">
+    <value>Removing a specialist from a service does not cancel their existing bookings for it.</value>
+  </data>
+  <data name="Help_Services_BestPractices" xml:space="preserve">
+    <value>Keep pricing and duration up to date - they flow directly into invoices and scheduling.</value>
+  </data>
+  <data name="Help_Services_Notes" xml:space="preserve">
+    <value>A service's Status (e.g. Active, Seasonal, Discontinued) controls whether it can be selected for new bookings.</value>
+  </data>
+  <data name="Help_Default_Title" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Help_Default_Subtitle" xml:space="preserve">
+    <value>Guidance for this screen</value>
+  </data>
+  <data name="Help_Default_Description" xml:space="preserve">
+    <value>This screen doesn't have a dedicated help topic yet. Here are some general tips for using ROJAN Desktop.</value>
+  </data>
+  <data name="Help_Default_Purpose" xml:space="preserve">
+    <value>Provide baseline guidance until a topic dedicated to this screen is published.</value>
+  </data>
+  <data name="Help_Default_Overview" xml:space="preserve">
+    <value>Every module in ROJAN Desktop follows the same pattern: a searchable list on one side, and full details for the selected item on the other. Look for Quick Actions, status badges, and action buttons for common tasks.</value>
+  </data>
+  <data name="Help_Default_WhenToUse" xml:space="preserve">
+    <value>Use this general guidance whenever you land on a screen without its own dedicated help topic.</value>
+  </data>
+  <data name="Help_Default_Steps" xml:space="preserve">
+    <value>Look for a search box to filter the list on this screen.
+Select an item from the list to see its full details.
+Use the action buttons in the detail panel to make changes.</value>
+  </data>
+  <data name="Help_Default_Tips" xml:space="preserve">
+    <value>Hover over a status badge or icon to learn what it means.</value>
+  </data>
+  <data name="Help_Default_Warnings" xml:space="preserve">
+    <value>Actions that cannot be undone (like cancelling or deleting) usually ask for confirmation first.</value>
+  </data>
+  <data name="Help_Default_BestPractices" xml:space="preserve">
+    <value>If you're unsure what a field does, check Related Topics for a module that covers a similar workflow.</value>
+  </data>
+  <data name="Help_Default_Notes" xml:space="preserve">
+    <value>More detailed help for this screen is planned for a future update.</value>
+  </data>
 </root>

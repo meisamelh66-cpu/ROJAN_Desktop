@@ -1,12 +1,15 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Help;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Organizations;
+using Rojan.Desktop.Presentation.ViewModels.Help;
 
 namespace Rojan.Desktop.Shell;
 
@@ -35,6 +38,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
     private readonly IOrganizationQueryService _organizationQueryService;
+    private readonly IHelpQueryService _helpQueryService;
+    private readonly IHelpContentResolver _helpContentResolver;
+    private readonly IHelpSearchService _helpSearchService;
+    private readonly IHelpFavoritesStore _helpFavoritesStore;
+    private readonly IHelpRecentlyViewedStore _helpRecentlyViewedStore;
     private readonly IReadOnlyList<ModuleDescriptor> _allModules;
     private NavigationItem _selectedNavigationItem = null!;
     private bool _isSidebarExpanded = true;
@@ -54,12 +62,22 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         INavigationService navigationService,
         IPermissionEngine permissionEngine,
         ICurrentSessionService currentSessionService,
-        IOrganizationQueryService organizationQueryService)
+        IOrganizationQueryService organizationQueryService,
+        IHelpQueryService helpQueryService,
+        IHelpContentResolver helpContentResolver,
+        IHelpSearchService helpSearchService,
+        IHelpFavoritesStore helpFavoritesStore,
+        IHelpRecentlyViewedStore helpRecentlyViewedStore)
     {
         _navigationService = navigationService;
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
         _organizationQueryService = organizationQueryService;
+        _helpQueryService = helpQueryService;
+        _helpContentResolver = helpContentResolver;
+        _helpSearchService = helpSearchService;
+        _helpFavoritesStore = helpFavoritesStore;
+        _helpRecentlyViewedStore = helpRecentlyViewedStore;
         _allModules = moduleRegistry.Modules;
 
         NavigationItems = new ObservableCollection<NavigationItem>(BuildVisibleNavigationItems());
@@ -86,6 +104,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         ToggleBranchSwitcherCommand = new RelayCommand(_ => IsBranchSwitcherOpen = !IsBranchSwitcherOpen);
         SelectBranchFromSwitcherCommand = new AsyncRelayCommand(parameter => SelectBranchFromSwitcherAsync((BranchDto)parameter!));
         ToggleFavoriteBranchCommand = new AsyncRelayCommand(parameter => ToggleFavoriteBranchAsync((BranchDto)parameter!));
+        OpenHelpCommand = new AsyncRelayCommand(parameter => OpenHelpAsync(parameter as string));
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
@@ -218,6 +237,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     public void ShowDialog(object viewModel) => ActiveDialog = viewModel;
 
     public void CloseDialog() => ActiveDialog = null;
+
+    /// <summary>Phase 26.3: the Smart Help Button's command - opens the Context Help Dialog for <c>moduleId</c> (falls back to the currently-selected module when no explicit id is passed, e.g. a header-level Help button with no per-control context).</summary>
+    public ICommand OpenHelpCommand { get; }
 
     public ICommand SelectNavigationItemCommand { get; }
 
@@ -353,5 +375,31 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private async Task ToggleFavoriteBranchAsync(BranchDto branch)
     {
         await _currentSessionService.ToggleFavoriteBranchAsync(branch.Id).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Constructs a fresh <see cref="HelpDialogViewModel"/> with this ViewModel's
+    /// already-injected Help dependencies and shows it - the same
+    /// constructed-via-<c>new</c>-by-its-opener shape as
+    /// <c>PosCheckoutViewModel</c>/<c>ExportDialogViewModel</c>, since the
+    /// dialog needs a runtime context (which module) no constructor-injected
+    /// dependency can supply.
+    /// </summary>
+    private async Task OpenHelpAsync(string? moduleId)
+    {
+        var effectiveModuleId = string.IsNullOrEmpty(moduleId)
+            ? SelectedNavigationItem.Descriptor.Metadata.Id
+            : moduleId;
+
+        var helpDialog = new HelpDialogViewModel(
+            _helpQueryService,
+            _helpContentResolver,
+            _helpSearchService,
+            _helpFavoritesStore,
+            _helpRecentlyViewedStore,
+            this);
+
+        ShowDialog(helpDialog);
+        await helpDialog.InitializeAsync(effectiveModuleId).ConfigureAwait(true);
     }
 }

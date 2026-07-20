@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Api;
+using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Accounting;
@@ -8,6 +9,7 @@ using Rojan.Desktop.Domain.Bookings;
 using Rojan.Desktop.Domain.Calendar;
 using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
+using Rojan.Desktop.Domain.Help;
 using Rojan.Desktop.Domain.HR;
 using Rojan.Desktop.Domain.Inventory;
 using Rojan.Desktop.Domain.Organizations;
@@ -21,6 +23,7 @@ using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
+using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
 using Rojan.Desktop.Infrastructure.Identity;
 using Rojan.Desktop.Infrastructure.Inventory;
@@ -79,6 +82,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IApiClient, HttpApiClient>();
         services.AddSingleton<ISyncQueueService, SyncQueueService>();
+
+        // Phase 26: Smart Context Help.
+        services.AddSingleton<IHelpRepository, HelpTopicRegistry>();
+        services.AddSingleton<IHelpFavoritesStore, LocalHelpFavoritesStore>();
+        services.AddSingleton<IHelpRecentlyViewedStore, LocalHelpRecentlyViewedStore>();
 
         return services;
     }

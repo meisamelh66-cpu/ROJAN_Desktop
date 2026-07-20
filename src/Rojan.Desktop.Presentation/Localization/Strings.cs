@@ -852,6 +852,50 @@ public static class Strings
 
     public static string Hr_RecentCommissions => Get(nameof(Hr_RecentCommissions));
 
+    public static string Help_Button_Tooltip => Get(nameof(Help_Button_Tooltip));
+
+    public static string Help_Search_Placeholder => Get(nameof(Help_Search_Placeholder));
+
+    public static string Help_Search_NoResults => Get(nameof(Help_Search_NoResults));
+
+    public static string Help_Search_RecentSearches => Get(nameof(Help_Search_RecentSearches));
+
+    public static string Help_Section_Purpose => Get(nameof(Help_Section_Purpose));
+
+    public static string Help_Section_Overview => Get(nameof(Help_Section_Overview));
+
+    public static string Help_Section_WhenToUse => Get(nameof(Help_Section_WhenToUse));
+
+    public static string Help_Section_Steps => Get(nameof(Help_Section_Steps));
+
+    public static string Help_Section_Tips => Get(nameof(Help_Section_Tips));
+
+    public static string Help_Section_Warnings => Get(nameof(Help_Section_Warnings));
+
+    public static string Help_Section_BestPractices => Get(nameof(Help_Section_BestPractices));
+
+    public static string Help_Section_Notes => Get(nameof(Help_Section_Notes));
+
+    public static string Help_Section_Shortcuts => Get(nameof(Help_Section_Shortcuts));
+
+    public static string Help_Section_RelatedTopics => Get(nameof(Help_Section_RelatedTopics));
+
+    public static string Help_Section_AiSuggestions => Get(nameof(Help_Section_AiSuggestions));
+
+    public static string Help_AiSuggestions_ComingSoon => Get(nameof(Help_AiSuggestions_ComingSoon));
+
+    public static string Help_Nav_Back => Get(nameof(Help_Nav_Back));
+
+    public static string Help_Nav_Forward => Get(nameof(Help_Nav_Forward));
+
+    public static string Help_Nav_RecentlyViewed => Get(nameof(Help_Nav_RecentlyViewed));
+
+    public static string Help_Nav_AddFavorite => Get(nameof(Help_Nav_AddFavorite));
+
+    public static string Help_Nav_RemoveFavorite => Get(nameof(Help_Nav_RemoveFavorite));
+
+    public static string Help_Breadcrumb_Home => Get(nameof(Help_Breadcrumb_Home));
+
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its
     /// raw name (e.g. "Active", "Cancelled", "Cash") under the
@@ -870,4 +914,19 @@ public static class Strings
         var value = Get(key);
         return value == key ? enumMemberName : value;
     }
+
+    /// <summary>
+    /// Phase 26: Smart Context Help. Generic dynamic key lookup - unlike
+    /// every other property on this class (one named property per key,
+    /// checked at compile time), a help topic's eleven content fields are
+    /// addressed by <c>{KeyPrefix}_{FieldSuffix}</c> string concatenation
+    /// (<see cref="Rojan.Desktop.Domain.Help.HelpTopic.KeyPrefix"/>'s own
+    /// doc comment explains why), so there is no fixed set of property
+    /// names to declare - the registry can grow to cover more
+    /// modules/pages without a matching Strings.cs change every time.
+    /// Falls back to the key itself (matching <see cref="Get"/>'s own
+    /// missing-key behavior) rather than throwing, consistent with
+    /// <see cref="GetEnumLabel"/>.
+    /// </summary>
+    public static string GetByKey(string key) => Get(key);
 }

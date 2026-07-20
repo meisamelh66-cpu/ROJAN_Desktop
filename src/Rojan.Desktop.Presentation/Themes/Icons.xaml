@@ -58,4 +58,7 @@
   <sys:String x:Key="Rojan.Icon.FavoriteOutline">&#xE734;</sys:String>
   <sys:String x:Key="Rojan.Icon.FavoriteFilled">&#xE735;</sys:String>
 
+  <!-- Phase 26: Smart Context Help. -->
+  <sys:String x:Key="Rojan.Icon.Help">&#xE897;</sys:String>
+
 </ResourceDictionary>

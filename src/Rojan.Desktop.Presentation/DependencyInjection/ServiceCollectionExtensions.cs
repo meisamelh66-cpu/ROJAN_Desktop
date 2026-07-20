@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Presentation.Help;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.AI;
@@ -46,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICultureService, CultureService>();
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();
+        services.AddSingleton<IHelpContentResolver, HelpContentResolver>();
         return services;
     }
 }
