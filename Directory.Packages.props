@@ -29,6 +29,10 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <!-- Phase 25: Security Foundation - Windows DPAPI (CurrentUser-scoped
+         encryption at rest for secure storage/key material), factored out
+         of the shared framework into its own package since .NET Core. -->
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>

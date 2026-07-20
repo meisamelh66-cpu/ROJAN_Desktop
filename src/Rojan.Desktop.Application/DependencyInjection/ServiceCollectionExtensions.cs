@@ -10,6 +10,7 @@ using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
+using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
 using AiProviders = Rojan.Desktop.Application.AI.Providers;
@@ -140,6 +141,13 @@ public static class ServiceCollectionExtensions
         // pure Application-layer logic and belongs here, same as
         // PermissionEngine above.
         services.AddSingleton<IPermissionGate, PermissionGate>();
+
+        // Phase 25: Enterprise Identity & Secure Client Platform. Pure
+        // timing/control-flow logic with no I/O of its own - same
+        // reasoning PermissionEngine/PermissionGate above already
+        // establishes for infrastructure-free logic living in Application
+        // rather than Infrastructure.
+        services.AddSingleton<IRetryPolicy, RetryPolicy>();
 
         return services;
     }

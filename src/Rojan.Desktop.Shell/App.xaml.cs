@@ -6,7 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.DependencyInjection;
+using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Application.Security;
+using Rojan.Desktop.Domain.Security;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
@@ -92,6 +95,31 @@ public partial class App
         // as culture/theme above.
         var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
         currentSessionService.InitializeAsync().GetAwaiter().GetResult();
+
+        // Phase 25: Enterprise Identity & Secure Client Platform. Device/
+        // installation registration, session restoration, offline
+        // certificate issuance, and sync-queue restoration all need to
+        // have run at least once before anything in the app could
+        // plausibly ask "who/what is this installation" - none of this
+        // gates MainWindow's construction (no UI depends on it yet), so
+        // ordering relative to the window itself does not matter, only
+        // that every InitializeAsync-shaped call above finishes first
+        // (same "resolve before anything reads it" reasoning).
+        var deviceRegistrationService = _host.Services.GetRequiredService<IDeviceRegistrationService>();
+        deviceRegistrationService.EnsureRegisteredAsync().GetAwaiter().GetResult();
+
+        var sessionService = _host.Services.GetRequiredService<ISessionService>();
+        sessionService.InitializeAsync().GetAwaiter().GetResult();
+
+        var certificateService = _host.Services.GetRequiredService<ICertificateService>();
+        certificateService.InitializeAsync().GetAwaiter().GetResult();
+        if (certificateService.CurrentState == CertificateState.NotIssued)
+        {
+            certificateService.IssueAsync().GetAwaiter().GetResult();
+        }
+
+        var syncQueueService = _host.Services.GetRequiredService<ISyncQueueService>();
+        syncQueueService.InitializeAsync().GetAwaiter().GetResult();
 
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();

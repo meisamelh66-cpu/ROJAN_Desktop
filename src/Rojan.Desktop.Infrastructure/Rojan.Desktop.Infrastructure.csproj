@@ -13,6 +13,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <!-- Phase 25: Security Foundation - DPAPI-backed secure storage/key provider. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lets Rojan.Desktop.Infrastructure.Tests exercise internal path-
+         overriding constructors directly (temp-file-backed test doubles
+         for file-persisted services), same reasoning as Shell's
+         InternalsVisibleTo to Shell.Tests. -->
+    <InternalsVisibleTo Include="Rojan.Desktop.Infrastructure.Tests" />
   </ItemGroup>
 
 </Project>

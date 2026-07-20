@@ -1,4 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Application.Api;
+using Rojan.Desktop.Application.Identity;
+using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
 using Rojan.Desktop.Domain.Bookings;
@@ -12,15 +15,20 @@ using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.AI;
+using Rojan.Desktop.Infrastructure.Api;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
+using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.HR;
+using Rojan.Desktop.Infrastructure.Identity;
 using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Reporting;
+using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Specialists;
+using Rojan.Desktop.Infrastructure.Sync;
 using DomainServices = Rojan.Desktop.Domain.Services;
 using InfraServices = Rojan.Desktop.Infrastructure.Services;
 
@@ -49,6 +57,29 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IReportingRepository, FakeReportingRepository>();
         services.AddSingleton<IAIRepository, FakeAIRepository>();
         services.AddSingleton<IOrganizationRepository, FakeOrganizationRepository>();
+
+        // Phase 25: Enterprise Identity & Secure Client Platform.
+        // Registration order mirrors the dependency chain: Identity ->
+        // secure storage/keys/encryption -> session/certificate/auth ->
+        // connectivity/sync/api - every dependency below a given
+        // registration is itself registered somewhere in this method, so
+        // the whole graph resolves without a Service Locator anywhere.
+        services.AddSingleton<IDeviceRegistrationService, DeviceRegistrationService>();
+        services.AddSingleton<IIdentityContextService, IdentityContextService>();
+
+        services.AddSingleton<ISecureStorageService, DpapiSecureStorageService>();
+        services.AddSingleton<IKeyProvider, LocalKeyProvider>();
+        services.AddSingleton<IEncryptionService, AesEncryptionService>();
+        services.AddSingleton<ISecretProvider, SecretProvider>();
+
+        services.AddSingleton<ISessionService, LocalSessionService>();
+        services.AddSingleton<IAuthenticationService, LocalAuthenticationService>();
+        services.AddSingleton<ICertificateService, LocalCertificateService>();
+
+        services.AddSingleton<IConnectivityService, ConnectivityService>();
+        services.AddSingleton<IApiClient, HttpApiClient>();
+        services.AddSingleton<ISyncQueueService, SyncQueueService>();
+
         return services;
     }
 }

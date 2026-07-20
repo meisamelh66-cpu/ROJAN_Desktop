@@ -721,6 +721,52 @@ see `docs/standards/versioning.md`.
   Runtime-verified via UI Automation: Staff & HR, Services, and AI
   Center all render fully in Persian, including every status/role/
   department/category badge and the duration KPI's "۶۰ دقیقه".
+- Phase 25 Enterprise Identity & Secure Client Platform — foundation
+  architecture for secure Windows/Desktop, Android, and future Web
+  clients on top of the approved Hybrid Offline/Online model
+  (commercial licensing/payment/usage limitations explicitly out of
+  scope). `Domain.Identity` (`OrganizationIdentity`, `BranchIdentity`,
+  `WorkspaceIdentity`, `UserIdentity`, `DeviceIdentity`,
+  `InstallationIdentity`, `SessionIdentity`) and `Domain.Security`
+  (`AuthenticationState`/`ConnectionState`/`SyncState`/`CertificateState`
+  enums, `AuthToken`/`RefreshToken`/`DeviceFingerprint`/
+  `OfflineCertificate`/`PendingSyncOperation`/`SyncConflict` value
+  objects, `SessionRules`/`CertificateRules` pure state derivation) are
+  new, dependency-free bounded contexts. Application gains 11 new
+  interfaces (`IDeviceRegistrationService`, `IIdentityContextService`,
+  `IAuthenticationService`, `ISessionService`, `ICertificateService`,
+  `IConnectivityService`, `ISyncQueueService`, `IApiClient`,
+  `ISecureStorageService`, `ISecretProvider`, `IKeyProvider`,
+  `IEncryptionService`) plus a working `RetryPolicy` (exponential
+  backoff with jitter, infrastructure-free like `PermissionEngine`).
+  Infrastructure ships real, working implementations, not stubs: device
+  registration mints and persists a real device/installation id and
+  recomputes a SHA-256 hardware fingerprint every launch;
+  `LocalSessionService` issues real random token pairs with real
+  expiry math and restores across restarts; `LocalCertificateService`
+  issues a locally-generated offline certificate with a real 365-day
+  validity window; `DpapiSecureStorageService`/`AesEncryptionService`/
+  `LocalKeyProvider` use real Windows DPAPI and AES-256-GCM, not
+  placeholder encryption; `ConnectivityService` uses real
+  `NetworkInterface`/`NetworkChange` APIs; `SyncQueueService` persists
+  a real durable queue and genuinely attempts to drain it through
+  `HttpApiClient` (which fails honestly with a clear
+  `ApiConnectivityException` today, since `ROJAN_API_BASE_URL` is
+  unset - no backend exists yet, no hardcoded endpoint either).
+  `HttpApiClient` composes connectivity-checking, retry, Bearer-token
+  attachment, a 30s timeout, and exception mapping around one owned
+  `HttpClient`. Every new service is registered in `AddInfrastructure()`/
+  `AddApplication()` (no Service Locator); `Shell.App.xaml.cs` bootstraps
+  device registration/session restoration/certificate issuance/sync-
+  queue restoration at startup, mirroring the existing culture/theme/
+  session ordering. No Presentation-layer changes (no UI consumes any
+  of this yet - see `docs/phases/phase-25-enterprise-identity-secure-platform.md`'s
+  "Why no Presentation changes"), so zero risk to Fluent 2/localization/
+  theme/accessibility. 68 new tests (955 → 1023), full suite passes,
+  zero warnings, zero errors, `ArchitectureTests` (dependency-direction
+  enforcement) included. Runtime-verified: DI graph resolves cleanly,
+  device/certificate state persists correctly with real generated
+  values, and a full screenshot pass confirms zero UI regressions.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
