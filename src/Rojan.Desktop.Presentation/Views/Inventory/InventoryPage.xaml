@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appInventory="clr-namespace:Rojan.Desktop.Application.Inventory;assembly=Rojan.Desktop.Application">
+             xmlns:appInventory="clr-namespace:Rojan.Desktop.Application.Inventory;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 17: Enterprise Inventory & Product Management. Same
@@ -39,9 +40,9 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:SectionHeader Grid.Row="0" Title="Inventory" />
+                <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Inventory_Title}" />
                 <TextBlock Grid.Row="0"
-                           Text="Track products, stock levels, and supplier sourcing."
+                           Text="{x:Static loc:Strings.Inventory_Subtitle}"
                            Style="{StaticResource Rojan.TextStyle.Caption}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            Margin="0,44,0,0" />
@@ -49,13 +50,13 @@
                 <!-- Low-stock monitoring summary -->
                 <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <dashboardControls:KPIValue Label="Total Products" Value="{Binding Products.Count}" Margin="0,0,32,0" />
-                        <dashboardControls:KPIValue Label="Low Stock Items" Value="{Binding LowStockCount}" />
+                        <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_TotalProducts}" Value="{Binding Products.Count}" Margin="0,0,32,0" />
+                        <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_LowStockItems}" Value="{Binding LowStockCount}" />
                     </StackPanel>
                 </dashboardControls:DashboardCard>
 
                 <!-- Quick-add: Category / Supplier -->
-                <dashboardControls:DashboardCard Grid.Row="2" Title="Categories &amp; Suppliers" Margin="0,16,0,0">
+                <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Inventory_CategoriesSuppliers}" Margin="0,16,0,0">
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -65,18 +66,18 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
                                 <TextBox Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}" Width="120" />
-                                <Button Content="Add Category" Command="{Binding AddCategoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
+                                <Button Content="{x:Static loc:Strings.Inventory_AddCategory}" Command="{Binding AddCategoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <TextBox Text="{Binding NewSupplierName, UpdateSourceTrigger=PropertyChanged}" Width="120" />
-                                <Button Content="Add Supplier" Command="{Binding AddSupplierCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
+                                <Button Content="{x:Static loc:Strings.Inventory_AddSupplier}" Command="{Binding AddSupplierCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
                             </StackPanel>
                         </Grid>
                     </StackPanel>
                 </dashboardControls:DashboardCard>
 
                 <!-- New Product -->
-                <dashboardControls:DashboardCard Grid.Row="3" Title="New Product" Margin="0,16,0,0">
+                <dashboardControls:DashboardCard Grid.Row="3" Title="{x:Static loc:Strings.Inventory_NewProduct}" Margin="0,16,0,0">
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -91,23 +92,23 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
-                                <TextBlock Text="SKU" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Inventory_Sku}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductSku, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Row="0" Grid.Column="2">
-                                <TextBlock Text="Name" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
-                                <TextBlock Text="Category" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Common_Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <ComboBox ItemsSource="{Binding Categories}"
                                           SelectedItem="{Binding SelectedNewProductCategory, Mode=TwoWay}"
                                           DisplayMemberPath="Name"
                                           Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
-                                <TextBlock Text="Supplier" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Common_Supplier}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <ComboBox ItemsSource="{Binding Suppliers}"
                                           SelectedItem="{Binding SelectedNewProductSupplier, Mode=TwoWay}"
                                           DisplayMemberPath="Name"
@@ -115,11 +116,11 @@
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,12,0,0">
-                                <TextBlock Text="Unit Price" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Inventory_UnitPrice}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductUnitPrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,12,0,0">
-                                <TextBlock Text="Description" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
@@ -131,16 +132,16 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Initial Quantity" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Inventory_InitialQuantity}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductInitialQuantity, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Reorder Threshold" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Inventory_ReorderThreshold}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <TextBox Text="{Binding NewProductReorderThreshold, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
 
-                        <Button Content="Add Product"
+                        <Button Content="{x:Static loc:Strings.Inventory_AddProduct}"
                                 Command="{Binding CreateProductCommand}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 HorizontalAlignment="Left"
@@ -154,7 +155,7 @@
                         Padding="16,10"
                         Margin="0,16,0,0">
                     <Grid>
-                        <TextBlock Text="Search by name, SKU, category, or description..."
+                        <TextBlock Text="{x:Static loc:Strings.Inventory_SearchPlaceholder}"
                                    Foreground="{StaticResource Rojan.Brush.HintText}"
                                    FontFamily="{StaticResource Rojan.FontFamily.Default}"
                                    FontSize="15"
@@ -191,7 +192,7 @@
 
             <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
                 <Grid>
-                    <TextBlock Text="Select a product to view its profile."
+                    <TextBlock Text="{x:Static loc:Strings.Inventory_SelectPrompt}"
                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                TextWrapping="Wrap">
                         <TextBlock.Style>
@@ -226,7 +227,7 @@
                                     <Run Text=" · " />
                                     <Run Text="{Binding Product.CategoryName, Mode=OneWay}" />
                                     <Run Text=" · " />
-                                    <Run Text="{Binding Product.Status, Mode=OneWay}" />
+                                    <Run Text="{Binding Product.Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                 </TextBlock>
                                 <TextBlock Text="{Binding Product.Description}"
                                            Style="{StaticResource Rojan.TextStyle.Body}"
@@ -234,26 +235,26 @@
                                            TextWrapping="Wrap"
                                            Margin="0,12,0,0" />
                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0">
-                                    <Run Text="Supplier: " /><Run Text="{Binding Product.SupplierName, Mode=OneWay}" />
+                                    <Run Text="{x:Static loc:Strings.Common_Supplier}" /><Run Text=": " /><Run Text="{Binding Product.SupplierName, Mode=OneWay}" />
                                 </TextBlock>
                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                                    <Run Text="Unit Price: " /><Run Text="{Binding Product.UnitPrice, Mode=OneWay}" />
+                                    <Run Text="{x:Static loc:Strings.Inventory_UnitPrice}" /><Run Text=": " /><Run Text="{Binding Product.UnitPrice, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
                         <!-- Stock level + record a transaction -->
-                        <dashboardControls:DashboardWidget Title="Stock"
+                        <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Inventory_Stock}"
                                                             State="{Binding State}"
                                                             ErrorMessage="{Binding ErrorMessage}"
                                                             RetryCommand="{Binding LoadCommand}"
                                                             Margin="0,16,0,0">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <dashboardControls:KPIValue Label="On Hand" Value="{Binding Stock.QuantityOnHand}" Margin="0,0,32,0" />
-                                    <dashboardControls:KPIValue Label="Reorder At" Value="{Binding Stock.ReorderThreshold}" />
+                                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_OnHand}" Value="{Binding Stock.QuantityOnHand}" Margin="0,0,32,0" />
+                                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_ReorderAt}" Value="{Binding Stock.ReorderThreshold}" />
                                 </StackPanel>
-                                <TextBlock Text="Stock is at or below its reorder threshold."
+                                <TextBlock Text="{x:Static loc:Strings.Inventory_LowStockWarning}"
                                            Foreground="{StaticResource Rojan.Brush.Warning}"
                                            Margin="0,8,0,0">
                                     <TextBlock.Style>
@@ -275,21 +276,21 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Type" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Type}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableTransactionTypes}"
                                                   SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
                                                   Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Quantity" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Quantity}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding TransactionQuantity, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="Notes" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Notes}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <TextBox Text="{Binding TransactionNotes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                 </StackPanel>
-                                <Button Content="Record Transaction"
+                                <Button Content="{x:Static loc:Strings.Inventory_RecordTransaction}"
                                         Command="{Binding RecordTransactionCommand}"
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         HorizontalAlignment="Left"
@@ -298,7 +299,7 @@
                         </dashboardControls:DashboardWidget>
 
                         <!-- Recent transactions -->
-                        <dashboardControls:DashboardCard Title="Recent Transactions" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Inventory_RecentTransactions}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding RecentTransactions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appInventory:StockTransactionDto}">
@@ -309,7 +310,7 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                                                    <Run Text="{Binding Type, Mode=OneWay}" />
+                                                    <Run Text="{Binding Type, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                     <Run Text=" · " />
                                                     <Run Text="{Binding Quantity, Mode=OneWay}" />
                                                 </TextBlock>
@@ -329,7 +330,7 @@
                         </dashboardControls:DashboardCard>
 
                         <!-- Linked services (service-to-product mapping) -->
-                        <dashboardControls:DashboardCard Title="Linked Services" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Inventory_LinkedServices}" Margin="0,16,0,0">
                             <StackPanel>
                                 <ItemsControl ItemsSource="{Binding ServiceMappings}">
                                     <ItemsControl.ItemsPanel>
@@ -377,7 +378,7 @@
                                     <TextBox Grid.Column="0" Text="{Binding NewMappingServiceName, UpdateSourceTrigger=PropertyChanged}" />
                                     <TextBox Grid.Column="2" Text="{Binding NewMappingQuantityPerService, UpdateSourceTrigger=PropertyChanged}" Width="48" />
                                     <Button Grid.Column="4"
-                                            Content="Map"
+                                            Content="{x:Static loc:Strings.Inventory_Map}"
                                             Command="{Binding MapServiceCommand}"
                                             Style="{StaticResource Rojan.Style.ButtonPrimary}" />
                                 </Grid>
@@ -390,7 +391,7 @@
 
             <!-- Product catalog list -->
             <dashboardControls:DashboardWidget Grid.Row="1"
-                                                Title="All Products"
+                                                Title="{x:Static loc:Strings.Inventory_AllProducts}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
@@ -417,7 +418,7 @@
                                         </TextBlock>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1"
-                                               Text="{Binding Status}"
+                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                VerticalAlignment="Center" />

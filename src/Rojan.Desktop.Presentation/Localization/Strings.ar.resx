@@ -105,6 +105,30 @@
   <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
     <value>عرض التقارير</value>
   </data>
+  <data name="Dashboard_Kpi_TotalBookings" xml:space="preserve">
+    <value>إجمالي الحجوزات</value>
+  </data>
+  <data name="Dashboard_Kpi_ActiveClients" xml:space="preserve">
+    <value>العملاء النشطون</value>
+  </data>
+  <data name="Dashboard_Kpi_RevenueMtd" xml:space="preserve">
+    <value>الإيرادات (الشهر الحالي)</value>
+  </data>
+  <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
+    <value>المهام المعلقة</value>
+  </data>
+  <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
+    <value>تم إنشاء حجز جديد</value>
+  </data>
+  <data name="Dashboard_Activity_ProfileUpdated" xml:space="preserve">
+    <value>تم تحديث ملف العميل</value>
+  </data>
+  <data name="Dashboard_Activity_PaymentReceived" xml:space="preserve">
+    <value>تم استلام الدفعة</value>
+  </data>
+  <data name="Dashboard_Activity_TaskCompleted" xml:space="preserve">
+    <value>تم إنجاز المهمة</value>
+  </data>
   <data name="Nav_Dashboard" xml:space="preserve">
     <value>لوحة التحكم</value>
   </data>
@@ -392,5 +416,596 @@
   </data>
   <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
     <value>المستخدمة مؤخراً</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="Common_SaveChanges" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="Common_Daily" xml:space="preserve">
+    <value>يومي</value>
+  </data>
+  <data name="Common_Weekly" xml:space="preserve">
+    <value>أسبوعي</value>
+  </data>
+  <data name="Common_Monthly" xml:space="preserve">
+    <value>شهري</value>
+  </data>
+  <data name="Common_FullName" xml:space="preserve">
+    <value>الاسم الكامل</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+  <data name="Common_Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="Common_Date" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="Common_Type" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="Common_Quantity" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="Common_Category" xml:space="preserve">
+    <value>الفئة</value>
+  </data>
+  <data name="Common_Specialist" xml:space="preserve">
+    <value>المتخصص</value>
+  </data>
+  <data name="Common_Service" xml:space="preserve">
+    <value>الخدمة</value>
+  </data>
+  <data name="Common_Customer" xml:space="preserve">
+    <value>العميل</value>
+  </data>
+  <data name="Common_Status" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="Common_Duration" xml:space="preserve">
+    <value>المدة</value>
+  </data>
+  <data name="Common_MinutesShort" xml:space="preserve">
+    <value>دقيقة</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>تأكيد</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="Common_Supplier" xml:space="preserve">
+    <value>المورد</value>
+  </data>
+  <data name="Common_Price" xml:space="preserve">
+    <value>السعر</value>
+  </data>
+  <data name="Modules_NotImplementedYet" xml:space="preserve">
+    <value>لم يتم تنفيذ هذه الوحدة بعد.</value>
+  </data>
+  <data name="ExportDialog_Title" xml:space="preserve">
+    <value>تصدير التقرير</value>
+  </data>
+  <data name="ExportDialog_Format" xml:space="preserve">
+    <value>التنسيق</value>
+  </data>
+  <data name="Calendar_Title" xml:space="preserve">
+    <value>التقويم</value>
+  </data>
+  <data name="Calendar_Subtitle" xml:space="preserve">
+    <value>عرض التوفر اليومي للمتخصص وإدارة حجوزات الفترات الزمنية.</value>
+  </data>
+  <data name="Calendar_SpecialistAndDate" xml:space="preserve">
+    <value>المتخصص والتاريخ</value>
+  </data>
+  <data name="Calendar_Availability" xml:space="preserve">
+    <value>التوفر</value>
+  </data>
+  <data name="Analytics_Title" xml:space="preserve">
+    <value>التحليلات</value>
+  </data>
+  <data name="Analytics_Subtitle" xml:space="preserve">
+    <value>محرك مؤشرات الأداء الرئيسية القابل لإعادة الاستخدام والرسوم البيانية عبر الوحدات.</value>
+  </data>
+  <data name="Analytics_KpiCards" xml:space="preserve">
+    <value>بطاقات مؤشرات الأداء</value>
+  </data>
+  <data name="BookingWizard_Title" xml:space="preserve">
+    <value>حجز جديد</value>
+  </data>
+  <data name="BookingWizard_Confirmed" xml:space="preserve">
+    <value>تم تأكيد الحجز</value>
+  </data>
+  <data name="BookingWizard_StepWhoFor" xml:space="preserve">
+    <value>لمن هذا الحجز؟</value>
+  </data>
+  <data name="BookingWizard_StepChooseService" xml:space="preserve">
+    <value>اختر الخدمة</value>
+  </data>
+  <data name="BookingWizard_StepChooseSpecialist" xml:space="preserve">
+    <value>اختر المتخصص</value>
+  </data>
+  <data name="BookingWizard_StepChooseDate" xml:space="preserve">
+    <value>اختر التاريخ</value>
+  </data>
+  <data name="BookingWizard_StepChooseTime" xml:space="preserve">
+    <value>اختر الوقت</value>
+  </data>
+  <data name="BookingWizard_StepReview" xml:space="preserve">
+    <value>مراجعة الحجز</value>
+  </data>
+  <data name="BookingWizard_NoSlots" xml:space="preserve">
+    <value>لا توجد فترات زمنية متاحة لهذا المتخصص في هذا التاريخ.</value>
+  </data>
+  <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
+    <value>تأكيد الحجز</value>
+  </data>
+  <data name="Specialists_Title" xml:space="preserve">
+    <value>المتخصصون</value>
+  </data>
+  <data name="Specialists_Subtitle" xml:space="preserve">
+    <value>إدارة دليل الفريق والحالة والمهارات.</value>
+  </data>
+  <data name="Specialists_AddSpecialist" xml:space="preserve">
+    <value>إضافة متخصص</value>
+  </data>
+  <data name="Specialists_JobTitle" xml:space="preserve">
+    <value>المسمى الوظيفي</value>
+  </data>
+  <data name="Specialists_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالاسم أو المسمى الوظيفي أو البريد الإلكتروني...</value>
+  </data>
+  <data name="Specialists_AllSpecialists" xml:space="preserve">
+    <value>جميع المتخصصين</value>
+  </data>
+  <data name="Specialists_SelectPrompt" xml:space="preserve">
+    <value>اختر متخصصاً لعرض ملفه الشخصي.</value>
+  </data>
+  <data name="Specialists_Skills" xml:space="preserve">
+    <value>المهارات</value>
+  </data>
+  <data name="Specialists_AddSkill" xml:space="preserve">
+    <value>إضافة مهارة</value>
+  </data>
+  <data name="Services_Title" xml:space="preserve">
+    <value>الخدمات</value>
+  </data>
+  <data name="Services_Subtitle" xml:space="preserve">
+    <value>تصفح الكتالوج وإدارة تعيينات المتخصصين.</value>
+  </data>
+  <data name="Services_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالاسم أو الفئة أو الوصف...</value>
+  </data>
+  <data name="Services_AllServices" xml:space="preserve">
+    <value>جميع الخدمات</value>
+  </data>
+  <data name="Services_Details" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="Services_AssignedSpecialists" xml:space="preserve">
+    <value>المتخصصون المعينون</value>
+  </data>
+  <data name="Services_SelectPrompt" xml:space="preserve">
+    <value>اختر خدمة لعرض ملفها.</value>
+  </data>
+  <data name="Services_Assign" xml:space="preserve">
+    <value>تعيين</value>
+  </data>
+  <data name="Bookings_Title" xml:space="preserve">
+    <value>الحجوزات</value>
+  </data>
+  <data name="Bookings_Subtitle" xml:space="preserve">
+    <value>جدولة وتتبع كل موعد.</value>
+  </data>
+  <data name="Bookings_NewBookingWizard" xml:space="preserve">
+    <value>حجز جديد (المعالج)</value>
+  </data>
+  <data name="Bookings_NewBooking" xml:space="preserve">
+    <value>حجز جديد</value>
+  </data>
+  <data name="Bookings_DurationMin" xml:space="preserve">
+    <value>المدة (دقيقة)</value>
+  </data>
+  <data name="Bookings_AddBooking" xml:space="preserve">
+    <value>إضافة حجز</value>
+  </data>
+  <data name="Bookings_AllBookings" xml:space="preserve">
+    <value>جميع الحجوزات</value>
+  </data>
+  <data name="Bookings_When" xml:space="preserve">
+    <value>الوقت</value>
+  </data>
+  <data name="Bookings_SelectPrompt" xml:space="preserve">
+    <value>اختر حجزاً لعرض التفاصيل.</value>
+  </data>
+  <data name="Bookings_Complete" xml:space="preserve">
+    <value>إكمال</value>
+  </data>
+  <data name="Bookings_Details" xml:space="preserve">
+    <value>تفاصيل الحجز</value>
+  </data>
+  <data name="Customers_Title" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Customers_Subtitle" xml:space="preserve">
+    <value>البحث والمراجعة ومتابعة كل علاقة مع العميل.</value>
+  </data>
+  <data name="Customers_AddCustomer" xml:space="preserve">
+    <value>إضافة عميل</value>
+  </data>
+  <data name="Customers_Company" xml:space="preserve">
+    <value>الشركة</value>
+  </data>
+  <data name="Customers_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالاسم أو الشركة أو البريد الإلكتروني...</value>
+  </data>
+  <data name="Customers_AllCustomers" xml:space="preserve">
+    <value>جميع العملاء</value>
+  </data>
+  <data name="Customers_SelectPrompt" xml:space="preserve">
+    <value>اختر عميلاً لعرض ملفه الشامل.</value>
+  </data>
+  <data name="Customers_Statistics" xml:space="preserve">
+    <value>الإحصائيات</value>
+  </data>
+  <data name="Customers_Tags" xml:space="preserve">
+    <value>الوسوم</value>
+  </data>
+  <data name="Customers_Timeline" xml:space="preserve">
+    <value>الجدول الزمني</value>
+  </data>
+  <data name="Customers_AddTag" xml:space="preserve">
+    <value>إضافة وسم</value>
+  </data>
+  <data name="Customers_AddNote" xml:space="preserve">
+    <value>إضافة ملاحظة</value>
+  </data>
+  <data name="Inventory_Title" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Inventory_Subtitle" xml:space="preserve">
+    <value>تتبع المنتجات ومستويات المخزون ومصادر الموردين.</value>
+  </data>
+  <data name="Inventory_CategoriesSuppliers" xml:space="preserve">
+    <value>الفئات والموردون</value>
+  </data>
+  <data name="Inventory_NewProduct" xml:space="preserve">
+    <value>منتج جديد</value>
+  </data>
+  <data name="Inventory_Stock" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Inventory_RecentTransactions" xml:space="preserve">
+    <value>المعاملات الأخيرة</value>
+  </data>
+  <data name="Inventory_LinkedServices" xml:space="preserve">
+    <value>الخدمات المرتبطة</value>
+  </data>
+  <data name="Inventory_AllProducts" xml:space="preserve">
+    <value>جميع المنتجات</value>
+  </data>
+  <data name="Inventory_AddCategory" xml:space="preserve">
+    <value>إضافة فئة</value>
+  </data>
+  <data name="Inventory_AddSupplier" xml:space="preserve">
+    <value>إضافة مورد</value>
+  </data>
+  <data name="Inventory_AddProduct" xml:space="preserve">
+    <value>إضافة منتج</value>
+  </data>
+  <data name="Inventory_RecordTransaction" xml:space="preserve">
+    <value>تسجيل معاملة</value>
+  </data>
+  <data name="Inventory_Map" xml:space="preserve">
+    <value>ربط</value>
+  </data>
+  <data name="Inventory_Sku" xml:space="preserve">
+    <value>رمز المنتج (SKU)</value>
+  </data>
+  <data name="Inventory_UnitPrice" xml:space="preserve">
+    <value>سعر الوحدة</value>
+  </data>
+  <data name="Inventory_InitialQuantity" xml:space="preserve">
+    <value>الكمية الأولية</value>
+  </data>
+  <data name="Inventory_ReorderThreshold" xml:space="preserve">
+    <value>حد إعادة الطلب</value>
+  </data>
+  <data name="Inventory_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالاسم أو رمز المنتج أو الفئة أو الوصف...</value>
+  </data>
+  <data name="Inventory_SelectPrompt" xml:space="preserve">
+    <value>اختر منتجاً لعرض ملفه.</value>
+  </data>
+  <data name="Inventory_LowStockWarning" xml:space="preserve">
+    <value>المخزون عند أو أقل من حد إعادة الطلب.</value>
+  </data>
+  <data name="Inventory_TotalProducts" xml:space="preserve">
+    <value>إجمالي المنتجات</value>
+  </data>
+  <data name="Inventory_LowStockItems" xml:space="preserve">
+    <value>عناصر منخفضة المخزون</value>
+  </data>
+  <data name="Inventory_OnHand" xml:space="preserve">
+    <value>المتوفر</value>
+  </data>
+  <data name="Inventory_ReorderAt" xml:space="preserve">
+    <value>حد إعادة الطلب</value>
+  </data>
+  <data name="Accounting_Title" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="Accounting_Subtitle" xml:space="preserve">
+    <value>الفواتير والمدفوعات ونقطة البيع.</value>
+  </data>
+  <data name="Accounting_NewSalePos" xml:space="preserve">
+    <value>بيع جديد (نقطة البيع)</value>
+  </data>
+  <data name="Accounting_CancelInvoice" xml:space="preserve">
+    <value>إلغاء الفاتورة</value>
+  </data>
+  <data name="Accounting_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالعميل أو الحجز أو الملاحظات...</value>
+  </data>
+  <data name="Accounting_AllInvoices" xml:space="preserve">
+    <value>جميع الفواتير</value>
+  </data>
+  <data name="Accounting_LineItems" xml:space="preserve">
+    <value>بنود الفاتورة</value>
+  </data>
+  <data name="Accounting_Payments" xml:space="preserve">
+    <value>المدفوعات</value>
+  </data>
+  <data name="Accounting_Receipts" xml:space="preserve">
+    <value>الإيصالات</value>
+  </data>
+  <data name="Accounting_SelectPrompt" xml:space="preserve">
+    <value>اختر فاتورة لعرض تفاصيلها.</value>
+  </data>
+  <data name="Accounting_Subtotal" xml:space="preserve">
+    <value>المجموع الفرعي</value>
+  </data>
+  <data name="Accounting_Tax" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="Accounting_Total" xml:space="preserve">
+    <value>الإجمالي</value>
+  </data>
+  <data name="Accounting_TotalRevenue" xml:space="preserve">
+    <value>إجمالي الإيرادات</value>
+  </data>
+  <data name="Accounting_Today" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="Accounting_Outstanding" xml:space="preserve">
+    <value>الرصيد المستحق</value>
+  </data>
+  <data name="Accounting_PaidInvoices" xml:space="preserve">
+    <value>الفواتير المدفوعة</value>
+  </data>
+  <data name="Pos_NewSale" xml:space="preserve">
+    <value>بيع جديد</value>
+  </data>
+  <data name="Pos_PaymentRecorded" xml:space="preserve">
+    <value>تم تسجيل الدفعة</value>
+  </data>
+  <data name="Pos_BookingOptional" xml:space="preserve">
+    <value>الحجز (اختياري)</value>
+  </data>
+  <data name="Pos_PaymentMethod" xml:space="preserve">
+    <value>طريقة الدفع</value>
+  </data>
+  <data name="Pos_AmountTendered" xml:space="preserve">
+    <value>المبلغ المدفوع</value>
+  </data>
+  <data name="Pos_AddProduct" xml:space="preserve">
+    <value>إضافة منتج</value>
+  </data>
+  <data name="Pos_AddService" xml:space="preserve">
+    <value>إضافة خدمة</value>
+  </data>
+  <data name="Pos_Cart" xml:space="preserve">
+    <value>السلة</value>
+  </data>
+  <data name="Pos_ProceedToPayment" xml:space="preserve">
+    <value>المتابعة إلى الدفع</value>
+  </data>
+  <data name="Pos_Charge" xml:space="preserve">
+    <value>تحصيل الدفع</value>
+  </data>
+  <data name="Pos_AmountDue" xml:space="preserve">
+    <value>المبلغ المستحق</value>
+  </data>
+  <data name="Pos_ChangeDue" xml:space="preserve">
+    <value>الباقي</value>
+  </data>
+  <data name="Pos_Paid" xml:space="preserve">
+    <value>مدفوع</value>
+  </data>
+  <data name="Pos_Via" xml:space="preserve">
+    <value>عبر</value>
+  </data>
+  <data name="Pos_InvoiceTotal" xml:space="preserve">
+    <value>إجمالي الفاتورة</value>
+  </data>
+  <data name="Reporting_Title" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="Reporting_Subtitle" xml:space="preserve">
+    <value>تشغيل وتصفية وحفظ وتصدير التقارير المجمعة من جميع الوحدات.</value>
+  </data>
+  <data name="Reporting_Catalog" xml:space="preserve">
+    <value>الكتالوج</value>
+  </data>
+  <data name="Reporting_ReportViewer" xml:space="preserve">
+    <value>عارض التقرير</value>
+  </data>
+  <data name="Reporting_SavedReports" xml:space="preserve">
+    <value>التقارير المحفوظة</value>
+  </data>
+  <data name="Reporting_RecentReports" xml:space="preserve">
+    <value>التقارير الأخيرة</value>
+  </data>
+  <data name="Reporting_ReportCatalog" xml:space="preserve">
+    <value>كتالوج التقارير</value>
+  </data>
+  <data name="Reporting_FilterPanel" xml:space="preserve">
+    <value>لوحة التصفية</value>
+  </data>
+  <data name="Reporting_Results" xml:space="preserve">
+    <value>النتائج</value>
+  </data>
+  <data name="Reporting_DateRangeStart" xml:space="preserve">
+    <value>بداية النطاق الزمني</value>
+  </data>
+  <data name="Reporting_DateRangeEnd" xml:space="preserve">
+    <value>نهاية النطاق الزمني</value>
+  </data>
+  <data name="Reporting_RunPrompt" xml:space="preserve">
+    <value>قم بتشغيل تقرير لرؤية النتائج هنا.</value>
+  </data>
+  <data name="Reporting_AddFilter" xml:space="preserve">
+    <value>إضافة عامل تصفية</value>
+  </data>
+  <data name="Reporting_RunReport" xml:space="preserve">
+    <value>تشغيل التقرير</value>
+  </data>
+  <data name="Reporting_Rerun" xml:space="preserve">
+    <value>إعادة التشغيل</value>
+  </data>
+  <data name="Reporting_Unpin" xml:space="preserve">
+    <value>إلغاء التثبيت</value>
+  </data>
+  <data name="Reporting_Pin" xml:space="preserve">
+    <value>تثبيت</value>
+  </data>
+  <data name="Reporting_Report" xml:space="preserve">
+    <value>التقرير</value>
+  </data>
+  <data name="Reporting_NoneSelected" xml:space="preserve">
+    <value>(لم يتم التحديد - اختر واحدًا من الفهرس)</value>
+  </data>
+  <data name="Reporting_Rows" xml:space="preserve">
+    <value>صف</value>
+  </data>
+  <data name="Enum_Available" xml:space="preserve">
+    <value>متاح</value>
+  </data>
+  <data name="Enum_Booked" xml:space="preserve">
+    <value>محجوز</value>
+  </data>
+  <data name="Enum_Unavailable" xml:space="preserve">
+    <value>غير متاح</value>
+  </data>
+  <data name="Enum_Issued" xml:space="preserve">
+    <value>صادرة</value>
+  </data>
+  <data name="Enum_PartiallyPaid" xml:space="preserve">
+    <value>مدفوعة جزئياً</value>
+  </data>
+  <data name="Enum_Paid" xml:space="preserve">
+    <value>مدفوعة</value>
+  </data>
+  <data name="Enum_Cancelled" xml:space="preserve">
+    <value>ملغاة</value>
+  </data>
+  <data name="Enum_Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Enum_Seasonal" xml:space="preserve">
+    <value>موسمي</value>
+  </data>
+  <data name="Enum_Discontinued" xml:space="preserve">
+    <value>متوقف</value>
+  </data>
+  <data name="Enum_OnLeave" xml:space="preserve">
+    <value>في إجازة</value>
+  </data>
+  <data name="Enum_Inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+  <data name="Enum_Lead" xml:space="preserve">
+    <value>عميل محتمل</value>
+  </data>
+  <data name="Enum_Prospect" xml:space="preserve">
+    <value>عميل مرتقب</value>
+  </data>
+  <data name="Enum_Vip" xml:space="preserve">
+    <value>كبار الشخصيات</value>
+  </data>
+  <data name="Enum_Churned" xml:space="preserve">
+    <value>منقطع</value>
+  </data>
+  <data name="Enum_Pending" xml:space="preserve">
+    <value>قيد الانتظار</value>
+  </data>
+  <data name="Enum_Confirmed" xml:space="preserve">
+    <value>مؤكد</value>
+  </data>
+  <data name="Enum_InProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="Enum_Completed" xml:space="preserve">
+    <value>مكتمل</value>
+  </data>
+  <data name="Enum_NoShow" xml:space="preserve">
+    <value>لم يحضر</value>
+  </data>
+  <data name="Enum_OutOfStock" xml:space="preserve">
+    <value>نفدت الكمية</value>
+  </data>
+  <data name="Enum_Cash" xml:space="preserve">
+    <value>نقدي</value>
+  </data>
+  <data name="Enum_Card" xml:space="preserve">
+    <value>بطاقة</value>
+  </data>
+  <data name="Enum_BankTransfer" xml:space="preserve">
+    <value>تحويل بنكي</value>
+  </data>
+  <data name="Enum_GiftCard" xml:space="preserve">
+    <value>بطاقة هدية</value>
+  </data>
+  <data name="Enum_StoreCredit" xml:space="preserve">
+    <value>رصيد المتجر</value>
+  </data>
+  <data name="Enum_Received" xml:space="preserve">
+    <value>مستلم</value>
+  </data>
+  <data name="Enum_Sold" xml:space="preserve">
+    <value>مباع</value>
+  </data>
+  <data name="Enum_Returned" xml:space="preserve">
+    <value>مرتجع</value>
+  </data>
+  <data name="Enum_Damaged" xml:space="preserve">
+    <value>تالف</value>
+  </data>
+  <data name="Enum_Adjustment" xml:space="preserve">
+    <value>تسوية</value>
+  </data>
+  <data name="Enum_Trial" xml:space="preserve">
+    <value>تجريبي</value>
+  </data>
+  <data name="Enum_Suspended" xml:space="preserve">
+    <value>موقوف</value>
   </data>
 </root>

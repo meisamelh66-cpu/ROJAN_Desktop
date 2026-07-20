@@ -105,6 +105,30 @@
   <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
     <value>View Reports</value>
   </data>
+  <data name="Dashboard_Kpi_TotalBookings" xml:space="preserve">
+    <value>Total Bookings</value>
+  </data>
+  <data name="Dashboard_Kpi_ActiveClients" xml:space="preserve">
+    <value>Active Clients</value>
+  </data>
+  <data name="Dashboard_Kpi_RevenueMtd" xml:space="preserve">
+    <value>Revenue (MTD)</value>
+  </data>
+  <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
+    <value>Pending Tasks</value>
+  </data>
+  <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
+    <value>New booking created</value>
+  </data>
+  <data name="Dashboard_Activity_ProfileUpdated" xml:space="preserve">
+    <value>Client profile updated</value>
+  </data>
+  <data name="Dashboard_Activity_PaymentReceived" xml:space="preserve">
+    <value>Payment received</value>
+  </data>
+  <data name="Dashboard_Activity_TaskCompleted" xml:space="preserve">
+    <value>Task completed</value>
+  </data>
   <data name="Nav_Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
@@ -392,5 +416,596 @@
   </data>
   <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
     <value>Recently Used</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Common_SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="Common_Daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="Common_Weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="Common_Monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="Common_FullName" xml:space="preserve">
+    <value>Full name</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Common_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Common_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Common_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Common_Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Common_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Common_Specialist" xml:space="preserve">
+    <value>Specialist</value>
+  </data>
+  <data name="Common_Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Common_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Common_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Common_Duration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="Common_MinutesShort" xml:space="preserve">
+    <value>min</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Common_Supplier" xml:space="preserve">
+    <value>Supplier</value>
+  </data>
+  <data name="Common_Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Modules_NotImplementedYet" xml:space="preserve">
+    <value>This module hasn't been implemented yet.</value>
+  </data>
+  <data name="ExportDialog_Title" xml:space="preserve">
+    <value>Export Report</value>
+  </data>
+  <data name="ExportDialog_Format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="Calendar_Title" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="Calendar_Subtitle" xml:space="preserve">
+    <value>View a specialist's daily availability and manage slot reservations.</value>
+  </data>
+  <data name="Calendar_SpecialistAndDate" xml:space="preserve">
+    <value>Specialist &amp; Date</value>
+  </data>
+  <data name="Calendar_Availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Analytics_Title" xml:space="preserve">
+    <value>Analytics</value>
+  </data>
+  <data name="Analytics_Subtitle" xml:space="preserve">
+    <value>Reusable KPI Engine and cross-module charts.</value>
+  </data>
+  <data name="Analytics_KpiCards" xml:space="preserve">
+    <value>KPI Cards</value>
+  </data>
+  <data name="BookingWizard_Title" xml:space="preserve">
+    <value>New Booking</value>
+  </data>
+  <data name="BookingWizard_Confirmed" xml:space="preserve">
+    <value>Booking confirmed</value>
+  </data>
+  <data name="BookingWizard_StepWhoFor" xml:space="preserve">
+    <value>Who is this booking for?</value>
+  </data>
+  <data name="BookingWizard_StepChooseService" xml:space="preserve">
+    <value>Choose a service</value>
+  </data>
+  <data name="BookingWizard_StepChooseSpecialist" xml:space="preserve">
+    <value>Choose a specialist</value>
+  </data>
+  <data name="BookingWizard_StepChooseDate" xml:space="preserve">
+    <value>Choose a date</value>
+  </data>
+  <data name="BookingWizard_StepChooseTime" xml:space="preserve">
+    <value>Choose a time</value>
+  </data>
+  <data name="BookingWizard_StepReview" xml:space="preserve">
+    <value>Review your booking</value>
+  </data>
+  <data name="BookingWizard_NoSlots" xml:space="preserve">
+    <value>No available slots for this specialist on this date.</value>
+  </data>
+  <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
+    <value>Confirm Booking</value>
+  </data>
+  <data name="Specialists_Title" xml:space="preserve">
+    <value>Specialists</value>
+  </data>
+  <data name="Specialists_Subtitle" xml:space="preserve">
+    <value>Manage your team's directory, status, and skills.</value>
+  </data>
+  <data name="Specialists_AddSpecialist" xml:space="preserve">
+    <value>Add Specialist</value>
+  </data>
+  <data name="Specialists_JobTitle" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Specialists_SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, title, or email...</value>
+  </data>
+  <data name="Specialists_AllSpecialists" xml:space="preserve">
+    <value>All Specialists</value>
+  </data>
+  <data name="Specialists_SelectPrompt" xml:space="preserve">
+    <value>Select a specialist to view their profile.</value>
+  </data>
+  <data name="Specialists_Skills" xml:space="preserve">
+    <value>Skills</value>
+  </data>
+  <data name="Specialists_AddSkill" xml:space="preserve">
+    <value>Add Skill</value>
+  </data>
+  <data name="Services_Title" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Services_Subtitle" xml:space="preserve">
+    <value>Browse the catalog and manage specialist assignments.</value>
+  </data>
+  <data name="Services_SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, category, or description...</value>
+  </data>
+  <data name="Services_AllServices" xml:space="preserve">
+    <value>All Services</value>
+  </data>
+  <data name="Services_Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Services_AssignedSpecialists" xml:space="preserve">
+    <value>Assigned Specialists</value>
+  </data>
+  <data name="Services_SelectPrompt" xml:space="preserve">
+    <value>Select a service to view its profile.</value>
+  </data>
+  <data name="Services_Assign" xml:space="preserve">
+    <value>Assign</value>
+  </data>
+  <data name="Bookings_Title" xml:space="preserve">
+    <value>Bookings</value>
+  </data>
+  <data name="Bookings_Subtitle" xml:space="preserve">
+    <value>Schedule and track every appointment.</value>
+  </data>
+  <data name="Bookings_NewBookingWizard" xml:space="preserve">
+    <value>New Booking (Wizard)</value>
+  </data>
+  <data name="Bookings_NewBooking" xml:space="preserve">
+    <value>New Booking</value>
+  </data>
+  <data name="Bookings_DurationMin" xml:space="preserve">
+    <value>Duration (min)</value>
+  </data>
+  <data name="Bookings_AddBooking" xml:space="preserve">
+    <value>Add Booking</value>
+  </data>
+  <data name="Bookings_AllBookings" xml:space="preserve">
+    <value>All Bookings</value>
+  </data>
+  <data name="Bookings_When" xml:space="preserve">
+    <value>When</value>
+  </data>
+  <data name="Bookings_SelectPrompt" xml:space="preserve">
+    <value>Select a booking to view details.</value>
+  </data>
+  <data name="Bookings_Complete" xml:space="preserve">
+    <value>Complete</value>
+  </data>
+  <data name="Bookings_Details" xml:space="preserve">
+    <value>Booking Details</value>
+  </data>
+  <data name="Customers_Title" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Customers_Subtitle" xml:space="preserve">
+    <value>Search, review, and stay on top of every client relationship.</value>
+  </data>
+  <data name="Customers_AddCustomer" xml:space="preserve">
+    <value>Add Customer</value>
+  </data>
+  <data name="Customers_Company" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="Customers_SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, company, or email...</value>
+  </data>
+  <data name="Customers_AllCustomers" xml:space="preserve">
+    <value>All Customers</value>
+  </data>
+  <data name="Customers_SelectPrompt" xml:space="preserve">
+    <value>Select a customer to view their 360 profile.</value>
+  </data>
+  <data name="Customers_Statistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="Customers_Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Customers_Timeline" xml:space="preserve">
+    <value>Timeline</value>
+  </data>
+  <data name="Customers_AddTag" xml:space="preserve">
+    <value>Add Tag</value>
+  </data>
+  <data name="Customers_AddNote" xml:space="preserve">
+    <value>Add Note</value>
+  </data>
+  <data name="Inventory_Title" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Inventory_Subtitle" xml:space="preserve">
+    <value>Track products, stock levels, and supplier sourcing.</value>
+  </data>
+  <data name="Inventory_CategoriesSuppliers" xml:space="preserve">
+    <value>Categories &amp; Suppliers</value>
+  </data>
+  <data name="Inventory_NewProduct" xml:space="preserve">
+    <value>New Product</value>
+  </data>
+  <data name="Inventory_Stock" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="Inventory_RecentTransactions" xml:space="preserve">
+    <value>Recent Transactions</value>
+  </data>
+  <data name="Inventory_LinkedServices" xml:space="preserve">
+    <value>Linked Services</value>
+  </data>
+  <data name="Inventory_AllProducts" xml:space="preserve">
+    <value>All Products</value>
+  </data>
+  <data name="Inventory_AddCategory" xml:space="preserve">
+    <value>Add Category</value>
+  </data>
+  <data name="Inventory_AddSupplier" xml:space="preserve">
+    <value>Add Supplier</value>
+  </data>
+  <data name="Inventory_AddProduct" xml:space="preserve">
+    <value>Add Product</value>
+  </data>
+  <data name="Inventory_RecordTransaction" xml:space="preserve">
+    <value>Record Transaction</value>
+  </data>
+  <data name="Inventory_Map" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="Inventory_Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
+  <data name="Inventory_UnitPrice" xml:space="preserve">
+    <value>Unit Price</value>
+  </data>
+  <data name="Inventory_InitialQuantity" xml:space="preserve">
+    <value>Initial Quantity</value>
+  </data>
+  <data name="Inventory_ReorderThreshold" xml:space="preserve">
+    <value>Reorder Threshold</value>
+  </data>
+  <data name="Inventory_SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, SKU, category, or description...</value>
+  </data>
+  <data name="Inventory_SelectPrompt" xml:space="preserve">
+    <value>Select a product to view its profile.</value>
+  </data>
+  <data name="Inventory_LowStockWarning" xml:space="preserve">
+    <value>Stock is at or below its reorder threshold.</value>
+  </data>
+  <data name="Inventory_TotalProducts" xml:space="preserve">
+    <value>Total Products</value>
+  </data>
+  <data name="Inventory_LowStockItems" xml:space="preserve">
+    <value>Low Stock Items</value>
+  </data>
+  <data name="Inventory_OnHand" xml:space="preserve">
+    <value>On Hand</value>
+  </data>
+  <data name="Inventory_ReorderAt" xml:space="preserve">
+    <value>Reorder At</value>
+  </data>
+  <data name="Accounting_Title" xml:space="preserve">
+    <value>Accounting</value>
+  </data>
+  <data name="Accounting_Subtitle" xml:space="preserve">
+    <value>Invoices, payments, and point-of-sale checkout.</value>
+  </data>
+  <data name="Accounting_NewSalePos" xml:space="preserve">
+    <value>New Sale (POS)</value>
+  </data>
+  <data name="Accounting_CancelInvoice" xml:space="preserve">
+    <value>Cancel Invoice</value>
+  </data>
+  <data name="Accounting_SearchPlaceholder" xml:space="preserve">
+    <value>Search by customer, booking, or notes...</value>
+  </data>
+  <data name="Accounting_AllInvoices" xml:space="preserve">
+    <value>All Invoices</value>
+  </data>
+  <data name="Accounting_LineItems" xml:space="preserve">
+    <value>Line Items</value>
+  </data>
+  <data name="Accounting_Payments" xml:space="preserve">
+    <value>Payments</value>
+  </data>
+  <data name="Accounting_Receipts" xml:space="preserve">
+    <value>Receipts</value>
+  </data>
+  <data name="Accounting_SelectPrompt" xml:space="preserve">
+    <value>Select an invoice to view its details.</value>
+  </data>
+  <data name="Accounting_Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Accounting_Tax" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="Accounting_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Accounting_TotalRevenue" xml:space="preserve">
+    <value>Total Revenue</value>
+  </data>
+  <data name="Accounting_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Accounting_Outstanding" xml:space="preserve">
+    <value>Outstanding</value>
+  </data>
+  <data name="Accounting_PaidInvoices" xml:space="preserve">
+    <value>Paid Invoices</value>
+  </data>
+  <data name="Pos_NewSale" xml:space="preserve">
+    <value>New Sale</value>
+  </data>
+  <data name="Pos_PaymentRecorded" xml:space="preserve">
+    <value>Payment recorded</value>
+  </data>
+  <data name="Pos_BookingOptional" xml:space="preserve">
+    <value>Booking (optional)</value>
+  </data>
+  <data name="Pos_PaymentMethod" xml:space="preserve">
+    <value>Payment method</value>
+  </data>
+  <data name="Pos_AmountTendered" xml:space="preserve">
+    <value>Amount tendered</value>
+  </data>
+  <data name="Pos_AddProduct" xml:space="preserve">
+    <value>Add a product</value>
+  </data>
+  <data name="Pos_AddService" xml:space="preserve">
+    <value>Add a service</value>
+  </data>
+  <data name="Pos_Cart" xml:space="preserve">
+    <value>Cart</value>
+  </data>
+  <data name="Pos_ProceedToPayment" xml:space="preserve">
+    <value>Proceed to Payment</value>
+  </data>
+  <data name="Pos_Charge" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="Pos_AmountDue" xml:space="preserve">
+    <value>Amount due</value>
+  </data>
+  <data name="Pos_ChangeDue" xml:space="preserve">
+    <value>Change due</value>
+  </data>
+  <data name="Pos_Paid" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Pos_Via" xml:space="preserve">
+    <value>via</value>
+  </data>
+  <data name="Pos_InvoiceTotal" xml:space="preserve">
+    <value>Invoice total</value>
+  </data>
+  <data name="Reporting_Title" xml:space="preserve">
+    <value>Reporting</value>
+  </data>
+  <data name="Reporting_Subtitle" xml:space="preserve">
+    <value>Run, filter, save, and export reports aggregated across every module.</value>
+  </data>
+  <data name="Reporting_Catalog" xml:space="preserve">
+    <value>Catalog</value>
+  </data>
+  <data name="Reporting_ReportViewer" xml:space="preserve">
+    <value>Report Viewer</value>
+  </data>
+  <data name="Reporting_SavedReports" xml:space="preserve">
+    <value>Saved Reports</value>
+  </data>
+  <data name="Reporting_RecentReports" xml:space="preserve">
+    <value>Recent Reports</value>
+  </data>
+  <data name="Reporting_ReportCatalog" xml:space="preserve">
+    <value>Report Catalog</value>
+  </data>
+  <data name="Reporting_FilterPanel" xml:space="preserve">
+    <value>Filter Panel</value>
+  </data>
+  <data name="Reporting_Results" xml:space="preserve">
+    <value>Results</value>
+  </data>
+  <data name="Reporting_DateRangeStart" xml:space="preserve">
+    <value>Date range start</value>
+  </data>
+  <data name="Reporting_DateRangeEnd" xml:space="preserve">
+    <value>Date range end</value>
+  </data>
+  <data name="Reporting_RunPrompt" xml:space="preserve">
+    <value>Run a report to see results here.</value>
+  </data>
+  <data name="Reporting_AddFilter" xml:space="preserve">
+    <value>Add Filter</value>
+  </data>
+  <data name="Reporting_RunReport" xml:space="preserve">
+    <value>Run Report</value>
+  </data>
+  <data name="Reporting_Rerun" xml:space="preserve">
+    <value>Re-run</value>
+  </data>
+  <data name="Reporting_Unpin" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Reporting_Pin" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="Reporting_Report" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="Reporting_NoneSelected" xml:space="preserve">
+    <value>(none selected - pick one from Catalog)</value>
+  </data>
+  <data name="Reporting_Rows" xml:space="preserve">
+    <value>rows</value>
+  </data>
+  <data name="Enum_Available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="Enum_Booked" xml:space="preserve">
+    <value>Booked</value>
+  </data>
+  <data name="Enum_Unavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="Enum_Issued" xml:space="preserve">
+    <value>Issued</value>
+  </data>
+  <data name="Enum_PartiallyPaid" xml:space="preserve">
+    <value>Partially Paid</value>
+  </data>
+  <data name="Enum_Paid" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Enum_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="Enum_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Enum_Seasonal" xml:space="preserve">
+    <value>Seasonal</value>
+  </data>
+  <data name="Enum_Discontinued" xml:space="preserve">
+    <value>Discontinued</value>
+  </data>
+  <data name="Enum_OnLeave" xml:space="preserve">
+    <value>On Leave</value>
+  </data>
+  <data name="Enum_Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="Enum_Lead" xml:space="preserve">
+    <value>Lead</value>
+  </data>
+  <data name="Enum_Prospect" xml:space="preserve">
+    <value>Prospect</value>
+  </data>
+  <data name="Enum_Vip" xml:space="preserve">
+    <value>VIP</value>
+  </data>
+  <data name="Enum_Churned" xml:space="preserve">
+    <value>Churned</value>
+  </data>
+  <data name="Enum_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="Enum_Confirmed" xml:space="preserve">
+    <value>Confirmed</value>
+  </data>
+  <data name="Enum_InProgress" xml:space="preserve">
+    <value>In Progress</value>
+  </data>
+  <data name="Enum_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Enum_NoShow" xml:space="preserve">
+    <value>No Show</value>
+  </data>
+  <data name="Enum_OutOfStock" xml:space="preserve">
+    <value>Out of Stock</value>
+  </data>
+  <data name="Enum_Cash" xml:space="preserve">
+    <value>Cash</value>
+  </data>
+  <data name="Enum_Card" xml:space="preserve">
+    <value>Card</value>
+  </data>
+  <data name="Enum_BankTransfer" xml:space="preserve">
+    <value>Bank Transfer</value>
+  </data>
+  <data name="Enum_GiftCard" xml:space="preserve">
+    <value>Gift Card</value>
+  </data>
+  <data name="Enum_StoreCredit" xml:space="preserve">
+    <value>Store Credit</value>
+  </data>
+  <data name="Enum_Received" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="Enum_Sold" xml:space="preserve">
+    <value>Sold</value>
+  </data>
+  <data name="Enum_Returned" xml:space="preserve">
+    <value>Returned</value>
+  </data>
+  <data name="Enum_Damaged" xml:space="preserve">
+    <value>Damaged</value>
+  </data>
+  <data name="Enum_Adjustment" xml:space="preserve">
+    <value>Adjustment</value>
+  </data>
+  <data name="Enum_Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="Enum_Suspended" xml:space="preserve">
+    <value>Suspended</value>
   </data>
 </root>

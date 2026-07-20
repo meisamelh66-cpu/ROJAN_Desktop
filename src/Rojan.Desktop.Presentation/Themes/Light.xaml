@@ -34,21 +34,44 @@
     each theme now gets its own AA-safe shade under the same key names;
     every existing `Rojan.Brush.Error`/`Warning`/`Success` reference
     keeps working unchanged.
+
+    Enterprise UX/UI Refinement pass: the layered surface ramp now maps
+    explicitly onto the app's own chrome vs. content structure instead
+    of one lavender-white family for everything - `Background` (warm
+    cream/ivory, MainWindow's header/nav-sidebar/status-bar chrome) is
+    now visually distinct from the new `Workspace` token (soft lavender,
+    the content area every page renders into - MainWindow.xaml's
+    workspace Grid), with `Card`/`SurfaceElevated` pushed to literal
+    pure white so cards/dialogs read as the brightest, most "raised"
+    tier - Background -> Workspace -> Card -> Controls -> Accent, a
+    clear five-step hierarchy instead of everything sitting a few points
+    apart in the same lavender-white family. `SurfaceSecondary` (the
+    recessed-panel tone `Rojan.Style.Panel` uses for search boxes and
+    similar inset containers) was retuned to the same lavender family as
+    Workspace so those panels read as "sitting in the workspace," not a
+    fourth unrelated tone. TextPrimary/TextSecondary/MutedText were all
+    darkened for stronger, more premium contrast - re-checked against
+    the new Card/Workspace backgrounds with the WCAG 2.1 relative-
+    luminance formula: TextPrimary is effectively black (>15:1),
+    TextSecondary ~9.1:1, MutedText ~6.3:1, both comfortably above the
+    4.5:1 AA minimum for normal text. HintText/Disabled/Error/Warning/
+    Success are unchanged from the prior pass's own AA-verified values.
   -->
 
-  <Color x:Key="Rojan.Color.Background">#FFF7F5FB</Color>
-  <Color x:Key="Rojan.Color.Surface">#FFFDFCFF</Color>
-  <Color x:Key="Rojan.Color.Card">#FFFEFDFF</Color>
-  <Color x:Key="Rojan.Color.SurfaceSecondary">#FFF0EEF7</Color>
-  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFFFEFF</Color>
-  <Color x:Key="Rojan.Color.SurfaceHover">#FFEEEBF6</Color>
-  <Color x:Key="Rojan.Color.SurfacePressed">#FFE4E0EF</Color>
-  <Color x:Key="Rojan.Color.Border">#12000000</Color>
-  <Color x:Key="Rojan.Color.BorderStrong">#26000000</Color>
+  <Color x:Key="Rojan.Color.Background">#FFFBF9F5</Color>
+  <Color x:Key="Rojan.Color.Workspace">#FFF5F1FD</Color>
+  <Color x:Key="Rojan.Color.Surface">#FFFFFFFF</Color>
+  <Color x:Key="Rojan.Color.Card">#FFFFFFFF</Color>
+  <Color x:Key="Rojan.Color.SurfaceSecondary">#FFF0EAFA</Color>
+  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFFFFFF</Color>
+  <Color x:Key="Rojan.Color.SurfaceHover">#FFEDE5FB</Color>
+  <Color x:Key="Rojan.Color.SurfacePressed">#FFE1D5F7</Color>
+  <Color x:Key="Rojan.Color.Border">#14000000</Color>
+  <Color x:Key="Rojan.Color.BorderStrong">#28000000</Color>
 
-  <Color x:Key="Rojan.Color.TextPrimary">#FF1B1730</Color>
-  <Color x:Key="Rojan.Color.TextSecondary">#FF5B5570</Color>
-  <Color x:Key="Rojan.Color.MutedText">#FF6E6884</Color>
+  <Color x:Key="Rojan.Color.TextPrimary">#FF17132A</Color>
+  <Color x:Key="Rojan.Color.TextSecondary">#FF4B455F</Color>
+  <Color x:Key="Rojan.Color.MutedText">#FF625C78</Color>
   <Color x:Key="Rojan.Color.HintText">#FF716B8C</Color>
   <Color x:Key="Rojan.Color.Disabled">#FF9691AC</Color>
 
@@ -57,6 +80,7 @@
   <Color x:Key="Rojan.Color.Success">#FF13743A</Color>
 
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Workspace" Color="{StaticResource Rojan.Color.Workspace}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
   <SolidColorBrush x:Key="Rojan.Brush.Card" Color="{StaticResource Rojan.Color.Card}" />
   <SolidColorBrush x:Key="Rojan.Brush.SurfaceSecondary" Color="{StaticResource Rojan.Color.SurfaceSecondary}" />

@@ -4,7 +4,8 @@
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:reportingVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Reporting"
-             xmlns:appReporting="clr-namespace:Rojan.Desktop.Application.Reporting;assembly=Rojan.Desktop.Application">
+             xmlns:appReporting="clr-namespace:Rojan.Desktop.Application.Reporting;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 20: Enterprise Reporting & Analytics Platform. Same
@@ -27,15 +28,15 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <controls:SectionHeader Grid.Row="0" Title="Reporting" />
+        <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Reporting_Title}" />
         <TextBlock Grid.Row="0"
-                   Text="Run, filter, save, and export reports aggregated across every module."
+                   Text="{x:Static loc:Strings.Reporting_Subtitle}"
                    Style="{StaticResource Rojan.TextStyle.Caption}"
                    Foreground="{StaticResource Rojan.Brush.MutedText}"
                    Margin="0,44,0,0" />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
-            <Button Content="Catalog" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Catalog}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Reporting_Catalog}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Catalog}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -48,7 +49,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Report Viewer" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Viewer}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Reporting_ReportViewer}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Viewer}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -61,7 +62,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Saved Reports" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Saved}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Reporting_SavedReports}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Saved}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -74,7 +75,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Recent Reports" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Recent}">
+            <Button Content="{x:Static loc:Strings.Reporting_RecentReports}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static reportingVm:ReportingSection.Recent}">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -105,7 +106,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardWidget Title="Report Catalog" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Reporting_ReportCatalog}" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
                         <ItemsControl ItemsSource="{Binding ReportDefinitions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appReporting:ReportDefinitionDto}">
@@ -146,11 +147,12 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Filter Panel">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Reporting_FilterPanel}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                                <Run Text="Report: " />
-                                <Run Text="{Binding SelectedReport.Name, Mode=OneWay, FallbackValue='(none selected - pick one from Catalog)'}" FontWeight="SemiBold" />
+                                <Run Text="{x:Static loc:Strings.Reporting_Report}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding SelectedReport.Name, Mode=OneWay, FallbackValue={x:Static loc:Strings.Reporting_NoneSelected}}" FontWeight="SemiBold" />
                             </TextBlock>
 
                             <Grid Margin="0,12,0,0">
@@ -160,11 +162,11 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Date range start" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Reporting_DateRangeStart}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <DatePicker SelectedDate="{Binding FilterStartDate, Mode=TwoWay}" Margin="0,4,0,0" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Date range end" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Reporting_DateRangeEnd}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <DatePicker SelectedDate="{Binding FilterEndDate, Mode=TwoWay}" Margin="0,4,0,0" />
                                 </StackPanel>
                             </Grid>
@@ -193,19 +195,19 @@
                             </ItemsControl>
 
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                <Button Content="Add Filter" Command="{Binding AddFilterCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
-                                <Button Content="Run Report" Command="{Binding RunReportCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Margin="0,0,8,0" />
-                                <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
-                                <Button Content="Export" Command="{Binding OpenExportDialogCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                                <Button Content="{x:Static loc:Strings.Reporting_AddFilter}" Command="{Binding AddFilterCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
+                                <Button Content="{x:Static loc:Strings.Reporting_RunReport}" Command="{Binding RunReportCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Margin="0,0,8,0" />
+                                <Button Content="{x:Static loc:Strings.Common_Cancel}" Command="{Binding CancelCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0" />
+                                <Button Content="{x:Static loc:Strings.Common_Export}" Command="{Binding OpenExportDialogCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
                             </StackPanel>
 
                             <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,8,0,0" />
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Results" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Reporting_Results}" Margin="0,16,0,0">
                         <Grid>
-                            <TextBlock Text="Run a report to see results here." Foreground="{StaticResource Rojan.Brush.MutedText}">
+                            <TextBlock Text="{x:Static loc:Strings.Reporting_RunPrompt}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -285,7 +287,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Saved Reports">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Reporting_SavedReports}">
                         <ItemsControl ItemsSource="{Binding SavedSnapshots}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appReporting:ReportSnapshotDto}">
@@ -302,17 +304,18 @@
                                                     <Run Text="{Binding GeneratedAt, Mode=OneWay, StringFormat='{}{0:g}'}" />
                                                     <Run Text=" · " />
                                                     <Run Text="{Binding RowCount, Mode=OneWay}" />
-                                                    <Run Text=" rows" />
+                                                    <Run Text=" " />
+                                                    <Run Text="{x:Static loc:Strings.Reporting_Rows}" />
                                                 </TextBlock>
                                             </StackPanel>
                                             <Button Grid.Column="1"
-                                                    Content="Re-run"
+                                                    Content="{x:Static loc:Strings.Reporting_Rerun}"
                                                     Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding DataContext.RerunSnapshotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
                                             <Button Grid.Column="2"
-                                                    Content="Unpin"
+                                                    Content="{x:Static loc:Strings.Reporting_Unpin}"
                                                     Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Command="{Binding DataContext.ToggleSavedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
@@ -337,7 +340,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Recent Reports">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Reporting_RecentReports}">
                         <ItemsControl ItemsSource="{Binding RecentSnapshots}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appReporting:ReportSnapshotDto}">
@@ -354,17 +357,18 @@
                                                     <Run Text="{Binding GeneratedAt, Mode=OneWay, StringFormat='{}{0:g}'}" />
                                                     <Run Text=" · " />
                                                     <Run Text="{Binding RowCount, Mode=OneWay}" />
-                                                    <Run Text=" rows" />
+                                                    <Run Text=" " />
+                                                    <Run Text="{x:Static loc:Strings.Reporting_Rows}" />
                                                 </TextBlock>
                                             </StackPanel>
                                             <Button Grid.Column="1"
-                                                    Content="Re-run"
+                                                    Content="{x:Static loc:Strings.Reporting_Rerun}"
                                                     Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding DataContext.RerunSnapshotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
                                             <Button Grid.Column="2"
-                                                    Content="Pin"
+                                                    Content="{x:Static loc:Strings.Reporting_Pin}"
                                                     Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Command="{Binding DataContext.ToggleSavedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />

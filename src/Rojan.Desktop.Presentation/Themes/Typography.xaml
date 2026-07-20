@@ -42,21 +42,34 @@
   -->
   <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI Variable, Segoe UI</FontFamily>
 
+  <!--
+    Enterprise UX/UI Refinement pass: titles pushed larger/heavier across
+    the six-step scale (Display 32->36, Title 20->24, SectionHeader
+    16->17) for a punchier, more premium page hierarchy - "larger
+    titles... Bold/SemiBold for Page Titles/Section Titles/Card
+    Titles/Dialog Titles/Dashboard Titles/Group Headers." Body/Caption
+    are unchanged (already Normal weight at a comfortably readable size);
+    only the heading tiers needed to grow, per this pass's explicit
+    "body text should remain clean and readable" (not larger, just
+    higher-contrast - see Light.xaml's TextPrimary/TextSecondary/
+    MutedText darkening).
+  -->
+
   <!-- Large numeric display (KPI values) - deliberately outside the six-step body-copy scale, see note above. -->
   <Style x:Key="Rojan.TextStyle.Display" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="32" />
-    <Setter Property="LineHeight" Value="38" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="FontSize" Value="36" />
+    <Setter Property="LineHeight" Value="42" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
   <!-- Page title - one per page, via Controls/SectionHeader.xaml. -->
   <Style x:Key="Rojan.TextStyle.Title" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="20" />
-    <Setter Property="LineHeight" Value="26" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="LineHeight" Value="30" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
@@ -64,14 +77,14 @@
   <Style x:Key="Rojan.TextStyle.SectionHeader" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="FontSize" Value="16" />
-    <Setter Property="LineHeight" Value="22" />
+    <Setter Property="FontSize" Value="17" />
+    <Setter Property="LineHeight" Value="23" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
   <Style x:Key="Rojan.TextStyle.Subtitle" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="LineHeight" Value="20" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
@@ -81,7 +94,7 @@
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="14" />
-    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="LineHeight" Value="21" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 
@@ -89,7 +102,7 @@
     <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="LineHeight" Value="16" />
+    <Setter Property="LineHeight" Value="17" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
   </Style>
 

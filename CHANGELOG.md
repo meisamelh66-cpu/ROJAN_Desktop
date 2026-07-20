@@ -656,6 +656,41 @@ see `docs/standards/versioning.md`.
   session's branch (Inventory's Total Products reads 8 of the 10
   seeded, the other 2 correctly excluded as belonging to a different
   branch/organization).
+- Phase 23 Enterprise UX/UI Refinement & Localization Completion —
+  design-token and localization pass across the whole app. Color system:
+  retargeted the existing Fluent 2 brush tokens to a layered surface
+  hierarchy (`Rojan.Brush.Background` → warm cream, new
+  `Rojan.Brush.Workspace` token → soft lavender for the page content
+  area, `Rojan.Brush.Card`/`Surface` → pure white), replacing the large
+  flat-white workspace look with no XAML consumer changes since every
+  page already referenced these brushes by key. Typography: `Display`/
+  `Title` moved to Bold and enlarged, `SectionHeader`/`Subtitle`/`Body`/
+  `Caption` all strengthened. New `DataGrid`/`DataGridColumnHeader`/
+  `DataGridCell`/`DataGridRow` implicit styles in `Controls.xaml`.
+  Localization: closed ~360 hardcoded-English-string gaps across 13
+  module pages (~180 new `Strings.cs`/resx entries across
+  `Strings.resx`/`Strings.en.resx`/`Strings.ar.resx`), plus two
+  systemic gaps invisible to a page-by-page XAML audit — Dashboard's
+  KPI/activity labels came from Infrastructure's fake-repository seed
+  data and couldn't reach Presentation's `Strings` directly (fixed with
+  `KpiLabelConverter`/`ActivityDescriptionConverter` mapping each DTO's
+  stable `Id` to a localized string), and every Domain status/type/
+  method enum (`CustomerStatus`, `BookingStatus`, `InvoiceStatus`,
+  `PaymentMethod`, `StockTransactionType`, etc.) rendered its raw C#
+  member name via default `ToString()` regardless of language (fixed
+  with one shared `EnumLabelConverter` + `Strings.GetEnumLabel`, keyed
+  by member name so one key set covers every enum). `AiCenterPage.xaml`
+  and `HrPage.xaml` (the two largest hardcoded-string surfaces, ~150
+  combined instances) are explicitly deferred as a documented scope
+  boundary, per the Phase 22/22A precedent - see
+  `docs/phases/phase-23-enterprise-ux-ui-refinement.md` for the full
+  breakdown including other deliberately-deferred edges (enum
+  `ComboBox` pickers, calendar/date formatting). No business-logic or
+  test changes; full 955-test suite still passes, zero warnings, zero
+  errors. Runtime-verified via UI Automation against the default fa-IR
+  session across Dashboard/Customers/Bookings/Inventory/Accounting - one
+  real gap (`BookingPage`'s detail-panel card title) was caught live
+  during this verification and fixed on the spot.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appSpecialists="clr-namespace:Rojan.Desktop.Application.Specialists;assembly=Rojan.Desktop.Application">
+             xmlns:appSpecialists="clr-namespace:Rojan.Desktop.Application.Specialists;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 12: Specialist Management Foundation. Same master-detail
@@ -33,15 +34,15 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Specialists" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Specialists_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Manage your team's directory, status, and skills."
+                       Text="{x:Static loc:Strings.Specialists_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
             <!-- Add Specialist: the Create command's one Presentation entry point -->
-            <dashboardControls:DashboardCard Grid.Row="1" Title="Add Specialist" Margin="0,24,0,0">
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Specialists_AddSpecialist}" Margin="0,24,0,0">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -55,25 +56,25 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock Text="Full name" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_FullName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewSpecialistFullName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock Text="Title" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_JobTitle}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewSpecialistTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
-                            <TextBlock Text="Email" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Email}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewSpecialistEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
-                            <TextBlock Text="Phone" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Phone}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewSpecialistPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
 
-                    <Button Content="Add Specialist"
+                    <Button Content="{x:Static loc:Strings.Specialists_AddSpecialist}"
                             Command="{Binding CreateSpecialistCommand}"
                             Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
@@ -86,7 +87,7 @@
                     Padding="16,10"
                     Margin="0,24,0,0">
                 <Grid>
-                    <TextBlock Text="Search by name, title, or email..."
+                    <TextBlock Text="{x:Static loc:Strings.Specialists_SearchPlaceholder}"
                                Foreground="{StaticResource Rojan.Brush.HintText}"
                                FontFamily="{StaticResource Rojan.FontFamily.Default}"
                                FontSize="15"
@@ -113,7 +114,7 @@
             </Border>
 
             <dashboardControls:DashboardWidget Grid.Row="3"
-                                                Title="All Specialists"
+                                                Title="{x:Static loc:Strings.Specialists_AllSpecialists}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
@@ -140,7 +141,7 @@
                                         </TextBlock>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1"
-                                               Text="{Binding Status}"
+                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                VerticalAlignment="Center" />
@@ -155,7 +156,7 @@
         <!-- Right: selected specialist's profile - status + skills -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="Select a specialist to view their profile."
+                <TextBlock Text="{x:Static loc:Strings.Specialists_SelectPrompt}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
@@ -200,7 +201,7 @@
                                 <ComboBox ItemsSource="{Binding AvailableStatuses}"
                                           SelectedItem="{Binding EditableStatus, Mode=TwoWay}"
                                           Width="150" />
-                                <Button Content="Save Changes"
+                                <Button Content="{x:Static loc:Strings.Common_SaveChanges}"
                                         Command="{Binding SaveChangesCommand}"
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="12,0,0,0" />
@@ -209,7 +210,7 @@
                     </dashboardControls:DashboardCard>
 
                     <!-- Skills -->
-                    <dashboardControls:DashboardCard Title="Skills" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Specialists_Skills}" Margin="0,16,0,0">
                         <StackPanel>
                             <ItemsControl ItemsSource="{Binding Skills}">
                                 <ItemsControl.ItemsPanel>
@@ -244,7 +245,7 @@
 
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <TextBox Text="{Binding NewSkillText, UpdateSourceTrigger=PropertyChanged}" Width="160" />
-                                <Button Content="Add Skill"
+                                <Button Content="{x:Static loc:Strings.Specialists_AddSkill}"
                                         Command="{Binding AddSkillCommand}"
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="8,0,0,0" />

@@ -119,6 +119,22 @@ public static class Strings
 
     public static string Dashboard_QuickAction_ViewReports => Get(nameof(Dashboard_QuickAction_ViewReports));
 
+    public static string Dashboard_Kpi_TotalBookings => Get(nameof(Dashboard_Kpi_TotalBookings));
+
+    public static string Dashboard_Kpi_ActiveClients => Get(nameof(Dashboard_Kpi_ActiveClients));
+
+    public static string Dashboard_Kpi_RevenueMtd => Get(nameof(Dashboard_Kpi_RevenueMtd));
+
+    public static string Dashboard_Kpi_PendingTasks => Get(nameof(Dashboard_Kpi_PendingTasks));
+
+    public static string Dashboard_Activity_NewBooking => Get(nameof(Dashboard_Activity_NewBooking));
+
+    public static string Dashboard_Activity_ProfileUpdated => Get(nameof(Dashboard_Activity_ProfileUpdated));
+
+    public static string Dashboard_Activity_PaymentReceived => Get(nameof(Dashboard_Activity_PaymentReceived));
+
+    public static string Dashboard_Activity_TaskCompleted => Get(nameof(Dashboard_Activity_TaskCompleted));
+
     public static string Nav_Dashboard => Get(nameof(Nav_Dashboard));
 
     public static string Nav_Customers => Get(nameof(Nav_Customers));
@@ -310,4 +326,350 @@ public static class Strings
     public static string Shell_BranchSwitcher_Favorites => Get(nameof(Shell_BranchSwitcher_Favorites));
 
     public static string Shell_BranchSwitcher_Recent => Get(nameof(Shell_BranchSwitcher_Recent));
+
+    // Enterprise UX/UI Refinement pass - shared field-label/action keys reused across multiple modules.
+    public static string Common_Export => Get(nameof(Common_Export));
+
+    public static string Common_SaveChanges => Get(nameof(Common_SaveChanges));
+
+    public static string Common_Daily => Get(nameof(Common_Daily));
+
+    public static string Common_Weekly => Get(nameof(Common_Weekly));
+
+    public static string Common_Monthly => Get(nameof(Common_Monthly));
+
+    public static string Common_FullName => Get(nameof(Common_FullName));
+
+    public static string Common_Email => Get(nameof(Common_Email));
+
+    public static string Common_Phone => Get(nameof(Common_Phone));
+
+    public static string Common_Notes => Get(nameof(Common_Notes));
+
+    public static string Common_Description => Get(nameof(Common_Description));
+
+    public static string Common_Date => Get(nameof(Common_Date));
+
+    public static string Common_Type => Get(nameof(Common_Type));
+
+    public static string Common_Quantity => Get(nameof(Common_Quantity));
+
+    public static string Common_Name => Get(nameof(Common_Name));
+
+    public static string Common_Category => Get(nameof(Common_Category));
+
+    public static string Common_Specialist => Get(nameof(Common_Specialist));
+
+    public static string Common_Service => Get(nameof(Common_Service));
+
+    public static string Common_Customer => Get(nameof(Common_Customer));
+
+    public static string Common_Status => Get(nameof(Common_Status));
+
+    public static string Common_Duration => Get(nameof(Common_Duration));
+
+    public static string Common_MinutesShort => Get(nameof(Common_MinutesShort));
+
+    public static string Common_Confirm => Get(nameof(Common_Confirm));
+
+    public static string Common_Next => Get(nameof(Common_Next));
+
+    public static string Common_Done => Get(nameof(Common_Done));
+
+    public static string Common_Add => Get(nameof(Common_Add));
+
+    public static string Common_Supplier => Get(nameof(Common_Supplier));
+
+    public static string Common_Price => Get(nameof(Common_Price));
+
+    public static string Modules_NotImplementedYet => Get(nameof(Modules_NotImplementedYet));
+
+    public static string ExportDialog_Title => Get(nameof(ExportDialog_Title));
+
+    public static string ExportDialog_Format => Get(nameof(ExportDialog_Format));
+
+    public static string Calendar_Title => Get(nameof(Calendar_Title));
+
+    public static string Calendar_Subtitle => Get(nameof(Calendar_Subtitle));
+
+    public static string Calendar_SpecialistAndDate => Get(nameof(Calendar_SpecialistAndDate));
+
+    public static string Calendar_Availability => Get(nameof(Calendar_Availability));
+
+    public static string Analytics_Title => Get(nameof(Analytics_Title));
+
+    public static string Analytics_Subtitle => Get(nameof(Analytics_Subtitle));
+
+    public static string Analytics_KpiCards => Get(nameof(Analytics_KpiCards));
+
+    public static string BookingWizard_Title => Get(nameof(BookingWizard_Title));
+
+    public static string BookingWizard_Confirmed => Get(nameof(BookingWizard_Confirmed));
+
+    public static string BookingWizard_StepWhoFor => Get(nameof(BookingWizard_StepWhoFor));
+
+    public static string BookingWizard_StepChooseService => Get(nameof(BookingWizard_StepChooseService));
+
+    public static string BookingWizard_StepChooseSpecialist => Get(nameof(BookingWizard_StepChooseSpecialist));
+
+    public static string BookingWizard_StepChooseDate => Get(nameof(BookingWizard_StepChooseDate));
+
+    public static string BookingWizard_StepChooseTime => Get(nameof(BookingWizard_StepChooseTime));
+
+    public static string BookingWizard_StepReview => Get(nameof(BookingWizard_StepReview));
+
+    public static string BookingWizard_NoSlots => Get(nameof(BookingWizard_NoSlots));
+
+    public static string BookingWizard_ConfirmBooking => Get(nameof(BookingWizard_ConfirmBooking));
+
+    public static string Specialists_Title => Get(nameof(Specialists_Title));
+
+    public static string Specialists_Subtitle => Get(nameof(Specialists_Subtitle));
+
+    public static string Specialists_AddSpecialist => Get(nameof(Specialists_AddSpecialist));
+
+    public static string Specialists_JobTitle => Get(nameof(Specialists_JobTitle));
+
+    public static string Specialists_SearchPlaceholder => Get(nameof(Specialists_SearchPlaceholder));
+
+    public static string Specialists_AllSpecialists => Get(nameof(Specialists_AllSpecialists));
+
+    public static string Specialists_SelectPrompt => Get(nameof(Specialists_SelectPrompt));
+
+    public static string Specialists_Skills => Get(nameof(Specialists_Skills));
+
+    public static string Specialists_AddSkill => Get(nameof(Specialists_AddSkill));
+
+    public static string Services_Title => Get(nameof(Services_Title));
+
+    public static string Services_Subtitle => Get(nameof(Services_Subtitle));
+
+    public static string Services_SearchPlaceholder => Get(nameof(Services_SearchPlaceholder));
+
+    public static string Services_AllServices => Get(nameof(Services_AllServices));
+
+    public static string Services_Details => Get(nameof(Services_Details));
+
+    public static string Services_AssignedSpecialists => Get(nameof(Services_AssignedSpecialists));
+
+    public static string Services_SelectPrompt => Get(nameof(Services_SelectPrompt));
+
+    public static string Services_Assign => Get(nameof(Services_Assign));
+
+    public static string Bookings_Title => Get(nameof(Bookings_Title));
+
+    public static string Bookings_Subtitle => Get(nameof(Bookings_Subtitle));
+
+    public static string Bookings_NewBookingWizard => Get(nameof(Bookings_NewBookingWizard));
+
+    public static string Bookings_NewBooking => Get(nameof(Bookings_NewBooking));
+
+    public static string Bookings_DurationMin => Get(nameof(Bookings_DurationMin));
+
+    public static string Bookings_AddBooking => Get(nameof(Bookings_AddBooking));
+
+    public static string Bookings_AllBookings => Get(nameof(Bookings_AllBookings));
+
+    public static string Bookings_When => Get(nameof(Bookings_When));
+
+    public static string Bookings_SelectPrompt => Get(nameof(Bookings_SelectPrompt));
+
+    public static string Bookings_Complete => Get(nameof(Bookings_Complete));
+
+    public static string Bookings_Details => Get(nameof(Bookings_Details));
+
+    public static string Customers_Title => Get(nameof(Customers_Title));
+
+    public static string Customers_Subtitle => Get(nameof(Customers_Subtitle));
+
+    public static string Customers_AddCustomer => Get(nameof(Customers_AddCustomer));
+
+    public static string Customers_Company => Get(nameof(Customers_Company));
+
+    public static string Customers_SearchPlaceholder => Get(nameof(Customers_SearchPlaceholder));
+
+    public static string Customers_AllCustomers => Get(nameof(Customers_AllCustomers));
+
+    public static string Customers_SelectPrompt => Get(nameof(Customers_SelectPrompt));
+
+    public static string Customers_Statistics => Get(nameof(Customers_Statistics));
+
+    public static string Customers_Tags => Get(nameof(Customers_Tags));
+
+    public static string Customers_Timeline => Get(nameof(Customers_Timeline));
+
+    public static string Customers_AddTag => Get(nameof(Customers_AddTag));
+
+    public static string Customers_AddNote => Get(nameof(Customers_AddNote));
+
+    public static string Inventory_Title => Get(nameof(Inventory_Title));
+
+    public static string Inventory_Subtitle => Get(nameof(Inventory_Subtitle));
+
+    public static string Inventory_CategoriesSuppliers => Get(nameof(Inventory_CategoriesSuppliers));
+
+    public static string Inventory_NewProduct => Get(nameof(Inventory_NewProduct));
+
+    public static string Inventory_Stock => Get(nameof(Inventory_Stock));
+
+    public static string Inventory_RecentTransactions => Get(nameof(Inventory_RecentTransactions));
+
+    public static string Inventory_LinkedServices => Get(nameof(Inventory_LinkedServices));
+
+    public static string Inventory_AllProducts => Get(nameof(Inventory_AllProducts));
+
+    public static string Inventory_AddCategory => Get(nameof(Inventory_AddCategory));
+
+    public static string Inventory_AddSupplier => Get(nameof(Inventory_AddSupplier));
+
+    public static string Inventory_AddProduct => Get(nameof(Inventory_AddProduct));
+
+    public static string Inventory_RecordTransaction => Get(nameof(Inventory_RecordTransaction));
+
+    public static string Inventory_Map => Get(nameof(Inventory_Map));
+
+    public static string Inventory_Sku => Get(nameof(Inventory_Sku));
+
+    public static string Inventory_UnitPrice => Get(nameof(Inventory_UnitPrice));
+
+    public static string Inventory_InitialQuantity => Get(nameof(Inventory_InitialQuantity));
+
+    public static string Inventory_ReorderThreshold => Get(nameof(Inventory_ReorderThreshold));
+
+    public static string Inventory_SearchPlaceholder => Get(nameof(Inventory_SearchPlaceholder));
+
+    public static string Inventory_SelectPrompt => Get(nameof(Inventory_SelectPrompt));
+
+    public static string Inventory_LowStockWarning => Get(nameof(Inventory_LowStockWarning));
+
+    public static string Inventory_TotalProducts => Get(nameof(Inventory_TotalProducts));
+
+    public static string Inventory_LowStockItems => Get(nameof(Inventory_LowStockItems));
+
+    public static string Inventory_OnHand => Get(nameof(Inventory_OnHand));
+
+    public static string Inventory_ReorderAt => Get(nameof(Inventory_ReorderAt));
+
+    public static string Accounting_Title => Get(nameof(Accounting_Title));
+
+    public static string Accounting_Subtitle => Get(nameof(Accounting_Subtitle));
+
+    public static string Accounting_NewSalePos => Get(nameof(Accounting_NewSalePos));
+
+    public static string Accounting_CancelInvoice => Get(nameof(Accounting_CancelInvoice));
+
+    public static string Accounting_SearchPlaceholder => Get(nameof(Accounting_SearchPlaceholder));
+
+    public static string Accounting_AllInvoices => Get(nameof(Accounting_AllInvoices));
+
+    public static string Accounting_LineItems => Get(nameof(Accounting_LineItems));
+
+    public static string Accounting_Payments => Get(nameof(Accounting_Payments));
+
+    public static string Accounting_Receipts => Get(nameof(Accounting_Receipts));
+
+    public static string Accounting_SelectPrompt => Get(nameof(Accounting_SelectPrompt));
+
+    public static string Accounting_Subtotal => Get(nameof(Accounting_Subtotal));
+
+    public static string Accounting_Tax => Get(nameof(Accounting_Tax));
+
+    public static string Accounting_Total => Get(nameof(Accounting_Total));
+
+    public static string Accounting_TotalRevenue => Get(nameof(Accounting_TotalRevenue));
+
+    public static string Accounting_Today => Get(nameof(Accounting_Today));
+
+    public static string Accounting_Outstanding => Get(nameof(Accounting_Outstanding));
+
+    public static string Accounting_PaidInvoices => Get(nameof(Accounting_PaidInvoices));
+
+    public static string Pos_NewSale => Get(nameof(Pos_NewSale));
+
+    public static string Pos_PaymentRecorded => Get(nameof(Pos_PaymentRecorded));
+
+    public static string Pos_BookingOptional => Get(nameof(Pos_BookingOptional));
+
+    public static string Pos_PaymentMethod => Get(nameof(Pos_PaymentMethod));
+
+    public static string Pos_AmountTendered => Get(nameof(Pos_AmountTendered));
+
+    public static string Pos_AddProduct => Get(nameof(Pos_AddProduct));
+
+    public static string Pos_AddService => Get(nameof(Pos_AddService));
+
+    public static string Pos_Cart => Get(nameof(Pos_Cart));
+
+    public static string Pos_ProceedToPayment => Get(nameof(Pos_ProceedToPayment));
+
+    public static string Pos_Charge => Get(nameof(Pos_Charge));
+
+    public static string Pos_AmountDue => Get(nameof(Pos_AmountDue));
+
+    public static string Pos_ChangeDue => Get(nameof(Pos_ChangeDue));
+
+    public static string Pos_Paid => Get(nameof(Pos_Paid));
+
+    public static string Pos_Via => Get(nameof(Pos_Via));
+
+    public static string Pos_InvoiceTotal => Get(nameof(Pos_InvoiceTotal));
+
+    public static string Reporting_Title => Get(nameof(Reporting_Title));
+
+    public static string Reporting_Subtitle => Get(nameof(Reporting_Subtitle));
+
+    public static string Reporting_Catalog => Get(nameof(Reporting_Catalog));
+
+    public static string Reporting_ReportViewer => Get(nameof(Reporting_ReportViewer));
+
+    public static string Reporting_SavedReports => Get(nameof(Reporting_SavedReports));
+
+    public static string Reporting_RecentReports => Get(nameof(Reporting_RecentReports));
+
+    public static string Reporting_ReportCatalog => Get(nameof(Reporting_ReportCatalog));
+
+    public static string Reporting_FilterPanel => Get(nameof(Reporting_FilterPanel));
+
+    public static string Reporting_Results => Get(nameof(Reporting_Results));
+
+    public static string Reporting_DateRangeStart => Get(nameof(Reporting_DateRangeStart));
+
+    public static string Reporting_DateRangeEnd => Get(nameof(Reporting_DateRangeEnd));
+
+    public static string Reporting_RunPrompt => Get(nameof(Reporting_RunPrompt));
+
+    public static string Reporting_AddFilter => Get(nameof(Reporting_AddFilter));
+
+    public static string Reporting_RunReport => Get(nameof(Reporting_RunReport));
+
+    public static string Reporting_Rerun => Get(nameof(Reporting_Rerun));
+
+    public static string Reporting_Unpin => Get(nameof(Reporting_Unpin));
+
+    public static string Reporting_Pin => Get(nameof(Reporting_Pin));
+
+    public static string Reporting_Report => Get(nameof(Reporting_Report));
+
+    public static string Reporting_NoneSelected => Get(nameof(Reporting_NoneSelected));
+
+    public static string Reporting_Rows => Get(nameof(Reporting_Rows));
+
+    /// <summary>
+    /// Looks up a localized display label for a Domain enum member by its
+    /// raw name (e.g. "Active", "Cancelled", "Cash") under the
+    /// <c>Enum_&lt;MemberName&gt;</c> key convention - shared across every
+    /// status/type/method enum in the app (CustomerStatus, BookingStatus,
+    /// InvoiceStatus, PaymentMethod, etc.) since the same word ("Active",
+    /// "Cancelled") means the same thing in every language regardless of
+    /// which entity it describes, avoiding one key per enum type. Falls
+    /// back to the raw member name itself (not the lookup key) so an
+    /// enum value nobody has localized yet still renders something
+    /// readable instead of a raw resx key string.
+    /// </summary>
+    public static string GetEnumLabel(string enumMemberName)
+    {
+        var key = $"Enum_{enumMemberName}";
+        var value = Get(key);
+        return value == key ? enumMemberName : value;
+    }
 }

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appServices="clr-namespace:Rojan.Desktop.Application.Services;assembly=Rojan.Desktop.Application">
+             xmlns:appServices="clr-namespace:Rojan.Desktop.Application.Services;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 13: Service Catalog & Availability Foundation. Same
@@ -34,9 +35,9 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Services" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Services_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Browse the catalog and manage specialist assignments."
+                       Text="{x:Static loc:Strings.Services_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
@@ -46,7 +47,7 @@
                     Padding="16,10"
                     Margin="0,24,0,0">
                 <Grid>
-                    <TextBlock Text="Search by name, category, or description..."
+                    <TextBlock Text="{x:Static loc:Strings.Services_SearchPlaceholder}"
                                Foreground="{StaticResource Rojan.Brush.HintText}"
                                FontFamily="{StaticResource Rojan.FontFamily.Default}"
                                FontSize="15"
@@ -73,7 +74,7 @@
             </Border>
 
             <dashboardControls:DashboardWidget Grid.Row="2"
-                                                Title="All Services"
+                                                Title="{x:Static loc:Strings.Services_AllServices}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
@@ -97,12 +98,14 @@
                                             <Run Text="{Binding Category, Mode=OneWay}" />
                                             <Run Text=" · " />
                                             <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
-                                            <Run Text=" min · " />
+                                            <Run Text=" " />
+                                            <Run Text="{x:Static loc:Strings.Common_MinutesShort}" />
+                                            <Run Text=" · " />
                                             <Run Text="{Binding Price, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1"
-                                               Text="{Binding Status}"
+                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                VerticalAlignment="Center" />
@@ -117,7 +120,7 @@
         <!-- Right: selected service's profile - category, duration/price, description, assigned specialists -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="Select a service to view its profile."
+                <TextBlock Text="{x:Static loc:Strings.Services_SelectPrompt}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
@@ -150,7 +153,7 @@
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                 <Run Text="{Binding Service.Category, Mode=OneWay}" />
                                 <Run Text=" · " />
-                                <Run Text="{Binding Service.Status, Mode=OneWay}" />
+                                <Run Text="{Binding Service.Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Service.Description}"
                                        Style="{StaticResource Rojan.TextStyle.Body}"
@@ -161,19 +164,19 @@
                     </dashboardControls:DashboardCard>
 
                     <!-- Duration and price display -->
-                    <dashboardControls:DashboardWidget Title="Details"
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Services_Details}"
                                                         State="{Binding State}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <dashboardControls:KPIValue Label="Duration" Value="{Binding Service.DurationMinutes, StringFormat={}{0} min}" Margin="0,0,32,0" />
-                            <dashboardControls:KPIValue Label="Price" Value="{Binding Service.Price}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, StringFormat={}{0} min}" Margin="0,0,32,0" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Price}" Value="{Binding Service.Price}" />
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 
                     <!-- Assigned specialists -->
-                    <dashboardControls:DashboardCard Title="Assigned Specialists" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Services_AssignedSpecialists}" Margin="0,16,0,0">
                         <StackPanel>
                             <ItemsControl ItemsSource="{Binding AssignedSpecialists}">
                                 <ItemsControl.ItemsPanel>
@@ -208,7 +211,7 @@
 
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <TextBox Text="{Binding NewSpecialistName, UpdateSourceTrigger=PropertyChanged}" Width="160" />
-                                <Button Content="Assign"
+                                <Button Content="{x:Static loc:Strings.Services_Assign}"
                                         Command="{Binding AssignSpecialistCommand}"
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="8,0,0,0" />

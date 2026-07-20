@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appAccounting="clr-namespace:Rojan.Desktop.Application.Accounting;assembly=Rojan.Desktop.Application">
+             xmlns:appAccounting="clr-namespace:Rojan.Desktop.Application.Accounting;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 18: Enterprise POS & Accounting Foundation. Same master-detail
@@ -34,9 +35,9 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Accounting" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Accounting_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Invoices, payments, and point-of-sale checkout."
+                       Text="{x:Static loc:Strings.Accounting_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
@@ -44,15 +45,15 @@
             <!-- Revenue KPI cards -->
             <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0" DataContext="{Binding Revenue}">
                 <StackPanel Orientation="Horizontal">
-                    <dashboardControls:KPIValue Label="Total Revenue" Value="{Binding TotalRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="Today" Value="{Binding TodayRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="Outstanding" Value="{Binding OutstandingBalance, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="Paid Invoices" Value="{Binding PaidInvoiceCount}" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_TotalRevenue}" Value="{Binding TotalRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_Today}" Value="{Binding TodayRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_Outstanding}" Value="{Binding OutstandingBalance, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_PaidInvoices}" Value="{Binding PaidInvoiceCount}" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
             <Button Grid.Row="2"
-                    Content="New Sale (POS)"
+                    Content="{x:Static loc:Strings.Accounting_NewSalePos}"
                     Command="{Binding OpenPosCheckoutCommand}"
                     Style="{StaticResource Rojan.Style.ButtonPrimary}"
                     HorizontalAlignment="Left"
@@ -63,7 +64,7 @@
                     Padding="16,10"
                     Margin="0,16,0,0">
                 <Grid>
-                    <TextBlock Text="Search by customer, booking, or notes..."
+                    <TextBlock Text="{x:Static loc:Strings.Accounting_SearchPlaceholder}"
                                Foreground="{StaticResource Rojan.Brush.HintText}"
                                FontFamily="{StaticResource Rojan.FontFamily.Default}"
                                FontSize="15"
@@ -90,7 +91,7 @@
             </Border>
 
             <dashboardControls:DashboardWidget Grid.Row="4"
-                                                Title="All Invoices"
+                                                Title="{x:Static loc:Strings.Accounting_AllInvoices}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
@@ -117,7 +118,7 @@
                                         </TextBlock>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1"
-                                               Text="{Binding Status}"
+                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                VerticalAlignment="Center" />
@@ -132,7 +133,7 @@
         <!-- Right: selected invoice's profile -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="Select an invoice to view its details."
+                <TextBlock Text="{x:Static loc:Strings.Accounting_SelectPrompt}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
@@ -165,22 +166,22 @@
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                 <Run Text="{Binding Invoice.IssuedAt, StringFormat={}{0:MMM d, yyyy}, Mode=OneWay}" />
                                 <Run Text=" · " />
-                                <Run Text="{Binding Invoice.Status, Mode=OneWay}" />
+                                <Run Text="{Binding Invoice.Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Invoice.BookingReference}"
                                        Style="{StaticResource Rojan.TextStyle.Body}"
                                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                                        Margin="0,12,0,0" />
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0">
-                                <Run Text="Subtotal: " /><Run Text="{Binding Invoice.Subtotal, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Subtotal}" /><Run Text=": " /><Run Text="{Binding Invoice.Subtotal, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                                <Run Text="Tax: " /><Run Text="{Binding Invoice.TaxAmount, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Tax}" /><Run Text=": " /><Run Text="{Binding Invoice.TaxAmount, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Subtitle}" Margin="0,4,0,0">
-                                <Run Text="Total: " /><Run Text="{Binding Invoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Total}" /><Run Text=": " /><Run Text="{Binding Invoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
-                            <Button Content="Cancel Invoice"
+                            <Button Content="{x:Static loc:Strings.Accounting_CancelInvoice}"
                                     Command="{Binding DataContext.CancelInvoiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                     HorizontalAlignment="Left"
@@ -189,7 +190,7 @@
                     </dashboardControls:DashboardCard>
 
                     <!-- Line items -->
-                    <dashboardControls:DashboardCard Title="Line Items" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Accounting_LineItems}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding Items}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAccounting:InvoiceItemDto}">
@@ -217,7 +218,7 @@
                     </dashboardControls:DashboardCard>
 
                     <!-- Payments -->
-                    <dashboardControls:DashboardCard Title="Payments" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Accounting_Payments}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding Payments}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAccounting:PaymentDto}">
@@ -227,7 +228,7 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Body}">
-                                            <Run Text="{Binding Method, Mode=OneWay}" />
+                                            <Run Text="{Binding Method, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                             <Run Text=" · " />
                                             <Run Text="{Binding PaidAt, StringFormat={}{0:MMM d, yyyy}, Mode=OneWay}" />
                                         </TextBlock>
@@ -242,7 +243,7 @@
                     </dashboardControls:DashboardCard>
 
                     <!-- Receipts -->
-                    <dashboardControls:DashboardCard Title="Receipts" Margin="0,16,0,32">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Accounting_Receipts}" Margin="0,16,0,32">
                         <ItemsControl ItemsSource="{Binding Receipts}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAccounting:ReceiptDto}">

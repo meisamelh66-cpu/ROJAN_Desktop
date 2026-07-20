@@ -117,6 +117,30 @@
   <data name="Dashboard_QuickAction_ViewReports" xml:space="preserve">
     <value>مشاهده گزارش‌ها</value>
   </data>
+  <data name="Dashboard_Kpi_TotalBookings" xml:space="preserve">
+    <value>مجموع رزروها</value>
+  </data>
+  <data name="Dashboard_Kpi_ActiveClients" xml:space="preserve">
+    <value>مشتریان فعال</value>
+  </data>
+  <data name="Dashboard_Kpi_RevenueMtd" xml:space="preserve">
+    <value>درآمد (ماه جاری)</value>
+  </data>
+  <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
+    <value>وظایف در انتظار</value>
+  </data>
+  <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
+    <value>رزرو جدید ایجاد شد</value>
+  </data>
+  <data name="Dashboard_Activity_ProfileUpdated" xml:space="preserve">
+    <value>پروفایل مشتری به‌روزرسانی شد</value>
+  </data>
+  <data name="Dashboard_Activity_PaymentReceived" xml:space="preserve">
+    <value>پرداخت دریافت شد</value>
+  </data>
+  <data name="Dashboard_Activity_TaskCompleted" xml:space="preserve">
+    <value>وظیفه تکمیل شد</value>
+  </data>
   <data name="Nav_Dashboard" xml:space="preserve">
     <value>داشبورد</value>
   </data>
@@ -404,5 +428,596 @@
   </data>
   <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
     <value>اخیراً استفاده‌شده</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>خروجی</value>
+  </data>
+  <data name="Common_SaveChanges" xml:space="preserve">
+    <value>ذخیره تغییرات</value>
+  </data>
+  <data name="Common_Daily" xml:space="preserve">
+    <value>روزانه</value>
+  </data>
+  <data name="Common_Weekly" xml:space="preserve">
+    <value>هفتگی</value>
+  </data>
+  <data name="Common_Monthly" xml:space="preserve">
+    <value>ماهانه</value>
+  </data>
+  <data name="Common_FullName" xml:space="preserve">
+    <value>نام کامل</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>تلفن</value>
+  </data>
+  <data name="Common_Notes" xml:space="preserve">
+    <value>یادداشت‌ها</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>توضیحات</value>
+  </data>
+  <data name="Common_Date" xml:space="preserve">
+    <value>تاریخ</value>
+  </data>
+  <data name="Common_Type" xml:space="preserve">
+    <value>نوع</value>
+  </data>
+  <data name="Common_Quantity" xml:space="preserve">
+    <value>تعداد</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Common_Category" xml:space="preserve">
+    <value>دسته‌بندی</value>
+  </data>
+  <data name="Common_Specialist" xml:space="preserve">
+    <value>متخصص</value>
+  </data>
+  <data name="Common_Service" xml:space="preserve">
+    <value>خدمت</value>
+  </data>
+  <data name="Common_Customer" xml:space="preserve">
+    <value>مشتری</value>
+  </data>
+  <data name="Common_Status" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="Common_Duration" xml:space="preserve">
+    <value>مدت‌زمان</value>
+  </data>
+  <data name="Common_MinutesShort" xml:space="preserve">
+    <value>دقیقه</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>بعدی</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>پایان</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>افزودن</value>
+  </data>
+  <data name="Common_Supplier" xml:space="preserve">
+    <value>تأمین‌کننده</value>
+  </data>
+  <data name="Common_Price" xml:space="preserve">
+    <value>قیمت</value>
+  </data>
+  <data name="Modules_NotImplementedYet" xml:space="preserve">
+    <value>این ماژول هنوز پیاده‌سازی نشده است.</value>
+  </data>
+  <data name="ExportDialog_Title" xml:space="preserve">
+    <value>خروجی گزارش</value>
+  </data>
+  <data name="ExportDialog_Format" xml:space="preserve">
+    <value>قالب</value>
+  </data>
+  <data name="Calendar_Title" xml:space="preserve">
+    <value>تقویم</value>
+  </data>
+  <data name="Calendar_Subtitle" xml:space="preserve">
+    <value>مشاهده دسترسی روزانه متخصص و مدیریت رزرو بازه‌های زمانی.</value>
+  </data>
+  <data name="Calendar_SpecialistAndDate" xml:space="preserve">
+    <value>متخصص و تاریخ</value>
+  </data>
+  <data name="Calendar_Availability" xml:space="preserve">
+    <value>بازه‌های در دسترس</value>
+  </data>
+  <data name="Analytics_Title" xml:space="preserve">
+    <value>تحلیل‌ها</value>
+  </data>
+  <data name="Analytics_Subtitle" xml:space="preserve">
+    <value>موتور شاخص‌های کلیدی عملکرد قابل استفاده مجدد و نمودارهای بین‌ماژولی.</value>
+  </data>
+  <data name="Analytics_KpiCards" xml:space="preserve">
+    <value>کارت‌های شاخص کلیدی عملکرد</value>
+  </data>
+  <data name="BookingWizard_Title" xml:space="preserve">
+    <value>رزرو جدید</value>
+  </data>
+  <data name="BookingWizard_Confirmed" xml:space="preserve">
+    <value>رزرو تأیید شد</value>
+  </data>
+  <data name="BookingWizard_StepWhoFor" xml:space="preserve">
+    <value>این رزرو برای چه کسی است؟</value>
+  </data>
+  <data name="BookingWizard_StepChooseService" xml:space="preserve">
+    <value>انتخاب خدمت</value>
+  </data>
+  <data name="BookingWizard_StepChooseSpecialist" xml:space="preserve">
+    <value>انتخاب متخصص</value>
+  </data>
+  <data name="BookingWizard_StepChooseDate" xml:space="preserve">
+    <value>انتخاب تاریخ</value>
+  </data>
+  <data name="BookingWizard_StepChooseTime" xml:space="preserve">
+    <value>انتخاب زمان</value>
+  </data>
+  <data name="BookingWizard_StepReview" xml:space="preserve">
+    <value>بازبینی رزرو</value>
+  </data>
+  <data name="BookingWizard_NoSlots" xml:space="preserve">
+    <value>هیچ بازه زمانی در دسترسی برای این متخصص در این تاریخ وجود ندارد.</value>
+  </data>
+  <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
+    <value>تأیید رزرو</value>
+  </data>
+  <data name="Specialists_Title" xml:space="preserve">
+    <value>متخصصان</value>
+  </data>
+  <data name="Specialists_Subtitle" xml:space="preserve">
+    <value>مدیریت فهرست تیم، وضعیت و مهارت‌ها.</value>
+  </data>
+  <data name="Specialists_AddSpecialist" xml:space="preserve">
+    <value>افزودن متخصص</value>
+  </data>
+  <data name="Specialists_JobTitle" xml:space="preserve">
+    <value>عنوان شغلی</value>
+  </data>
+  <data name="Specialists_SearchPlaceholder" xml:space="preserve">
+    <value>جستجو بر اساس نام، عنوان شغلی یا ایمیل...</value>
+  </data>
+  <data name="Specialists_AllSpecialists" xml:space="preserve">
+    <value>همه متخصصان</value>
+  </data>
+  <data name="Specialists_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده پروفایل، یک متخصص را انتخاب کنید.</value>
+  </data>
+  <data name="Specialists_Skills" xml:space="preserve">
+    <value>مهارت‌ها</value>
+  </data>
+  <data name="Specialists_AddSkill" xml:space="preserve">
+    <value>افزودن مهارت</value>
+  </data>
+  <data name="Services_Title" xml:space="preserve">
+    <value>خدمات</value>
+  </data>
+  <data name="Services_Subtitle" xml:space="preserve">
+    <value>مرور فهرست خدمات و مدیریت تخصیص متخصصان.</value>
+  </data>
+  <data name="Services_SearchPlaceholder" xml:space="preserve">
+    <value>جستجو بر اساس نام، دسته‌بندی یا توضیحات...</value>
+  </data>
+  <data name="Services_AllServices" xml:space="preserve">
+    <value>همه خدمات</value>
+  </data>
+  <data name="Services_Details" xml:space="preserve">
+    <value>جزئیات</value>
+  </data>
+  <data name="Services_AssignedSpecialists" xml:space="preserve">
+    <value>متخصصان تخصیص‌یافته</value>
+  </data>
+  <data name="Services_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده پروفایل، یک خدمت را انتخاب کنید.</value>
+  </data>
+  <data name="Services_Assign" xml:space="preserve">
+    <value>تخصیص</value>
+  </data>
+  <data name="Bookings_Title" xml:space="preserve">
+    <value>رزروها</value>
+  </data>
+  <data name="Bookings_Subtitle" xml:space="preserve">
+    <value>زمان‌بندی و پیگیری هر نوبت.</value>
+  </data>
+  <data name="Bookings_NewBookingWizard" xml:space="preserve">
+    <value>رزرو جدید (ویزارد)</value>
+  </data>
+  <data name="Bookings_NewBooking" xml:space="preserve">
+    <value>رزرو جدید</value>
+  </data>
+  <data name="Bookings_DurationMin" xml:space="preserve">
+    <value>مدت‌زمان (دقیقه)</value>
+  </data>
+  <data name="Bookings_AddBooking" xml:space="preserve">
+    <value>افزودن رزرو</value>
+  </data>
+  <data name="Bookings_AllBookings" xml:space="preserve">
+    <value>همه رزروها</value>
+  </data>
+  <data name="Bookings_When" xml:space="preserve">
+    <value>زمان</value>
+  </data>
+  <data name="Bookings_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده جزئیات، یک رزرو را انتخاب کنید.</value>
+  </data>
+  <data name="Bookings_Complete" xml:space="preserve">
+    <value>تکمیل</value>
+  </data>
+  <data name="Bookings_Details" xml:space="preserve">
+    <value>جزئیات رزرو</value>
+  </data>
+  <data name="Customers_Title" xml:space="preserve">
+    <value>مشتریان</value>
+  </data>
+  <data name="Customers_Subtitle" xml:space="preserve">
+    <value>جستجو، بررسی و پیگیری هر رابطه با مشتری.</value>
+  </data>
+  <data name="Customers_AddCustomer" xml:space="preserve">
+    <value>افزودن مشتری</value>
+  </data>
+  <data name="Customers_Company" xml:space="preserve">
+    <value>شرکت</value>
+  </data>
+  <data name="Customers_SearchPlaceholder" xml:space="preserve">
+    <value>جستجو بر اساس نام، شرکت یا ایمیل...</value>
+  </data>
+  <data name="Customers_AllCustomers" xml:space="preserve">
+    <value>همه مشتریان</value>
+  </data>
+  <data name="Customers_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده پروفایل ۳۶۰ درجه، یک مشتری را انتخاب کنید.</value>
+  </data>
+  <data name="Customers_Statistics" xml:space="preserve">
+    <value>آمار</value>
+  </data>
+  <data name="Customers_Tags" xml:space="preserve">
+    <value>برچسب‌ها</value>
+  </data>
+  <data name="Customers_Timeline" xml:space="preserve">
+    <value>جدول زمانی</value>
+  </data>
+  <data name="Customers_AddTag" xml:space="preserve">
+    <value>افزودن برچسب</value>
+  </data>
+  <data name="Customers_AddNote" xml:space="preserve">
+    <value>افزودن یادداشت</value>
+  </data>
+  <data name="Inventory_Title" xml:space="preserve">
+    <value>موجودی</value>
+  </data>
+  <data name="Inventory_Subtitle" xml:space="preserve">
+    <value>پیگیری محصولات، سطح موجودی و منابع تأمین‌کننده.</value>
+  </data>
+  <data name="Inventory_CategoriesSuppliers" xml:space="preserve">
+    <value>دسته‌بندی‌ها و تأمین‌کنندگان</value>
+  </data>
+  <data name="Inventory_NewProduct" xml:space="preserve">
+    <value>محصول جدید</value>
+  </data>
+  <data name="Inventory_Stock" xml:space="preserve">
+    <value>موجودی انبار</value>
+  </data>
+  <data name="Inventory_RecentTransactions" xml:space="preserve">
+    <value>تراکنش‌های اخیر</value>
+  </data>
+  <data name="Inventory_LinkedServices" xml:space="preserve">
+    <value>خدمات مرتبط</value>
+  </data>
+  <data name="Inventory_AllProducts" xml:space="preserve">
+    <value>همه محصولات</value>
+  </data>
+  <data name="Inventory_AddCategory" xml:space="preserve">
+    <value>افزودن دسته‌بندی</value>
+  </data>
+  <data name="Inventory_AddSupplier" xml:space="preserve">
+    <value>افزودن تأمین‌کننده</value>
+  </data>
+  <data name="Inventory_AddProduct" xml:space="preserve">
+    <value>افزودن محصول</value>
+  </data>
+  <data name="Inventory_RecordTransaction" xml:space="preserve">
+    <value>ثبت تراکنش</value>
+  </data>
+  <data name="Inventory_Map" xml:space="preserve">
+    <value>نگاشت</value>
+  </data>
+  <data name="Inventory_Sku" xml:space="preserve">
+    <value>کد کالا (SKU)</value>
+  </data>
+  <data name="Inventory_UnitPrice" xml:space="preserve">
+    <value>قیمت واحد</value>
+  </data>
+  <data name="Inventory_InitialQuantity" xml:space="preserve">
+    <value>تعداد اولیه</value>
+  </data>
+  <data name="Inventory_ReorderThreshold" xml:space="preserve">
+    <value>آستانه سفارش مجدد</value>
+  </data>
+  <data name="Inventory_SearchPlaceholder" xml:space="preserve">
+    <value>جستجو بر اساس نام، کد کالا، دسته‌بندی یا توضیحات...</value>
+  </data>
+  <data name="Inventory_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده پروفایل، یک محصول را انتخاب کنید.</value>
+  </data>
+  <data name="Inventory_LowStockWarning" xml:space="preserve">
+    <value>موجودی در حد یا کمتر از آستانه سفارش مجدد است.</value>
+  </data>
+  <data name="Inventory_TotalProducts" xml:space="preserve">
+    <value>تعداد کل محصولات</value>
+  </data>
+  <data name="Inventory_LowStockItems" xml:space="preserve">
+    <value>کالاهای کم‌موجود</value>
+  </data>
+  <data name="Inventory_OnHand" xml:space="preserve">
+    <value>موجودی فعلی</value>
+  </data>
+  <data name="Inventory_ReorderAt" xml:space="preserve">
+    <value>آستانه سفارش مجدد</value>
+  </data>
+  <data name="Accounting_Title" xml:space="preserve">
+    <value>حسابداری</value>
+  </data>
+  <data name="Accounting_Subtitle" xml:space="preserve">
+    <value>فاکتورها، پرداخت‌ها و صندوق فروش.</value>
+  </data>
+  <data name="Accounting_NewSalePos" xml:space="preserve">
+    <value>فروش جدید (صندوق فروش)</value>
+  </data>
+  <data name="Accounting_CancelInvoice" xml:space="preserve">
+    <value>لغو فاکتور</value>
+  </data>
+  <data name="Accounting_SearchPlaceholder" xml:space="preserve">
+    <value>جستجو بر اساس مشتری، رزرو یا یادداشت...</value>
+  </data>
+  <data name="Accounting_AllInvoices" xml:space="preserve">
+    <value>همه فاکتورها</value>
+  </data>
+  <data name="Accounting_LineItems" xml:space="preserve">
+    <value>اقلام فاکتور</value>
+  </data>
+  <data name="Accounting_Payments" xml:space="preserve">
+    <value>پرداخت‌ها</value>
+  </data>
+  <data name="Accounting_Receipts" xml:space="preserve">
+    <value>رسیدها</value>
+  </data>
+  <data name="Accounting_SelectPrompt" xml:space="preserve">
+    <value>برای مشاهده جزئیات، یک فاکتور را انتخاب کنید.</value>
+  </data>
+  <data name="Accounting_Subtotal" xml:space="preserve">
+    <value>جمع جزء</value>
+  </data>
+  <data name="Accounting_Tax" xml:space="preserve">
+    <value>مالیات</value>
+  </data>
+  <data name="Accounting_Total" xml:space="preserve">
+    <value>مجموع</value>
+  </data>
+  <data name="Accounting_TotalRevenue" xml:space="preserve">
+    <value>درآمد کل</value>
+  </data>
+  <data name="Accounting_Today" xml:space="preserve">
+    <value>امروز</value>
+  </data>
+  <data name="Accounting_Outstanding" xml:space="preserve">
+    <value>مانده پرداخت‌نشده</value>
+  </data>
+  <data name="Accounting_PaidInvoices" xml:space="preserve">
+    <value>فاکتورهای پرداخت‌شده</value>
+  </data>
+  <data name="Pos_NewSale" xml:space="preserve">
+    <value>فروش جدید</value>
+  </data>
+  <data name="Pos_PaymentRecorded" xml:space="preserve">
+    <value>پرداخت ثبت شد</value>
+  </data>
+  <data name="Pos_BookingOptional" xml:space="preserve">
+    <value>رزرو (اختیاری)</value>
+  </data>
+  <data name="Pos_PaymentMethod" xml:space="preserve">
+    <value>روش پرداخت</value>
+  </data>
+  <data name="Pos_AmountTendered" xml:space="preserve">
+    <value>مبلغ دریافتی</value>
+  </data>
+  <data name="Pos_AddProduct" xml:space="preserve">
+    <value>افزودن محصول</value>
+  </data>
+  <data name="Pos_AddService" xml:space="preserve">
+    <value>افزودن خدمت</value>
+  </data>
+  <data name="Pos_Cart" xml:space="preserve">
+    <value>سبد خرید</value>
+  </data>
+  <data name="Pos_ProceedToPayment" xml:space="preserve">
+    <value>ادامه به پرداخت</value>
+  </data>
+  <data name="Pos_Charge" xml:space="preserve">
+    <value>دریافت وجه</value>
+  </data>
+  <data name="Pos_AmountDue" xml:space="preserve">
+    <value>مبلغ قابل پرداخت</value>
+  </data>
+  <data name="Pos_ChangeDue" xml:space="preserve">
+    <value>باقیمانده</value>
+  </data>
+  <data name="Pos_Paid" xml:space="preserve">
+    <value>پرداخت‌شده</value>
+  </data>
+  <data name="Pos_Via" xml:space="preserve">
+    <value>از طریق</value>
+  </data>
+  <data name="Pos_InvoiceTotal" xml:space="preserve">
+    <value>مجموع فاکتور</value>
+  </data>
+  <data name="Reporting_Title" xml:space="preserve">
+    <value>گزارش‌ها</value>
+  </data>
+  <data name="Reporting_Subtitle" xml:space="preserve">
+    <value>اجرا، فیلتر، ذخیره و خروجی گرفتن از گزارش‌های تجمیعی از تمام ماژول‌ها.</value>
+  </data>
+  <data name="Reporting_Catalog" xml:space="preserve">
+    <value>فهرست گزارش‌ها</value>
+  </data>
+  <data name="Reporting_ReportViewer" xml:space="preserve">
+    <value>نمایشگر گزارش</value>
+  </data>
+  <data name="Reporting_SavedReports" xml:space="preserve">
+    <value>گزارش‌های ذخیره‌شده</value>
+  </data>
+  <data name="Reporting_RecentReports" xml:space="preserve">
+    <value>گزارش‌های اخیر</value>
+  </data>
+  <data name="Reporting_ReportCatalog" xml:space="preserve">
+    <value>فهرست گزارش‌ها</value>
+  </data>
+  <data name="Reporting_FilterPanel" xml:space="preserve">
+    <value>پنل فیلتر</value>
+  </data>
+  <data name="Reporting_Results" xml:space="preserve">
+    <value>نتایج</value>
+  </data>
+  <data name="Reporting_DateRangeStart" xml:space="preserve">
+    <value>شروع بازه تاریخ</value>
+  </data>
+  <data name="Reporting_DateRangeEnd" xml:space="preserve">
+    <value>پایان بازه تاریخ</value>
+  </data>
+  <data name="Reporting_RunPrompt" xml:space="preserve">
+    <value>برای مشاهده نتایج، یک گزارش را اجرا کنید.</value>
+  </data>
+  <data name="Reporting_AddFilter" xml:space="preserve">
+    <value>افزودن فیلتر</value>
+  </data>
+  <data name="Reporting_RunReport" xml:space="preserve">
+    <value>اجرای گزارش</value>
+  </data>
+  <data name="Reporting_Rerun" xml:space="preserve">
+    <value>اجرای مجدد</value>
+  </data>
+  <data name="Reporting_Unpin" xml:space="preserve">
+    <value>برداشتن پین</value>
+  </data>
+  <data name="Reporting_Pin" xml:space="preserve">
+    <value>پین کردن</value>
+  </data>
+  <data name="Reporting_Report" xml:space="preserve">
+    <value>گزارش</value>
+  </data>
+  <data name="Reporting_NoneSelected" xml:space="preserve">
+    <value>(انتخاب نشده - یکی را از فهرست انتخاب کنید)</value>
+  </data>
+  <data name="Reporting_Rows" xml:space="preserve">
+    <value>ردیف</value>
+  </data>
+  <data name="Enum_Available" xml:space="preserve">
+    <value>در دسترس</value>
+  </data>
+  <data name="Enum_Booked" xml:space="preserve">
+    <value>رزرو شده</value>
+  </data>
+  <data name="Enum_Unavailable" xml:space="preserve">
+    <value>غیرقابل دسترس</value>
+  </data>
+  <data name="Enum_Issued" xml:space="preserve">
+    <value>صادر شده</value>
+  </data>
+  <data name="Enum_PartiallyPaid" xml:space="preserve">
+    <value>پرداخت جزئی</value>
+  </data>
+  <data name="Enum_Paid" xml:space="preserve">
+    <value>پرداخت شده</value>
+  </data>
+  <data name="Enum_Cancelled" xml:space="preserve">
+    <value>لغو شده</value>
+  </data>
+  <data name="Enum_Active" xml:space="preserve">
+    <value>فعال</value>
+  </data>
+  <data name="Enum_Seasonal" xml:space="preserve">
+    <value>فصلی</value>
+  </data>
+  <data name="Enum_Discontinued" xml:space="preserve">
+    <value>متوقف شده</value>
+  </data>
+  <data name="Enum_OnLeave" xml:space="preserve">
+    <value>در مرخصی</value>
+  </data>
+  <data name="Enum_Inactive" xml:space="preserve">
+    <value>غیرفعال</value>
+  </data>
+  <data name="Enum_Lead" xml:space="preserve">
+    <value>سرنخ</value>
+  </data>
+  <data name="Enum_Prospect" xml:space="preserve">
+    <value>مشتری بالقوه</value>
+  </data>
+  <data name="Enum_Vip" xml:space="preserve">
+    <value>ویژه (VIP)</value>
+  </data>
+  <data name="Enum_Churned" xml:space="preserve">
+    <value>از دست رفته</value>
+  </data>
+  <data name="Enum_Pending" xml:space="preserve">
+    <value>در انتظار</value>
+  </data>
+  <data name="Enum_Confirmed" xml:space="preserve">
+    <value>تأیید شده</value>
+  </data>
+  <data name="Enum_InProgress" xml:space="preserve">
+    <value>در حال انجام</value>
+  </data>
+  <data name="Enum_Completed" xml:space="preserve">
+    <value>تکمیل شده</value>
+  </data>
+  <data name="Enum_NoShow" xml:space="preserve">
+    <value>عدم حضور</value>
+  </data>
+  <data name="Enum_OutOfStock" xml:space="preserve">
+    <value>ناموجود</value>
+  </data>
+  <data name="Enum_Cash" xml:space="preserve">
+    <value>نقدی</value>
+  </data>
+  <data name="Enum_Card" xml:space="preserve">
+    <value>کارتی</value>
+  </data>
+  <data name="Enum_BankTransfer" xml:space="preserve">
+    <value>انتقال بانکی</value>
+  </data>
+  <data name="Enum_GiftCard" xml:space="preserve">
+    <value>کارت هدیه</value>
+  </data>
+  <data name="Enum_StoreCredit" xml:space="preserve">
+    <value>اعتبار فروشگاهی</value>
+  </data>
+  <data name="Enum_Received" xml:space="preserve">
+    <value>دریافتی</value>
+  </data>
+  <data name="Enum_Sold" xml:space="preserve">
+    <value>فروخته شده</value>
+  </data>
+  <data name="Enum_Returned" xml:space="preserve">
+    <value>مرجوعی</value>
+  </data>
+  <data name="Enum_Damaged" xml:space="preserve">
+    <value>آسیب‌دیده</value>
+  </data>
+  <data name="Enum_Adjustment" xml:space="preserve">
+    <value>اصلاحیه</value>
+  </data>
+  <data name="Enum_Trial" xml:space="preserve">
+    <value>آزمایشی</value>
+  </data>
+  <data name="Enum_Suspended" xml:space="preserve">
+    <value>معلق</value>
   </data>
 </root>

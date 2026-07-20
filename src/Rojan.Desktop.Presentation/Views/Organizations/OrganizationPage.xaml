@@ -338,7 +338,7 @@
                                                 <Run Text="{Binding Address, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

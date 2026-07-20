@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appBookings="clr-namespace:Rojan.Desktop.Application.Bookings;assembly=Rojan.Desktop.Application">
+             xmlns:appBookings="clr-namespace:Rojan.Desktop.Application.Bookings;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 11: Booking Module Foundation. Same master-detail shape as
@@ -29,21 +30,21 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Bookings" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Bookings_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Schedule and track every appointment."
+                       Text="{x:Static loc:Strings.Bookings_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
             <Button Grid.Row="0"
-                    Content="New Booking (Wizard)"
+                    Content="{x:Static loc:Strings.Bookings_NewBookingWizard}"
                     Command="{Binding OpenWizardCommand}"
                     Style="{StaticResource Rojan.Style.ButtonPrimary}"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top" />
 
             <!-- New Booking: the Create command's one Presentation entry point -->
-            <dashboardControls:DashboardCard Grid.Row="1" Title="New Booking" Margin="0,24,0,0">
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Bookings_NewBooking}" Margin="0,24,0,0">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -57,20 +58,20 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock Text="Customer" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Customer}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewBookingCustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock Text="Service" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Service}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewBookingServiceName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
-                            <TextBlock Text="Specialist" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Specialist}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding NewBookingSpecialistName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
-                            <TextBlock Text="Duration (min)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Bookings_DurationMin}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <ComboBox ItemsSource="{Binding AvailableDurations}"
                                       SelectedItem="{Binding NewBookingDurationMinutes, Mode=TwoWay}"
                                       Margin="0,4,0,0" />
@@ -78,11 +79,11 @@
                     </Grid>
 
                     <StackPanel Margin="0,12,0,0">
-                        <TextBlock Text="Date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <DatePicker SelectedDate="{Binding NewBookingDate, Mode=TwoWay}" Margin="0,4,0,0" HorizontalAlignment="Left" Width="160" />
                     </StackPanel>
 
-                    <Button Content="Add Booking"
+                    <Button Content="{x:Static loc:Strings.Bookings_AddBooking}"
                             Command="{Binding CreateBookingCommand}"
                             Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
@@ -91,7 +92,7 @@
             </dashboardControls:DashboardCard>
 
             <dashboardControls:DashboardWidget Grid.Row="2"
-                                                Title="All Bookings"
+                                                Title="{x:Static loc:Strings.Bookings_AllBookings}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
@@ -118,7 +119,7 @@
                                         </TextBlock>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1"
-                                               Text="{Binding Status}"
+                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                VerticalAlignment="Center" />
@@ -131,9 +132,9 @@
         </Grid>
 
         <!-- Right: selected booking's details + status actions -->
-        <dashboardControls:DashboardCard Grid.Column="1" Title="Booking Details" VerticalAlignment="Top">
+        <dashboardControls:DashboardCard Grid.Column="1" Title="{x:Static loc:Strings.Bookings_Details}" VerticalAlignment="Top">
             <Grid>
-                <TextBlock Text="Select a booking to view details."
+                <TextBlock Text="{x:Static loc:Strings.Bookings_SelectPrompt}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
@@ -168,23 +169,28 @@
 
                     <StackPanel Margin="0,20,0,0">
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                            <Run Text="Specialist: " />
+                            <Run Text="{x:Static loc:Strings.Common_Specialist}" />
+                            <Run Text=": " />
                             <Run Text="{Binding SpecialistName, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                            <Run Text="When: " />
+                            <Run Text="{x:Static loc:Strings.Bookings_When}" />
+                            <Run Text=": " />
                             <Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                            <Run Text="Duration: " />
+                            <Run Text="{x:Static loc:Strings.Common_Duration}" />
+                            <Run Text=": " />
                             <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
-                            <Run Text=" min" />
+                            <Run Text=" " />
+                            <Run Text="{x:Static loc:Strings.Common_MinutesShort}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
                                    Foreground="{StaticResource Rojan.Brush.MutedText}"
                                    Margin="0,4,0,0">
-                            <Run Text="Status: " />
-                            <Run Text="{Binding Status, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Common_Status}" />
+                            <Run Text=": " />
+                            <Run Text="{Binding Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                         </TextBlock>
                     </StackPanel>
 
@@ -195,15 +201,15 @@
                                Margin="0,20,0,0" />
 
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                        <Button Content="Confirm"
+                        <Button Content="{x:Static loc:Strings.Common_Confirm}"
                                 Command="{Binding DataContext.ConfirmBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 Margin="0,0,8,0" />
-                        <Button Content="Complete"
+                        <Button Content="{x:Static loc:Strings.Bookings_Complete}"
                                 Command="{Binding DataContext.CompleteBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 Margin="0,0,8,0" />
-                        <Button Content="Cancel"
+                        <Button Content="{x:Static loc:Strings.Common_Cancel}"
                                 Command="{Binding DataContext.CancelBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}" />
                     </StackPanel>

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:accountingVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Accounting"
              xmlns:appAccounting="clr-namespace:Rojan.Desktop.Application.Accounting;assembly=Rojan.Desktop.Application"
-             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters">
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 18: Enterprise POS & Accounting Foundation. Shown in Shell's
@@ -48,7 +49,7 @@
                 <!-- Footer buttons -->
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="New Sale" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+            <TextBlock Grid.Row="0" Text="{x:Static loc:Strings.Pos_NewSale}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
 
             <!-- Step indicator: 3 segments, accent-filled up to and including the current step. -->
             <Grid Grid.Row="1" Margin="0,16,0,0">
@@ -128,19 +129,19 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <TextBlock Text="Customer" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBlock Text="{x:Static loc:Strings.Common_Customer}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <ComboBox ItemsSource="{Binding Customers}"
                                   SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                                   DisplayMemberPath="FullName"
                                   Margin="0,4,0,0" />
 
-                        <TextBlock Text="Booking (optional)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_BookingOptional}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
                         <ComboBox ItemsSource="{Binding Bookings}"
                                   SelectedItem="{Binding SelectedBooking, Mode=TwoWay}"
                                   DisplayMemberPath="Reference"
                                   Margin="0,4,0,0" />
 
-                        <TextBlock Text="Add a product" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_AddProduct}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -154,10 +155,10 @@
                                       SelectedItem="{Binding SelectedProductToAdd, Mode=TwoWay}"
                                       DisplayMemberPath="Name" />
                             <TextBox Grid.Column="2" Text="{Binding ProductQuantityToAdd, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button Grid.Column="4" Content="Add" Command="{Binding AddProductCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            <Button Grid.Column="4" Content="{x:Static loc:Strings.Common_Add}" Command="{Binding AddProductCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
                         </Grid>
 
-                        <TextBlock Text="Add a service" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_AddService}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -171,10 +172,10 @@
                                       SelectedItem="{Binding SelectedServiceToAdd, Mode=TwoWay}"
                                       DisplayMemberPath="Name" />
                             <TextBox Grid.Column="2" Text="{Binding ServiceQuantityToAdd, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button Grid.Column="4" Content="Add" Command="{Binding AddServiceCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            <Button Grid.Column="4" Content="{x:Static loc:Strings.Common_Add}" Command="{Binding AddServiceCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
                         </Grid>
 
-                        <TextBlock Text="Cart" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_Cart}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,16,0,8" />
                         <ItemsControl ItemsSource="{Binding Cart}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type accountingVm:PosCartLine}">
@@ -213,13 +214,13 @@
 
                         <StackPanel Margin="0,8,0,0">
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                                <Run Text="Subtotal: " /><Run Text="{Binding Subtotal, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Subtotal}" /><Run Text=": " /><Run Text="{Binding Subtotal, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                                <Run Text="Tax: " /><Run Text="{Binding TaxAmount, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Tax}" /><Run Text=": " /><Run Text="{Binding TaxAmount, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Subtitle}" Margin="0,4,0,0">
-                                <Run Text="Total: " /><Run Text="{Binding Total, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Accounting_Total}" /><Run Text=": " /><Run Text="{Binding Total, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -238,19 +239,19 @@
                         </StackPanel.Style>
 
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8">
-                            <Run Text="Amount due: " /><Run Text="{Binding CreatedInvoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Pos_AmountDue}" /><Run Text=": " /><Run Text="{Binding CreatedInvoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
                         </TextBlock>
 
-                        <TextBlock Text="Payment method" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_PaymentMethod}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
                         <ComboBox ItemsSource="{Binding AvailablePaymentMethods}"
                                   SelectedItem="{Binding SelectedPaymentMethod, Mode=TwoWay}"
                                   Margin="0,4,0,0" />
 
-                        <TextBlock Text="Amount tendered" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
+                        <TextBlock Text="{x:Static loc:Strings.Pos_AmountTendered}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
                         <TextBox Text="{Binding AmountTendered, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
 
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0">
-                            <Run Text="Change due: " /><Run Text="{Binding ChangeDue, StringFormat={}{0:C}, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Pos_ChangeDue}" /><Run Text=": " /><Run Text="{Binding ChangeDue, StringFormat={}{0:C}, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
 
@@ -272,20 +273,20 @@
                                        FontSize="20"
                                        Foreground="{StaticResource Rojan.Brush.Success}"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="Payment recorded" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static loc:Strings.Pos_PaymentRecorded}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                            <Run Text="Customer: " /><Run Text="{Binding CreatedInvoice.CustomerName, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Common_Customer}" /><Run Text=": " /><Run Text="{Binding CreatedInvoice.CustomerName, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                            <Run Text="Paid: " /><Run Text="{Binding RecordedPayment.Amount, StringFormat={}{0:C}, Mode=OneWay}" />
-                            <Run Text=" via " /><Run Text="{Binding RecordedPayment.Method, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Pos_Paid}" /><Run Text=": " /><Run Text="{Binding RecordedPayment.Amount, StringFormat={}{0:C}, Mode=OneWay}" />
+                            <Run Text=" " /><Run Text="{x:Static loc:Strings.Pos_Via}" /><Run Text=" " /><Run Text="{Binding RecordedPayment.Method, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                            <Run Text="Invoice total: " /><Run Text="{Binding CreatedInvoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Pos_InvoiceTotal}" /><Run Text=": " /><Run Text="{Binding CreatedInvoice.Total, StringFormat={}{0:C}, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                            <Run Text="Change due: " /><Run Text="{Binding ChangeDue, StringFormat={}{0:C}, Mode=OneWay}" />
+                            <Run Text="{x:Static loc:Strings.Pos_ChangeDue}" /><Run Text=": " /><Run Text="{Binding ChangeDue, StringFormat={}{0:C}, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
 
@@ -293,7 +294,7 @@
             </ScrollViewer>
 
             <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Common_Cancel}" Command="{Binding CancelCommand}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -307,7 +308,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Proceed to Payment" Command="{Binding ProceedToPaymentCommand}">
+                <Button Content="{x:Static loc:Strings.Pos_ProceedToPayment}" Command="{Binding ProceedToPaymentCommand}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -319,7 +320,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Charge" Command="{Binding ChargeCommand}">
+                <Button Content="{x:Static loc:Strings.Pos_Charge}" Command="{Binding ChargeCommand}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -331,7 +332,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Done" Command="{Binding DoneCommand}">
+                <Button Content="{x:Static loc:Strings.Common_Done}" Command="{Binding DoneCommand}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
                             <Setter Property="Visibility" Value="Collapsed" />

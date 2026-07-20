@@ -5,7 +5,13 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
              xmlns:appDashboard="clr-namespace:Rojan.Desktop.Application.Dashboard;assembly=Rojan.Desktop.Application"
-             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters">
+
+    <UserControl.Resources>
+        <converters:KpiLabelConverter x:Key="KpiLabelConverter" />
+        <converters:ActivityDescriptionConverter x:Key="ActivityDescriptionConverter" />
+    </UserControl.Resources>
 
     <!--
         Phase 06B: every placeholder Border/Style block from Phase 06A is
@@ -53,7 +59,7 @@
                             <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
                                 <dashboardControls:DashboardCard Width="200" Margin="0,0,16,16">
                                     <StackPanel>
-                                        <dashboardControls:KPIValue Label="{Binding Label}" Value="{Binding Value}" />
+                                        <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}" Value="{Binding Value}" />
                                         <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
                                                                            Percentage="{Binding TrendPercentage}"
                                                                            Margin="0,8,0,0" />
@@ -99,7 +105,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
-                                               Text="{Binding Description}"
+                                               Text="{Binding Converter={StaticResource ActivityDescriptionConverter}}"
                                                Style="{StaticResource Rojan.TextStyle.Body}"
                                                Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                                     <TextBlock Grid.Column="1"

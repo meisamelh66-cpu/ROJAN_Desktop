@@ -5,7 +5,8 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:analyticsControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Analytics"
              xmlns:analyticsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Analytics"
-             xmlns:appReporting="clr-namespace:Rojan.Desktop.Application.Reporting;assembly=Rojan.Desktop.Application">
+             xmlns:appReporting="clr-namespace:Rojan.Desktop.Application.Reporting;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 20: Enterprise Reporting & Analytics Platform - Analytics
@@ -30,15 +31,15 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Analytics" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Analytics_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Reusable KPI Engine and cross-module charts."
+                       Text="{x:Static loc:Strings.Analytics_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
-                <Button Content="Daily" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Daily}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Common_Daily}" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Daily}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -51,7 +52,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Weekly" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Weekly}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Common_Weekly}" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Weekly}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -64,7 +65,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Monthly" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Monthly}">
+                <Button Content="{x:Static loc:Strings.Common_Monthly}" Command="{Binding SelectPeriodCommand}" CommandParameter="{x:Static appReporting:AnalyticsPeriod.Monthly}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -81,7 +82,7 @@
 
             <!-- KPI Cards -->
             <dashboardControls:DashboardWidget Grid.Row="2"
-                                                Title="KPI Cards"
+                                                Title="{x:Static loc:Strings.Analytics_KpiCards}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
-             xmlns:appCalendar="clr-namespace:Rojan.Desktop.Application.Calendar;assembly=Rojan.Desktop.Application">
+             xmlns:appCalendar="clr-namespace:Rojan.Desktop.Application.Calendar;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 14: Calendar & Availability Engine Foundation. Unlike every
@@ -24,19 +25,19 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <controls:SectionHeader Grid.Row="0" Title="Calendar" />
+        <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Calendar_Title}" />
         <TextBlock Grid.Row="0"
-                   Text="View a specialist's daily availability and manage slot reservations."
+                   Text="{x:Static loc:Strings.Calendar_Subtitle}"
                    Style="{StaticResource Rojan.TextStyle.Caption}"
                    Foreground="{StaticResource Rojan.Brush.MutedText}"
                    Margin="0,44,0,0" />
 
         <!-- Specialist + date picker -->
-        <dashboardControls:DashboardCard Grid.Row="1" Title="Specialist &amp; Date" Margin="0,24,0,0">
+        <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Calendar_SpecialistAndDate}" Margin="0,24,0,0">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,24,0">
-                        <TextBlock Text="Specialist" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBlock Text="{x:Static loc:Strings.Common_Specialist}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <ComboBox ItemsSource="{Binding Specialists}"
                                   SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
                                   DisplayMemberPath="Name"
@@ -44,7 +45,7 @@
                                   Margin="0,4,0,0" />
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock Text="Date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <DatePicker SelectedDate="{Binding SelectedDate, Mode=TwoWay}" Width="160" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
@@ -57,7 +58,7 @@
 
         <!-- Availability grid -->
         <dashboardControls:DashboardWidget Grid.Row="2"
-                                            Title="Availability"
+                                            Title="{x:Static loc:Strings.Calendar_Availability}"
                                             State="{Binding State}"
                                             ErrorMessage="{Binding ErrorMessage}"
                                             RetryCommand="{Binding LoadCommand}"
@@ -93,7 +94,7 @@
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.ButtonText}"
                                                HorizontalAlignment="Center" />
-                                    <TextBlock Text="{Binding Status}"
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
                                                Foreground="{StaticResource Rojan.Brush.ButtonText}"
                                                HorizontalAlignment="Center" />

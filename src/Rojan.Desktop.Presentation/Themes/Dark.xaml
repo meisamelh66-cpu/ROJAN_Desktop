@@ -34,6 +34,8 @@
   -->
 
   <Color x:Key="Rojan.Color.Background">#FF15192A</Color>
+  <!-- Enterprise UX/UI Refinement pass: mirrors Light.xaml's new Background/Workspace split - a step brighter than Background, one step below Card, so the workspace content area still reads as distinct chrome-vs-canvas in dark mode too. -->
+  <Color x:Key="Rojan.Color.Workspace">#FF181D30</Color>
   <Color x:Key="Rojan.Color.Surface">#FF1F2438</Color>
   <Color x:Key="Rojan.Color.Card">#FF1F2438</Color>
   <Color x:Key="Rojan.Color.SurfaceSecondary">#FF1A1F32</Color>
@@ -54,6 +56,7 @@
   <Color x:Key="Rojan.Color.Success">#FF3FB950</Color>
 
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Workspace" Color="{StaticResource Rojan.Color.Workspace}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
   <SolidColorBrush x:Key="Rojan.Brush.Card" Color="{StaticResource Rojan.Color.Card}" />
   <SolidColorBrush x:Key="Rojan.Brush.SurfaceSecondary" Color="{StaticResource Rojan.Color.SurfaceSecondary}" />

@@ -17,6 +17,13 @@
         export, clear); Settings hosts the Model Selector, feature toggles,
         Usage Dashboard, and Prompt Templates. Chat never blocks the UI
         thread - IsSending disables Send while the (Mock) provider replies.
+
+        Enterprise UX/UI Refinement pass: out of scope for this pass. This
+        page and HrPage.xaml are the two largest hardcoded-string surfaces
+        in the app (~150 combined instances across 6 sections each); full
+        localization is deferred to a follow-up pass, consistent with the
+        Phase 22/22A precedent of documenting scope boundaries rather than
+        silently skipping modules.
     -->
     <Grid Margin="32">
         <Grid.RowDefinitions>
