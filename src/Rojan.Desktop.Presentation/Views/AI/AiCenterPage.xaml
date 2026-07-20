@@ -4,7 +4,8 @@
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:aiVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.AI"
-             xmlns:appAi="clr-namespace:Rojan.Desktop.Application.AI;assembly=Rojan.Desktop.Application">
+             xmlns:appAi="clr-namespace:Rojan.Desktop.Application.AI;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 21: ROJAN AI Center. Same master-shape as Reporting/Analytics -
@@ -18,12 +19,11 @@
         Usage Dashboard, and Prompt Templates. Chat never blocks the UI
         thread - IsSending disables Send while the (Mock) provider replies.
 
-        Enterprise UX/UI Refinement pass: out of scope for this pass. This
-        page and HrPage.xaml are the two largest hardcoded-string surfaces
-        in the app (~150 combined instances across 6 sections each); full
-        localization is deferred to a follow-up pass, consistent with the
-        Phase 22/22A precedent of documenting scope boundaries rather than
-        silently skipping modules.
+        Localization Audit completion pass: fully localized (Strings.*
+        for every literal, Rojan.Converter.EnumLabel for every enum
+        display) - previously deferred as this app's largest
+        hardcoded-string surface alongside HrPage.xaml; see
+        docs/phases/phase-24-localization-audit-completion.md.
     -->
     <Grid Margin="32">
         <Grid.RowDefinitions>
@@ -32,15 +32,15 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <controls:SectionHeader Grid.Row="0" Title="AI Center" />
+        <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Ai_Title}" />
         <TextBlock Grid.Row="0"
-                   Text="Business Assistant, Insights, Recommendations, and Conversation History across every module."
+                   Text="{x:Static loc:Strings.Ai_Subtitle}"
                    Style="{StaticResource Rojan.TextStyle.Caption}"
                    Foreground="{StaticResource Rojan.Brush.MutedText}"
                    Margin="0,44,0,0" />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
-            <Button Content="Home" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Home}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Ai_Section_Home}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Home}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -53,7 +53,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Chat" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Chat}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Ai_Section_Chat}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Chat}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -66,7 +66,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Insights" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Insights}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Ai_Section_Insights}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Insights}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -79,7 +79,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Recommendations" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Recommendations}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Ai_Section_Recommendations}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Recommendations}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -92,7 +92,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="History" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.History}" Margin="0,0,8,0">
+            <Button Content="{x:Static loc:Strings.Ai_Section_History}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.History}" Margin="0,0,8,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -105,7 +105,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Content="Settings" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Settings}">
+            <Button Content="{x:Static loc:Strings.Ai_Section_Settings}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static aiVm:AiCenterSection.Settings}">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                         <Style.Triggers>
@@ -136,7 +136,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardWidget Title="Business Health Score" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Ai_BusinessHealthScore}" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
                         <StackPanel DataContext="{Binding HealthScore}">
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Display}">
                                 <Run Text="{Binding OverallScore, Mode=OneWay, StringFormat='{}{0:N1}'}" />
@@ -164,7 +164,7 @@
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 
-                    <dashboardControls:DashboardCard Title="Daily Summary" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_DailySummary}" Margin="0,16,0,0">
                         <StackPanel DataContext="{Binding DailySummary}">
                             <TextBlock Text="{Binding NarrativeText}" Style="{StaticResource Rojan.TextStyle.Caption}" TextWrapping="Wrap" />
                             <ItemsControl ItemsSource="{Binding Highlights}" Margin="0,8,0,0">
@@ -177,7 +177,7 @@
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Smart Notifications" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_SmartNotifications}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding Notifications}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:SmartNotificationDto}">
@@ -188,7 +188,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Message}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Severity}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Severity, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" Margin="8,0,0,0" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -210,7 +210,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Business Assistant">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_BusinessAssistant}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -224,7 +224,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="{Binding CurrentSessionTitle}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Content="New Conversation" Command="{Binding NewConversationCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                                <Button Grid.Column="1" Content="{x:Static loc:Strings.Ai_NewConversation}" Command="{Binding NewConversationCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
                             </Grid>
 
                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Messages}" MaxHeight="420">
@@ -232,7 +232,7 @@
                                     <DataTemplate DataType="{x:Type appAi:ConversationMessageDto}">
                                         <Border Style="{StaticResource Rojan.Style.Panel}" Padding="12,8" Margin="0,0,0,8">
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Role}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                                <TextBlock Text="{Binding Role, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                                 <TextBlock Text="{Binding Content}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Border>
@@ -246,7 +246,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding ChatInputText, UpdateSourceTrigger=PropertyChanged}" />
-                                <Button Grid.Column="1" Content="Send" Command="{Binding SendMessageCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Margin="8,0,0,0" />
+                                <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Send}" Command="{Binding SendMessageCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Margin="8,0,0,0" />
                             </Grid>
                         </Grid>
                     </dashboardControls:DashboardCard>
@@ -265,7 +265,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardWidget Title="Insight Dashboard" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Ai_InsightDashboard}" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
                         <ItemsControl ItemsSource="{Binding Insights}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:AIInsightDto}">
@@ -280,8 +280,8 @@
                                                 <TextBlock Text="{Binding Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                                <TextBlock Text="{Binding Severity}" Style="{StaticResource Rojan.TextStyle.Caption}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding Category, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                                <TextBlock Text="{Binding Severity, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" FontWeight="SemiBold" HorizontalAlignment="Right" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -304,7 +304,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Recommendations Panel">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_RecommendationsPanel}">
                         <ItemsControl ItemsSource="{Binding Recommendations}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:AIRecommendationDto}">
@@ -316,7 +316,7 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Priority}" Style="{StaticResource Rojan.TextStyle.Caption}" FontWeight="SemiBold" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Priority, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" FontWeight="SemiBold" />
                                             </Grid>
                                             <TextBlock Text="{Binding Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                             <TextBlock Text="{Binding SuggestedAction}" Style="{StaticResource Rojan.TextStyle.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
@@ -327,7 +327,7 @@
                         </ItemsControl>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Action Center - Suggested Tasks" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_ActionCenterSuggestedTasks}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding SuggestedTasks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:SuggestedTaskDto}">
@@ -340,9 +340,9 @@
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" />
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                                    <Run Text="{Binding Category, Mode=OneWay}" />
+                                                    <Run Text="{Binding Category, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                     <Run Text=" · " />
-                                                    <Run Text="{Binding Priority, Mode=OneWay}" />
+                                                    <Run Text="{Binding Priority, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                 </TextBlock>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding SuggestedDueDate, Mode=OneWay, StringFormat='{}{0:d}'}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
@@ -367,7 +367,7 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Search Conversations">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_SearchConversations}">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -376,8 +376,8 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-                                <Button Grid.Column="1" Content="Search" Command="{Binding SearchHistoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
-                                <Button Grid.Column="2" Content="Clear History" Command="{Binding ClearHistoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
+                                <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Search}" Command="{Binding SearchHistoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
+                                <Button Grid.Column="2" Content="{x:Static loc:Strings.Ai_ClearHistory}" Command="{Binding ClearHistoryCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
                             </Grid>
                             <ItemsControl ItemsSource="{Binding SearchResults}" Margin="0,12,0,0">
                                 <ItemsControl.ItemTemplate>
@@ -396,7 +396,7 @@
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Pinned Conversations" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_PinnedConversations}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding PinnedSessions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:ConversationSessionDto}">
@@ -417,11 +417,11 @@
                                                 <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding UpdatedAt, Mode=OneWay, StringFormat='{}{0:g}'}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
-                                            <Button Grid.Column="1" Content="Export" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
+                                            <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Export}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
                                                     Command="{Binding DataContext.ExportSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                            <Button Grid.Column="2" Content="Unpin" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
+                                            <Button Grid.Column="2" Content="{x:Static loc:Strings.Reporting_Unpin}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
                                                     Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                            <Button Grid.Column="3" Content="Delete" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                            <Button Grid.Column="3" Content="{x:Static loc:Strings.Common_Delete}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Command="{Binding DataContext.DeleteSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                         </Grid>
                                     </Border>
@@ -430,7 +430,7 @@
                         </ItemsControl>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Recent Conversations" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_RecentConversations}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding RecentSessions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:ConversationSessionDto}">
@@ -451,11 +451,11 @@
                                                 <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding UpdatedAt, Mode=OneWay, StringFormat='{}{0:g}'}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
-                                            <Button Grid.Column="1" Content="Export" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
+                                            <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Export}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
                                                     Command="{Binding DataContext.ExportSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                            <Button Grid.Column="2" Content="Pin" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
+                                            <Button Grid.Column="2" Content="{x:Static loc:Strings.Reporting_Pin}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0"
                                                     Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                            <Button Grid.Column="3" Content="Delete" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                            <Button Grid.Column="3" Content="{x:Static loc:Strings.Common_Delete}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                     Command="{Binding DataContext.DeleteSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                         </Grid>
                                     </Border>
@@ -464,7 +464,7 @@
                         </ItemsControl>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Conversation Viewer - Export Preview" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_ExportPreview}" Margin="0,16,0,0">
                         <TextBox Text="{Binding ExportPreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="240" VerticalScrollBarVisibility="Auto" />
                     </dashboardControls:DashboardCard>
                 </StackPanel>
@@ -482,32 +482,33 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <dashboardControls:DashboardCard Title="Feature Toggles">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_FeatureToggles}">
                         <StackPanel>
-                            <CheckBox Content="Insights" IsChecked="{Binding InsightsEnabled}" Margin="0,0,0,8" />
-                            <CheckBox Content="Smart Notifications" IsChecked="{Binding SmartNotificationsEnabled}" Margin="0,0,0,8" />
-                            <CheckBox Content="Daily Summary" IsChecked="{Binding DailySummaryEnabled}" Margin="0,0,0,8" />
-                            <CheckBox Content="Auto-Generate Recommendations" IsChecked="{Binding AutoGenerateRecommendations}" Margin="0,0,0,8" />
-                            <Button Content="Save Settings" Command="{Binding SaveSettingsCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" />
+                            <CheckBox Content="{x:Static loc:Strings.Ai_Section_Insights}" IsChecked="{Binding InsightsEnabled}" Margin="0,0,0,8" />
+                            <CheckBox Content="{x:Static loc:Strings.Ai_SmartNotifications}" IsChecked="{Binding SmartNotificationsEnabled}" Margin="0,0,0,8" />
+                            <CheckBox Content="{x:Static loc:Strings.Ai_DailySummary}" IsChecked="{Binding DailySummaryEnabled}" Margin="0,0,0,8" />
+                            <CheckBox Content="{x:Static loc:Strings.Ai_AutoGenerateRecommendations}" IsChecked="{Binding AutoGenerateRecommendations}" Margin="0,0,0,8" />
+                            <Button Content="{x:Static loc:Strings.Ai_SaveSettings}" Command="{Binding SaveSettingsCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" />
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Model Selector" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_ModelSelector}" Margin="0,16,0,0">
                         <StackPanel>
-                            <TextBlock Text="Provider" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Ai_Provider}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <ComboBox ItemsSource="{Binding AvailableProviderTypes}" SelectedItem="{Binding SelectedProviderType}" Margin="0,4,0,12" />
-                            <TextBlock Text="Model Id" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="{x:Static loc:Strings.Ai_ModelId}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding ModelIdInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" />
-                            <CheckBox Content="Enabled" IsChecked="{Binding IsProviderEnabled}" Margin="0,0,0,12" />
-                            <Button Content="Save Model Configuration" Command="{Binding SaveConfigurationCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" />
+                            <CheckBox Content="{x:Static loc:Strings.Common_Enabled}" IsChecked="{Binding IsProviderEnabled}" Margin="0,0,0,12" />
+                            <Button Content="{x:Static loc:Strings.Ai_SaveModelConfiguration}" Command="{Binding SaveConfigurationCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" />
                             <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,8,0,0" />
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Usage Dashboard" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_UsageDashboard}" Margin="0,16,0,0">
                         <StackPanel>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                                <Run Text="Total tokens used: " />
+                                <Run Text="{x:Static loc:Strings.Ai_TotalTokensUsed}" />
+                                <Run Text=": " />
                                 <Run Text="{Binding TotalTokens, Mode=OneWay}" FontWeight="SemiBold" />
                             </TextBlock>
                             <ItemsControl ItemsSource="{Binding UsageHistory}" Margin="0,8,0,0">
@@ -516,10 +517,11 @@
                                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,0,0,4">
                                             <Run Text="{Binding RecordedAt, Mode=OneWay, StringFormat='{}{0:g}'}" />
                                             <Run Text=" · " />
-                                            <Run Text="{Binding ProviderType, Mode=OneWay}" />
+                                            <Run Text="{Binding ProviderType, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                             <Run Text=" · " />
                                             <Run Text="{Binding TotalTokens, Mode=OneWay}" />
-                                            <Run Text=" tokens" />
+                                            <Run Text=" " />
+                                            <Run Text="{x:Static loc:Strings.Ai_Tokens}" />
                                         </TextBlock>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -527,7 +529,7 @@
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Prompt Templates" Margin="0,16,0,0">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_PromptTemplates}" Margin="0,16,0,0">
                         <ItemsControl ItemsSource="{Binding Templates}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAi:PromptTemplateDto}">
@@ -539,7 +541,7 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Category, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </Grid>
                                             <TextBlock Text="{Binding Body}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,4,0,0" />
                                         </StackPanel>

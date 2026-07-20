@@ -11,6 +11,7 @@
     instance - see Converters/EnumLabelConverter.cs for why this exists.
   -->
   <converters:EnumLabelConverter x:Key="Rojan.Converter.EnumLabel" />
+  <converters:MinutesSuffixConverter x:Key="Rojan.Converter.MinutesSuffix" />
 
   <!--
     Phase 16: Microsoft Fluent 2 Design System Integration - foundation

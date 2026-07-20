@@ -492,6 +492,15 @@
   <data name="Common_Add" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="Common_Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
   <data name="Common_Supplier" xml:space="preserve">
     <value>Supplier</value>
   </data>
@@ -906,6 +915,294 @@
   <data name="Reporting_Rows" xml:space="preserve">
     <value>rows</value>
   </data>
+  <data name="Ai_Title" xml:space="preserve">
+    <value>AI Center</value>
+  </data>
+  <data name="Ai_Subtitle" xml:space="preserve">
+    <value>Business Assistant, Insights, Recommendations, and Conversation History across every module.</value>
+  </data>
+  <data name="Ai_Section_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Ai_Section_Chat" xml:space="preserve">
+    <value>Chat</value>
+  </data>
+  <data name="Ai_Section_Insights" xml:space="preserve">
+    <value>Insights</value>
+  </data>
+  <data name="Ai_Section_Recommendations" xml:space="preserve">
+    <value>Recommendations</value>
+  </data>
+  <data name="Ai_Section_History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Ai_Section_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Ai_BusinessHealthScore" xml:space="preserve">
+    <value>Business Health Score</value>
+  </data>
+  <data name="Ai_DailySummary" xml:space="preserve">
+    <value>Daily Summary</value>
+  </data>
+  <data name="Ai_SmartNotifications" xml:space="preserve">
+    <value>Smart Notifications</value>
+  </data>
+  <data name="Ai_BusinessAssistant" xml:space="preserve">
+    <value>Business Assistant</value>
+  </data>
+  <data name="Ai_NewConversation" xml:space="preserve">
+    <value>New Conversation</value>
+  </data>
+  <data name="Ai_InsightDashboard" xml:space="preserve">
+    <value>Insight Dashboard</value>
+  </data>
+  <data name="Ai_RecommendationsPanel" xml:space="preserve">
+    <value>Recommendations Panel</value>
+  </data>
+  <data name="Ai_ActionCenterSuggestedTasks" xml:space="preserve">
+    <value>Action Center - Suggested Tasks</value>
+  </data>
+  <data name="Ai_SearchConversations" xml:space="preserve">
+    <value>Search Conversations</value>
+  </data>
+  <data name="Ai_ClearHistory" xml:space="preserve">
+    <value>Clear History</value>
+  </data>
+  <data name="Ai_PinnedConversations" xml:space="preserve">
+    <value>Pinned Conversations</value>
+  </data>
+  <data name="Ai_RecentConversations" xml:space="preserve">
+    <value>Recent Conversations</value>
+  </data>
+  <data name="Ai_ExportPreview" xml:space="preserve">
+    <value>Conversation Viewer - Export Preview</value>
+  </data>
+  <data name="Ai_FeatureToggles" xml:space="preserve">
+    <value>Feature Toggles</value>
+  </data>
+  <data name="Ai_AutoGenerateRecommendations" xml:space="preserve">
+    <value>Auto-Generate Recommendations</value>
+  </data>
+  <data name="Ai_SaveSettings" xml:space="preserve">
+    <value>Save Settings</value>
+  </data>
+  <data name="Ai_ModelSelector" xml:space="preserve">
+    <value>Model Selector</value>
+  </data>
+  <data name="Ai_Provider" xml:space="preserve">
+    <value>Provider</value>
+  </data>
+  <data name="Ai_ModelId" xml:space="preserve">
+    <value>Model Id</value>
+  </data>
+  <data name="Ai_SaveModelConfiguration" xml:space="preserve">
+    <value>Save Model Configuration</value>
+  </data>
+  <data name="Ai_UsageDashboard" xml:space="preserve">
+    <value>Usage Dashboard</value>
+  </data>
+  <data name="Ai_TotalTokensUsed" xml:space="preserve">
+    <value>Total tokens used</value>
+  </data>
+  <data name="Ai_Tokens" xml:space="preserve">
+    <value>tokens</value>
+  </data>
+  <data name="Ai_PromptTemplates" xml:space="preserve">
+    <value>Prompt Templates</value>
+  </data>
+  <data name="Hr_Title" xml:space="preserve">
+    <value>Staff &amp; HR</value>
+  </data>
+  <data name="Hr_Subtitle" xml:space="preserve">
+    <value>Employees, attendance, shifts, leave, commission, and payroll.</value>
+  </data>
+  <data name="Hr_Employees" xml:space="preserve">
+    <value>Employees</value>
+  </data>
+  <data name="Hr_PresentToday" xml:space="preserve">
+    <value>Present Today</value>
+  </data>
+  <data name="Hr_LateToday" xml:space="preserve">
+    <value>Late Today</value>
+  </data>
+  <data name="Hr_OnLeave" xml:space="preserve">
+    <value>On Leave</value>
+  </data>
+  <data name="Hr_PayrollThisMonth" xml:space="preserve">
+    <value>Payroll This Month</value>
+  </data>
+  <data name="Hr_CommissionThisMonth" xml:space="preserve">
+    <value>Commission This Month</value>
+  </data>
+  <data name="Hr_AvgAttendance" xml:space="preserve">
+    <value>Avg. Attendance</value>
+  </data>
+  <data name="Hr_Attendance" xml:space="preserve">
+    <value>Attendance</value>
+  </data>
+  <data name="Hr_Shifts" xml:space="preserve">
+    <value>Shifts</value>
+  </data>
+  <data name="Hr_Leave" xml:space="preserve">
+    <value>Leave</value>
+  </data>
+  <data name="Hr_Commission" xml:space="preserve">
+    <value>Commission</value>
+  </data>
+  <data name="Hr_Payroll" xml:space="preserve">
+    <value>Payroll</value>
+  </data>
+  <data name="Hr_AddEmployee" xml:space="preserve">
+    <value>Add Employee</value>
+  </data>
+  <data name="Hr_BaseSalary" xml:space="preserve">
+    <value>Base salary</value>
+  </data>
+  <data name="Hr_Role" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="Hr_Department" xml:space="preserve">
+    <value>Department</value>
+  </data>
+  <data name="Hr_EmploymentType" xml:space="preserve">
+    <value>Employment type</value>
+  </data>
+  <data name="Hr_SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, email, role, or department...</value>
+  </data>
+  <data name="Hr_AllEmployees" xml:space="preserve">
+    <value>All Employees</value>
+  </data>
+  <data name="Hr_RecordAttendanceToday" xml:space="preserve">
+    <value>Record Attendance (Today)</value>
+  </data>
+  <data name="Hr_Employee" xml:space="preserve">
+    <value>Employee</value>
+  </data>
+  <data name="Hr_CheckInTime" xml:space="preserve">
+    <value>Check-in (HH:mm)</value>
+  </data>
+  <data name="Hr_RecordAttendance" xml:space="preserve">
+    <value>Record Attendance</value>
+  </data>
+  <data name="Hr_TodayAttendance" xml:space="preserve">
+    <value>Today's Attendance</value>
+  </data>
+  <data name="Hr_CreateShift" xml:space="preserve">
+    <value>Create Shift</value>
+  </data>
+  <data name="Hr_Label" xml:space="preserve">
+    <value>Label</value>
+  </data>
+  <data name="Hr_StartTime" xml:space="preserve">
+    <value>Start (HH:mm)</value>
+  </data>
+  <data name="Hr_EndTime" xml:space="preserve">
+    <value>End (HH:mm)</value>
+  </data>
+  <data name="Hr_AssignShift" xml:space="preserve">
+    <value>Assign Shift</value>
+  </data>
+  <data name="Hr_Shift" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="Hr_ShiftAssignments" xml:space="preserve">
+    <value>Shift Assignments</value>
+  </data>
+  <data name="Hr_RequestLeave" xml:space="preserve">
+    <value>Request Leave</value>
+  </data>
+  <data name="Hr_StartDate" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <data name="Hr_EndDate" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="Hr_Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Hr_LeaveRequests" xml:space="preserve">
+    <value>Leave Requests</value>
+  </data>
+  <data name="Hr_Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="Hr_Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="Hr_CommissionEngine" xml:space="preserve">
+    <value>Commission Engine</value>
+  </data>
+  <data name="Hr_CommissionEngineDescription" xml:space="preserve">
+    <value>Generate commission transactions from paid Accounting invoices that have a booking behind them.</value>
+  </data>
+  <data name="Hr_GenerateCommissions" xml:space="preserve">
+    <value>Generate Commissions from Accounting</value>
+  </data>
+  <data name="Hr_AddCommissionRule" xml:space="preserve">
+    <value>Add Commission Rule</value>
+  </data>
+  <data name="Hr_AddRule" xml:space="preserve">
+    <value>Add Rule</value>
+  </data>
+  <data name="Hr_CommissionValueHint" xml:space="preserve">
+    <value>Value (0.10 = 10%, or flat $)</value>
+  </data>
+  <data name="Hr_CommissionRules" xml:space="preserve">
+    <value>Commission Rules</value>
+  </data>
+  <data name="Hr_CommissionHistory" xml:space="preserve">
+    <value>Commission History</value>
+  </data>
+  <data name="Hr_Invoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="Hr_GeneratePayrollSummary" xml:space="preserve">
+    <value>Generate Payroll Summary</value>
+  </data>
+  <data name="Hr_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Hr_Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Hr_Bonus" xml:space="preserve">
+    <value>Bonus</value>
+  </data>
+  <data name="Hr_Deduction" xml:space="preserve">
+    <value>Deduction</value>
+  </data>
+  <data name="Hr_GeneratePayroll" xml:space="preserve">
+    <value>Generate Payroll</value>
+  </data>
+  <data name="Hr_PayrollSummaries" xml:space="preserve">
+    <value>Payroll Summaries</value>
+  </data>
+  <data name="Hr_Base" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="Hr_SelectPrompt" xml:space="preserve">
+    <value>Select an employee to view their profile.</value>
+  </data>
+  <data name="Hr_Activate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="Hr_Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="Hr_Suspend" xml:space="preserve">
+    <value>Suspend</value>
+  </data>
+  <data name="Hr_RecentAttendance" xml:space="preserve">
+    <value>Recent Attendance</value>
+  </data>
+  <data name="Hr_UpcomingShifts" xml:space="preserve">
+    <value>Upcoming Shifts</value>
+  </data>
+  <data name="Hr_RecentCommissions" xml:space="preserve">
+    <value>Recent Commissions</value>
+  </data>
   <data name="Enum_Available" xml:space="preserve">
     <value>Available</value>
   </data>
@@ -1007,5 +1304,215 @@
   </data>
   <data name="Enum_Suspended" xml:space="preserve">
     <value>Suspended</value>
+  </data>
+  <data name="Enum_Mock" xml:space="preserve">
+    <value>Mock</value>
+  </data>
+  <data name="Enum_OpenAI" xml:space="preserve">
+    <value>OpenAI</value>
+  </data>
+  <data name="Enum_Anthropic" xml:space="preserve">
+    <value>Anthropic</value>
+  </data>
+  <data name="Enum_AzureOpenAI" xml:space="preserve">
+    <value>Azure OpenAI</value>
+  </data>
+  <data name="Enum_LocalModel" xml:space="preserve">
+    <value>Local Model</value>
+  </data>
+  <data name="Enum_System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Enum_Developer" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="Enum_User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="Enum_Assistant" xml:space="preserve">
+    <value>Assistant</value>
+  </data>
+  <data name="Enum_Revenue" xml:space="preserve">
+    <value>Revenue</value>
+  </data>
+  <data name="Enum_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Enum_Appointment" xml:space="preserve">
+    <value>Appointment</value>
+  </data>
+  <data name="Enum_Inventory" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Enum_Hr" xml:space="preserve">
+    <value>HR</value>
+  </data>
+  <data name="Enum_Payroll" xml:space="preserve">
+    <value>Payroll</value>
+  </data>
+  <data name="Enum_Attendance" xml:space="preserve">
+    <value>Attendance</value>
+  </data>
+  <data name="Enum_Commission" xml:space="preserve">
+    <value>Commission</value>
+  </data>
+  <data name="Enum_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Enum_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Enum_Trend" xml:space="preserve">
+    <value>Trend</value>
+  </data>
+  <data name="Enum_Opportunity" xml:space="preserve">
+    <value>Opportunity</value>
+  </data>
+  <data name="Enum_Risk" xml:space="preserve">
+    <value>Risk</value>
+  </data>
+  <data name="Enum_Critical" xml:space="preserve">
+    <value>Critical</value>
+  </data>
+  <data name="Enum_Low" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="Enum_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Enum_High" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="Enum_Urgent" xml:space="preserve">
+    <value>Urgent</value>
+  </data>
+  <data name="Enum_Stylist" xml:space="preserve">
+    <value>Stylist</value>
+  </data>
+  <data name="Enum_Colorist" xml:space="preserve">
+    <value>Colorist</value>
+  </data>
+  <data name="Enum_NailTechnician" xml:space="preserve">
+    <value>Nail Technician</value>
+  </data>
+  <data name="Enum_Esthetician" xml:space="preserve">
+    <value>Esthetician</value>
+  </data>
+  <data name="Enum_MassageTherapist" xml:space="preserve">
+    <value>Massage Therapist</value>
+  </data>
+  <data name="Enum_Receptionist" xml:space="preserve">
+    <value>Receptionist</value>
+  </data>
+  <data name="Enum_Manager" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+  <data name="Enum_Reception" xml:space="preserve">
+    <value>Reception</value>
+  </data>
+  <data name="Enum_Hair" xml:space="preserve">
+    <value>Hair</value>
+  </data>
+  <data name="Enum_Nails" xml:space="preserve">
+    <value>Nails</value>
+  </data>
+  <data name="Enum_Makeup" xml:space="preserve">
+    <value>Makeup</value>
+  </data>
+  <data name="Enum_SkinCare" xml:space="preserve">
+    <value>Skin Care</value>
+  </data>
+  <data name="Enum_Massage" xml:space="preserve">
+    <value>Massage</value>
+  </data>
+  <data name="Enum_Management" xml:space="preserve">
+    <value>Management</value>
+  </data>
+  <data name="Enum_FullTime" xml:space="preserve">
+    <value>Full Time</value>
+  </data>
+  <data name="Enum_PartTime" xml:space="preserve">
+    <value>Part Time</value>
+  </data>
+  <data name="Enum_Contractor" xml:space="preserve">
+    <value>Contractor</value>
+  </data>
+  <data name="Enum_Present" xml:space="preserve">
+    <value>Present</value>
+  </data>
+  <data name="Enum_Late" xml:space="preserve">
+    <value>Late</value>
+  </data>
+  <data name="Enum_Absent" xml:space="preserve">
+    <value>Absent</value>
+  </data>
+  <data name="Enum_Vacation" xml:space="preserve">
+    <value>Vacation</value>
+  </data>
+  <data name="Enum_FixedAmount" xml:space="preserve">
+    <value>Fixed Amount</value>
+  </data>
+  <data name="Enum_Percentage" xml:space="preserve">
+    <value>Percentage</value>
+  </data>
+  <data name="Enum_Approved" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="Enum_Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="Enum_PlatformOwner" xml:space="preserve">
+    <value>Platform Owner</value>
+  </data>
+  <data name="Enum_OrganizationOwner" xml:space="preserve">
+    <value>Organization Owner</value>
+  </data>
+  <data name="Enum_OrganizationManager" xml:space="preserve">
+    <value>Organization Manager</value>
+  </data>
+  <data name="Enum_BranchManager" xml:space="preserve">
+    <value>Branch Manager</value>
+  </data>
+  <data name="Enum_Specialist" xml:space="preserve">
+    <value>Specialist</value>
+  </data>
+  <data name="Enum_Accounting" xml:space="preserve">
+    <value>Accounting</value>
+  </data>
+  <data name="Enum_Ai" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="Enum_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Enum_Marketing" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="Enum_Financial" xml:space="preserve">
+    <value>Financial</value>
+  </data>
+  <data name="Enum_Operations" xml:space="preserve">
+    <value>Operations</value>
+  </data>
+  <data name="Enum_Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Enum_Workforce" xml:space="preserve">
+    <value>Workforce</value>
+  </data>
+  <data name="Enum_Dashboards" xml:space="preserve">
+    <value>Dashboards</value>
+  </data>
+  <data name="Enum_Colour" xml:space="preserve">
+    <value>Colour</value>
+  </data>
+  <data name="Enum_Skin" xml:space="preserve">
+    <value>Skin</value>
+  </data>
+  <data name="Enum_Spa" xml:space="preserve">
+    <value>Spa</value>
+  </data>
+  <data name="Enum_Consultation" xml:space="preserve">
+    <value>Consultation</value>
   </data>
 </root>

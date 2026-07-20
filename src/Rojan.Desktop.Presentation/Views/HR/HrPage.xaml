@@ -4,7 +4,8 @@
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:hrVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.HR"
-             xmlns:appHr="clr-namespace:Rojan.Desktop.Application.HR;assembly=Rojan.Desktop.Application">
+             xmlns:appHr="clr-namespace:Rojan.Desktop.Application.HR;assembly=Rojan.Desktop.Application"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
         Phase 19: Enterprise Staff, HR & Commission Management. Same
@@ -22,12 +23,11 @@
         styling from Themes/Controls.xaml automatically (Phase 16) - no
         per-page styling needed here.
 
-        Enterprise UX/UI Refinement pass: out of scope for this pass. This
-        page and AiCenterPage.xaml are the two largest hardcoded-string
-        surfaces in the app (~150 combined instances across 6 sections
-        each); full localization is deferred to a follow-up pass,
-        consistent with the Phase 22/22A precedent of documenting scope
-        boundaries rather than silently skipping modules.
+        Localization Audit completion pass: fully localized (Strings.*
+        for every literal, Rojan.Converter.EnumLabel for every enum
+        display) - previously deferred as this app's largest
+        hardcoded-string surface alongside AiCenterPage.xaml; see
+        docs/phases/phase-24-localization-audit-completion.md.
     -->
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
@@ -44,9 +44,9 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:SectionHeader Grid.Row="0" Title="Staff &amp; HR" />
+            <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Hr_Title}" />
             <TextBlock Grid.Row="0"
-                       Text="Employees, attendance, shifts, leave, commission, and payroll."
+                       Text="{x:Static loc:Strings.Hr_Subtitle}"
                        Style="{StaticResource Rojan.TextStyle.Caption}"
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
@@ -54,13 +54,13 @@
             <!-- HR Dashboard KPI cards -->
             <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0">
                 <WrapPanel DataContext="{Binding Summary}">
-                    <dashboardControls:KPIValue Label="Employees" Value="{Binding EmployeeCount}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="Present Today" Value="{Binding PresentToday}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="Late Today" Value="{Binding LateToday}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="On Leave" Value="{Binding OnLeaveCount}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="Payroll This Month" Value="{Binding PayrollThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="Commission This Month" Value="{Binding CommissionThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="Avg. Attendance" Value="{Binding AverageAttendancePercent, StringFormat={}{0}%}" Margin="0,0,0,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_Employees}" Value="{Binding EmployeeCount}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_PresentToday}" Value="{Binding PresentToday}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_LateToday}" Value="{Binding LateToday}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_OnLeave}" Value="{Binding OnLeaveCount}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_PayrollThisMonth}" Value="{Binding PayrollThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_CommissionThisMonth}" Value="{Binding CommissionThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
+                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_AvgAttendance}" Value="{Binding AverageAttendancePercent, StringFormat={}{0}%}" Margin="0,0,0,12" />
                 </WrapPanel>
             </dashboardControls:DashboardCard>
 
@@ -73,7 +73,7 @@
                  individual visual properties Rojan.Style.ButtonPrimary
                  itself sets, rather than swapping styles wholesale. -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                <Button Content="Employees" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Employees}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Hr_Employees}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Employees}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -86,7 +86,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Attendance" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Attendance}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Hr_Attendance}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Attendance}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -99,7 +99,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Shifts" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Shifts}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Hr_Shifts}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Shifts}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -112,7 +112,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Leave" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Leave}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Hr_Leave}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Leave}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -125,7 +125,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Commission" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Commission}" Margin="0,0,8,0">
+                <Button Content="{x:Static loc:Strings.Hr_Commission}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Commission}" Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -138,7 +138,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button Content="Payroll" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Payroll}">
+                <Button Content="{x:Static loc:Strings.Hr_Payroll}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static hrVm:HrSection.Payroll}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                             <Style.Triggers>
@@ -169,7 +169,7 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Add Employee">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_AddEmployee}">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -183,41 +183,41 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0" Grid.Column="0">
-                                        <TextBlock Text="Full name" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_FullName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewEmployeeFullName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="2">
-                                        <TextBlock Text="Email" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Email}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewEmployeeEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
-                                        <TextBlock Text="Phone" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Phone}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewEmployeePhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
-                                        <TextBlock Text="Base salary" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_BaseSalary}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewEmployeeBaseSalary, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,12,0,0">
-                                        <TextBlock Text="Role" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Role}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewEmployeeRole, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,12,0,0">
-                                        <TextBlock Text="Department" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Department}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableDepartments}" SelectedItem="{Binding NewEmployeeDepartment, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="Employment type" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Hr_EmploymentType}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <ComboBox ItemsSource="{Binding AvailableEmploymentTypes}" SelectedItem="{Binding NewEmployeeEmploymentType, Mode=TwoWay}" Margin="0,4,0,0" HorizontalAlignment="Left" Width="200" />
                                 </StackPanel>
-                                <Button Content="Add Employee" Command="{Binding CreateEmployeeCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_AddEmployee}" Command="{Binding CreateEmployeeCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
                         <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16,10" Margin="0,16,0,0">
                             <Grid>
-                                <TextBlock Text="Search by name, email, role, or department..."
+                                <TextBlock Text="{x:Static loc:Strings.Hr_SearchPlaceholder}"
                                            Foreground="{StaticResource Rojan.Brush.HintText}"
                                            FontFamily="{StaticResource Rojan.FontFamily.Default}"
                                            FontSize="15"
@@ -241,7 +241,7 @@
                             </Grid>
                         </Border>
 
-                        <dashboardControls:DashboardWidget Title="All Employees"
+                        <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Hr_AllEmployees}"
                                                             State="{Binding State}"
                                                             ErrorMessage="{Binding ErrorMessage}"
                                                             RetryCommand="{Binding LoadCommand}"
@@ -261,12 +261,12 @@
                                                 <StackPanel Grid.Column="0">
                                                     <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                     <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                                        <Run Text="{Binding Role, Mode=OneWay}" />
+                                                        <Run Text="{Binding Role, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                         <Run Text=" · " />
-                                                        <Run Text="{Binding Department, Mode=OneWay}" />
+                                                        <Run Text="{Binding Department, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                     </TextBlock>
                                                 </StackPanel>
-                                                <TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
@@ -288,7 +288,7 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Record Attendance (Today)">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_RecordAttendanceToday}">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -297,23 +297,23 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Employee" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Employee}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding AttendanceSelectedEmployee, Mode=TwoWay}" DisplayMemberPath="FullName" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Check-in (HH:mm)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_CheckInTime}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding AttendanceCheckInTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="Notes" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Notes}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <TextBox Text="{Binding AttendanceNotes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                 </StackPanel>
-                                <Button Content="Record Attendance" Command="{Binding RecordAttendanceCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_RecordAttendance}" Command="{Binding RecordAttendanceCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Today's Attendance" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_TodayAttendance}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding TodayAttendance}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:AttendanceDto}">
@@ -326,7 +326,7 @@
                                                 <TextBlock Text="{Binding EmployeeName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding Notes}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -347,7 +347,7 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Create Shift">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_CreateShift}">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -356,11 +356,11 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Label" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Label}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewShiftLabel, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Department" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Department}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableDepartments}" SelectedItem="{Binding NewShiftDepartment, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
@@ -371,19 +371,19 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Start (HH:mm)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_StartTime}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewShiftStartTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="End (HH:mm)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_EndTime}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewShiftEndTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
-                                <Button Content="Create Shift" Command="{Binding CreateShiftCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_CreateShift}" Command="{Binding CreateShiftCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Assign Shift" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_AssignShift}" Margin="0,16,0,0">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -392,23 +392,23 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Shift" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Shift}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding Shifts}" SelectedItem="{Binding AssignShiftSelectedShift, Mode=TwoWay}" DisplayMemberPath="Label" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Employee" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Employee}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding AssignShiftSelectedEmployee, Mode=TwoWay}" DisplayMemberPath="FullName" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="Date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <DatePicker SelectedDate="{Binding AssignShiftDate, Mode=TwoWay}" HorizontalAlignment="Left" Width="200" Margin="0,4,0,0" />
                                 </StackPanel>
-                                <Button Content="Assign Shift" Command="{Binding AssignShiftCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_AssignShift}" Command="{Binding AssignShiftCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Shift Assignments" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_ShiftAssignments}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding ShiftAssignments}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:ShiftAssignmentDto}">
@@ -439,9 +439,9 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Request Leave">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_RequestLeave}">
                             <StackPanel>
-                                <TextBlock Text="Employee" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Hr_Employee}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding LeaveSelectedEmployee, Mode=TwoWay}" DisplayMemberPath="FullName" Margin="0,4,0,0" />
                                 <Grid Margin="0,12,0,0">
                                     <Grid.ColumnDefinitions>
@@ -450,23 +450,23 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Start date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_StartDate}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <DatePicker SelectedDate="{Binding LeaveStartDate, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="End date" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_EndDate}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <DatePicker SelectedDate="{Binding LeaveEndDate, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="Reason" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBlock Text="{x:Static loc:Strings.Hr_Reason}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                     <TextBox Text="{Binding LeaveReason, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                 </StackPanel>
-                                <Button Content="Request Leave" Command="{Binding RequestLeaveCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_RequestLeave}" Command="{Binding RequestLeaveCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Leave Requests" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_LeaveRequests}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding LeaveRequests}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:LeaveRequestDto}">
@@ -479,7 +479,7 @@
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
                                                     <Run Text="{Binding EmployeeName, Mode=OneWay}" />
                                                     <Run Text=" · " />
-                                                    <Run Text="{Binding Status, Mode=OneWay}" />
+                                                    <Run Text="{Binding Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                 </TextBlock>
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                                     <Run Text="{Binding StartDate, StringFormat={}{0:MMM d}, Mode=OneWay}" />
@@ -500,12 +500,12 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </StackPanel.Style>
-                                                <Button Content="Approve"
+                                                <Button Content="{x:Static loc:Strings.Hr_Approve}"
                                                         Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                         Margin="0,0,8,0"
                                                         Command="{Binding DataContext.ApproveLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding}" />
-                                                <Button Content="Reject"
+                                                <Button Content="{x:Static loc:Strings.Hr_Reject}"
                                                         Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                                         Command="{Binding DataContext.RejectLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding}" />
@@ -530,18 +530,18 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Commission Engine">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_CommissionEngine}">
                             <StackPanel>
-                                <TextBlock Text="Generate commission transactions from paid Accounting invoices that have a booking behind them."
+                                <TextBlock Text="{x:Static loc:Strings.Hr_CommissionEngineDescription}"
                                            Style="{StaticResource Rojan.TextStyle.Body}"
                                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                                            TextWrapping="Wrap" />
-                                <Button Content="Generate Commissions from Accounting" Command="{Binding GenerateCommissionsCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_GenerateCommissions}" Command="{Binding GenerateCommissionsCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,12,0,0" />
                                 <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.Success}" Margin="0,8,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Add Commission Rule" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_AddCommissionRule}" Margin="0,16,0,0">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -550,11 +550,11 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Employee" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Employee}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding NewRuleSelectedEmployee, Mode=TwoWay}" DisplayMemberPath="FullName" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Type" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Type}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableCommissionTypes}" SelectedItem="{Binding NewRuleType, Mode=TwoWay}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
@@ -565,19 +565,19 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Value (0.10 = 10%, or flat $)" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_CommissionValueHint}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewRuleValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Description" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding NewRuleDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
-                                <Button Content="Add Rule" Command="{Binding CreateCommissionRuleCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_AddRule}" Command="{Binding CreateCommissionRuleCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Commission Rules" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_CommissionRules}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding CommissionRules}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:CommissionRuleDto}">
@@ -591,7 +591,7 @@
                                                 <TextBlock Text="{Binding Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center">
-                                                <Run Text="{Binding Type, Mode=OneWay}" />
+                                                <Run Text="{Binding Type, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                                 <Run Text=" · " />
                                                 <Run Text="{Binding Value, Mode=OneWay}" />
                                             </TextBlock>
@@ -601,7 +601,7 @@
                             </ItemsControl>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Commission History" Margin="0,16,0,0">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_CommissionHistory}" Margin="0,16,0,0">
                             <ItemsControl ItemsSource="{Binding CommissionTransactions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:CommissionTransactionDto}">
@@ -617,7 +617,7 @@
                                                     <Run Text="{Binding ServiceName, Mode=OneWay}" />
                                                 </TextBlock>
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                                    <Run Text="Invoice " /><Run Text="{Binding InvoiceId, Mode=OneWay}" />
+                                                    <Run Text="{x:Static loc:Strings.Hr_Invoice}" /><Run Text=" " /><Run Text="{Binding InvoiceId, Mode=OneWay}" />
                                                     <Run Text=" · " />
                                                     <Run Text="{Binding EarnedAt, StringFormat={}{0:MMM d, yyyy}, Mode=OneWay}" />
                                                 </TextBlock>
@@ -643,9 +643,9 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <dashboardControls:DashboardCard Title="Generate Payroll Summary">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_GeneratePayrollSummary}">
                             <StackPanel>
-                                <TextBlock Text="Employee" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="{x:Static loc:Strings.Hr_Employee}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                 <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding PayrollSelectedEmployee, Mode=TwoWay}" DisplayMemberPath="FullName" Margin="0,4,0,0" />
                                 <Grid Margin="0,12,0,0">
                                     <Grid.ColumnDefinitions>
@@ -654,11 +654,11 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Month" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Month}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding PayrollMonth, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Year" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Year}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding PayrollYear, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
@@ -669,19 +669,19 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Bonus" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Bonus}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding PayrollBonus, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Deduction" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        <TextBlock Text="{x:Static loc:Strings.Hr_Deduction}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <TextBox Text="{Binding PayrollDeduction, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
-                                <Button Content="Generate Payroll" Command="{Binding GeneratePayrollCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                                <Button Content="{x:Static loc:Strings.Hr_GeneratePayroll}" Command="{Binding GeneratePayrollCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
                         </dashboardControls:DashboardCard>
 
-                        <dashboardControls:DashboardCard Title="Payroll Summaries" Margin="0,16,0,32">
+                        <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_PayrollSummaries}" Margin="0,16,0,32">
                             <ItemsControl ItemsSource="{Binding PayrollSummaries}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appHr:PayrollSummaryDto}">
@@ -699,10 +699,10 @@
                                                     <Run Text="{Binding Year, Mode=OneWay}" />
                                                 </TextBlock>
                                                 <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                                    <Run Text="Base " /><Run Text="{Binding BaseSalary, StringFormat={}{0:C}, Mode=OneWay}" />
-                                                    <Run Text=" + Commission " /><Run Text="{Binding CommissionTotal, StringFormat={}{0:C}, Mode=OneWay}" />
-                                                    <Run Text=" + Bonus " /><Run Text="{Binding Bonus, StringFormat={}{0:C}, Mode=OneWay}" />
-                                                    <Run Text=" - Deduction " /><Run Text="{Binding Deduction, StringFormat={}{0:C}, Mode=OneWay}" />
+                                                    <Run Text="{x:Static loc:Strings.Hr_Base}" /><Run Text=" " /><Run Text="{Binding BaseSalary, StringFormat={}{0:C}, Mode=OneWay}" />
+                                                    <Run Text=" + " /><Run Text="{x:Static loc:Strings.Hr_Commission}" /><Run Text=" " /><Run Text="{Binding CommissionTotal, StringFormat={}{0:C}, Mode=OneWay}" />
+                                                    <Run Text=" + " /><Run Text="{x:Static loc:Strings.Hr_Bonus}" /><Run Text=" " /><Run Text="{Binding Bonus, StringFormat={}{0:C}, Mode=OneWay}" />
+                                                    <Run Text=" - " /><Run Text="{x:Static loc:Strings.Hr_Deduction}" /><Run Text=" " /><Run Text="{Binding Deduction, StringFormat={}{0:C}, Mode=OneWay}" />
                                                 </TextBlock>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding NetSalary, StringFormat={}{0:C}}" Style="{StaticResource Rojan.TextStyle.Subtitle}" VerticalAlignment="Center" />
@@ -720,7 +720,7 @@
         <!-- Right: selected employee's profile -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="Select an employee to view their profile."
+                <TextBlock Text="{x:Static loc:Strings.Hr_SelectPrompt}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                            TextWrapping="Wrap">
                     <TextBlock.Style>
@@ -753,31 +753,31 @@
                                                         RetryCommand="{Binding LoadCommand}">
                         <StackPanel DataContext="{Binding Profile}">
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                <Run Text="{Binding Employee.Role, Mode=OneWay}" />
+                                <Run Text="{Binding Employee.Role, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                 <Run Text=" · " />
-                                <Run Text="{Binding Employee.Department, Mode=OneWay}" />
+                                <Run Text="{Binding Employee.Department, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                 <Run Text=" · " />
-                                <Run Text="{Binding Employee.Status, Mode=OneWay}" />
+                                <Run Text="{Binding Employee.Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Employee.Email}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0" />
                             <TextBlock Text="{Binding Employee.Phone}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0" />
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
-                                <Run Text="Base salary: " /><Run Text="{Binding Employee.BaseSalary, StringFormat={}{0:C}, Mode=OneWay}" />
+                                <Run Text="{x:Static loc:Strings.Hr_BaseSalary}" /><Run Text=": " /><Run Text="{Binding Employee.BaseSalary, StringFormat={}{0:C}, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Detail.Bio}" Style="{StaticResource Rojan.TextStyle.Body}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,12,0,0" />
 
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="Activate" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0"
+                                <Button Content="{x:Static loc:Strings.Hr_Activate}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0"
                                         Command="{Binding DataContext.ActivateCommand, RelativeSource={RelativeSource AncestorType=dashboardControls:DashboardWidget}}" />
-                                <Button Content="Deactivate" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0"
+                                <Button Content="{x:Static loc:Strings.Hr_Deactivate}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,8,0"
                                         Command="{Binding DataContext.DeactivateCommand, RelativeSource={RelativeSource AncestorType=dashboardControls:DashboardWidget}}" />
-                                <Button Content="Suspend" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                <Button Content="{x:Static loc:Strings.Hr_Suspend}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
                                         Command="{Binding DataContext.SuspendCommand, RelativeSource={RelativeSource AncestorType=dashboardControls:DashboardWidget}}" />
                             </StackPanel>
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 
-                    <dashboardControls:DashboardCard Title="Recent Attendance" Margin="0,16,0,0" DataContext="{Binding Profile}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_RecentAttendance}" Margin="0,16,0,0" DataContext="{Binding Profile}">
                         <ItemsControl ItemsSource="{Binding RecentAttendance}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appHr:AttendanceDto}">
@@ -787,14 +787,14 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat={}{0:MMM d}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource Rojan.TextStyle.Caption}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Upcoming Shifts" Margin="0,16,0,0" DataContext="{Binding Profile}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_UpcomingShifts}" Margin="0,16,0,0" DataContext="{Binding Profile}">
                         <ItemsControl ItemsSource="{Binding UpcomingShifts}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appHr:ShiftAssignmentDto}">
@@ -804,7 +804,7 @@
                         </ItemsControl>
                     </dashboardControls:DashboardCard>
 
-                    <dashboardControls:DashboardCard Title="Recent Commissions" Margin="0,16,0,32" DataContext="{Binding Profile}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Hr_RecentCommissions}" Margin="0,16,0,32" DataContext="{Binding Profile}">
                         <ItemsControl ItemsSource="{Binding RecentCommissions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appHr:CommissionTransactionDto}">

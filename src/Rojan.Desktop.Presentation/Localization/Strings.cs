@@ -378,6 +378,12 @@ public static class Strings
 
     public static string Common_Add => Get(nameof(Common_Add));
 
+    public static string Common_Send => Get(nameof(Common_Send));
+
+    public static string Common_Delete => Get(nameof(Common_Delete));
+
+    public static string Common_Enabled => Get(nameof(Common_Enabled));
+
     public static string Common_Supplier => Get(nameof(Common_Supplier));
 
     public static string Common_Price => Get(nameof(Common_Price));
@@ -653,6 +659,198 @@ public static class Strings
     public static string Reporting_NoneSelected => Get(nameof(Reporting_NoneSelected));
 
     public static string Reporting_Rows => Get(nameof(Reporting_Rows));
+
+    public static string Ai_Title => Get(nameof(Ai_Title));
+
+    public static string Ai_Subtitle => Get(nameof(Ai_Subtitle));
+
+    public static string Ai_Section_Home => Get(nameof(Ai_Section_Home));
+
+    public static string Ai_Section_Chat => Get(nameof(Ai_Section_Chat));
+
+    public static string Ai_Section_Insights => Get(nameof(Ai_Section_Insights));
+
+    public static string Ai_Section_Recommendations => Get(nameof(Ai_Section_Recommendations));
+
+    public static string Ai_Section_History => Get(nameof(Ai_Section_History));
+
+    public static string Ai_Section_Settings => Get(nameof(Ai_Section_Settings));
+
+    public static string Ai_BusinessHealthScore => Get(nameof(Ai_BusinessHealthScore));
+
+    public static string Ai_DailySummary => Get(nameof(Ai_DailySummary));
+
+    public static string Ai_SmartNotifications => Get(nameof(Ai_SmartNotifications));
+
+    public static string Ai_BusinessAssistant => Get(nameof(Ai_BusinessAssistant));
+
+    public static string Ai_NewConversation => Get(nameof(Ai_NewConversation));
+
+    public static string Ai_InsightDashboard => Get(nameof(Ai_InsightDashboard));
+
+    public static string Ai_RecommendationsPanel => Get(nameof(Ai_RecommendationsPanel));
+
+    public static string Ai_ActionCenterSuggestedTasks => Get(nameof(Ai_ActionCenterSuggestedTasks));
+
+    public static string Ai_SearchConversations => Get(nameof(Ai_SearchConversations));
+
+    public static string Ai_ClearHistory => Get(nameof(Ai_ClearHistory));
+
+    public static string Ai_PinnedConversations => Get(nameof(Ai_PinnedConversations));
+
+    public static string Ai_RecentConversations => Get(nameof(Ai_RecentConversations));
+
+    public static string Ai_ExportPreview => Get(nameof(Ai_ExportPreview));
+
+    public static string Ai_FeatureToggles => Get(nameof(Ai_FeatureToggles));
+
+    public static string Ai_AutoGenerateRecommendations => Get(nameof(Ai_AutoGenerateRecommendations));
+
+    public static string Ai_SaveSettings => Get(nameof(Ai_SaveSettings));
+
+    public static string Ai_ModelSelector => Get(nameof(Ai_ModelSelector));
+
+    public static string Ai_Provider => Get(nameof(Ai_Provider));
+
+    public static string Ai_ModelId => Get(nameof(Ai_ModelId));
+
+    public static string Ai_SaveModelConfiguration => Get(nameof(Ai_SaveModelConfiguration));
+
+    public static string Ai_UsageDashboard => Get(nameof(Ai_UsageDashboard));
+
+    public static string Ai_TotalTokensUsed => Get(nameof(Ai_TotalTokensUsed));
+
+    public static string Ai_Tokens => Get(nameof(Ai_Tokens));
+
+    public static string Ai_PromptTemplates => Get(nameof(Ai_PromptTemplates));
+
+    public static string Hr_Title => Get(nameof(Hr_Title));
+
+    public static string Hr_Subtitle => Get(nameof(Hr_Subtitle));
+
+    public static string Hr_Employees => Get(nameof(Hr_Employees));
+
+    public static string Hr_PresentToday => Get(nameof(Hr_PresentToday));
+
+    public static string Hr_LateToday => Get(nameof(Hr_LateToday));
+
+    public static string Hr_OnLeave => Get(nameof(Hr_OnLeave));
+
+    public static string Hr_PayrollThisMonth => Get(nameof(Hr_PayrollThisMonth));
+
+    public static string Hr_CommissionThisMonth => Get(nameof(Hr_CommissionThisMonth));
+
+    public static string Hr_AvgAttendance => Get(nameof(Hr_AvgAttendance));
+
+    public static string Hr_Attendance => Get(nameof(Hr_Attendance));
+
+    public static string Hr_Shifts => Get(nameof(Hr_Shifts));
+
+    public static string Hr_Leave => Get(nameof(Hr_Leave));
+
+    public static string Hr_Commission => Get(nameof(Hr_Commission));
+
+    public static string Hr_Payroll => Get(nameof(Hr_Payroll));
+
+    public static string Hr_AddEmployee => Get(nameof(Hr_AddEmployee));
+
+    public static string Hr_BaseSalary => Get(nameof(Hr_BaseSalary));
+
+    public static string Hr_Role => Get(nameof(Hr_Role));
+
+    public static string Hr_Department => Get(nameof(Hr_Department));
+
+    public static string Hr_EmploymentType => Get(nameof(Hr_EmploymentType));
+
+    public static string Hr_SearchPlaceholder => Get(nameof(Hr_SearchPlaceholder));
+
+    public static string Hr_AllEmployees => Get(nameof(Hr_AllEmployees));
+
+    public static string Hr_RecordAttendanceToday => Get(nameof(Hr_RecordAttendanceToday));
+
+    public static string Hr_Employee => Get(nameof(Hr_Employee));
+
+    public static string Hr_CheckInTime => Get(nameof(Hr_CheckInTime));
+
+    public static string Hr_RecordAttendance => Get(nameof(Hr_RecordAttendance));
+
+    public static string Hr_TodayAttendance => Get(nameof(Hr_TodayAttendance));
+
+    public static string Hr_CreateShift => Get(nameof(Hr_CreateShift));
+
+    public static string Hr_Label => Get(nameof(Hr_Label));
+
+    public static string Hr_StartTime => Get(nameof(Hr_StartTime));
+
+    public static string Hr_EndTime => Get(nameof(Hr_EndTime));
+
+    public static string Hr_AssignShift => Get(nameof(Hr_AssignShift));
+
+    public static string Hr_Shift => Get(nameof(Hr_Shift));
+
+    public static string Hr_ShiftAssignments => Get(nameof(Hr_ShiftAssignments));
+
+    public static string Hr_RequestLeave => Get(nameof(Hr_RequestLeave));
+
+    public static string Hr_StartDate => Get(nameof(Hr_StartDate));
+
+    public static string Hr_EndDate => Get(nameof(Hr_EndDate));
+
+    public static string Hr_Reason => Get(nameof(Hr_Reason));
+
+    public static string Hr_LeaveRequests => Get(nameof(Hr_LeaveRequests));
+
+    public static string Hr_Approve => Get(nameof(Hr_Approve));
+
+    public static string Hr_Reject => Get(nameof(Hr_Reject));
+
+    public static string Hr_CommissionEngine => Get(nameof(Hr_CommissionEngine));
+
+    public static string Hr_CommissionEngineDescription => Get(nameof(Hr_CommissionEngineDescription));
+
+    public static string Hr_GenerateCommissions => Get(nameof(Hr_GenerateCommissions));
+
+    public static string Hr_AddCommissionRule => Get(nameof(Hr_AddCommissionRule));
+
+    public static string Hr_AddRule => Get(nameof(Hr_AddRule));
+
+    public static string Hr_CommissionValueHint => Get(nameof(Hr_CommissionValueHint));
+
+    public static string Hr_CommissionRules => Get(nameof(Hr_CommissionRules));
+
+    public static string Hr_CommissionHistory => Get(nameof(Hr_CommissionHistory));
+
+    public static string Hr_Invoice => Get(nameof(Hr_Invoice));
+
+    public static string Hr_GeneratePayrollSummary => Get(nameof(Hr_GeneratePayrollSummary));
+
+    public static string Hr_Month => Get(nameof(Hr_Month));
+
+    public static string Hr_Year => Get(nameof(Hr_Year));
+
+    public static string Hr_Bonus => Get(nameof(Hr_Bonus));
+
+    public static string Hr_Deduction => Get(nameof(Hr_Deduction));
+
+    public static string Hr_GeneratePayroll => Get(nameof(Hr_GeneratePayroll));
+
+    public static string Hr_PayrollSummaries => Get(nameof(Hr_PayrollSummaries));
+
+    public static string Hr_Base => Get(nameof(Hr_Base));
+
+    public static string Hr_SelectPrompt => Get(nameof(Hr_SelectPrompt));
+
+    public static string Hr_Activate => Get(nameof(Hr_Activate));
+
+    public static string Hr_Deactivate => Get(nameof(Hr_Deactivate));
+
+    public static string Hr_Suspend => Get(nameof(Hr_Suspend));
+
+    public static string Hr_RecentAttendance => Get(nameof(Hr_RecentAttendance));
+
+    public static string Hr_UpcomingShifts => Get(nameof(Hr_UpcomingShifts));
+
+    public static string Hr_RecentCommissions => Get(nameof(Hr_RecentCommissions));
 
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its

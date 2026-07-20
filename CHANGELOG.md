@@ -691,6 +691,36 @@ see `docs/standards/versioning.md`.
   session across Dashboard/Customers/Bookings/Inventory/Accounting - one
   real gap (`BookingPage`'s detail-panel card title) was caught live
   during this verification and fixed on the spot.
+- Phase 24 Localization Audit Completion — closes the two scope
+  boundaries Phase 23 explicitly deferred. `AiCenterPage.xaml` and
+  `HrPage.xaml` (the app's two largest hardcoded-string surfaces) are
+  now fully localized (~103 new `Strings.cs`/resx entries, `Ai_*`/
+  `Hr_*`, reusing existing `Common_*`/`Reporting_*` keys wherever
+  possible). Completing them surfaced five more enum types Phase 23's
+  sweep hadn't reached (`ConversationRole`, `InsightSeverity`,
+  `InsightCategory`, `RecommendationPriority`, `AIProviderType`,
+  `EmployeeRole`, `Department`, `EmploymentType`, `EmployeeStatus`,
+  `AttendanceStatus`, `CommissionType`, `LeaveStatus`); a follow-up
+  solution-wide sweep for any remaining bare enum binding caught three
+  more sites in pages already "done" for their literal strings
+  (`OrganizationPage`'s `WorkspaceRole` displays, `ReportingPage`'s
+  `ReportCategory` column, `ServicePage`'s `ServiceCategory` column) -
+  51 new `Enum_<MemberName>` resx entries cover all of them through the
+  same shared `EnumLabelConverter`/`Strings.GetEnumLabel` mechanism
+  Phase 23 introduced, no new converter code needed. Also closed
+  Phase 23's one flagged residual gap: `ServicePage`'s duration KPI
+  used a hardcoded `StringFormat={}{0} min}` that couldn't route
+  through `Strings` (`KPIValue.Value` is a plain string, not a
+  `Run`-composed `TextBlock`) - fixed with a new
+  `MinutesSuffixConverter` (`Rojan.Converter.MinutesSuffix`). Still
+  out of scope, unchanged from Phase 23: editable enum `ComboBox`
+  pickers, fake-repository seed data, Gregorian date formatting - see
+  `docs/phases/phase-24-localization-audit-completion.md`. No new
+  tests (XAML/resx + one converter only, no business logic); full
+  955-test suite passes unchanged, zero warnings, zero errors.
+  Runtime-verified via UI Automation: Staff & HR, Services, and AI
+  Center all render fully in Persian, including every status/role/
+  department/category badge and the duration KPI's "۶۰ دقیقه".
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

@@ -466,7 +466,7 @@
                                 <DataTemplate DataType="{x:Type orgVm:PermissionMatrixRow}">
                                     <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16,12" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Role}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Text="{Binding Role, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                             <TextBlock Text="{Binding GrantedPermissions}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,4,0,0" />
                                         </StackPanel>
                                     </Border>
@@ -504,7 +504,7 @@
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,8,0,0">
                                 <Run Text="{x:Static loc:Strings.Organizations_CurrentRole}" />
                                 <Run Text=": " />
-                                <Run Text="{Binding CurrentRole, Mode=OneWay}" />
+                                <Run Text="{Binding CurrentRole, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                             </TextBlock>
 
                             <StackPanel Orientation="Horizontal" Margin="0,20,0,0">

@@ -125,7 +125,7 @@
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,2,0,0" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Category, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

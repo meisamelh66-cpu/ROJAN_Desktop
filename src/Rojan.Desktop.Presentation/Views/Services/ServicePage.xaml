@@ -95,7 +95,7 @@
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                            <Run Text="{Binding Category, Mode=OneWay}" />
+                                            <Run Text="{Binding Category, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                             <Run Text=" · " />
                                             <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
                                             <Run Text=" " />
@@ -151,7 +151,7 @@
                     <dashboardControls:DashboardCard Title="{Binding Service.Name}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
-                                <Run Text="{Binding Service.Category, Mode=OneWay}" />
+                                <Run Text="{Binding Service.Category, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                 <Run Text=" · " />
                                 <Run Text="{Binding Service.Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                             </TextBlock>
@@ -170,7 +170,7 @@
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, StringFormat={}{0} min}" Margin="0,0,32,0" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, Converter={StaticResource Rojan.Converter.MinutesSuffix}}" Margin="0,0,32,0" />
                             <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Price}" Value="{Binding Service.Price}" />
                         </StackPanel>
                     </dashboardControls:DashboardWidget>

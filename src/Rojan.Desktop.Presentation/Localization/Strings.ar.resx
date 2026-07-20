@@ -492,6 +492,15 @@
   <data name="Common_Add" xml:space="preserve">
     <value>إضافة</value>
   </data>
+  <data name="Common_Send" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Common_Enabled" xml:space="preserve">
+    <value>مفعل</value>
+  </data>
   <data name="Common_Supplier" xml:space="preserve">
     <value>المورد</value>
   </data>
@@ -906,6 +915,294 @@
   <data name="Reporting_Rows" xml:space="preserve">
     <value>صف</value>
   </data>
+  <data name="Ai_Title" xml:space="preserve">
+    <value>مركز الذكاء الاصطناعي</value>
+  </data>
+  <data name="Ai_Subtitle" xml:space="preserve">
+    <value>المساعد التجاري، الرؤى، التوصيات، وسجل المحادثات عبر كل وحدة.</value>
+  </data>
+  <data name="Ai_Section_Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+  <data name="Ai_Section_Chat" xml:space="preserve">
+    <value>المحادثة</value>
+  </data>
+  <data name="Ai_Section_Insights" xml:space="preserve">
+    <value>الرؤى</value>
+  </data>
+  <data name="Ai_Section_Recommendations" xml:space="preserve">
+    <value>التوصيات</value>
+  </data>
+  <data name="Ai_Section_History" xml:space="preserve">
+    <value>السجل</value>
+  </data>
+  <data name="Ai_Section_Settings" xml:space="preserve">
+    <value>الإعدادات</value>
+  </data>
+  <data name="Ai_BusinessHealthScore" xml:space="preserve">
+    <value>مؤشر صحة الأعمال</value>
+  </data>
+  <data name="Ai_DailySummary" xml:space="preserve">
+    <value>الملخص اليومي</value>
+  </data>
+  <data name="Ai_SmartNotifications" xml:space="preserve">
+    <value>الإشعارات الذكية</value>
+  </data>
+  <data name="Ai_BusinessAssistant" xml:space="preserve">
+    <value>المساعد التجاري</value>
+  </data>
+  <data name="Ai_NewConversation" xml:space="preserve">
+    <value>محادثة جديدة</value>
+  </data>
+  <data name="Ai_InsightDashboard" xml:space="preserve">
+    <value>لوحة الرؤى</value>
+  </data>
+  <data name="Ai_RecommendationsPanel" xml:space="preserve">
+    <value>لوحة التوصيات</value>
+  </data>
+  <data name="Ai_ActionCenterSuggestedTasks" xml:space="preserve">
+    <value>مركز الإجراءات - المهام المقترحة</value>
+  </data>
+  <data name="Ai_SearchConversations" xml:space="preserve">
+    <value>البحث في المحادثات</value>
+  </data>
+  <data name="Ai_ClearHistory" xml:space="preserve">
+    <value>مسح السجل</value>
+  </data>
+  <data name="Ai_PinnedConversations" xml:space="preserve">
+    <value>المحادثات المثبتة</value>
+  </data>
+  <data name="Ai_RecentConversations" xml:space="preserve">
+    <value>المحادثات الأخيرة</value>
+  </data>
+  <data name="Ai_ExportPreview" xml:space="preserve">
+    <value>عارض المحادثة - معاينة التصدير</value>
+  </data>
+  <data name="Ai_FeatureToggles" xml:space="preserve">
+    <value>مفاتيح الميزات</value>
+  </data>
+  <data name="Ai_AutoGenerateRecommendations" xml:space="preserve">
+    <value>توليد التوصيات تلقائياً</value>
+  </data>
+  <data name="Ai_SaveSettings" xml:space="preserve">
+    <value>حفظ الإعدادات</value>
+  </data>
+  <data name="Ai_ModelSelector" xml:space="preserve">
+    <value>محدد النموذج</value>
+  </data>
+  <data name="Ai_Provider" xml:space="preserve">
+    <value>المزود</value>
+  </data>
+  <data name="Ai_ModelId" xml:space="preserve">
+    <value>معرف النموذج</value>
+  </data>
+  <data name="Ai_SaveModelConfiguration" xml:space="preserve">
+    <value>حفظ إعدادات النموذج</value>
+  </data>
+  <data name="Ai_UsageDashboard" xml:space="preserve">
+    <value>لوحة الاستخدام</value>
+  </data>
+  <data name="Ai_TotalTokensUsed" xml:space="preserve">
+    <value>إجمالي الرموز المستخدمة</value>
+  </data>
+  <data name="Ai_Tokens" xml:space="preserve">
+    <value>رمز</value>
+  </data>
+  <data name="Ai_PromptTemplates" xml:space="preserve">
+    <value>قوالب الأوامر</value>
+  </data>
+  <data name="Hr_Title" xml:space="preserve">
+    <value>الموظفون والموارد البشرية</value>
+  </data>
+  <data name="Hr_Subtitle" xml:space="preserve">
+    <value>الموظفون، الحضور، النوبات، الإجازات، العمولات، والرواتب.</value>
+  </data>
+  <data name="Hr_Employees" xml:space="preserve">
+    <value>الموظفون</value>
+  </data>
+  <data name="Hr_PresentToday" xml:space="preserve">
+    <value>الحاضرون اليوم</value>
+  </data>
+  <data name="Hr_LateToday" xml:space="preserve">
+    <value>المتأخرون اليوم</value>
+  </data>
+  <data name="Hr_OnLeave" xml:space="preserve">
+    <value>في إجازة</value>
+  </data>
+  <data name="Hr_PayrollThisMonth" xml:space="preserve">
+    <value>رواتب هذا الشهر</value>
+  </data>
+  <data name="Hr_CommissionThisMonth" xml:space="preserve">
+    <value>عمولة هذا الشهر</value>
+  </data>
+  <data name="Hr_AvgAttendance" xml:space="preserve">
+    <value>متوسط الحضور</value>
+  </data>
+  <data name="Hr_Attendance" xml:space="preserve">
+    <value>الحضور</value>
+  </data>
+  <data name="Hr_Shifts" xml:space="preserve">
+    <value>النوبات</value>
+  </data>
+  <data name="Hr_Leave" xml:space="preserve">
+    <value>الإجازة</value>
+  </data>
+  <data name="Hr_Commission" xml:space="preserve">
+    <value>العمولة</value>
+  </data>
+  <data name="Hr_Payroll" xml:space="preserve">
+    <value>الرواتب</value>
+  </data>
+  <data name="Hr_AddEmployee" xml:space="preserve">
+    <value>إضافة موظف</value>
+  </data>
+  <data name="Hr_BaseSalary" xml:space="preserve">
+    <value>الراتب الأساسي</value>
+  </data>
+  <data name="Hr_Role" xml:space="preserve">
+    <value>الدور</value>
+  </data>
+  <data name="Hr_Department" xml:space="preserve">
+    <value>القسم</value>
+  </data>
+  <data name="Hr_EmploymentType" xml:space="preserve">
+    <value>نوع التوظيف</value>
+  </data>
+  <data name="Hr_SearchPlaceholder" xml:space="preserve">
+    <value>البحث بالاسم أو البريد الإلكتروني أو الدور أو القسم...</value>
+  </data>
+  <data name="Hr_AllEmployees" xml:space="preserve">
+    <value>جميع الموظفين</value>
+  </data>
+  <data name="Hr_RecordAttendanceToday" xml:space="preserve">
+    <value>تسجيل الحضور (اليوم)</value>
+  </data>
+  <data name="Hr_Employee" xml:space="preserve">
+    <value>الموظف</value>
+  </data>
+  <data name="Hr_CheckInTime" xml:space="preserve">
+    <value>وقت الدخول (HH:mm)</value>
+  </data>
+  <data name="Hr_RecordAttendance" xml:space="preserve">
+    <value>تسجيل الحضور</value>
+  </data>
+  <data name="Hr_TodayAttendance" xml:space="preserve">
+    <value>حضور اليوم</value>
+  </data>
+  <data name="Hr_CreateShift" xml:space="preserve">
+    <value>إنشاء نوبة</value>
+  </data>
+  <data name="Hr_Label" xml:space="preserve">
+    <value>التسمية</value>
+  </data>
+  <data name="Hr_StartTime" xml:space="preserve">
+    <value>البداية (HH:mm)</value>
+  </data>
+  <data name="Hr_EndTime" xml:space="preserve">
+    <value>النهاية (HH:mm)</value>
+  </data>
+  <data name="Hr_AssignShift" xml:space="preserve">
+    <value>تخصيص نوبة</value>
+  </data>
+  <data name="Hr_Shift" xml:space="preserve">
+    <value>النوبة</value>
+  </data>
+  <data name="Hr_ShiftAssignments" xml:space="preserve">
+    <value>تخصيصات النوبات</value>
+  </data>
+  <data name="Hr_RequestLeave" xml:space="preserve">
+    <value>طلب إجازة</value>
+  </data>
+  <data name="Hr_StartDate" xml:space="preserve">
+    <value>تاريخ البدء</value>
+  </data>
+  <data name="Hr_EndDate" xml:space="preserve">
+    <value>تاريخ الانتهاء</value>
+  </data>
+  <data name="Hr_Reason" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="Hr_LeaveRequests" xml:space="preserve">
+    <value>طلبات الإجازة</value>
+  </data>
+  <data name="Hr_Approve" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="Hr_Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="Hr_CommissionEngine" xml:space="preserve">
+    <value>محرك العمولات</value>
+  </data>
+  <data name="Hr_CommissionEngineDescription" xml:space="preserve">
+    <value>إنشاء معاملات العمولة من فواتير المحاسبة المدفوعة التي يوجد خلفها حجز.</value>
+  </data>
+  <data name="Hr_GenerateCommissions" xml:space="preserve">
+    <value>إنشاء العمولات من المحاسبة</value>
+  </data>
+  <data name="Hr_AddCommissionRule" xml:space="preserve">
+    <value>إضافة قاعدة عمولة</value>
+  </data>
+  <data name="Hr_AddRule" xml:space="preserve">
+    <value>إضافة قاعدة</value>
+  </data>
+  <data name="Hr_CommissionValueHint" xml:space="preserve">
+    <value>القيمة (0.10 = 10%، أو مبلغ ثابت)</value>
+  </data>
+  <data name="Hr_CommissionRules" xml:space="preserve">
+    <value>قواعد العمولة</value>
+  </data>
+  <data name="Hr_CommissionHistory" xml:space="preserve">
+    <value>سجل العمولات</value>
+  </data>
+  <data name="Hr_Invoice" xml:space="preserve">
+    <value>الفاتورة</value>
+  </data>
+  <data name="Hr_GeneratePayrollSummary" xml:space="preserve">
+    <value>إنشاء ملخص الرواتب</value>
+  </data>
+  <data name="Hr_Month" xml:space="preserve">
+    <value>الشهر</value>
+  </data>
+  <data name="Hr_Year" xml:space="preserve">
+    <value>السنة</value>
+  </data>
+  <data name="Hr_Bonus" xml:space="preserve">
+    <value>المكافأة</value>
+  </data>
+  <data name="Hr_Deduction" xml:space="preserve">
+    <value>الخصم</value>
+  </data>
+  <data name="Hr_GeneratePayroll" xml:space="preserve">
+    <value>إنشاء الراتب</value>
+  </data>
+  <data name="Hr_PayrollSummaries" xml:space="preserve">
+    <value>ملخصات الرواتب</value>
+  </data>
+  <data name="Hr_Base" xml:space="preserve">
+    <value>الأساسي</value>
+  </data>
+  <data name="Hr_SelectPrompt" xml:space="preserve">
+    <value>اختر موظفاً لعرض ملفه الشخصي.</value>
+  </data>
+  <data name="Hr_Activate" xml:space="preserve">
+    <value>تفعيل</value>
+  </data>
+  <data name="Hr_Deactivate" xml:space="preserve">
+    <value>إلغاء التفعيل</value>
+  </data>
+  <data name="Hr_Suspend" xml:space="preserve">
+    <value>إيقاف مؤقت</value>
+  </data>
+  <data name="Hr_RecentAttendance" xml:space="preserve">
+    <value>الحضور الأخير</value>
+  </data>
+  <data name="Hr_UpcomingShifts" xml:space="preserve">
+    <value>النوبات القادمة</value>
+  </data>
+  <data name="Hr_RecentCommissions" xml:space="preserve">
+    <value>العمولات الأخيرة</value>
+  </data>
   <data name="Enum_Available" xml:space="preserve">
     <value>متاح</value>
   </data>
@@ -1007,5 +1304,215 @@
   </data>
   <data name="Enum_Suspended" xml:space="preserve">
     <value>موقوف</value>
+  </data>
+  <data name="Enum_Mock" xml:space="preserve">
+    <value>تجريبي</value>
+  </data>
+  <data name="Enum_OpenAI" xml:space="preserve">
+    <value>OpenAI</value>
+  </data>
+  <data name="Enum_Anthropic" xml:space="preserve">
+    <value>Anthropic</value>
+  </data>
+  <data name="Enum_AzureOpenAI" xml:space="preserve">
+    <value>Azure OpenAI</value>
+  </data>
+  <data name="Enum_LocalModel" xml:space="preserve">
+    <value>نموذج محلي</value>
+  </data>
+  <data name="Enum_System" xml:space="preserve">
+    <value>النظام</value>
+  </data>
+  <data name="Enum_Developer" xml:space="preserve">
+    <value>المطور</value>
+  </data>
+  <data name="Enum_User" xml:space="preserve">
+    <value>المستخدم</value>
+  </data>
+  <data name="Enum_Assistant" xml:space="preserve">
+    <value>المساعد</value>
+  </data>
+  <data name="Enum_Revenue" xml:space="preserve">
+    <value>الإيرادات</value>
+  </data>
+  <data name="Enum_Customer" xml:space="preserve">
+    <value>العميل</value>
+  </data>
+  <data name="Enum_Appointment" xml:space="preserve">
+    <value>الموعد</value>
+  </data>
+  <data name="Enum_Inventory" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Enum_Hr" xml:space="preserve">
+    <value>الموارد البشرية</value>
+  </data>
+  <data name="Enum_Payroll" xml:space="preserve">
+    <value>الرواتب</value>
+  </data>
+  <data name="Enum_Attendance" xml:space="preserve">
+    <value>الحضور</value>
+  </data>
+  <data name="Enum_Commission" xml:space="preserve">
+    <value>العمولة</value>
+  </data>
+  <data name="Enum_General" xml:space="preserve">
+    <value>عام</value>
+  </data>
+  <data name="Enum_Info" xml:space="preserve">
+    <value>معلومات</value>
+  </data>
+  <data name="Enum_Trend" xml:space="preserve">
+    <value>اتجاه</value>
+  </data>
+  <data name="Enum_Opportunity" xml:space="preserve">
+    <value>فرصة</value>
+  </data>
+  <data name="Enum_Risk" xml:space="preserve">
+    <value>خطر</value>
+  </data>
+  <data name="Enum_Critical" xml:space="preserve">
+    <value>حرج</value>
+  </data>
+  <data name="Enum_Low" xml:space="preserve">
+    <value>منخفض</value>
+  </data>
+  <data name="Enum_Medium" xml:space="preserve">
+    <value>متوسط</value>
+  </data>
+  <data name="Enum_High" xml:space="preserve">
+    <value>مرتفع</value>
+  </data>
+  <data name="Enum_Urgent" xml:space="preserve">
+    <value>عاجل</value>
+  </data>
+  <data name="Enum_Stylist" xml:space="preserve">
+    <value>مصفف شعر</value>
+  </data>
+  <data name="Enum_Colorist" xml:space="preserve">
+    <value>أخصائي صبغ الشعر</value>
+  </data>
+  <data name="Enum_NailTechnician" xml:space="preserve">
+    <value>أخصائي أظافر</value>
+  </data>
+  <data name="Enum_Esthetician" xml:space="preserve">
+    <value>أخصائي بشرة</value>
+  </data>
+  <data name="Enum_MassageTherapist" xml:space="preserve">
+    <value>معالج تدليك</value>
+  </data>
+  <data name="Enum_Receptionist" xml:space="preserve">
+    <value>موظف استقبال</value>
+  </data>
+  <data name="Enum_Manager" xml:space="preserve">
+    <value>مدير</value>
+  </data>
+  <data name="Enum_Reception" xml:space="preserve">
+    <value>الاستقبال</value>
+  </data>
+  <data name="Enum_Hair" xml:space="preserve">
+    <value>الشعر</value>
+  </data>
+  <data name="Enum_Nails" xml:space="preserve">
+    <value>الأظافر</value>
+  </data>
+  <data name="Enum_Makeup" xml:space="preserve">
+    <value>المكياج</value>
+  </data>
+  <data name="Enum_SkinCare" xml:space="preserve">
+    <value>العناية بالبشرة</value>
+  </data>
+  <data name="Enum_Massage" xml:space="preserve">
+    <value>التدليك</value>
+  </data>
+  <data name="Enum_Management" xml:space="preserve">
+    <value>الإدارة</value>
+  </data>
+  <data name="Enum_FullTime" xml:space="preserve">
+    <value>دوام كامل</value>
+  </data>
+  <data name="Enum_PartTime" xml:space="preserve">
+    <value>دوام جزئي</value>
+  </data>
+  <data name="Enum_Contractor" xml:space="preserve">
+    <value>متعاقد</value>
+  </data>
+  <data name="Enum_Present" xml:space="preserve">
+    <value>حاضر</value>
+  </data>
+  <data name="Enum_Late" xml:space="preserve">
+    <value>متأخر</value>
+  </data>
+  <data name="Enum_Absent" xml:space="preserve">
+    <value>غائب</value>
+  </data>
+  <data name="Enum_Vacation" xml:space="preserve">
+    <value>إجازة</value>
+  </data>
+  <data name="Enum_FixedAmount" xml:space="preserve">
+    <value>مبلغ ثابت</value>
+  </data>
+  <data name="Enum_Percentage" xml:space="preserve">
+    <value>نسبة مئوية</value>
+  </data>
+  <data name="Enum_Approved" xml:space="preserve">
+    <value>موافق عليه</value>
+  </data>
+  <data name="Enum_Rejected" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="Enum_PlatformOwner" xml:space="preserve">
+    <value>مالك المنصة</value>
+  </data>
+  <data name="Enum_OrganizationOwner" xml:space="preserve">
+    <value>مالك المؤسسة</value>
+  </data>
+  <data name="Enum_OrganizationManager" xml:space="preserve">
+    <value>مدير المؤسسة</value>
+  </data>
+  <data name="Enum_BranchManager" xml:space="preserve">
+    <value>مدير الفرع</value>
+  </data>
+  <data name="Enum_Specialist" xml:space="preserve">
+    <value>أخصائي</value>
+  </data>
+  <data name="Enum_Accounting" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="Enum_Ai" xml:space="preserve">
+    <value>الذكاء الاصطناعي</value>
+  </data>
+  <data name="Enum_Support" xml:space="preserve">
+    <value>الدعم</value>
+  </data>
+  <data name="Enum_Marketing" xml:space="preserve">
+    <value>التسويق</value>
+  </data>
+  <data name="Enum_Financial" xml:space="preserve">
+    <value>مالي</value>
+  </data>
+  <data name="Enum_Operations" xml:space="preserve">
+    <value>العمليات</value>
+  </data>
+  <data name="Enum_Customers" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Enum_Workforce" xml:space="preserve">
+    <value>القوى العاملة</value>
+  </data>
+  <data name="Enum_Dashboards" xml:space="preserve">
+    <value>لوحات المعلومات</value>
+  </data>
+  <data name="Enum_Colour" xml:space="preserve">
+    <value>اللون</value>
+  </data>
+  <data name="Enum_Skin" xml:space="preserve">
+    <value>البشرة</value>
+  </data>
+  <data name="Enum_Spa" xml:space="preserve">
+    <value>سبا</value>
+  </data>
+  <data name="Enum_Consultation" xml:space="preserve">
+    <value>استشارة</value>
   </data>
 </root>
