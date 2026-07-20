@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.DependencyInjection;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
@@ -138,8 +139,13 @@ public partial class App
 
         // Phase 22: Enterprise Multi-Branch & Organization Platform - same
         // "interface in Presentation, concrete implementation in Shell"
-        // split as Localization/Theming above.
-        services.AddSingleton<ICurrentSessionService, CurrentSessionService>();
+        // split as Localization/Theming above. Phase 22A: the same
+        // instance also serves Application.Organizations.IEnterpriseContext
+        // (registered once as itself, aliased to both interfaces) - see
+        // CurrentSessionService's own doc comment.
+        services.AddSingleton<CurrentSessionService>();
+        services.AddSingleton<ICurrentSessionService>(sp => sp.GetRequiredService<CurrentSessionService>());
+        services.AddSingleton<IEnterpriseContext>(sp => sp.GetRequiredService<CurrentSessionService>());
 
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();

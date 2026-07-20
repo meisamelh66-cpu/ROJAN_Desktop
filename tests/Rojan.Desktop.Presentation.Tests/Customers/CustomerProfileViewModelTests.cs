@@ -8,7 +8,7 @@ public sealed class CustomerProfileViewModelTests
 {
     private static CustomerProfileDto MakeProfile(string customerId = "customer-1") =>
         new(
-            new CustomerDto(customerId, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "555-0100", CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes"),
+            new CustomerDto(customerId, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "555-0100", CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes", "org-1", "branch-1"),
             [new CustomerNoteDto("note-1", customerId, "Prefers evenings.", DateTimeOffset.UnixEpoch)],
             [new CustomerTagDto("tag-1", customerId, "Regular", DateTimeOffset.UnixEpoch)],
             [new CustomerActivityDto("activity-1", customerId, "Customer created", DateTimeOffset.UnixEpoch)],

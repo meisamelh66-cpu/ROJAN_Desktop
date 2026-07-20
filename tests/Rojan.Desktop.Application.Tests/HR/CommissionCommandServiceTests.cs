@@ -11,7 +11,7 @@ public sealed class CommissionCommandServiceTests
         new(id, "customer-1", "Amelia Hart", bookingId, string.Empty, DateTimeOffset.Now, status, total, 0m, total, string.Empty);
 
     private static AppBookings.BookingDto MakeBooking(string id, string specialistId, string serviceName) =>
-        new(id, "customer-1", "Amelia Hart", "service-1", serviceName, specialistId, "Jordan Lee", DateTimeOffset.Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty);
+        new(id, "customer-1", "Amelia Hart", "service-1", serviceName, specialistId, "Jordan Lee", DateTimeOffset.Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1");
 
     private static DomainHr.Employee MakeEmployee(string id, string specialistId, string fullName) =>
         new(id, specialistId, fullName, $"{id}@rojan.example", "+1 555", DomainHr.EmployeeRole.Colorist, DomainHr.Department.Hair, DomainHr.EmploymentType.FullTime, DomainHr.EmployeeStatus.Active, new DateOnly(2022, 1, 1), 3000m);

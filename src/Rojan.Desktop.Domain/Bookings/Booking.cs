@@ -23,4 +23,6 @@ public sealed record Booking(
     int DurationMinutes,
     string Price,
     BookingStatus Status,
-    string Notes);
+    string Notes,
+    string OrganizationId,
+    string BranchId);

@@ -1,4 +1,5 @@
 using System.Globalization;
+using Rojan.Desktop.Application.Organizations;
 using DomainCustomers = Rojan.Desktop.Domain.Customers;
 
 namespace Rojan.Desktop.Application.Customers;
@@ -11,20 +12,29 @@ namespace Rojan.Desktop.Application.Customers;
 /// cards (computed here, not stored - a business rule about what a
 /// profile's key numbers are, which belongs in Application, not Domain
 /// or Infrastructure).
+///
+/// Phase 22A: a customer outside the current organization/branch is
+/// treated exactly like a non-existent one (same
+/// <see cref="InvalidOperationException"/>, not a distinct "forbidden"
+/// error) - Organization/Branch Scoping must not even confirm that a
+/// given id exists elsewhere.
 /// </summary>
 public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
 {
     private readonly DomainCustomers.ICustomerRepository _repository;
+    private readonly IEnterpriseContext _enterpriseContext;
 
-    public CustomerProfileQueryService(DomainCustomers.ICustomerRepository repository)
+    public CustomerProfileQueryService(DomainCustomers.ICustomerRepository repository, IEnterpriseContext enterpriseContext)
     {
         _repository = repository;
+        _enterpriseContext = enterpriseContext;
     }
 
     public async Task<CustomerProfileDto> GetProfileAsync(string customerId, CancellationToken cancellationToken = default)
     {
         var customer = await _repository.GetCustomerByIdAsync(customerId, cancellationToken).ConfigureAwait(true);
-        if (customer is null)
+        if (customer is null || customer.OrganizationId != _enterpriseContext.CurrentOrganizationId ||
+            (_enterpriseContext.CurrentBranchId is not null && customer.BranchId != _enterpriseContext.CurrentBranchId))
         {
             throw new InvalidOperationException($"Customer '{customerId}' was not found.");
         }

@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Inventory;
+﻿using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 
@@ -7,7 +7,7 @@ namespace Rojan.Desktop.Presentation.Tests.Inventory;
 public sealed class InventoryPageViewModelTests
 {
     private static ProductDto MakeProduct(string id, string name) =>
-        new(id, "SKU-" + id, name, "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, string.Empty);
+        new(id, "SKU-" + id, name, "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, string.Empty, "org-1", "branch-1");
 
     /// <summary>A profile query stub that never fails, used by tests that don't assert on Profile - Profile is constructed as a side effect of selection, and its own errors are contained internally.</summary>
     private static StubProductProfileQueryService MakeProfileQueryService() =>

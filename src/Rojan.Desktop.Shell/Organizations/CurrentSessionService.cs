@@ -16,8 +16,17 @@ namespace Rojan.Desktop.Shell.Organizations;
 /// when no settings file exists yet or the persisted ids no longer
 /// resolve (e.g. seed data changed) - never leaves the session
 /// unscoped.
+///
+/// Phase 22A: also implements <see cref="IEnterpriseContext"/> - the
+/// Application layer's own (Presentation-independent) view of the same
+/// scoping data, so every module's query/command service can depend on
+/// current organization/branch/role without depending on
+/// <see cref="ICurrentSessionService"/> (a Presentation-layer type
+/// Application must never reference). One object, two interfaces, same
+/// alias-registration pattern <c>App.xaml.cs</c> already uses for
+/// <c>NavigationService</c>/<c>INavigationService</c>.
 /// </summary>
-public sealed class CurrentSessionService : ICurrentSessionService
+public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseContext
 {
     /// <summary>The Branch Switcher's "Recently used branches" cap - the five most recent, newest first.</summary>
     public const int MaxRecentBranches = 5;
@@ -46,6 +55,10 @@ public sealed class CurrentSessionService : ICurrentSessionService
     public BranchDto? CurrentBranch { get; private set; }
 
     public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.PlatformOwner;
+
+    string? IEnterpriseContext.CurrentOrganizationId => CurrentOrganization?.Id;
+
+    string? IEnterpriseContext.CurrentBranchId => CurrentBranch?.Id;
 
     public IReadOnlyList<BranchDto> AvailableBranches => _availableBranches;
 

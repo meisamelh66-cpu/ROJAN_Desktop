@@ -12,7 +12,7 @@ public sealed class BookingWorkflowServiceTests
     private static readonly DateTimeOffset SlotStart = new(2026, 3, 2, 9, 0, 0, DateTimeOffset.Now.Offset);
 
     private static AppCustomers.CustomerDto MakeCustomer(string id, string name) =>
-        new(id, name, string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty);
+        new(id, name, string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1");
 
     private static AppServices.ServiceDto MakeService(string id, string name, AppServices.ServiceStatus status) =>
         new(id, name, AppServices.ServiceCategory.Hair, status, 60, "$65", string.Empty);
@@ -136,7 +136,7 @@ public sealed class BookingWorkflowServiceTests
     {
         var booking = new AppBookings.BookingDto(
             "booking-1", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee",
-            SlotStart, 60, "$65", AppBookings.BookingStatus.Confirmed, string.Empty);
+            SlotStart, 60, "$65", AppBookings.BookingStatus.Confirmed, string.Empty, "org-1", "branch-1");
         var bookingQueryService = new StubBookingQueryService([booking]);
         var bookingCommandService = new StubBookingCommandService();
         var calendarCommandService = new StubCalendarCommandService();
@@ -155,7 +155,7 @@ public sealed class BookingWorkflowServiceTests
     {
         var booking = new AppBookings.BookingDto(
             "booking-3", string.Empty, "Olivia Chen", string.Empty, "Corporate Group Styling", string.Empty, "Priya Nair",
-            SlotStart, 240, "$0", AppBookings.BookingStatus.Pending, string.Empty);
+            SlotStart, 240, "$0", AppBookings.BookingStatus.Pending, string.Empty, "org-1", "branch-1");
         var bookingQueryService = new StubBookingQueryService([booking]);
         var bookingCommandService = new StubBookingCommandService();
         var calendarCommandService = new StubCalendarCommandService();

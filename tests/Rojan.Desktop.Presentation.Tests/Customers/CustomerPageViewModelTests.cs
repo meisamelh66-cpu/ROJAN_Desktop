@@ -7,7 +7,7 @@ namespace Rojan.Desktop.Presentation.Tests.Customers;
 public sealed class CustomerPageViewModelTests
 {
     private static CustomerDto MakeCustomer(string id, string fullName, string company = "", string email = "") =>
-        new(id, fullName, company, email, string.Empty, CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty);
+        new(id, fullName, company, email, string.Empty, CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1");
 
     /// <summary>A profile query stub that never fails, used by tests that don't assert on Profile - Profile is constructed as a side effect of selection, and its own errors are contained internally (CustomerProfileViewModel catches them itself).</summary>
     private static StubCustomerProfileQueryService MakeProfileQueryService() =>

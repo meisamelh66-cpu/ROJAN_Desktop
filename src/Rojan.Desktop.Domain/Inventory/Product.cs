@@ -20,4 +20,6 @@ public sealed record Product(
     string SupplierName,
     string UnitPrice,
     ProductStatus Status,
-    string Description);
+    string Description,
+    string OrganizationId,
+    string BranchId);

@@ -10,7 +10,7 @@ public sealed class BookingPageViewModelTests
 {
     private static BookingDto MakeBooking(string id, string customerName, BookingStatus status = BookingStatus.Pending) =>
         new(id, string.Empty, customerName, string.Empty, "Test Service", string.Empty, "Test Specialist",
-            DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty);
+            DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty, "org-1", "branch-1");
 
     private static BookingPageViewModel MakeSut(
         StubBookingQueryService queryService,

@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Inventory;
+﻿using Rojan.Desktop.Application.Inventory;
 
 namespace Rojan.Desktop.Presentation.Tests.Inventory;
 
@@ -22,7 +22,7 @@ internal sealed class StubInventoryCommandService : IInventoryCommandService
         CreateProductRequests.Add(request);
         return Task.FromResult(new ProductDto(
             "new-product", request.Sku, request.Name, request.CategoryId, request.CategoryName,
-            request.SupplierId, request.SupplierName, request.UnitPrice, ProductStatus.Active, request.Description));
+            request.SupplierId, request.SupplierName, request.UnitPrice, ProductStatus.Active, request.Description, "org-1", "branch-1"));
     }
 
     public Task<ProductCategoryDto> CreateCategoryAsync(string name, string description, CancellationToken cancellationToken = default)

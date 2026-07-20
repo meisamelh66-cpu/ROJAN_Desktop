@@ -1,3 +1,4 @@
+using Rojan.Desktop.Application.Organizations;
 using DomainCustomers = Rojan.Desktop.Domain.Customers;
 
 namespace Rojan.Desktop.Application.Customers;
@@ -9,14 +10,25 @@ namespace Rojan.Desktop.Application.Customers;
 /// running app rather than only the seeded demo data - a business rule
 /// (what counts as timeline-worthy) that belongs here, not hidden as a
 /// side effect inside the fake repository.
+///
+/// Phase 22A: <see cref="CreateCustomerAsync"/> stamps the new customer
+/// with the current session's organization/branch
+/// (<see cref="IEnterpriseContext"/>) - never a hardcoded id.
+/// <see cref="UpdateCustomerAsync"/> deliberately preserves the existing
+/// record's organization/branch rather than re-stamping from the current
+/// session - editing a customer must never silently move it to whichever
+/// branch happens to be active, that would need its own explicit
+/// "transfer" operation, out of scope here.
 /// </summary>
 public sealed class CustomerCommandService : ICustomerCommandService
 {
     private readonly DomainCustomers.ICustomerRepository _repository;
+    private readonly IEnterpriseContext _enterpriseContext;
 
-    public CustomerCommandService(DomainCustomers.ICustomerRepository repository)
+    public CustomerCommandService(DomainCustomers.ICustomerRepository repository, IEnterpriseContext enterpriseContext)
     {
         _repository = repository;
+        _enterpriseContext = enterpriseContext;
     }
 
     public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
@@ -30,7 +42,9 @@ public sealed class CustomerCommandService : ICustomerCommandService
             DomainCustomers.CustomerStatus.Lead,
             "$0",
             DateTimeOffset.Now,
-            request.Notes);
+            request.Notes,
+            _enterpriseContext.CurrentOrganizationId ?? string.Empty,
+            _enterpriseContext.CurrentBranchId ?? string.Empty);
 
         var created = await _repository.CreateCustomerAsync(customer, cancellationToken).ConfigureAwait(true);
         await LogActivityAsync(created.Id, "Customer created", cancellationToken).ConfigureAwait(true);
@@ -40,6 +54,9 @@ public sealed class CustomerCommandService : ICustomerCommandService
 
     public async Task<CustomerDto> UpdateCustomerAsync(UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
+        var existing = await _repository.GetCustomerByIdAsync(request.Id, cancellationToken).ConfigureAwait(true)
+            ?? throw new InvalidOperationException($"Customer '{request.Id}' was not found.");
+
         var customer = new DomainCustomers.Customer(
             request.Id,
             request.FullName,
@@ -49,7 +66,9 @@ public sealed class CustomerCommandService : ICustomerCommandService
             CustomerMapper.MapStatusToDomain(request.Status),
             request.LifetimeValue,
             DateTimeOffset.Now,
-            request.Notes);
+            request.Notes,
+            existing.OrganizationId,
+            existing.BranchId);
 
         var updated = await _repository.UpdateCustomerAsync(customer, cancellationToken).ConfigureAwait(true);
         await LogActivityAsync(updated.Id, "Customer profile updated", cancellationToken).ConfigureAwait(true);

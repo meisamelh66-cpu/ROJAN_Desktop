@@ -1,3 +1,4 @@
+using Rojan.Desktop.Application.Organizations;
 using DomainBookings = Rojan.Desktop.Domain.Bookings;
 
 namespace Rojan.Desktop.Application.Bookings;
@@ -8,14 +9,18 @@ namespace Rojan.Desktop.Application.Bookings;
 /// duration or an illegal status transition throws rather than silently
 /// writing bad data, now that a real cross-slice workflow
 /// (<c>BookingWorkflowService</c>) depends on this service's guarantees.
+/// Phase 22A: <see cref="CreateBookingAsync"/> stamps the new booking with
+/// the current session's organization/branch (<see cref="IEnterpriseContext"/>).
 /// </summary>
 public sealed class BookingCommandService : IBookingCommandService
 {
     private readonly DomainBookings.IBookingRepository _repository;
+    private readonly IEnterpriseContext _enterpriseContext;
 
-    public BookingCommandService(DomainBookings.IBookingRepository repository)
+    public BookingCommandService(DomainBookings.IBookingRepository repository, IEnterpriseContext enterpriseContext)
     {
         _repository = repository;
+        _enterpriseContext = enterpriseContext;
     }
 
     public async Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
@@ -37,7 +42,9 @@ public sealed class BookingCommandService : IBookingCommandService
             request.DurationMinutes,
             request.Price,
             DomainBookings.BookingStatus.Pending,
-            request.Notes);
+            request.Notes,
+            _enterpriseContext.CurrentOrganizationId ?? string.Empty,
+            _enterpriseContext.CurrentBranchId ?? string.Empty);
 
         var created = await _repository.CreateBookingAsync(booking, cancellationToken).ConfigureAwait(true);
         return BookingMapper.MapBooking(created);

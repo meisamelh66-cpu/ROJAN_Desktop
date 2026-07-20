@@ -34,7 +34,7 @@ internal sealed class StubCustomerCommandService : ICustomerCommandService
         CreateRequests.Add(request);
         var dto = new CustomerDto(
             "new-customer", request.FullName, request.Company, request.Email, request.Phone,
-            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, request.Notes);
+            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, request.Notes, "org-1", "branch-1");
         OnCustomerCreated?.Invoke(request, dto);
         return Task.FromResult(dto);
     }
@@ -44,7 +44,7 @@ internal sealed class StubCustomerCommandService : ICustomerCommandService
         UpdateRequests.Add(request);
         return Task.FromResult(new CustomerDto(
             request.Id, request.FullName, request.Company, request.Email, request.Phone,
-            request.Status, request.LifetimeValue, DateTimeOffset.UnixEpoch, request.Notes));
+            request.Status, request.LifetimeValue, DateTimeOffset.UnixEpoch, request.Notes, "org-1", "branch-1"));
     }
 
     public Task<CustomerNoteDto> AddNoteAsync(string customerId, string text, CancellationToken cancellationToken = default)

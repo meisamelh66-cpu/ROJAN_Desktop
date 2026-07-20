@@ -22,7 +22,7 @@ internal sealed class StubBookingCommandService : IBookingCommandService
         return Task.FromResult(new BookingDto(
             "booking-new", request.CustomerId, request.CustomerName, request.ServiceId, request.ServiceName,
             request.SpecialistId, request.SpecialistName, request.ScheduledAt, request.DurationMinutes,
-            request.Price, BookingStatus.Pending, request.Notes));
+            request.Price, BookingStatus.Pending, request.Notes, "org-1", "branch-1"));
     }
 
     public Task<BookingDto> UpdateBookingStatusAsync(string bookingId, BookingStatus status, CancellationToken cancellationToken = default)
@@ -30,6 +30,6 @@ internal sealed class StubBookingCommandService : IBookingCommandService
         UpdateStatusCalls.Add((bookingId, status));
         return Task.FromResult(new BookingDto(
             bookingId, string.Empty, "Test Customer", string.Empty, "Test Service", string.Empty, string.Empty,
-            DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty));
+            DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty, "org-1", "branch-1"));
     }
 }

@@ -82,9 +82,9 @@ public sealed class AnalyticsQueryServiceTests
     {
         IReadOnlyList<AppBookings.BookingDto> bookings =
         [
-            new("b1", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty),
-            new("b2", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty),
-            new("b3", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty),
+            new("b1", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"),
+            new("b2", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"),
+            new("b3", "c1", "Alice", "s1", "Haircut", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty, "org-1", "branch-1"),
         ];
         var sut = CreateSut(bookings: bookings);
 
@@ -100,7 +100,7 @@ public sealed class AnalyticsQueryServiceTests
     public async Task GetDashboardChartsAsync_TopServicesChart_ReturnsAtMostFiveServices()
     {
         var bookings = Enumerable.Range(1, 8)
-            .Select(i => new AppBookings.BookingDto($"b{i}", "c1", "Alice", $"s{i}", $"Service {i}", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty))
+            .Select(i => new AppBookings.BookingDto($"b{i}", "c1", "Alice", $"s{i}", $"Service {i}", "sp1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"))
             .ToList();
         var sut = CreateSut(bookings: bookings);
 

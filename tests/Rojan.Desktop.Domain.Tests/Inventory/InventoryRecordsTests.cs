@@ -1,4 +1,4 @@
-using Rojan.Desktop.Domain.Inventory;
+﻿using Rojan.Desktop.Domain.Inventory;
 
 namespace Rojan.Desktop.Domain.Tests.Inventory;
 
@@ -8,8 +8,8 @@ public sealed class InventoryRecordsTests
     [Fact]
     public void Product_SameValues_AreEqual()
     {
-        var first = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description");
-        var second = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description");
+        var first = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description", "org-1", "branch-1");
+        var second = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description", "org-1", "branch-1");
 
         Assert.Equal(first, second);
     }
@@ -17,7 +17,7 @@ public sealed class InventoryRecordsTests
     [Fact]
     public void Product_DifferentStatus_AreNotEqual()
     {
-        var first = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description");
+        var first = new Product("product-1", "SKU-1", "Test Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, "Description", "org-1", "branch-1");
         var second = first with { Status = ProductStatus.Discontinued };
 
         Assert.NotEqual(first, second);

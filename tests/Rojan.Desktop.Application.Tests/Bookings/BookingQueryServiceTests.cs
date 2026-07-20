@@ -1,4 +1,5 @@
 using Rojan.Desktop.Application.Bookings;
+using Rojan.Desktop.Application.Tests.Organizations;
 using DomainBookings = Rojan.Desktop.Domain.Bookings;
 
 namespace Rojan.Desktop.Application.Tests.Bookings;
@@ -11,9 +12,9 @@ public sealed class BookingQueryServiceTests
         var scheduledAt = new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
         var domainBooking = new DomainBookings.Booking(
             "booking-1", "customer-1", "Amelia Hart", "service-2", "Colour Touch-Up", "specialist-1", "Jordan Lee",
-            scheduledAt, 90, "$120", DomainBookings.BookingStatus.Confirmed, "Notes");
+            scheduledAt, 90, "$120", DomainBookings.BookingStatus.Confirmed, "Notes", "org-1", "branch-1");
         var repository = new StubBookingRepository([domainBooking]);
-        var sut = new BookingQueryService(repository);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
 
         var result = await sut.GetBookingsAsync();
 
@@ -36,7 +37,7 @@ public sealed class BookingQueryServiceTests
     public async Task GetBookingsAsync_RepositoryReturnsEmptyList_ReturnsEmptyList()
     {
         var repository = new StubBookingRepository([]);
-        var sut = new BookingQueryService(repository);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
 
         var result = await sut.GetBookingsAsync();
 
@@ -55,9 +56,9 @@ public sealed class BookingQueryServiceTests
     {
         var domainBooking = new DomainBookings.Booking(
             "booking-1", string.Empty, "Test Customer", string.Empty, "Test Service", string.Empty, string.Empty,
-            DateTimeOffset.UnixEpoch, 60, "$0", domainStatus, string.Empty);
+            DateTimeOffset.UnixEpoch, 60, "$0", domainStatus, string.Empty, "org-1", "branch-1");
         var repository = new StubBookingRepository([domainBooking]);
-        var sut = new BookingQueryService(repository);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
 
         var result = await sut.GetBookingsAsync();
 
@@ -69,9 +70,9 @@ public sealed class BookingQueryServiceTests
     {
         var domainBooking = new DomainBookings.Booking(
             "booking-1", string.Empty, "Amelia Hart", string.Empty, "Colour Touch-Up", string.Empty, "Jordan Lee",
-            DateTimeOffset.UnixEpoch, 90, "$120", DomainBookings.BookingStatus.Confirmed, string.Empty);
+            DateTimeOffset.UnixEpoch, 90, "$120", DomainBookings.BookingStatus.Confirmed, string.Empty, "org-1", "branch-1");
         var repository = new StubBookingRepository([domainBooking]);
-        var sut = new BookingQueryService(repository);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
 
         var result = await sut.GetBookingByIdAsync("booking-1");
 
@@ -83,9 +84,37 @@ public sealed class BookingQueryServiceTests
     public async Task GetBookingByIdAsync_UnknownId_ReturnsNull()
     {
         var repository = new StubBookingRepository([]);
-        var sut = new BookingQueryService(repository);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
 
         var result = await sut.GetBookingByIdAsync("no-such-booking");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetBookingsAsync_BookingInDifferentOrganization_IsExcluded()
+    {
+        var domainBooking = new DomainBookings.Booking(
+            "booking-99", string.Empty, "Other Org Customer", string.Empty, "Service", string.Empty, string.Empty,
+            DateTimeOffset.UnixEpoch, 60, "$0", DomainBookings.BookingStatus.Pending, string.Empty, "org-2", "branch-3");
+        var repository = new StubBookingRepository([domainBooking]);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext { CurrentOrganizationId = "org-1", CurrentBranchId = "branch-1" });
+
+        var result = await sut.GetBookingsAsync();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetBookingByIdAsync_BookingInDifferentBranch_ReturnsNull()
+    {
+        var domainBooking = new DomainBookings.Booking(
+            "booking-98", string.Empty, "Other Branch Customer", string.Empty, "Service", string.Empty, string.Empty,
+            DateTimeOffset.UnixEpoch, 60, "$0", DomainBookings.BookingStatus.Pending, string.Empty, "org-1", "branch-2");
+        var repository = new StubBookingRepository([domainBooking]);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext { CurrentOrganizationId = "org-1", CurrentBranchId = "branch-1" });
+
+        var result = await sut.GetBookingByIdAsync("booking-98");
 
         Assert.Null(result);
     }

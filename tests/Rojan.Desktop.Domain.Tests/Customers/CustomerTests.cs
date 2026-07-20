@@ -13,7 +13,7 @@ public sealed class CustomerTests
 {
     private static Customer MakeCustomer(string id = "customer-1") =>
         new(id, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "+1 555 010 2231",
-            CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes");
+            CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes", "org-1", "branch-1");
 
     [Fact]
     public void Equals_SameValues_AreEqual()

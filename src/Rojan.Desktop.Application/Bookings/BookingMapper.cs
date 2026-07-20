@@ -17,7 +17,9 @@ internal static class BookingMapper
         booking.DurationMinutes,
         booking.Price,
         MapStatus(booking.Status),
-        booking.Notes);
+        booking.Notes,
+        booking.OrganizationId,
+        booking.BranchId);
 
     public static BookingStatus MapStatus(DomainBookings.BookingStatus status) => status switch
     {

@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Reporting;
+﻿using Rojan.Desktop.Application.Reporting;
 using AppAccounting = Rojan.Desktop.Application.Accounting;
 using AppBookings = Rojan.Desktop.Application.Bookings;
 using AppCustomers = Rojan.Desktop.Application.Customers;
@@ -15,16 +15,16 @@ public sealed class ReportExecutionQueryServiceTests
 
     private static readonly IReadOnlyList<AppCustomers.CustomerDto> Customers =
     [
-        new("customer-1", "Alice Adams", "Acme Co", "alice@example.com", "555-0001", AppCustomers.CustomerStatus.Active, "$1,200", Today.AddDays(-2), string.Empty),
-        new("customer-2", "Bob Baker", string.Empty, "bob@example.com", "555-0002", AppCustomers.CustomerStatus.Churned, "$300", Today.AddDays(-40), string.Empty),
-        new("customer-3", "Cara Chen", string.Empty, "cara@example.com", "555-0003", AppCustomers.CustomerStatus.Vip, "$5,000", Today.AddDays(-1), string.Empty),
+        new("customer-1", "Alice Adams", "Acme Co", "alice@example.com", "555-0001", AppCustomers.CustomerStatus.Active, "$1,200", Today.AddDays(-2), string.Empty, "org-1", "branch-1"),
+        new("customer-2", "Bob Baker", string.Empty, "bob@example.com", "555-0002", AppCustomers.CustomerStatus.Churned, "$300", Today.AddDays(-40), string.Empty, "org-1", "branch-1"),
+        new("customer-3", "Cara Chen", string.Empty, "cara@example.com", "555-0003", AppCustomers.CustomerStatus.Vip, "$5,000", Today.AddDays(-1), string.Empty, "org-1", "branch-1"),
     ];
 
     private static readonly IReadOnlyList<AppBookings.BookingDto> Bookings =
     [
-        new("booking-1", "customer-1", "Alice Adams", "service-1", "Haircut", "specialist-1", "Jordan Lee", Today.AddHours(-2), 60, "$65", AppBookings.BookingStatus.Completed, string.Empty),
-        new("booking-2", "customer-3", "Cara Chen", "service-2", "Colour", "specialist-1", "Jordan Lee", Today.AddHours(-1), 90, "$120", AppBookings.BookingStatus.Completed, string.Empty),
-        new("booking-3", "customer-2", "Bob Baker", "service-1", "Haircut", "specialist-2", "Priya Nair", Today.AddDays(-10), 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty),
+        new("booking-1", "customer-1", "Alice Adams", "service-1", "Haircut", "specialist-1", "Jordan Lee", Today.AddHours(-2), 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"),
+        new("booking-2", "customer-3", "Cara Chen", "service-2", "Colour", "specialist-1", "Jordan Lee", Today.AddHours(-1), 90, "$120", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"),
+        new("booking-3", "customer-2", "Bob Baker", "service-1", "Haircut", "specialist-2", "Priya Nair", Today.AddDays(-10), 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty, "org-1", "branch-1"),
     ];
 
     private static readonly IReadOnlyList<AppServices.ServiceDto> Services =
@@ -41,8 +41,8 @@ public sealed class ReportExecutionQueryServiceTests
 
     private static readonly IReadOnlyList<AppInventory.ProductDto> Products =
     [
-        new("product-1", "SKU-1", "Shampoo", "cat-1", "Hair Care", "supplier-1", "Acme Supply", "$20", AppInventory.ProductStatus.Active, string.Empty),
-        new("product-2", "SKU-2", "Conditioner", "cat-1", "Hair Care", "supplier-1", "Acme Supply", "$18", AppInventory.ProductStatus.Active, string.Empty),
+        new("product-1", "SKU-1", "Shampoo", "cat-1", "Hair Care", "supplier-1", "Acme Supply", "$20", AppInventory.ProductStatus.Active, string.Empty, "org-1", "branch-1"),
+        new("product-2", "SKU-2", "Conditioner", "cat-1", "Hair Care", "supplier-1", "Acme Supply", "$18", AppInventory.ProductStatus.Active, string.Empty, "org-1", "branch-1"),
     ];
 
     private static readonly IReadOnlyList<AppInventory.InventoryItemDto> InventoryItems =

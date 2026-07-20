@@ -10,4 +10,6 @@ public sealed record CustomerDto(
     CustomerStatus Status,
     string LifetimeValue,
     DateTimeOffset LastContactedAt,
-    string Notes);
+    string Notes,
+    string OrganizationId,
+    string BranchId);

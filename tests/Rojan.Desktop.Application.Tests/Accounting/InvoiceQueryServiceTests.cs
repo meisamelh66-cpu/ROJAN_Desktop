@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Accounting;
+﻿using Rojan.Desktop.Application.Accounting;
 using AppBookings = Rojan.Desktop.Application.Bookings;
 using AppCustomers = Rojan.Desktop.Application.Customers;
 using AppInventory = Rojan.Desktop.Application.Inventory;
@@ -94,18 +94,18 @@ public sealed class InvoiceQueryServiceTests
     [Fact]
     public async Task GetCheckoutOptionsAsync_FiltersBookingsServicesAndProductsToActiveOnly()
     {
-        var customerQueryService = new StubCustomerQueryService([new AppCustomers.CustomerDto("customer-1", "Amelia Hart", string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty)]);
+        var customerQueryService = new StubCustomerQueryService([new AppCustomers.CustomerDto("customer-1", "Amelia Hart", string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1")]);
         var bookingQueryService = new StubBookingQueryService([
-            new AppBookings.BookingDto("booking-1", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee", DateTimeOffset.UnixEpoch, 60, "$65", AppBookings.BookingStatus.Confirmed, string.Empty),
-            new AppBookings.BookingDto("booking-2", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee", DateTimeOffset.UnixEpoch, 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty),
+            new AppBookings.BookingDto("booking-1", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee", DateTimeOffset.UnixEpoch, 60, "$65", AppBookings.BookingStatus.Confirmed, string.Empty, "org-1", "branch-1"),
+            new AppBookings.BookingDto("booking-2", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee", DateTimeOffset.UnixEpoch, 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty, "org-1", "branch-1"),
         ]);
         var serviceQueryService = new StubServiceQueryService([
             new AppServices.ServiceDto("service-1", "Haircut & Style", AppServices.ServiceCategory.Hair, AppServices.ServiceStatus.Active, 60, "$65", string.Empty),
             new AppServices.ServiceDto("service-9", "Perm Styling", AppServices.ServiceCategory.Hair, AppServices.ServiceStatus.Discontinued, 90, "$70", string.Empty),
         ]);
         var productQueryService = new StubProductQueryService([
-            new AppInventory.ProductDto("product-1", "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow", "$18", AppInventory.ProductStatus.Active, string.Empty),
-            new AppInventory.ProductDto("product-10", "SKU-10", "Colour Brush Set", "category-6", "Tools", "supplier-3", "Luxe", "$34", AppInventory.ProductStatus.Discontinued, string.Empty),
+            new AppInventory.ProductDto("product-1", "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow", "$18", AppInventory.ProductStatus.Active, string.Empty, "org-1", "branch-1"),
+            new AppInventory.ProductDto("product-10", "SKU-10", "Colour Brush Set", "category-6", "Tools", "supplier-3", "Luxe", "$34", AppInventory.ProductStatus.Discontinued, string.Empty, "org-1", "branch-1"),
         ]);
         var sut = MakeSut(customerQueryService: customerQueryService, bookingQueryService: bookingQueryService, serviceQueryService: serviceQueryService, productQueryService: productQueryService);
 

@@ -97,7 +97,7 @@ public sealed class KpiEngineQueryServiceTests
     {
         IReadOnlyList<AppCustomers.CustomerDto> customers =
         [
-            new("c1", "Alice", string.Empty, "a@x.com", string.Empty, AppCustomers.CustomerStatus.Active, "$0", Now, string.Empty),
+            new("c1", "Alice", string.Empty, "a@x.com", string.Empty, AppCustomers.CustomerStatus.Active, "$0", Now, string.Empty, "org-1", "branch-1"),
         ];
         var sut = CreateSut([], customers: customers);
 

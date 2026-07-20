@@ -21,7 +21,9 @@ internal static class CustomerMapper
         MapStatus(customer.Status),
         customer.LifetimeValue,
         customer.LastContactedAt,
-        customer.Notes);
+        customer.Notes,
+        customer.OrganizationId,
+        customer.BranchId);
 
     public static CustomerNoteDto MapNote(DomainCustomers.CustomerNote note) =>
         new(note.Id, note.CustomerId, note.Text, note.CreatedAt);

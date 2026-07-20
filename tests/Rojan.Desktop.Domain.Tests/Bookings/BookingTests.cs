@@ -7,7 +7,7 @@ public sealed class BookingTests
 {
     private static Booking MakeBooking(string id = "booking-1") =>
         new(id, string.Empty, "Amelia Hart", "service-2", "Colour Touch-Up", "specialist-1", "Jordan Lee",
-            new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero), 90, "$120", BookingStatus.Confirmed, "Notes");
+            new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero), 90, "$120", BookingStatus.Confirmed, "Notes", "org-1", "branch-1");
 
     [Fact]
     public void Equals_SameValues_AreEqual()

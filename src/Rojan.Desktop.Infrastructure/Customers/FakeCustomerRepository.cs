@@ -29,36 +29,42 @@ public sealed class FakeCustomerRepository : ICustomerRepository
     {
         var now = DateTimeOffset.Now;
 
+        // Phase 22A: spread across org-1/branch-1 (Downtown), org-1/branch-2
+        // (Uptown), and org-2/branch-3 (Luxe Central) - the same seeded ids
+        // Infrastructure.Organizations.FakeOrganizationRepository uses - so
+        // Organization/Branch Scoping has genuinely mixed data to filter,
+        // not a single-tenant fixture that would make isolation vacuously
+        // true.
         _customers =
         [
             new Customer(
                 "customer-1", "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "+1 (555) 010-2231",
                 CustomerStatus.Active, "$4,820", now.AddDays(-1),
-                "Prefers evening appointments. Regular colour touch-up client."),
+                "Prefers evening appointments. Regular colour touch-up client.", "org-1", "branch-1"),
             new Customer(
                 "customer-2", "Noah Bennett", string.Empty, "noah.bennett@example.com", "+1 (555) 010-7742",
                 CustomerStatus.Prospect, "$0", now.AddDays(-3),
-                "Referred by Amelia Hart. Interested in a first-time consultation."),
+                "Referred by Amelia Hart. Interested in a first-time consultation.", "org-1", "branch-1"),
             new Customer(
                 "customer-3", "Sophia Reyes", "Reyes Beauty Studio", "sophia.reyes@example.com", "+1 (555) 010-5518",
                 CustomerStatus.Vip, "$12,150", now.AddHours(-6),
-                "VIP tier. Books the full package monthly."),
+                "VIP tier. Books the full package monthly.", "org-1", "branch-1"),
             new Customer(
                 "customer-4", "Liam Foster", string.Empty, "liam.foster@example.com", "+1 (555) 010-3390",
                 CustomerStatus.Churned, "$610", now.AddMonths(-4),
-                "No bookings in over 90 days. Flagged for a re-engagement offer."),
+                "No bookings in over 90 days. Flagged for a re-engagement offer.", "org-1", "branch-1"),
             new Customer(
                 "customer-5", "Olivia Chen", "Chen Wellness Group", "olivia.chen@example.com", "+1 (555) 010-9027",
                 CustomerStatus.Active, "$7,340", now.AddDays(-9),
-                "Corporate account - books for a team of six."),
+                "Corporate account - books for a team of six.", "org-1", "branch-2"),
             new Customer(
                 "customer-6", "Ethan Brooks", string.Empty, "ethan.brooks@example.com", "+1 (555) 010-4465",
                 CustomerStatus.Lead, "$0", now.AddDays(-2),
-                "Signed up through the website booking widget, not yet contacted."),
+                "Signed up through the website booking widget, not yet contacted.", "org-1", "branch-2"),
             new Customer(
                 "customer-7", "Grace Kim", "Kim Aesthetics", "grace.kim@example.com", "+1 (555) 010-6604",
                 CustomerStatus.Inactive, "$2,150", now.AddMonths(-2),
-                "Paused after relocating; may return once settled."),
+                "Paused after relocating; may return once settled.", "org-2", "branch-3"),
         ];
 
         _notes =

@@ -31,45 +31,85 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDashboardQueryService, DashboardQueryService>();
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
-        services.AddSingleton<ICustomerCommandService, CustomerCommandService>();
+
+        // Phase 22A: the raw command service is registered as itself, then
+        // wrapped by a permission-enforcing decorator registered as the
+        // public interface - see CustomerCommandServicePermissionGate's own
+        // doc comment. Every other module's *CommandService below follows
+        // this same pair.
+        services.AddSingleton<CustomerCommandService>();
+        services.AddSingleton<ICustomerCommandService>(sp =>
+            new CustomerCommandServicePermissionGate(sp.GetRequiredService<CustomerCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IBookingQueryService, BookingQueryService>();
-        services.AddSingleton<IBookingCommandService, BookingCommandService>();
+        services.AddSingleton<BookingCommandService>();
+        services.AddSingleton<IBookingCommandService>(sp =>
+            new BookingCommandServicePermissionGate(sp.GetRequiredService<BookingCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<ISpecialistQueryService, SpecialistQueryService>();
         services.AddSingleton<ISpecialistProfileQueryService, SpecialistProfileQueryService>();
-        services.AddSingleton<ISpecialistCommandService, SpecialistCommandService>();
+        services.AddSingleton<SpecialistCommandService>();
+        services.AddSingleton<ISpecialistCommandService>(sp =>
+            new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<AppServices.IServiceQueryService, AppServices.ServiceQueryService>();
         services.AddSingleton<AppServices.IServiceProfileQueryService, AppServices.ServiceProfileQueryService>();
-        services.AddSingleton<AppServices.IServiceCommandService, AppServices.ServiceCommandService>();
+        services.AddSingleton<AppServices.ServiceCommandService>();
+        services.AddSingleton<AppServices.IServiceCommandService>(sp =>
+            new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<ICalendarQueryService, CalendarQueryService>();
-        services.AddSingleton<ICalendarCommandService, CalendarCommandService>();
-        services.AddSingleton<IBookingWorkflowService, BookingWorkflowService>();
+        services.AddSingleton<CalendarCommandService>();
+        services.AddSingleton<ICalendarCommandService>(sp =>
+            new CalendarCommandServicePermissionGate(sp.GetRequiredService<CalendarCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+        services.AddSingleton<BookingWorkflowService>();
+        services.AddSingleton<IBookingWorkflowService>(sp =>
+            new BookingWorkflowServicePermissionGate(sp.GetRequiredService<BookingWorkflowService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IProductQueryService, ProductQueryService>();
         services.AddSingleton<IProductProfileQueryService, ProductProfileQueryService>();
         services.AddSingleton<IInventoryQueryService, InventoryQueryService>();
-        services.AddSingleton<IInventoryCommandService, InventoryCommandService>();
+        services.AddSingleton<InventoryCommandService>();
+        services.AddSingleton<IInventoryCommandService>(sp =>
+            new InventoryCommandServicePermissionGate(sp.GetRequiredService<InventoryCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IInvoiceQueryService, InvoiceQueryService>();
-        services.AddSingleton<IInvoiceCommandService, InvoiceCommandService>();
+        services.AddSingleton<InvoiceCommandService>();
+        services.AddSingleton<IInvoiceCommandService>(sp =>
+            new InvoiceCommandServicePermissionGate(sp.GetRequiredService<InvoiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IPaymentQueryService, PaymentQueryService>();
-        services.AddSingleton<IPaymentCommandService, PaymentCommandService>();
+        services.AddSingleton<PaymentCommandService>();
+        services.AddSingleton<IPaymentCommandService>(sp =>
+            new PaymentCommandServicePermissionGate(sp.GetRequiredService<PaymentCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IEmployeeQueryService, EmployeeQueryService>();
-        services.AddSingleton<IEmployeeCommandService, EmployeeCommandService>();
+        services.AddSingleton<EmployeeCommandService>();
+        services.AddSingleton<IEmployeeCommandService>(sp =>
+            new EmployeeCommandServicePermissionGate(sp.GetRequiredService<EmployeeCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IAttendanceQueryService, AttendanceQueryService>();
-        services.AddSingleton<IAttendanceCommandService, AttendanceCommandService>();
+        services.AddSingleton<AttendanceCommandService>();
+        services.AddSingleton<IAttendanceCommandService>(sp =>
+            new AttendanceCommandServicePermissionGate(sp.GetRequiredService<AttendanceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IShiftQueryService, ShiftQueryService>();
-        services.AddSingleton<IShiftCommandService, ShiftCommandService>();
+        services.AddSingleton<ShiftCommandService>();
+        services.AddSingleton<IShiftCommandService>(sp =>
+            new ShiftCommandServicePermissionGate(sp.GetRequiredService<ShiftCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<ICommissionQueryService, CommissionQueryService>();
-        services.AddSingleton<ICommissionCommandService, CommissionCommandService>();
+        services.AddSingleton<CommissionCommandService>();
+        services.AddSingleton<ICommissionCommandService>(sp =>
+            new CommissionCommandServicePermissionGate(sp.GetRequiredService<CommissionCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IPayrollQueryService, PayrollQueryService>();
-        services.AddSingleton<IPayrollCommandService, PayrollCommandService>();
+        services.AddSingleton<PayrollCommandService>();
+        services.AddSingleton<IPayrollCommandService>(sp =>
+            new PayrollCommandServicePermissionGate(sp.GetRequiredService<PayrollCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IReportCatalogQueryService, ReportCatalogQueryService>();
         services.AddSingleton<IReportExecutionQueryService, ReportExecutionQueryService>();
         services.AddSingleton<IReportSnapshotQueryService, ReportSnapshotQueryService>();
-        services.AddSingleton<IReportSnapshotCommandService, ReportSnapshotCommandService>();
+        services.AddSingleton<ReportSnapshotCommandService>();
+        services.AddSingleton<IReportSnapshotCommandService>(sp =>
+            new ReportSnapshotCommandServicePermissionGate(sp.GetRequiredService<ReportSnapshotCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IKpiEngineQueryService, KpiEngineQueryService>();
         services.AddSingleton<IAnalyticsQueryService, AnalyticsQueryService>();
-        services.AddSingleton<IReportExportService, ReportExportService>();
+        services.AddSingleton<ReportExportService>();
+        services.AddSingleton<IReportExportService>(sp =>
+            new ReportExportServicePermissionGate(sp.GetRequiredService<ReportExportService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IPromptTemplateRepository, PromptTemplateRepository>();
-        services.AddSingleton<IConversationManager, ConversationManager>();
+        services.AddSingleton<ConversationManager>();
+        services.AddSingleton<IConversationManager>(sp =>
+            new ConversationManagerPermissionGate(sp.GetRequiredService<ConversationManager>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IAIHistoryService, AIHistoryService>();
         services.AddSingleton<ITokenUsageTracker, TokenUsageTracker>();
         services.AddSingleton<IAIConfigurationService, AIConfigurationService>();
@@ -85,10 +125,22 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INotificationInsightService, NotificationInsightService>();
         services.AddSingleton<ISummaryEngine, SummaryEngine>();
         services.AddSingleton<AiProviders.IAIProvider, AiProviders.MockAIProvider>();
-        services.AddSingleton<IAIService, AIOrchestrator>();
+        services.AddSingleton<AIOrchestrator>();
+        services.AddSingleton<IAIService>(sp =>
+            new AIServicePermissionGate(sp.GetRequiredService<AIOrchestrator>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IOrganizationQueryService, OrganizationQueryService>();
-        services.AddSingleton<IOrganizationCommandService, OrganizationCommandService>();
+        services.AddSingleton<OrganizationCommandService>();
+        services.AddSingleton<IOrganizationCommandService>(sp =>
+            new OrganizationCommandServicePermissionGate(sp.GetRequiredService<OrganizationCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IPermissionEngine, PermissionEngine>();
+
+        // Phase 22A: Enterprise Context Migration - IEnterpriseContext
+        // itself is registered by Shell (the composition root owns the
+        // concrete, file-system-backed session), but PermissionGate is
+        // pure Application-layer logic and belongs here, same as
+        // PermissionEngine above.
+        services.AddSingleton<IPermissionGate, PermissionGate>();
+
         return services;
     }
 }

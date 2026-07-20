@@ -15,7 +15,9 @@ internal static class InventoryMapper
         product.SupplierName,
         product.UnitPrice,
         MapStatus(product.Status),
-        product.Description);
+        product.Description,
+        product.OrganizationId,
+        product.BranchId);
 
     public static ProductCategoryDto MapCategory(DomainInventory.ProductCategory category) =>
         new(category.Id, category.Name, category.Description);

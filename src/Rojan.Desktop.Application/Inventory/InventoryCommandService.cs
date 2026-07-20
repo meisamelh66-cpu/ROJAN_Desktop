@@ -1,15 +1,18 @@
+using Rojan.Desktop.Application.Organizations;
 using DomainInventory = Rojan.Desktop.Domain.Inventory;
 
 namespace Rojan.Desktop.Application.Inventory;
 
-/// <summary>Default <see cref="IInventoryCommandService"/> implementation.</summary>
+/// <summary>Default <see cref="IInventoryCommandService"/> implementation. Phase 22A: <see cref="CreateProductAsync"/> stamps the new product with the current session's organization/branch (<see cref="IEnterpriseContext"/>).</summary>
 public sealed class InventoryCommandService : IInventoryCommandService
 {
     private readonly DomainInventory.IInventoryRepository _repository;
+    private readonly IEnterpriseContext _enterpriseContext;
 
-    public InventoryCommandService(DomainInventory.IInventoryRepository repository)
+    public InventoryCommandService(DomainInventory.IInventoryRepository repository, IEnterpriseContext enterpriseContext)
     {
         _repository = repository;
+        _enterpriseContext = enterpriseContext;
     }
 
     public async Task<ProductDto> CreateProductAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
@@ -24,7 +27,9 @@ public sealed class InventoryCommandService : IInventoryCommandService
             request.SupplierName,
             request.UnitPrice,
             DomainInventory.ProductStatus.Active,
-            request.Description);
+            request.Description,
+            _enterpriseContext.CurrentOrganizationId ?? string.Empty,
+            _enterpriseContext.CurrentBranchId ?? string.Empty);
 
         var created = await _repository.CreateProductAsync(product, cancellationToken).ConfigureAwait(true);
 

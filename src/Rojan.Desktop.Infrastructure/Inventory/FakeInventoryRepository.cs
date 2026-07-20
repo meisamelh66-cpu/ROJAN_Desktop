@@ -1,4 +1,4 @@
-using Rojan.Desktop.Domain.Inventory;
+﻿using Rojan.Desktop.Domain.Inventory;
 
 namespace Rojan.Desktop.Infrastructure.Inventory;
 
@@ -52,25 +52,25 @@ public sealed class FakeInventoryRepository : IInventoryRepository
         _products =
         [
             new Product("product-1", "HC-SHM-001", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$18", ProductStatus.Active, "Sulfate-free hydrating shampoo for salon retail."),
+                "$18", ProductStatus.Active, "Sulfate-free hydrating shampoo for salon retail.", "org-1", "branch-1"),
             new Product("product-2", "HC-COND-002", "Repair Conditioner 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$19", ProductStatus.Active, "Deep-repair conditioner for damaged hair."),
+                "$19", ProductStatus.Active, "Deep-repair conditioner for damaged hair.", "org-1", "branch-1"),
             new Product("product-3", "CL-DEV-010", "Colour Developer 20 Vol", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$12", ProductStatus.Active, "Standard-strength developer for permanent colour."),
+                "$12", ProductStatus.Active, "Standard-strength developer for permanent colour.", "org-1", "branch-1"),
             new Product("product-4", "CL-PERM-045", "Permanent Hair Colour - Chocolate Brown", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$14", ProductStatus.Active, "Permanent colour, chocolate brown shade."),
+                "$14", ProductStatus.Active, "Permanent colour, chocolate brown shade.", "org-1", "branch-1"),
             new Product("product-5", "CL-BLCH-020", "Lightening Powder 500g", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$26", ProductStatus.Active, "Dust-free lightening powder for balayage work."),
+                "$26", ProductStatus.Active, "Dust-free lightening powder for balayage work.", "org-1", "branch-1"),
             new Product("product-6", "NL-GEL-030", "Gel Polish - Rose Quartz", "category-3", "Nail Care", "supplier-3", "Luxe Salon Essentials",
-                "$9", ProductStatus.Active, "Long-wear gel polish, rose quartz shade."),
+                "$9", ProductStatus.Active, "Long-wear gel polish, rose quartz shade.", "org-1", "branch-2"),
             new Product("product-7", "NL-BASE-005", "Base & Top Coat Duo", "category-3", "Nail Care", "supplier-3", "Luxe Salon Essentials",
-                "$15", ProductStatus.Active, "Base and top coat set for gel manicures."),
+                "$15", ProductStatus.Active, "Base and top coat set for gel manicures.", "org-1", "branch-1"),
             new Product("product-8", "SK-MASK-012", "Renewal Clay Mask 250ml", "category-4", "Skin Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$22", ProductStatus.Active, "Deep-cleansing clay mask for facial treatments."),
+                "$22", ProductStatus.Active, "Deep-cleansing clay mask for facial treatments.", "org-1", "branch-1"),
             new Product("product-9", "SP-OIL-008", "Aromatherapy Massage Oil 500ml", "category-5", "Spa & Wellness", "supplier-4", "Northline Wholesale",
-                "$16", ProductStatus.Active, "Lavender-scented massage oil blend."),
+                "$16", ProductStatus.Active, "Lavender-scented massage oil blend.", "org-1", "branch-1"),
             new Product("product-10", "TL-BRSH-090", "Professional Colour Brush Set", "category-6", "Tools & Equipment", "supplier-3", "Luxe Salon Essentials",
-                "$34", ProductStatus.Discontinued, "Set of 4 colour application brushes - replaced by a newer model."),
+                "$34", ProductStatus.Discontinued, "Set of 4 colour application brushes - replaced by a newer model.", "org-2", "branch-3"),
         ];
 
         _inventoryItems =

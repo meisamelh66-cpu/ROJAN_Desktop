@@ -11,4 +11,6 @@ public sealed record ProductDto(
     string SupplierName,
     string UnitPrice,
     ProductStatus Status,
-    string Description);
+    string Description,
+    string OrganizationId,
+    string BranchId);

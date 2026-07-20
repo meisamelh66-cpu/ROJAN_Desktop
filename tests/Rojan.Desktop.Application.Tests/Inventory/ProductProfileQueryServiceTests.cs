@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Inventory;
+﻿using Rojan.Desktop.Application.Inventory;
 using DomainInventory = Rojan.Desktop.Domain.Inventory;
 
 namespace Rojan.Desktop.Application.Tests.Inventory;
@@ -7,7 +7,7 @@ public sealed class ProductProfileQueryServiceTests
 {
     private static DomainInventory.Product MakeProduct(string id = "product-1") =>
         new(id, "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-            "$18", DomainInventory.ProductStatus.Active, "Sulfate-free hydrating shampoo.");
+            "$18", DomainInventory.ProductStatus.Active, "Sulfate-free hydrating shampoo.", "org-1", "branch-1");
 
     [Fact]
     public async Task GetProfileAsync_KnownProduct_AssemblesFullAggregate()

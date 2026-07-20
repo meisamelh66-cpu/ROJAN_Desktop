@@ -93,7 +93,7 @@ public sealed class FakeCustomerRepositoryTests
     {
         var sut = new FakeCustomerRepository();
         var newCustomer = new Customer("customer-new", "Test Customer", string.Empty, "test@example.com", string.Empty,
-            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, string.Empty);
+            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1");
 
         await sut.CreateCustomerAsync(newCustomer);
         var customers = await sut.GetCustomersAsync();
@@ -120,7 +120,7 @@ public sealed class FakeCustomerRepositoryTests
     {
         var sut = new FakeCustomerRepository();
         var unknown = new Customer("no-such-customer", "Ghost", string.Empty, string.Empty, string.Empty,
-            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, string.Empty);
+            CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateCustomerAsync(unknown));
     }

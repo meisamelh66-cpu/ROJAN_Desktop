@@ -618,6 +618,44 @@ see `docs/standards/versioning.md`.
   correctly in RTL Persian, and the redesigned Branch Switcher opens
   via `InvokePattern`, correctly grouping both seeded organizations
   with their branches, branch codes, and favorite-star affordances.
+- Phase 22A Enterprise Context Migration — integrates the Phase 22
+  platform into the rest of the app. Two new Application-layer
+  abstractions: `IEnterpriseContext` (current organization/branch/role,
+  Presentation-independent - Shell's `CurrentSessionService` implements
+  it alongside `ICurrentSessionService`, one object registered once and
+  aliased to both) and `IPermissionGate`/`PermissionGate`
+  (`Ensure(Permission)` throws `UnauthorizedOperationException` rather
+  than returning a bool). Every mutating command-service interface
+  across every module (17 total: Customers, Bookings, BookingWorkflow,
+  Calendar, Specialists, Services, Inventory, Invoices, Payments,
+  Employees, Attendance/Leave, Shifts, Commissions, Payroll, Report
+  Snapshots, Report Export, AI Conversations/Chat, Organizations/
+  Branches) is now wrapped by a `*PermissionGate` decorator registered
+  in place of the raw implementation - zero changes to any existing
+  command service class or its tests, since Presentation only ever
+  resolves the public interface. Full per-record Organization/Branch
+  data isolation (a real `OrganizationId`/`BranchId` field, filtered at
+  the query-service boundary) was implemented end-to-end for three
+  flagship modules covering this phase's explicitly named categories -
+  Customers ("CRM"), Bookings ("Appointments"), Inventory ("Products") -
+  with seed data deliberately spread across org-1/branch-1,
+  org-1/branch-2, and org-2/branch-3 so the guarantee has genuinely
+  mixed data to filter, not a single-tenant fixture. Remaining modules
+  get full Permission Enforcement via the decorator pattern but were
+  not individually migrated to per-record scoping this pass - a
+  documented, deliberate scope boundary (retrofitting the same
+  entity+DTO+mapper+seed+test changes into every remaining module's
+  entities is the same-shaped but multiplicatively larger effort the
+  three flagship migrations already prove end-to-end). 16 new tests
+  (`PermissionGateTests`, two decorator-level "unauthorized never
+  reaches the inner service" proofs, and Organization/Branch-Scoping
+  cases added to `CustomerQueryServiceTests`/`BookingQueryServiceTests`/
+  `ProductQueryServiceTests`) - full solution suite (955 tests) passes,
+  zero warnings, zero errors. Runtime-verified via UI Automation:
+  Customers/Bookings/Inventory all load correctly scoped to the default
+  session's branch (Inventory's Total Products reads 8 of the 10
+  seeded, the other 2 correctly excluded as belonging to a different
+  branch/organization).
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

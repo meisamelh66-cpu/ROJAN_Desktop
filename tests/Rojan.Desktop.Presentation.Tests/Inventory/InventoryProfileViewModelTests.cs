@@ -1,4 +1,4 @@
-using Rojan.Desktop.Application.Inventory;
+﻿using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 
@@ -8,7 +8,7 @@ public sealed class InventoryProfileViewModelTests
 {
     private static ProductProfileDto MakeProfile(string productId = "product-1") =>
         new(
-            new ProductDto(productId, "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, string.Empty),
+            new ProductDto(productId, "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, string.Empty, "org-1", "branch-1"),
             new InventoryItemDto("item-1", productId, "Hydrating Shampoo 1L", 42, 15),
             [new StockTransactionDto("txn-1", productId, "Hydrating Shampoo 1L", StockTransactionType.Received, 48, DateTimeOffset.UnixEpoch, string.Empty)],
             [new ServiceProductMappingDto("mapping-1", "service-1", "Haircut & Style", productId, "Hydrating Shampoo 1L", 1)]);

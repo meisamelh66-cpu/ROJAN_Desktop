@@ -1,4 +1,4 @@
-using Rojan.Desktop.Domain.Inventory;
+﻿using Rojan.Desktop.Domain.Inventory;
 using Rojan.Desktop.Infrastructure.Inventory;
 
 namespace Rojan.Desktop.Infrastructure.Tests.Inventory;
@@ -52,7 +52,7 @@ public sealed class FakeInventoryRepositoryTests
     {
         var sut = new FakeInventoryRepository();
         var product = new Product("product-new", "SKU-NEW", "New Product", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-            "$10", ProductStatus.Active, string.Empty);
+            "$10", ProductStatus.Active, string.Empty, "org-1", "branch-1");
 
         await sut.CreateProductAsync(product);
         var products = await sut.GetProductsAsync();
