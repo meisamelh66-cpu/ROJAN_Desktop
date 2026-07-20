@@ -60,4 +60,48 @@ public sealed class RolePermissionsTests
             Assert.Contains(Permission.DashboardView, RolePermissions.GetPermissions(role));
         }
     }
+
+    [Fact]
+    public void HasPermission_AccountingApprovingInvoice_ReturnsTrue()
+    {
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.Accounting, Permission.Approve));
+    }
+
+    [Fact]
+    public void HasPermission_HrApprovingLeave_ReturnsTrue()
+    {
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.Hr, Permission.Approve));
+    }
+
+    [Fact]
+    public void HasPermission_InventoryImportingStock_ReturnsTrue()
+    {
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.Inventory, Permission.Import));
+    }
+
+    [Fact]
+    public void HasPermission_ReceptionApproving_ReturnsFalse()
+    {
+        Assert.False(RolePermissions.HasPermission(WorkspaceRole.Reception, Permission.Approve));
+    }
+
+    [Fact]
+    public void HasPermission_BranchManagerManagingUsers_ReturnsTrue()
+    {
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.BranchManager, Permission.ManageUsers));
+    }
+
+    [Fact]
+    public void HasPermission_MarketingReadingCustomersAndUsingAi_ReturnsTrue()
+    {
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.Marketing, Permission.CustomerRead));
+        Assert.True(RolePermissions.HasPermission(WorkspaceRole.Marketing, Permission.AiUse));
+    }
+
+    [Fact]
+    public void HasPermission_MarketingEditingCustomersOrManagingAccounting_ReturnsFalse()
+    {
+        Assert.False(RolePermissions.HasPermission(WorkspaceRole.Marketing, Permission.CustomerEdit));
+        Assert.False(RolePermissions.HasPermission(WorkspaceRole.Marketing, Permission.AccountingManage));
+    }
 }

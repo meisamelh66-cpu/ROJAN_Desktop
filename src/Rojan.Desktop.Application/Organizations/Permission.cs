@@ -28,4 +28,8 @@ public enum Permission
     SettingsManage,
     OrganizationManage,
     BranchManage,
+    Approve,
+    Reject,
+    Import,
+    ManageUsers,
 }

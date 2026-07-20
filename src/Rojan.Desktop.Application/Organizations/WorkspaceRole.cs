@@ -14,4 +14,5 @@ public enum WorkspaceRole
     Hr,
     Ai,
     Support,
+    Marketing,
 }

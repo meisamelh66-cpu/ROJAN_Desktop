@@ -14,6 +14,10 @@ internal sealed class StubCurrentSessionService : ICurrentSessionService
 
     public IReadOnlyList<BranchDto> AvailableBranches { get; set; } = [];
 
+    public IReadOnlyList<string> RecentBranchIds { get; set; } = [];
+
+    public IReadOnlyList<string> FavoriteBranchIds { get; set; } = [];
+
     public event EventHandler? SessionChanged;
 
     public void RaiseSessionChanged() => SessionChanged?.Invoke(this, EventArgs.Empty);
@@ -28,4 +32,6 @@ internal sealed class StubCurrentSessionService : ICurrentSessionService
         RaiseSessionChanged();
         return Task.CompletedTask;
     }
+
+    public Task ToggleFavoriteBranchAsync(string branchId, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

@@ -3,6 +3,13 @@
 **Status:** Complete
 **Completion:** 100%
 
+> **Enhancement pass.** After the initial delivery documented below, a
+> follow-up specification asked for a richer Organization identity model,
+> a more granular Permission Engine, an additional role, and a genuine
+> enterprise-grade Branch Switcher (search/favorites/recents/grouping)
+> in place of the original plain ComboBox. See "Enhancement Pass" at the
+> bottom of this document for what changed and why.
+
 ## Objectives
 
 Transform ROJAN Desktop into a multi-tenant platform: independent
@@ -45,7 +52,11 @@ already uses for Localization (`ILocalizationService`) and Theming
 
 - **`Organization`** — `Id, Name, LegalName, Logo, BrandColor,
   TaxInformation, Subscription (SubscriptionPlan), Status
-  (OrganizationStatus), CreatedDate`.
+  (OrganizationStatus), CreatedDate, Code, Phone, Email, Address,
+  TimeZone, Language, Currency` (the last three are infrastructure-only
+  this phase - defaulted on create, not their own settings UI yet, per
+  the enhancement spec's "Only infrastructure is required if UI is not
+  yet needed").
 - **`Branch`** — `Id, OrganizationId, Name, Code, Address, Phone,
   Email, Manager, TimeZone, Currency, Status (BranchStatus)`.
 - **`BranchSettings`** — `BranchId, BusinessHours (Open/Close time),
@@ -80,13 +91,26 @@ change, not a resource-dictionary swap.
 
 ## Permission Model
 
-`Domain.Organizations.Permission` is a 23-member enum (`CustomerRead`,
+`Domain.Organizations.Permission` is a 27-member enum (`CustomerRead`,
 `CustomerEdit`, `BookingCreate`, `InventoryEdit`, `AccountingView`,
 `ReportingExport`, `HrManage`, `OrganizationManage`, `BranchManage`,
-…). `WorkspaceRole` has 11 members (`PlatformOwner`,
+`Approve`, `Reject`, `Import`, `ManageUsers`, …) - the last four added
+in the Enhancement Pass to cover the Action-Level examples the
+follow-up spec named (Approve/Reject/Import/Manage Users), granted to
+`Accounting`/`Hr` (Approve/Reject), `Inventory`/`Accounting` (Import),
+and `OrganizationManager`/`BranchManager` (ManageUsers) - additive to
+every existing role's set, never removing a previously-granted
+permission. `WorkspaceRole` has 12 members (`PlatformOwner`,
 `OrganizationOwner`, `OrganizationManager`, `BranchManager`,
 `Reception`, `Specialist`, `Inventory`, `Accounting`, `Hr`, `Ai`,
-`Support`).
+`Support`, `Marketing`) - `Marketing` added in the Enhancement Pass
+(`DashboardView`/`CustomerRead`/`ReportingView`/`AiUse`, the closest
+fit among the follow-up spec's named roles that wasn't already
+covered by an existing one - `Owner`/`Organization Administrator`/
+`Inventory Manager`/`Accountant`/`Customer Support`/`AI Manager` map
+onto `PlatformOwner`/`OrganizationOwner`/`Inventory`/`Accounting`/
+`Support`/`Ai` respectively, so no separate members were added for
+those).
 
 `Domain.Organizations.RolePermissions` is the Permission Engine's core
 logic — a static `WorkspaceRole -> IReadOnlySet<Permission>` mapping.
@@ -142,12 +166,25 @@ existing module's repository or query service was modified.
 
 ## Branch Switcher
 
-Lives in the Shell header (`MainWindow.xaml`), bound to
-`MainWindowViewModel.AvailableBranches`/`CurrentBranch`. Setting
-`CurrentBranch` calls `ICurrentSessionService.SwitchBranchAsync`, which
-live-switches (and re-scopes the owning organization, if different)
-without a restart — `SessionChanged` refreshes the header and
-navigation immediately.
+Lives in the Shell header (`MainWindow.xaml`) as a Fluent 2 flyout, not
+a plain ComboBox: a trigger `Button` shows the current branch name
+(the "current branch indicator") and opens a `Popup`
+(`PopupAnimation="Fade"` for the "smooth transitions" requirement)
+containing a search box, a Favorites section, a Recently-used section,
+and every organization's branches grouped underneath (the
+"Organization grouping" requirement) - built from
+`IOrganizationQueryService` directly (all organizations/branches, not
+just the current one, unlike `AvailableBranches`).
+`MainWindowViewModel.BranchSearchText` filters live by branch name/code
+across every group. Selecting a branch calls
+`ICurrentSessionService.SwitchBranchAsync`, which live-switches (and
+re-scopes the owning organization, if different) without a restart -
+`SessionChanged` refreshes the header and navigation immediately, and
+also pushes the branch to the front of `RecentBranchIds` (deduped,
+capped at `CurrentSessionService.MaxRecentBranches` = 5). Each row's
+star toggles `ToggleFavoriteBranchAsync`, persisted the same way. Both
+lists persist in `session.json` alongside the org/branch/role
+selection, restored on next launch.
 
 ## UI
 
@@ -192,8 +229,16 @@ phase's UI requirement. Every string resolves through
   modules are hidden/shown per role, navigation refreshes live on a
   `SessionChanged` role switch, and the selected item falls back
   correctly when it becomes hidden.
+- **Branch Switcher (Enhancement Pass)** — `Shell.Tests.Navigation.MainWindowViewModelBranchSwitcherTests`
+  (organization grouping loads every organization's own branches only,
+  search filters by name across every group and restores on clear,
+  Favorite/Recent ids resolve to the right `BranchDto`s, the toggle
+  command flips `IsBranchSwitcherOpen`) plus new
+  `CurrentSessionServiceTests` cases (recents push newest-first without
+  duplicates, capped at `MaxRecentBranches`, favorites toggle and
+  persist across a restart).
 
-All new tests pass; the full solution suite (922 tests across Domain,
+All new tests pass; the full solution suite (939 tests across Domain,
 Application, Infrastructure, Presentation, Shell, and Architecture
 Tests) passes with zero failures and the solution builds with zero
 warnings and zero errors.
@@ -224,3 +269,50 @@ organization, the Organizations/Branches/Branch Settings/Permissions/
 Session sections all render and navigate correctly under the Fluent 2
 Premium theme and RTL Persian layout, and the Permissions grid's
 displayed grants match `RolePermissions` exactly for every role.
+
+**Enhancement Pass re-verification:** the Create Organization form now
+shows and accepts Code/Phone/Email/Address alongside Name/Legal Name/
+Tax Information/Subscription, rendered correctly in RTL Persian. The
+redesigned Branch Switcher was invoked via UI Automation
+(`InvokePattern`) and screenshotted mid-flyout, confirming: the search
+box placeholder, both seeded organizations as distinct group headers
+("ROJAN Beauty Group" with Downtown/Uptown, "Luxe Salon Collective"
+with Luxe Central), each branch's code shown under its name, and a
+favorite-star affordance on every row — with no Favorites/Recently
+Used sections shown on a fresh session (correctly collapsed, since
+neither list has any entries yet). The flyout opens via
+`PopupAnimation="Fade"` for the smooth-transition requirement.
+
+## Enhancement Pass Summary
+
+A follow-up specification, issued after the initial Phase 22 delivery
+and commit, asked for a broader Organization identity model, a more
+granular Permission Engine (Organization/Branch/Module/Feature/
+Action-level examples), an additional role, and a genuine enterprise
+Branch Switcher UX. Rather than duplicate the already-committed
+platform, this pass extended it additively:
+
+- `Organization` gained `Code`/`Phone`/`Email`/`Address` (exposed on
+  the Create Organization form) and `TimeZone`/`Language`/`Currency`
+  (infrastructure-only, defaulted on create - "Only infrastructure is
+  required if UI is not yet needed").
+- `Permission` gained `Approve`/`Reject`/`Import`/`ManageUsers`,
+  granted to the roles that plausibly need them (Accounting/Hr for
+  Approve/Reject, Inventory/Accounting for Import,
+  OrganizationManager/BranchManager for ManageUsers) - additive only,
+  no role lost a permission it already had.
+- `WorkspaceRole` gained `Marketing`, the one genuinely new role among
+  the follow-up spec's examples (every other named role - Owner,
+  Organization Administrator, Inventory Manager, Accountant, Customer
+  Support, AI Manager - maps onto an existing member).
+- The header Branch Switcher was rebuilt from a plain `ComboBox` into
+  a Fluent 2 flyout (`Popup` + `PopupAnimation="Fade"`) with a search
+  box, Favorite and Recently-used sections (backed by new
+  `ICurrentSessionService.FavoriteBranchIds`/`RecentBranchIds`,
+  persisted in `session.json`), and every organization's branches
+  grouped by name - not just the current organization's, unlike the
+  original `AvailableBranches`.
+
+No existing Phase 22 file was reverted or rewritten from scratch; every
+change above is additive to what the initial delivery already built
+and committed.

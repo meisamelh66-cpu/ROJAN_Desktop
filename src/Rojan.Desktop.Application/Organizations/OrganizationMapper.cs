@@ -6,10 +6,10 @@ namespace Rojan.Desktop.Application.Organizations;
 internal static class OrganizationMapper
 {
     public static OrganizationDto MapOrganization(DomainOrg.Organization organization) =>
-        new(organization.Id, organization.Name, organization.LegalName, organization.Logo, organization.BrandColor, organization.TaxInformation, MapPlan(organization.Subscription), MapStatus(organization.Status), organization.CreatedDate);
+        new(organization.Id, organization.Name, organization.LegalName, organization.Logo, organization.BrandColor, organization.TaxInformation, MapPlan(organization.Subscription), MapStatus(organization.Status), organization.CreatedDate, organization.Code, organization.Phone, organization.Email, organization.Address, organization.TimeZone, organization.Language, organization.Currency);
 
     public static DomainOrg.Organization MapOrganization(OrganizationDto organization) =>
-        new(organization.Id, organization.Name, organization.LegalName, organization.Logo, organization.BrandColor, organization.TaxInformation, MapPlan(organization.Subscription), MapStatus(organization.Status), organization.CreatedDate);
+        new(organization.Id, organization.Name, organization.LegalName, organization.Logo, organization.BrandColor, organization.TaxInformation, MapPlan(organization.Subscription), MapStatus(organization.Status), organization.CreatedDate, organization.Code, organization.Phone, organization.Email, organization.Address, organization.TimeZone, organization.Language, organization.Currency);
 
     public static BranchDto MapBranch(DomainOrg.Branch branch) =>
         new(branch.Id, branch.OrganizationId, branch.Name, branch.Code, branch.Address, branch.Phone, branch.Email, branch.Manager, branch.TimeZone, branch.Currency, MapBranchStatus(branch.Status));
@@ -110,6 +110,10 @@ internal static class OrganizationMapper
         DomainOrg.Permission.SettingsManage => Permission.SettingsManage,
         DomainOrg.Permission.OrganizationManage => Permission.OrganizationManage,
         DomainOrg.Permission.BranchManage => Permission.BranchManage,
+        DomainOrg.Permission.Approve => Permission.Approve,
+        DomainOrg.Permission.Reject => Permission.Reject,
+        DomainOrg.Permission.Import => Permission.Import,
+        DomainOrg.Permission.ManageUsers => Permission.ManageUsers,
         _ => throw new ArgumentOutOfRangeException(nameof(permission), permission, "Unknown permission."),
     };
 
@@ -138,6 +142,10 @@ internal static class OrganizationMapper
         Permission.SettingsManage => DomainOrg.Permission.SettingsManage,
         Permission.OrganizationManage => DomainOrg.Permission.OrganizationManage,
         Permission.BranchManage => DomainOrg.Permission.BranchManage,
+        Permission.Approve => DomainOrg.Permission.Approve,
+        Permission.Reject => DomainOrg.Permission.Reject,
+        Permission.Import => DomainOrg.Permission.Import,
+        Permission.ManageUsers => DomainOrg.Permission.ManageUsers,
         _ => throw new ArgumentOutOfRangeException(nameof(permission), permission, "Unknown permission."),
     };
 
@@ -154,6 +162,7 @@ internal static class OrganizationMapper
         DomainOrg.WorkspaceRole.Hr => WorkspaceRole.Hr,
         DomainOrg.WorkspaceRole.Ai => WorkspaceRole.Ai,
         DomainOrg.WorkspaceRole.Support => WorkspaceRole.Support,
+        DomainOrg.WorkspaceRole.Marketing => WorkspaceRole.Marketing,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown workspace role."),
     };
 
@@ -170,6 +179,7 @@ internal static class OrganizationMapper
         WorkspaceRole.Hr => DomainOrg.WorkspaceRole.Hr,
         WorkspaceRole.Ai => DomainOrg.WorkspaceRole.Ai,
         WorkspaceRole.Support => DomainOrg.WorkspaceRole.Support,
+        WorkspaceRole.Marketing => DomainOrg.WorkspaceRole.Marketing,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown workspace role."),
     };
 }

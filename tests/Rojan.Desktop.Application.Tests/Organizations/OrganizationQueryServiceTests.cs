@@ -17,8 +17,8 @@ public sealed class OrganizationQueryServiceTests
         var repository = new StubOrganizationRepository();
         var now = DateTimeOffset.Now;
 
-        repository.Organizations.Add(new DomainOrg.Organization("org-a", "Org A", "Org A Legal", string.Empty, "#111111", "TIN-A", DomainOrg.SubscriptionPlan.Trial, DomainOrg.OrganizationStatus.Active, now));
-        repository.Organizations.Add(new DomainOrg.Organization("org-b", "Org B", "Org B Legal", string.Empty, "#222222", "TIN-B", DomainOrg.SubscriptionPlan.Professional, DomainOrg.OrganizationStatus.Active, now));
+        repository.Organizations.Add(new DomainOrg.Organization("org-a", "Org A", "Org A Legal", string.Empty, "#111111", "TIN-A", DomainOrg.SubscriptionPlan.Trial, DomainOrg.OrganizationStatus.Active, now, "OA", "+1-555-0001", "a@example.com", "addr-a", "UTC", "en-US", "USD"));
+        repository.Organizations.Add(new DomainOrg.Organization("org-b", "Org B", "Org B Legal", string.Empty, "#222222", "TIN-B", DomainOrg.SubscriptionPlan.Professional, DomainOrg.OrganizationStatus.Active, now, "OB", "+1-555-0002", "b@example.com", "addr-b", "UTC", "en-US", "USD"));
 
         repository.Branches.Add(new DomainOrg.Branch("branch-a1", "org-a", "A1", "A1", "addr", "phone", "email", "manager", "tz", "USD", DomainOrg.BranchStatus.Active));
         repository.Branches.Add(new DomainOrg.Branch("branch-a2", "org-a", "A2", "A2", "addr", "phone", "email", "manager", "tz", "USD", DomainOrg.BranchStatus.Active));

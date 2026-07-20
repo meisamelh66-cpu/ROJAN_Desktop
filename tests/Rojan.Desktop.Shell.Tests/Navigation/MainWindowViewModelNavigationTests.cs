@@ -1,4 +1,5 @@
 using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.ViewModels.Modules;
@@ -19,12 +20,14 @@ public sealed class MainWindowViewModelNavigationTests
     private static ModuleDescriptor Module(string id, Permission? requiredPermission = null) =>
         new(new ModuleMetadata(id, id, string.Empty, 0, requiredPermission), _ => new PlaceholderModuleViewModel(id));
 
+    private static OrganizationQueryService CreateOrganizationQueryService() => new(new FakeOrganizationRepository());
+
     [Fact]
     public void NavigationItems_ModuleWithNoRequiredPermission_IsAlwaysVisible()
     {
         var modules = new[] { Module("dashboard") };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session);
+        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
 
         Assert.Single(viewModel.NavigationItems);
         Assert.Equal("dashboard", viewModel.NavigationItems[0].Descriptor.Metadata.Id);
@@ -35,7 +38,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session);
+        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
 
         Assert.DoesNotContain(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
     }
@@ -45,7 +48,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.PlatformOwner };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session);
+        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
 
         Assert.Contains(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
     }
@@ -55,7 +58,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.Support };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session);
+        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
         Assert.DoesNotContain(viewModel.NavigationItems, item => item.Descriptor.Metadata.Id == "organizations");
 
         session.CurrentRole = WorkspaceRole.PlatformOwner;
@@ -69,7 +72,7 @@ public sealed class MainWindowViewModelNavigationTests
     {
         var modules = new[] { Module("dashboard"), Module("organizations", Permission.OrganizationManage) };
         var session = new StubCurrentSessionService { CurrentRole = WorkspaceRole.PlatformOwner };
-        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session);
+        var viewModel = new MainWindowViewModel(new StubModuleRegistry(modules), new StubNavigationService(), new PermissionEngine(), session, CreateOrganizationQueryService());
         viewModel.SelectedNavigationItem = viewModel.NavigationItems.Single(item => item.Descriptor.Metadata.Id == "organizations");
 
         session.CurrentRole = WorkspaceRole.Support;

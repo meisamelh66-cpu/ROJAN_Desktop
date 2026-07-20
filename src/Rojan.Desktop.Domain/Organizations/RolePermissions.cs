@@ -36,6 +36,8 @@ public static class RolePermissions
             Permission.AiUse,
             Permission.SettingsManage,
             Permission.BranchManage,
+            Permission.Approve, Permission.Reject,
+            Permission.ManageUsers,
         },
         [WorkspaceRole.BranchManager] = new HashSet<Permission>
         {
@@ -52,6 +54,8 @@ public static class RolePermissions
             Permission.AiUse,
             Permission.SettingsManage,
             Permission.BranchManage,
+            Permission.Approve, Permission.Reject,
+            Permission.ManageUsers,
         },
         [WorkspaceRole.Reception] = new HashSet<Permission>
         {
@@ -74,17 +78,21 @@ public static class RolePermissions
         {
             Permission.DashboardView,
             Permission.InventoryRead, Permission.InventoryEdit,
+            Permission.Import,
         },
         [WorkspaceRole.Accounting] = new HashSet<Permission>
         {
             Permission.DashboardView,
             Permission.AccountingView, Permission.AccountingManage,
             Permission.ReportingView,
+            Permission.Approve, Permission.Reject,
+            Permission.Import,
         },
         [WorkspaceRole.Hr] = new HashSet<Permission>
         {
             Permission.DashboardView,
             Permission.HrView, Permission.HrManage,
+            Permission.Approve, Permission.Reject,
         },
         [WorkspaceRole.Ai] = new HashSet<Permission>
         {
@@ -97,6 +105,13 @@ public static class RolePermissions
             Permission.DashboardView,
             Permission.CustomerRead,
             Permission.BookingRead,
+        },
+        [WorkspaceRole.Marketing] = new HashSet<Permission>
+        {
+            Permission.DashboardView,
+            Permission.CustomerRead,
+            Permission.ReportingView,
+            Permission.AiUse,
         },
     };
 

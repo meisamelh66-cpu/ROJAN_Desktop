@@ -384,4 +384,25 @@
   <data name="Organizations_SwitchRole" xml:space="preserve">
     <value>تغییر نقش</value>
   </data>
+  <data name="Organizations_Code" xml:space="preserve">
+    <value>کد سازمان</value>
+  </data>
+  <data name="Organizations_OrgPhone" xml:space="preserve">
+    <value>تلفن</value>
+  </data>
+  <data name="Organizations_OrgEmail" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Organizations_OrgAddress" xml:space="preserve">
+    <value>آدرس</value>
+  </data>
+  <data name="Shell_BranchSwitcher_SearchPlaceholder" xml:space="preserve">
+    <value>جستجوی شعب...</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Favorites" xml:space="preserve">
+    <value>شعب مورد علاقه</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
+    <value>اخیراً استفاده‌شده</value>
+  </data>
 </root>

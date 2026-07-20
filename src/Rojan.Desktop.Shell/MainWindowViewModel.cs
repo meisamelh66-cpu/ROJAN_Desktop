@@ -34,6 +34,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private readonly INavigationService _navigationService;
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
+    private readonly IOrganizationQueryService _organizationQueryService;
     private readonly IReadOnlyList<ModuleDescriptor> _allModules;
     private NavigationItem _selectedNavigationItem = null!;
     private bool _isSidebarExpanded = true;
@@ -43,15 +44,22 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private string _statusMessage = Strings.Common_Ready;
     private object? _activeDialog;
 
+    private List<BranchSwitcherGroup> _allBranchGroups = [];
+    private Dictionary<string, BranchDto> _allBranchesById = [];
+    private string _branchSearchText = string.Empty;
+    private bool _isBranchSwitcherOpen;
+
     public MainWindowViewModel(
         IModuleRegistry moduleRegistry,
         INavigationService navigationService,
         IPermissionEngine permissionEngine,
-        ICurrentSessionService currentSessionService)
+        ICurrentSessionService currentSessionService,
+        IOrganizationQueryService organizationQueryService)
     {
         _navigationService = navigationService;
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
+        _organizationQueryService = organizationQueryService;
         _allModules = moduleRegistry.Modules;
 
         NavigationItems = new ObservableCollection<NavigationItem>(BuildVisibleNavigationItems());
@@ -59,6 +67,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         Breadcrumbs = new ObservableCollection<string>();
         Notifications = new ObservableCollection<NotificationItem>();
         Notifications.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNotifications));
+
+        BranchGroups = new ObservableCollection<BranchSwitcherGroup>();
+        RecentBranches = new ObservableCollection<BranchDto>();
+        FavoriteBranches = new ObservableCollection<BranchDto>();
 
         SelectNavigationItemCommand = new RelayCommand(parameter =>
         {
@@ -71,6 +83,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         ToggleNotificationPanelCommand = new RelayCommand(_ => IsNotificationPanelOpen = !IsNotificationPanelOpen);
         GoBackCommand = new RelayCommand(_ => Navigate(_navigationService.GoBack), _ => CanGoBack);
         GoForwardCommand = new RelayCommand(_ => Navigate(_navigationService.GoForward), _ => CanGoForward);
+        ToggleBranchSwitcherCommand = new RelayCommand(_ => IsBranchSwitcherOpen = !IsBranchSwitcherOpen);
+        SelectBranchFromSwitcherCommand = new AsyncRelayCommand(parameter => SelectBranchFromSwitcherAsync((BranchDto)parameter!));
+        ToggleFavoriteBranchCommand = new AsyncRelayCommand(parameter => ToggleFavoriteBranchAsync((BranchDto)parameter!));
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
@@ -79,6 +94,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         // display order is both the default item and the first thing
         // shown.
         SelectedNavigationItem = NavigationItems[0];
+
+        _ = LoadBranchSwitcherDataAsync();
     }
 
     public ObservableCollection<NavigationItem> NavigationItems { get; }
@@ -133,6 +150,39 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     }
 
     public string CurrentOrganizationName => _currentSessionService.CurrentOrganization?.Name ?? string.Empty;
+
+    /// <summary>Every organization's branches, grouped - the flyout's "Organization grouping" section, filtered live by <see cref="BranchSearchText"/>.</summary>
+    public ObservableCollection<BranchSwitcherGroup> BranchGroups { get; }
+
+    /// <summary>The flyout's "Recently used branches" section, resolved from <see cref="ICurrentSessionService.RecentBranchIds"/>.</summary>
+    public ObservableCollection<BranchDto> RecentBranches { get; }
+
+    /// <summary>The flyout's "Favorite branches" section, resolved from <see cref="ICurrentSessionService.FavoriteBranchIds"/>.</summary>
+    public ObservableCollection<BranchDto> FavoriteBranches { get; }
+
+    public string BranchSearchText
+    {
+        get => _branchSearchText;
+        set
+        {
+            if (SetProperty(ref _branchSearchText, value))
+            {
+                ApplyBranchSearchFilter();
+            }
+        }
+    }
+
+    public bool IsBranchSwitcherOpen
+    {
+        get => _isBranchSwitcherOpen;
+        set => SetProperty(ref _isBranchSwitcherOpen, value);
+    }
+
+    public ICommand ToggleBranchSwitcherCommand { get; }
+
+    public ICommand SelectBranchFromSwitcherCommand { get; }
+
+    public ICommand ToggleFavoriteBranchCommand { get; }
 
     public bool CanGoBack
     {
@@ -217,10 +267,91 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         OnPropertyChanged(nameof(AvailableBranches));
         OnPropertyChanged(nameof(CurrentOrganizationName));
         RefreshNavigationItems();
+        RefreshRecentAndFavoriteBranches();
     }
 
     private async Task SwitchBranchAsync(string branchId)
     {
         await _currentSessionService.SwitchBranchAsync(branchId).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Loads every organization and its branches - the Branch Switcher's
+    /// full data set (unlike <see cref="AvailableBranches"/>, which is
+    /// scoped to the current organization only) - so the flyout can group
+    /// by organization and search across all of them, per this phase's
+    /// "Organization grouping"/"Search" Branch Switcher requirements.
+    /// </summary>
+    private async Task LoadBranchSwitcherDataAsync()
+    {
+        var organizations = await _organizationQueryService.GetOrganizationsAsync().ConfigureAwait(true);
+        var groups = new List<BranchSwitcherGroup>();
+        var byId = new Dictionary<string, BranchDto>();
+
+        foreach (var organization in organizations)
+        {
+            var branches = await _organizationQueryService.GetBranchesAsync(organization.Id).ConfigureAwait(true);
+            groups.Add(new BranchSwitcherGroup(organization.Id, organization.Name, branches));
+            foreach (var branch in branches)
+            {
+                byId[branch.Id] = branch;
+            }
+        }
+
+        _allBranchGroups = groups;
+        _allBranchesById = byId;
+        ApplyBranchSearchFilter();
+        RefreshRecentAndFavoriteBranches();
+    }
+
+    /// <summary>Rebuilds <see cref="BranchGroups"/> from <see cref="_allBranchGroups"/>, filtered by <see cref="BranchSearchText"/> against branch name/code - empty groups drop out entirely rather than showing as an empty header.</summary>
+    private void ApplyBranchSearchFilter()
+    {
+        BranchGroups.Clear();
+
+        var search = _branchSearchText.Trim();
+        foreach (var group in _allBranchGroups)
+        {
+            var matching = search.Length == 0
+                ? group.Branches
+                : group.Branches.Where(b => b.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || b.Code.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (matching.Count > 0)
+            {
+                BranchGroups.Add(new BranchSwitcherGroup(group.OrganizationId, group.OrganizationName, matching));
+            }
+        }
+    }
+
+    private void RefreshRecentAndFavoriteBranches()
+    {
+        RecentBranches.Clear();
+        foreach (var branchId in _currentSessionService.RecentBranchIds)
+        {
+            if (_allBranchesById.TryGetValue(branchId, out var branch))
+            {
+                RecentBranches.Add(branch);
+            }
+        }
+
+        FavoriteBranches.Clear();
+        foreach (var branchId in _currentSessionService.FavoriteBranchIds)
+        {
+            if (_allBranchesById.TryGetValue(branchId, out var branch))
+            {
+                FavoriteBranches.Add(branch);
+            }
+        }
+    }
+
+    private async Task SelectBranchFromSwitcherAsync(BranchDto branch)
+    {
+        await SwitchBranchAsync(branch.Id).ConfigureAwait(true);
+        IsBranchSwitcherOpen = false;
+    }
+
+    private async Task ToggleFavoriteBranchAsync(BranchDto branch)
+    {
+        await _currentSessionService.ToggleFavoriteBranchAsync(branch.Id).ConfigureAwait(true);
     }
 }

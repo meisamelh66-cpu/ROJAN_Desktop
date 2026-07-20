@@ -372,4 +372,25 @@
   <data name="Organizations_SwitchRole" xml:space="preserve">
     <value>Switch Role</value>
   </data>
+  <data name="Organizations_Code" xml:space="preserve">
+    <value>Organization Code</value>
+  </data>
+  <data name="Organizations_OrgPhone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Organizations_OrgEmail" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Organizations_OrgAddress" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Shell_BranchSwitcher_SearchPlaceholder" xml:space="preserve">
+    <value>Search branches...</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Favorites" xml:space="preserve">
+    <value>Favorite Branches</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
+    <value>Recently Used</value>
+  </data>
 </root>

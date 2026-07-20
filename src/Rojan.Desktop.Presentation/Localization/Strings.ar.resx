@@ -372,4 +372,25 @@
   <data name="Organizations_SwitchRole" xml:space="preserve">
     <value>تبديل الدور</value>
   </data>
+  <data name="Organizations_Code" xml:space="preserve">
+    <value>رمز المؤسسة</value>
+  </data>
+  <data name="Organizations_OrgPhone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+  <data name="Organizations_OrgEmail" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Organizations_OrgAddress" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="Shell_BranchSwitcher_SearchPlaceholder" xml:space="preserve">
+    <value>البحث عن الفروع...</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Favorites" xml:space="preserve">
+    <value>الفروع المفضلة</value>
+  </data>
+  <data name="Shell_BranchSwitcher_Recent" xml:space="preserve">
+    <value>المستخدمة مؤخراً</value>
+  </data>
 </root>

@@ -45,6 +45,10 @@ public sealed class OrganizationPageViewModel : ViewModelBase
     private string _newOrgLegalName = string.Empty;
     private string _newOrgTaxInformation = string.Empty;
     private SubscriptionPlan _newOrgSubscription = SubscriptionPlan.Trial;
+    private string _newOrgCode = string.Empty;
+    private string _newOrgPhone = string.Empty;
+    private string _newOrgEmail = string.Empty;
+    private string _newOrgAddress = string.Empty;
 
     private string _newBranchName = string.Empty;
     private string _newBranchCode = string.Empty;
@@ -210,6 +214,30 @@ public sealed class OrganizationPageViewModel : ViewModelBase
     {
         get => _newOrgSubscription;
         set => SetProperty(ref _newOrgSubscription, value);
+    }
+
+    public string NewOrgCode
+    {
+        get => _newOrgCode;
+        set => SetProperty(ref _newOrgCode, value);
+    }
+
+    public string NewOrgPhone
+    {
+        get => _newOrgPhone;
+        set => SetProperty(ref _newOrgPhone, value);
+    }
+
+    public string NewOrgEmail
+    {
+        get => _newOrgEmail;
+        set => SetProperty(ref _newOrgEmail, value);
+    }
+
+    public string NewOrgAddress
+    {
+        get => _newOrgAddress;
+        set => SetProperty(ref _newOrgAddress, value);
     }
 
     public string NewBranchName
@@ -456,10 +484,14 @@ public sealed class OrganizationPageViewModel : ViewModelBase
 
     private async Task CreateOrganizationAsync()
     {
-        await _commandService.CreateOrganizationAsync(NewOrgName, NewOrgLegalName, NewOrgTaxInformation, NewOrgSubscription).ConfigureAwait(true);
+        await _commandService.CreateOrganizationAsync(NewOrgName, NewOrgLegalName, NewOrgTaxInformation, NewOrgSubscription, NewOrgCode, NewOrgPhone, NewOrgEmail, NewOrgAddress).ConfigureAwait(true);
         NewOrgName = string.Empty;
         NewOrgLegalName = string.Empty;
         NewOrgTaxInformation = string.Empty;
+        NewOrgCode = string.Empty;
+        NewOrgPhone = string.Empty;
+        NewOrgEmail = string.Empty;
+        NewOrgAddress = string.Empty;
         await LoadAsync().ConfigureAwait(true);
     }
 

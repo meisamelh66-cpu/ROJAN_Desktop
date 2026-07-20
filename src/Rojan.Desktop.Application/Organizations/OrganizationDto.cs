@@ -9,4 +9,11 @@ public sealed record OrganizationDto(
     string TaxInformation,
     SubscriptionPlan Subscription,
     OrganizationStatus Status,
-    DateTimeOffset CreatedDate);
+    DateTimeOffset CreatedDate,
+    string Code,
+    string Phone,
+    string Email,
+    string Address,
+    string TimeZone,
+    string Language,
+    string Currency);

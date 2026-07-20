@@ -19,11 +19,16 @@ namespace Rojan.Desktop.Shell.Organizations;
 /// </summary>
 public sealed class CurrentSessionService : ICurrentSessionService
 {
+    /// <summary>The Branch Switcher's "Recently used branches" cap - the five most recent, newest first.</summary>
+    public const int MaxRecentBranches = 5;
+
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     private readonly IOrganizationQueryService _organizationQueryService;
     private readonly string _settingsFilePath;
     private List<BranchDto> _availableBranches = [];
+    private List<string> _recentBranchIds = [];
+    private List<string> _favoriteBranchIds = [];
 
     public CurrentSessionService(IOrganizationQueryService organizationQueryService)
         : this(organizationQueryService, DefaultSettingsFilePath())
@@ -43,6 +48,10 @@ public sealed class CurrentSessionService : ICurrentSessionService
     public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.PlatformOwner;
 
     public IReadOnlyList<BranchDto> AvailableBranches => _availableBranches;
+
+    public IReadOnlyList<string> RecentBranchIds => _recentBranchIds;
+
+    public IReadOnlyList<string> FavoriteBranchIds => _favoriteBranchIds;
 
     public event EventHandler? SessionChanged;
 
@@ -68,6 +77,8 @@ public sealed class CurrentSessionService : ICurrentSessionService
         _availableBranches = branches.ToList();
         CurrentBranch = branch;
         CurrentRole = role;
+        _recentBranchIds = persisted?.RecentBranchIds ?? [];
+        _favoriteBranchIds = persisted?.FavoriteBranchIds ?? [];
     }
 
     public async Task SwitchBranchAsync(string branchId, CancellationToken cancellationToken = default)
@@ -84,6 +95,14 @@ public sealed class CurrentSessionService : ICurrentSessionService
         }
 
         CurrentBranch = branch;
+
+        _recentBranchIds.RemoveAll(id => id == branchId);
+        _recentBranchIds.Insert(0, branchId);
+        if (_recentBranchIds.Count > MaxRecentBranches)
+        {
+            _recentBranchIds.RemoveRange(MaxRecentBranches, _recentBranchIds.Count - MaxRecentBranches);
+        }
+
         PersistSelection();
         SessionChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -91,6 +110,18 @@ public sealed class CurrentSessionService : ICurrentSessionService
     public Task SwitchRoleAsync(WorkspaceRole role, CancellationToken cancellationToken = default)
     {
         CurrentRole = role;
+        PersistSelection();
+        SessionChanged?.Invoke(this, EventArgs.Empty);
+        return Task.CompletedTask;
+    }
+
+    public Task ToggleFavoriteBranchAsync(string branchId, CancellationToken cancellationToken = default)
+    {
+        if (!_favoriteBranchIds.Remove(branchId))
+        {
+            _favoriteBranchIds.Add(branchId);
+        }
+
         PersistSelection();
         SessionChanged?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
@@ -129,6 +160,8 @@ public sealed class CurrentSessionService : ICurrentSessionService
             OrganizationId = CurrentOrganization?.Id ?? string.Empty,
             BranchId = CurrentBranch?.Id ?? string.Empty,
             Role = CurrentRole.ToString(),
+            RecentBranchIds = _recentBranchIds,
+            FavoriteBranchIds = _favoriteBranchIds,
         };
 
         var json = JsonSerializer.Serialize(settings, SerializerOptions);

@@ -296,4 +296,18 @@ public static class Strings
     public static string Organizations_CurrentRole => Get(nameof(Organizations_CurrentRole));
 
     public static string Organizations_SwitchRole => Get(nameof(Organizations_SwitchRole));
+
+    public static string Organizations_Code => Get(nameof(Organizations_Code));
+
+    public static string Organizations_OrgPhone => Get(nameof(Organizations_OrgPhone));
+
+    public static string Organizations_OrgEmail => Get(nameof(Organizations_OrgEmail));
+
+    public static string Organizations_OrgAddress => Get(nameof(Organizations_OrgAddress));
+
+    public static string Shell_BranchSwitcher_SearchPlaceholder => Get(nameof(Shell_BranchSwitcher_SearchPlaceholder));
+
+    public static string Shell_BranchSwitcher_Favorites => Get(nameof(Shell_BranchSwitcher_Favorites));
+
+    public static string Shell_BranchSwitcher_Recent => Get(nameof(Shell_BranchSwitcher_Recent));
 }

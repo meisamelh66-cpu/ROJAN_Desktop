@@ -11,11 +11,21 @@ public sealed class OrganizationCommandService : IOrganizationCommandService
         _repository = repository;
     }
 
-    public async Task<OrganizationDto> CreateOrganizationAsync(string name, string legalName, string taxInformation, SubscriptionPlan subscription, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// TimeZone/Language/Currency are infrastructure-only for this pass
+    /// (per this phase's spec: "Only infrastructure is required if UI is
+    /// not yet needed") - defaulted here rather than exposed as Create
+    /// Organization form fields, same reasoning
+    /// <c>OrganizationPageViewModel</c>'s doc comment gives for
+    /// <see cref="DomainOrg.Organization.TimeZone"/>/<see cref="DomainOrg.Organization.Language"/>/
+    /// <see cref="DomainOrg.Organization.Currency"/>.
+    /// </summary>
+    public async Task<OrganizationDto> CreateOrganizationAsync(string name, string legalName, string taxInformation, SubscriptionPlan subscription, string code, string phone, string email, string address, CancellationToken cancellationToken = default)
     {
         var organization = new DomainOrg.Organization(
             $"org-{Guid.NewGuid():N}", name, legalName, string.Empty, "#8E28E7", taxInformation,
-            OrganizationMapper.MapPlan(subscription), DomainOrg.OrganizationStatus.Trial, DateTimeOffset.Now);
+            OrganizationMapper.MapPlan(subscription), DomainOrg.OrganizationStatus.Trial, DateTimeOffset.Now,
+            code, phone, email, address, TimeZoneInfo.Local.Id, "fa-IR", "USD");
 
         var created = await _repository.CreateOrganizationAsync(organization, cancellationToken).ConfigureAwait(false);
         return OrganizationMapper.MapOrganization(created);

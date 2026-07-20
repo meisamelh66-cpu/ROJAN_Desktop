@@ -54,4 +54,8 @@
   <sys:String x:Key="Rojan.Icon.CheckCircle">&#xE930;</sys:String>
   <sys:String x:Key="Rojan.Icon.ErrorCircle">&#xE783;</sys:String>
 
+  <!-- Phase 22 Branch Switcher: favorite star (outline/filled), reusing the same font family - no new dependency. -->
+  <sys:String x:Key="Rojan.Icon.FavoriteOutline">&#xE734;</sys:String>
+  <sys:String x:Key="Rojan.Icon.FavoriteFilled">&#xE735;</sys:String>
+
 </ResourceDictionary>

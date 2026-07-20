@@ -24,8 +24,8 @@ public sealed class FakeOrganizationRepository : IOrganizationRepository
 
         _organizations =
         [
-            new Organization("org-1", "ROJAN Beauty Group", "ROJAN Beauty Group LLC", string.Empty, "#8E28E7", "TIN-10293847", SubscriptionPlan.Enterprise, OrganizationStatus.Active, now.AddYears(-2)),
-            new Organization("org-2", "Luxe Salon Collective", "Luxe Salon Collective Inc.", string.Empty, "#2FC6C6", "TIN-55219087", SubscriptionPlan.Professional, OrganizationStatus.Active, now.AddYears(-1)),
+            new Organization("org-1", "ROJAN Beauty Group", "ROJAN Beauty Group LLC", string.Empty, "#8E28E7", "TIN-10293847", SubscriptionPlan.Enterprise, OrganizationStatus.Active, now.AddYears(-2), "RBG", "+1-555-0100", "hello@rojanbeauty.example", "1 Corporate Plaza, New York, NY", "America/New_York", "fa-IR", "USD"),
+            new Organization("org-2", "Luxe Salon Collective", "Luxe Salon Collective Inc.", string.Empty, "#2FC6C6", "TIN-55219087", SubscriptionPlan.Professional, OrganizationStatus.Active, now.AddYears(-1), "LSC", "+1-555-0200", "hello@luxesalon.example", "400 Bay Street, San Francisco, CA", "America/Los_Angeles", "en-US", "USD"),
         ];
 
         _branches =

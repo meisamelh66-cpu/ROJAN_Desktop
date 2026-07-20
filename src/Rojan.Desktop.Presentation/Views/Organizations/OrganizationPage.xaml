@@ -170,6 +170,36 @@
                                     <ComboBox ItemsSource="{Binding AvailableSubscriptionPlans}" SelectedItem="{Binding NewOrgSubscription, Mode=TwoWay}" Margin="0,4,0,0" />
                                 </StackPanel>
                             </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_Code}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_OrgPhone}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_OrgEmail}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_OrgAddress}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
                             <Button Content="{x:Static loc:Strings.Organizations_CreateOrganization}"
                                     Command="{Binding CreateOrganizationCommand}"
                                     Style="{StaticResource Rojan.Style.ButtonPrimary}"

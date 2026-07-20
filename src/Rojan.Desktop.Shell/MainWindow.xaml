@@ -4,6 +4,7 @@
         xmlns:shellChrome="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:navigation="clr-namespace:Rojan.Desktop.Presentation.Navigation;assembly=Rojan.Desktop.Presentation"
         xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization;assembly=Rojan.Desktop.Presentation"
+        xmlns:appOrg="clr-namespace:Rojan.Desktop.Application.Organizations;assembly=Rojan.Desktop.Application"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -58,6 +59,44 @@
                                    GlassFrameThickness="0"
                                    CornerRadius="0" />
     </shellChrome:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!--
+            Branch Switcher row - reused for Favorites/Recent/every
+            organization group. Popup content lives in a separate visual
+            root, so RelativeSource AncestorType=Window cannot reach
+            MainWindowViewModel from here; AncestorType=Popup + PlacementTarget
+            is the standard WPF pattern that does.
+        -->
+        <DataTemplate x:Key="BranchSwitcherRowTemplate" DataType="{x:Type appOrg:BranchDto}">
+            <Border Background="Transparent" Cursor="Hand" Padding="8,6" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick"
+                                  Command="{Binding PlacementTarget.DataContext.SelectBranchFromSwitcherCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                                  CommandParameter="{Binding}" />
+                </Border.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                        <TextBlock Text="{Binding Code}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="4"
+                            Cursor="Hand"
+                            Command="{Binding PlacementTarget.DataContext.ToggleFavoriteBranchCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                            CommandParameter="{Binding}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.FavoriteOutline}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -146,16 +185,111 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Branch Switcher (Phase 22: Enterprise Multi-Branch & Organization Platform) - changing the selection live-switches the active branch, no restart, via ICurrentSessionService.SwitchBranchAsync. -->
-                <ComboBox Grid.Column="5"
-                          Width="160"
-                          Margin="8,0,0,0"
-                          VerticalAlignment="Center"
-                          ItemsSource="{Binding AvailableBranches}"
-                          SelectedItem="{Binding CurrentBranch, Mode=TwoWay}"
-                          DisplayMemberPath="Name"
-                          ToolTip="{x:Static loc:Strings.Shell_BranchSwitcher}"
-                          shellChrome:WindowChrome.IsHitTestVisibleInChrome="True" />
+                <!--
+                    Branch Switcher (Phase 22: Enterprise Multi-Branch &
+                    Organization Platform). A professional Fluent 2 flyout,
+                    not a plain ComboBox: current branch indicator on the
+                    trigger button, a search box, Favorite/Recently-used
+                    sections, and every organization's branches grouped
+                    underneath. Selecting a branch live-switches the active
+                    branch (no restart) via ICurrentSessionService.SwitchBranchAsync;
+                    the popup itself fades in/out (PopupAnimation="Fade")
+                    for a smooth transition.
+                -->
+                <StackPanel Grid.Column="5" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="BranchSwitcherButton"
+                            Command="{Binding ToggleBranchSwitcherCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                            ToolTip="{x:Static loc:Strings.Shell_BranchSwitcher}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="{Binding CurrentBranch.Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" VerticalAlignment="Center" MaxWidth="120" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{StaticResource Rojan.Icon.ChevronDown}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        </StackPanel>
+                    </Button>
+
+                    <Popup IsOpen="{Binding IsBranchSwitcherOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding ElementName=BranchSwitcherButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Style="{StaticResource Rojan.Style.Panel}" Width="320" MaxHeight="480" Padding="12" Margin="0,4,0,0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <!-- Search -->
+                                    <Border Style="{StaticResource Rojan.Style.Panel}" Padding="10,6">
+                                        <Grid>
+                                            <TextBlock Text="{x:Static loc:Strings.Shell_BranchSwitcher_SearchPlaceholder}"
+                                                       Foreground="{StaticResource Rojan.Brush.HintText}"
+                                                       IsHitTestVisible="False">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding BranchSearchText}" Value="">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBox Text="{Binding BranchSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                                     CaretBrush="{StaticResource Rojan.Brush.Accent}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Favorites -->
+                                    <StackPanel Margin="0,12,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding FavoriteBranches.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="{x:Static loc:Strings.Shell_BranchSwitcher_Favorites}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,0,0,4" />
+                                        <ItemsControl ItemsSource="{Binding FavoriteBranches}" ItemTemplate="{StaticResource BranchSwitcherRowTemplate}" />
+                                    </StackPanel>
+
+                                    <!-- Recently used -->
+                                    <StackPanel Margin="0,12,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RecentBranches.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="{x:Static loc:Strings.Shell_BranchSwitcher_Recent}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,0,0,4" />
+                                        <ItemsControl ItemsSource="{Binding RecentBranches}" ItemTemplate="{StaticResource BranchSwitcherRowTemplate}" />
+                                    </StackPanel>
+
+                                    <!-- Every organization's branches, grouped -->
+                                    <ItemsControl ItemsSource="{Binding BranchGroups}" Margin="0,12,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type navigation:BranchSwitcherGroup}">
+                                                <StackPanel Margin="0,8,0,0">
+                                                    <TextBlock Text="{Binding OrganizationName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,0,0,4" />
+                                                    <ItemsControl ItemsSource="{Binding Branches}" ItemTemplate="{StaticResource BranchSwitcherRowTemplate}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
+                </StackPanel>
 
                 <!-- Notification button -->
                 <Button Grid.Column="6"

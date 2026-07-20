@@ -123,4 +123,55 @@ public sealed class CurrentSessionServiceTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.SwitchBranchAsync("branch-does-not-exist"));
     }
+
+    [Fact]
+    public async Task SwitchBranchAsync_PushesToRecentBranchIdsNewestFirstWithoutDuplicates()
+    {
+        var service = new CurrentSessionService(_queryService, _settingsFilePath);
+        await service.InitializeAsync();
+
+        await service.SwitchBranchAsync("branch-2");
+        await service.SwitchBranchAsync("branch-3");
+        await service.SwitchBranchAsync("branch-1");
+        await service.SwitchBranchAsync("branch-2");
+
+        Assert.Equal(["branch-2", "branch-1", "branch-3"], service.RecentBranchIds);
+    }
+
+    [Fact]
+    public async Task SwitchBranchAsync_CapsRecentBranchIdsAtMax()
+    {
+        var service = new CurrentSessionService(_queryService, _settingsFilePath);
+        await service.InitializeAsync();
+
+        await service.SwitchBranchAsync("branch-1");
+        await service.SwitchBranchAsync("branch-2");
+        await service.SwitchBranchAsync("branch-3");
+        await service.SwitchBranchAsync("branch-1");
+        await service.SwitchBranchAsync("branch-2");
+        await service.SwitchBranchAsync("branch-3");
+
+        Assert.True(service.RecentBranchIds.Count <= CurrentSessionService.MaxRecentBranches);
+    }
+
+    [Fact]
+    public async Task ToggleFavoriteBranchAsync_TogglesMembershipAndPersists()
+    {
+        var service = new CurrentSessionService(_queryService, _settingsFilePath);
+        await service.InitializeAsync();
+        var raised = false;
+        service.SessionChanged += (_, _) => raised = true;
+
+        await service.ToggleFavoriteBranchAsync("branch-2");
+        Assert.Contains("branch-2", service.FavoriteBranchIds);
+        Assert.True(raised);
+
+        await service.ToggleFavoriteBranchAsync("branch-2");
+        Assert.DoesNotContain("branch-2", service.FavoriteBranchIds);
+
+        await service.ToggleFavoriteBranchAsync("branch-3");
+        var restarted = new CurrentSessionService(_queryService, _settingsFilePath);
+        await restarted.InitializeAsync();
+        Assert.Contains("branch-3", restarted.FavoriteBranchIds);
+    }
 }

@@ -589,6 +589,35 @@ see `docs/standards/versioning.md`.
   Organization page sections rendering correctly under the Fluent 2
   Premium theme in RTL Persian, and the Permissions grid's displayed
   grants matching `RolePermissions` exactly for every role.
+- Phase 22 Enhancement Pass — extends the Enterprise Multi-Branch
+  platform above additively per a follow-up specification, without
+  reverting or rewriting anything already committed. `Organization`
+  gains `Code`/`Phone`/`Email`/`Address` (new Create Organization form
+  fields) plus `TimeZone`/`Language`/`Currency` (infrastructure-only,
+  defaulted on create). `Permission` gains `Approve`/`Reject`/`Import`/
+  `ManageUsers`, granted to Accounting/Hr (Approve/Reject),
+  Inventory/Accounting (Import), and OrganizationManager/BranchManager
+  (ManageUsers) — additive, no role lost a permission. `WorkspaceRole`
+  gains `Marketing` (DashboardView/CustomerRead/ReportingView/AiUse) —
+  the one genuinely new role among the follow-up spec's examples, every
+  other named role mapping onto an existing member. The header Branch
+  Switcher is rebuilt from a plain `ComboBox` into a real Fluent 2
+  flyout (`Popup`, `PopupAnimation="Fade"` for smooth transitions): a
+  search box filtering by branch name/code across every organization,
+  Favorite and Recently-used sections backed by new
+  `ICurrentSessionService.FavoriteBranchIds`/`RecentBranchIds`
+  (persisted in `session.json`, recents capped at
+  `CurrentSessionService.MaxRecentBranches` = 5), and every
+  organization's branches grouped by name — not just the current
+  organization's. 17 new tests (`RolePermissionsTests` +6,
+  `CurrentSessionServiceTests` +3, new
+  `MainWindowViewModelBranchSwitcherTests` +7) — full solution suite
+  (939 tests) passes, zero warnings, zero errors. Runtime-verified via
+  UI Automation on both Debug and a fresh Release self-contained
+  publish: the Create Organization form's four new fields render
+  correctly in RTL Persian, and the redesigned Branch Switcher opens
+  via `InvokePattern`, correctly grouping both seeded organizations
+  with their branches, branch codes, and favorite-star affordances.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

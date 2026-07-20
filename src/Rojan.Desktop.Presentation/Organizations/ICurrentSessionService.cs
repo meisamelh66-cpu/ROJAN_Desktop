@@ -27,7 +27,13 @@ public interface ICurrentSessionService
     /// <summary>Every branch in <see cref="CurrentOrganization"/> - the Branch Switcher's data source.</summary>
     public IReadOnlyList<BranchDto> AvailableBranches { get; }
 
-    /// <summary>Raised after <see cref="SwitchBranchAsync"/> or <see cref="SwitchRoleAsync"/> completes - live, not restart-required.</summary>
+    /// <summary>Most-recently-switched-to branch ids across every organization, newest first - the Branch Switcher's "Recently used branches" section.</summary>
+    public IReadOnlyList<string> RecentBranchIds { get; }
+
+    /// <summary>Branch ids the user has starred, across every organization - the Branch Switcher's "Favorite branches" section.</summary>
+    public IReadOnlyList<string> FavoriteBranchIds { get; }
+
+    /// <summary>Raised after <see cref="SwitchBranchAsync"/>, <see cref="SwitchRoleAsync"/>, or <see cref="ToggleFavoriteBranchAsync"/> completes - live, not restart-required.</summary>
     public event EventHandler? SessionChanged;
 
     /// <summary>Loads the persisted organization/branch/role selection (defaulting to the first seeded organization's first branch, as <see cref="WorkspaceRole.PlatformOwner"/>, if none is saved yet) - called once at startup.</summary>
@@ -38,4 +44,7 @@ public interface ICurrentSessionService
 
     /// <summary>Switches the active workspace role live and persists the choice.</summary>
     public Task SwitchRoleAsync(WorkspaceRole role, CancellationToken cancellationToken = default);
+
+    /// <summary>Stars or un-stars a branch (toggled) and persists the choice - the Branch Switcher's favorite-star action.</summary>
+    public Task ToggleFavoriteBranchAsync(string branchId, CancellationToken cancellationToken = default);
 }
