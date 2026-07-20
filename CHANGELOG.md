@@ -546,6 +546,49 @@ see `docs/standards/versioning.md`.
   `StaticResourceExtension` errors at any point, confirming the
   resource-dictionary restructuring resolves correctly end-to-end
   despite removing every file's redundant self-merge.
+- Phase 22: Enterprise Multi-Branch & Organization Platform — transforms
+  the app into a multi-tenant platform: `Domain.Organizations`
+  (`Organization`, `Branch`, `BranchSettings` and its sub-records,
+  `Permission` — 23 members, `WorkspaceRole` — 11 members, and
+  `RolePermissions`, the static Permission Engine core), a full
+  Application layer (DTOs, `OrganizationMapper`, `IOrganizationQueryService`/
+  `IOrganizationCommandService`, `IPermissionEngine`), and
+  `FakeOrganizationRepository` seeding two organizations ("ROJAN Beauty
+  Group" with Downtown/Uptown branches, "Luxe Salon Collective" with
+  one branch), each branch with its own `BranchSettings`.
+  `ICurrentSessionService`/`CurrentSessionService` follow the same
+  "interface in Presentation, concrete in Shell" split as Localization/
+  Theming, persisting the active Organization/Branch/Role to their own
+  `session.json` — unlike Language/Theme, branch and role switches are
+  **live** (`SessionChanged`), not restart-required. Navigation is now
+  permission-aware via one additive, optional `ModuleMetadata.RequiredPermission`
+  field (defaults to `null` — every pre-existing module is unaffected);
+  `MainWindowViewModel` filters and live-refreshes `NavigationItems` on
+  every session change. A new header Branch Switcher live-switches the
+  active branch. `OrganizationPageViewModel`/`OrganizationPage` (gated
+  by `Permission.OrganizationManage`) provide the admin surface —
+  Organizations, Branches (scoped to the selected organization, the
+  concrete "no cross-branch data leakage" proof via
+  `GetBranchesAsync`), Branch Settings, a read-only Permissions
+  reference grid, and Session — following every other module page's
+  Loading/Empty/Error/Retry/Refresh/Last-Updated shape, entirely
+  localized (fa-IR/en-US/ar-SA, ~50 new string keys) with no hardcoded
+  brushes or strings. Deliberate scope boundary: org/branch filtering
+  is proven end-to-end on this new vertical slice only — the 10+
+  existing modules' repositories were not retrofitted, consistent with
+  this codebase's established "foundation now, wire up later"
+  precedent. 32 new tests across `Domain.Tests`
+  (`RolePermissionsTests`), `Application.Tests` (`PermissionEngineTests`,
+  `OrganizationQueryServiceTests`), `Infrastructure.Tests`
+  (`FakeOrganizationRepositoryTests`), and `Shell.Tests`
+  (`CurrentSessionServiceTests`, `MainWindowViewModelNavigationTests`)
+  — full solution suite (922 tests) passes, zero warnings, zero
+  errors. Runtime-verified via UI Automation on both Debug and the
+  Release self-contained publish: permission-gated "Organizations" nav
+  entry, header Branch Switcher listing the seeded branches, all five
+  Organization page sections rendering correctly under the Fluent 2
+  Premium theme in RTL Persian, and the Permissions grid's displayed
+  grants matching `RolePermissions` exactly for every role.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

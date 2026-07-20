@@ -1,0 +1,495 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Organizations.OrganizationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             xmlns:orgVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Organizations"
+             xmlns:appOrg="clr-namespace:Rojan.Desktop.Application.Organizations;assembly=Rojan.Desktop.Application">
+
+    <!--
+        Phase 22: Enterprise Multi-Branch & Organization Platform. The
+        platform's own administration surface - Organizations (list/
+        create), Branches (list/create, scoped to the selected
+        organization - IOrganizationQueryService.GetBranchesAsync is the
+        "Repository Filtering"/"no cross-branch data leakage"
+        demonstration), Branch Settings (business hours/working days/VAT/
+        receipt/appointment rules/notifications), Permissions (a
+        read-only WorkspaceRole -> Permission reference grid produced by
+        IPermissionEngine), and Session (current organization/branch/
+        role, plus a role switcher - the live Branch Switcher itself
+        lives in the Shell header). Same master-shape as every other
+        multi-section module page (Reporting/AI Center): a local section
+        switcher with one DashboardWidget-hosted section visible at a
+        time, plus an explicit Refresh command and Last Updated
+        indicator per this phase's "every new page must include" UI
+        requirement.
+    -->
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:SectionHeader Grid.Row="0" Title="{x:Static loc:Strings.Organizations_Title}" />
+        <Grid Grid.Row="0" Margin="0,44,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{x:Static loc:Strings.Organizations_Subtitle}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center"
+                           Margin="0,0,12,0"
+                           Text="{Binding LastUpdated, StringFormat={}{0:t}}"
+                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                           Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                <Button Content="{x:Static loc:Strings.Organizations_Refresh}"
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Content="{x:Static loc:Strings.Organizations_Section_Organizations}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static orgVm:OrganizationSection.Organizations}" Margin="0,0,8,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedSection}" Value="Organizations">
+                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="{x:Static loc:Strings.Organizations_Section_Branches}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static orgVm:OrganizationSection.Branches}" Margin="0,0,8,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedSection}" Value="Branches">
+                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="{x:Static loc:Strings.Organizations_Section_BranchSettings}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static orgVm:OrganizationSection.BranchSettings}" Margin="0,0,8,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedSection}" Value="BranchSettings">
+                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="{x:Static loc:Strings.Organizations_Section_Permissions}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static orgVm:OrganizationSection.Permissions}" Margin="0,0,8,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedSection}" Value="Permissions">
+                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="{x:Static loc:Strings.Organizations_Section_Session}" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static orgVm:OrganizationSection.Session}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedSection}" Value="Session">
+                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
+            <Grid>
+
+                <!-- Section: Organizations -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="Organizations">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Organizations_CreateOrganization}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_LegalName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgLegalName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_TaxInformation}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewOrgTaxInformation, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_Subscription}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding AvailableSubscriptionPlans}" SelectedItem="{Binding NewOrgSubscription, Mode=TwoWay}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Button Content="{x:Static loc:Strings.Organizations_CreateOrganization}"
+                                    Command="{Binding CreateOrganizationCommand}"
+                                    Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,16,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Organizations_AllOrganizations}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding RefreshCommand}"
+                                                        Margin="0,16,0,0">
+                        <ListBox ItemsSource="{Binding Organizations}"
+                                 SelectedItem="{Binding SelectedOrganization, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appOrg:OrganizationDto}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Text="{Binding LegalName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Subscription}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+
+                <!-- Section: Branches -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="Branches">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Organizations_CreateBranch}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchCode}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Organizations_BranchAddress}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding NewBranchAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchPhone}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchEmail}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchManager}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchManager, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_BranchTimeZone}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewBranchTimeZone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Organizations_BranchCurrency}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding NewBranchCurrency, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Button Content="{x:Static loc:Strings.Organizations_CreateBranch}"
+                                    Command="{Binding CreateBranchCommand}"
+                                    Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,16,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Organizations_AllBranches}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding RefreshCommand}"
+                                                        Margin="0,16,0,0">
+                        <ListBox ItemsSource="{Binding Branches}"
+                                 SelectedItem="{Binding SelectedBranch, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appOrg:BranchDto}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                <Run Text="{Binding Code, Mode=OneWay}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding Address, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+
+                <!-- Section: Branch Settings -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="BranchSettings">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <dashboardControls:DashboardCard Title="{Binding SelectedBranch.Name}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_OpenTime}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsOpenTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_CloseTime}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsCloseTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="{x:Static loc:Strings.Organizations_WorkingDays}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,16,0,4" />
+                            <WrapPanel>
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Monday}" IsChecked="{Binding SettingsMonday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Tuesday}" IsChecked="{Binding SettingsTuesday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Wednesday}" IsChecked="{Binding SettingsWednesday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Thursday}" IsChecked="{Binding SettingsThursday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Friday}" IsChecked="{Binding SettingsFriday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Saturday}" IsChecked="{Binding SettingsSaturday}" Margin="0,0,12,4" />
+                                <CheckBox Content="{x:Static loc:Strings.Organizations_Sunday}" IsChecked="{Binding SettingsSunday}" Margin="0,0,12,4" />
+                            </WrapPanel>
+
+                            <StackPanel Margin="0,16,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Organizations_VatPercentage}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding SettingsVatPercentage, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" Width="120" HorizontalAlignment="Left" />
+                            </StackPanel>
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_ReceiptHeader}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsReceiptHeader, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_ReceiptFooter}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsReceiptFooter, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <CheckBox Content="{x:Static loc:Strings.Organizations_ShowLogo}" IsChecked="{Binding SettingsShowLogo}" Margin="0,12,0,0" />
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_MinNoticeHours}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsMinNoticeHours, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Organizations_MaxAdvanceBookingDays}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding SettingsMaxAdvanceBookingDays, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <CheckBox Content="{x:Static loc:Strings.Organizations_AllowSameDayBooking}" IsChecked="{Binding SettingsAllowSameDayBooking}" Margin="0,12,0,0" />
+
+                            <CheckBox Content="{x:Static loc:Strings.Organizations_EmailEnabled}" IsChecked="{Binding SettingsEmailEnabled}" Margin="0,16,0,0" />
+                            <CheckBox Content="{x:Static loc:Strings.Organizations_SmsEnabled}" IsChecked="{Binding SettingsSmsEnabled}" Margin="0,8,0,0" />
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Organizations_ReminderHours}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding SettingsReminderHoursBeforeAppointment, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" Width="120" HorizontalAlignment="Left" />
+                            </StackPanel>
+
+                            <Button Content="{x:Static loc:Strings.Organizations_SaveSettings}"
+                                    Command="{Binding SaveBranchSettingsCommand}"
+                                    Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,20,0,0" />
+                            <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+                </StackPanel>
+
+                <!-- Section: Permissions -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="Permissions">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Organizations_Section_Permissions}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding RefreshCommand}">
+                        <ItemsControl ItemsSource="{Binding PermissionMatrix}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type orgVm:PermissionMatrixRow}">
+                                    <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16,12" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Role}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Text="{Binding GrantedPermissions}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+
+                <!-- Section: Session -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="Session">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Organizations_Section_Session}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
+                                <Run Text="{x:Static loc:Strings.Organizations_CurrentOrganization}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding CurrentOrganizationName, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,8,0,0">
+                                <Run Text="{x:Static loc:Strings.Organizations_CurrentBranch}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding CurrentBranchName, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,8,0,0">
+                                <Run Text="{x:Static loc:Strings.Organizations_CurrentRole}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding CurrentRole, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                                <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding SelectedRoleToSwitchTo, Mode=TwoWay}" Width="200" />
+                                <Button Content="{x:Static loc:Strings.Organizations_SwitchRole}"
+                                        Command="{Binding SwitchRoleCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                        Margin="12,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+
+</UserControl>

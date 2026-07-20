@@ -7,6 +7,7 @@ using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.HR;
 using Rojan.Desktop.Domain.Inventory;
+using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Infrastructure.Accounting;
@@ -17,6 +18,7 @@ using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.HR;
 using Rojan.Desktop.Infrastructure.Inventory;
+using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Specialists;
 using DomainServices = Rojan.Desktop.Domain.Services;
@@ -46,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IHrRepository, FakeHrRepository>();
         services.AddSingleton<IReportingRepository, FakeReportingRepository>();
         services.AddSingleton<IAIRepository, FakeAIRepository>();
+        services.AddSingleton<IOrganizationRepository, FakeOrganizationRepository>();
         return services;
     }
 }

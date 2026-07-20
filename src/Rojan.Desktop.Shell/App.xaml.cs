@@ -12,10 +12,12 @@ using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Theming;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Shell.Navigation;
+using Rojan.Desktop.Shell.Organizations;
 using Rojan.Desktop.Shell.Theming;
 
 namespace Rojan.Desktop.Shell;
@@ -83,6 +85,13 @@ public partial class App
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
 
+        // Phase 22: the current organization/branch/role must be resolved
+        // before MainWindowViewModel builds its permission-filtered
+        // NavigationItems - same "before the thing that reads it" ordering
+        // as culture/theme above.
+        var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
+        currentSessionService.InitializeAsync().GetAwaiter().GetResult();
+
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
@@ -127,6 +136,11 @@ public partial class App
         // (System theme) access, both Shell-level concerns.
         services.AddSingleton<IThemeService, ThemeService>();
 
+        // Phase 22: Enterprise Multi-Branch & Organization Platform - same
+        // "interface in Presentation, concrete implementation in Shell"
+        // split as Localization/Theming above.
+        services.AddSingleton<ICurrentSessionService, CurrentSessionService>();
+
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();
 
@@ -152,6 +166,7 @@ public partial class App
     private static void RegisterModules(IServiceCollection services)
     {
         services.AddSingleton<IModule, DashboardModule>();
+        services.AddSingleton<IModule, OrganizationModule>();
         services.AddSingleton<IModule, CustomerModule>();
         services.AddSingleton<IModule, BookingModule>();
         services.AddSingleton<IModule, CalendarModule>();

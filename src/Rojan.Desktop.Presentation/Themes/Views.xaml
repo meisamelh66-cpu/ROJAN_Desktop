@@ -29,7 +29,9 @@
                     xmlns:aiVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.AI"
                     xmlns:aiView="clr-namespace:Rojan.Desktop.Presentation.Views.AI"
                     xmlns:modulesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Modules"
-                    xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules">
+                    xmlns:modulesView="clr-namespace:Rojan.Desktop.Presentation.Views.Modules"
+                    xmlns:organizationsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Organizations"
+                    xmlns:organizationsView="clr-namespace:Rojan.Desktop.Presentation.Views.Organizations">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -105,6 +107,10 @@
 
   <DataTemplate DataType="{x:Type modulesVm:PlaceholderModuleViewModel}">
     <modulesView:PlaceholderModulePage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type organizationsVm:OrganizationPageViewModel}">
+    <organizationsView:OrganizationPage />
   </DataTemplate>
 
 </ResourceDictionary>

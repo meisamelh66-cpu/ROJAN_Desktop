@@ -8,6 +8,7 @@ using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
@@ -85,6 +86,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISummaryEngine, SummaryEngine>();
         services.AddSingleton<AiProviders.IAIProvider, AiProviders.MockAIProvider>();
         services.AddSingleton<IAIService, AIOrchestrator>();
+        services.AddSingleton<IOrganizationQueryService, OrganizationQueryService>();
+        services.AddSingleton<IOrganizationCommandService, OrganizationCommandService>();
+        services.AddSingleton<IPermissionEngine, PermissionEngine>();
         return services;
     }
 }

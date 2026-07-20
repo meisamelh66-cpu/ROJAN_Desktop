@@ -228,4 +228,160 @@
   <data name="Settings_Theme_RestartNow" xml:space="preserve">
     <value>راه‌اندازی مجدد اکنون</value>
   </data>
+  <data name="Nav_Organizations" xml:space="preserve">
+    <value>سازمان‌ها</value>
+  </data>
+  <data name="Shell_BranchSwitcher" xml:space="preserve">
+    <value>تغییر شعبه</value>
+  </data>
+  <data name="Organizations_Title" xml:space="preserve">
+    <value>سازمان‌ها و شعب</value>
+  </data>
+  <data name="Organizations_Subtitle" xml:space="preserve">
+    <value>مدیریت سازمان‌ها، شعب و دسترسی‌های مبتنی بر نقش در سراسر پلتفرم چندشعبه‌ای.</value>
+  </data>
+  <data name="Organizations_Refresh" xml:space="preserve">
+    <value>بروزرسانی</value>
+  </data>
+  <data name="Organizations_Section_Organizations" xml:space="preserve">
+    <value>سازمان‌ها</value>
+  </data>
+  <data name="Organizations_Section_Branches" xml:space="preserve">
+    <value>شعب</value>
+  </data>
+  <data name="Organizations_Section_BranchSettings" xml:space="preserve">
+    <value>تنظیمات شعبه</value>
+  </data>
+  <data name="Organizations_Section_Permissions" xml:space="preserve">
+    <value>دسترسی‌ها</value>
+  </data>
+  <data name="Organizations_Section_Session" xml:space="preserve">
+    <value>نشست</value>
+  </data>
+  <data name="Organizations_CreateOrganization" xml:space="preserve">
+    <value>ایجاد سازمان</value>
+  </data>
+  <data name="Organizations_Name" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Organizations_LegalName" xml:space="preserve">
+    <value>نام حقوقی</value>
+  </data>
+  <data name="Organizations_TaxInformation" xml:space="preserve">
+    <value>اطلاعات مالیاتی</value>
+  </data>
+  <data name="Organizations_Subscription" xml:space="preserve">
+    <value>نوع اشتراک</value>
+  </data>
+  <data name="Organizations_AllOrganizations" xml:space="preserve">
+    <value>همه سازمان‌ها</value>
+  </data>
+  <data name="Organizations_CreateBranch" xml:space="preserve">
+    <value>ایجاد شعبه</value>
+  </data>
+  <data name="Organizations_BranchName" xml:space="preserve">
+    <value>نام شعبه</value>
+  </data>
+  <data name="Organizations_BranchCode" xml:space="preserve">
+    <value>کد شعبه</value>
+  </data>
+  <data name="Organizations_BranchAddress" xml:space="preserve">
+    <value>آدرس</value>
+  </data>
+  <data name="Organizations_BranchPhone" xml:space="preserve">
+    <value>تلفن</value>
+  </data>
+  <data name="Organizations_BranchEmail" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Organizations_BranchManager" xml:space="preserve">
+    <value>مدیر شعبه</value>
+  </data>
+  <data name="Organizations_BranchTimeZone" xml:space="preserve">
+    <value>منطقه زمانی</value>
+  </data>
+  <data name="Organizations_BranchCurrency" xml:space="preserve">
+    <value>واحد پول</value>
+  </data>
+  <data name="Organizations_AllBranches" xml:space="preserve">
+    <value>همه شعب</value>
+  </data>
+  <data name="Organizations_OpenTime" xml:space="preserve">
+    <value>زمان باز شدن</value>
+  </data>
+  <data name="Organizations_CloseTime" xml:space="preserve">
+    <value>زمان بسته شدن</value>
+  </data>
+  <data name="Organizations_WorkingDays" xml:space="preserve">
+    <value>روزهای کاری</value>
+  </data>
+  <data name="Organizations_Monday" xml:space="preserve">
+    <value>دوشنبه</value>
+  </data>
+  <data name="Organizations_Tuesday" xml:space="preserve">
+    <value>سه‌شنبه</value>
+  </data>
+  <data name="Organizations_Wednesday" xml:space="preserve">
+    <value>چهارشنبه</value>
+  </data>
+  <data name="Organizations_Thursday" xml:space="preserve">
+    <value>پنجشنبه</value>
+  </data>
+  <data name="Organizations_Friday" xml:space="preserve">
+    <value>جمعه</value>
+  </data>
+  <data name="Organizations_Saturday" xml:space="preserve">
+    <value>شنبه</value>
+  </data>
+  <data name="Organizations_Sunday" xml:space="preserve">
+    <value>یکشنبه</value>
+  </data>
+  <data name="Organizations_VatPercentage" xml:space="preserve">
+    <value>درصد مالیات بر ارزش افزوده</value>
+  </data>
+  <data name="Organizations_ReceiptHeader" xml:space="preserve">
+    <value>سربرگ رسید</value>
+  </data>
+  <data name="Organizations_ReceiptFooter" xml:space="preserve">
+    <value>پاورقی رسید</value>
+  </data>
+  <data name="Organizations_ShowLogo" xml:space="preserve">
+    <value>نمایش لوگو</value>
+  </data>
+  <data name="Organizations_MinNoticeHours" xml:space="preserve">
+    <value>حداقل ساعت اطلاع قبلی</value>
+  </data>
+  <data name="Organizations_MaxAdvanceBookingDays" xml:space="preserve">
+    <value>حداکثر روز رزرو از پیش</value>
+  </data>
+  <data name="Organizations_AllowSameDayBooking" xml:space="preserve">
+    <value>اجازه رزرو همان روز</value>
+  </data>
+  <data name="Organizations_EmailEnabled" xml:space="preserve">
+    <value>اعلان ایمیلی فعال</value>
+  </data>
+  <data name="Organizations_SmsEnabled" xml:space="preserve">
+    <value>اعلان پیامکی فعال</value>
+  </data>
+  <data name="Organizations_ReminderHours" xml:space="preserve">
+    <value>ساعت یادآوری پیش از نوبت</value>
+  </data>
+  <data name="Organizations_SaveSettings" xml:space="preserve">
+    <value>ذخیره تنظیمات</value>
+  </data>
+  <data name="Organizations_SettingsSaved" xml:space="preserve">
+    <value>تنظیمات ذخیره شد.</value>
+  </data>
+  <data name="Organizations_CurrentOrganization" xml:space="preserve">
+    <value>سازمان فعلی</value>
+  </data>
+  <data name="Organizations_CurrentBranch" xml:space="preserve">
+    <value>شعبه فعلی</value>
+  </data>
+  <data name="Organizations_CurrentRole" xml:space="preserve">
+    <value>نقش فعلی</value>
+  </data>
+  <data name="Organizations_SwitchRole" xml:space="preserve">
+    <value>تغییر نقش</value>
+  </data>
 </root>

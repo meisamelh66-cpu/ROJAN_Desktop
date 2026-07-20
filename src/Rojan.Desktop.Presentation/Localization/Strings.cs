@@ -192,4 +192,108 @@ public static class Strings
     public static string Settings_Theme_RestartRequired => Get(nameof(Settings_Theme_RestartRequired));
 
     public static string Settings_Theme_RestartNow => Get(nameof(Settings_Theme_RestartNow));
+
+    public static string Nav_Organizations => Get(nameof(Nav_Organizations));
+
+    public static string Shell_BranchSwitcher => Get(nameof(Shell_BranchSwitcher));
+
+    public static string Organizations_Title => Get(nameof(Organizations_Title));
+
+    public static string Organizations_Subtitle => Get(nameof(Organizations_Subtitle));
+
+    public static string Organizations_Refresh => Get(nameof(Organizations_Refresh));
+
+    public static string Organizations_Section_Organizations => Get(nameof(Organizations_Section_Organizations));
+
+    public static string Organizations_Section_Branches => Get(nameof(Organizations_Section_Branches));
+
+    public static string Organizations_Section_BranchSettings => Get(nameof(Organizations_Section_BranchSettings));
+
+    public static string Organizations_Section_Permissions => Get(nameof(Organizations_Section_Permissions));
+
+    public static string Organizations_Section_Session => Get(nameof(Organizations_Section_Session));
+
+    public static string Organizations_CreateOrganization => Get(nameof(Organizations_CreateOrganization));
+
+    public static string Organizations_Name => Get(nameof(Organizations_Name));
+
+    public static string Organizations_LegalName => Get(nameof(Organizations_LegalName));
+
+    public static string Organizations_TaxInformation => Get(nameof(Organizations_TaxInformation));
+
+    public static string Organizations_Subscription => Get(nameof(Organizations_Subscription));
+
+    public static string Organizations_AllOrganizations => Get(nameof(Organizations_AllOrganizations));
+
+    public static string Organizations_CreateBranch => Get(nameof(Organizations_CreateBranch));
+
+    public static string Organizations_BranchName => Get(nameof(Organizations_BranchName));
+
+    public static string Organizations_BranchCode => Get(nameof(Organizations_BranchCode));
+
+    public static string Organizations_BranchAddress => Get(nameof(Organizations_BranchAddress));
+
+    public static string Organizations_BranchPhone => Get(nameof(Organizations_BranchPhone));
+
+    public static string Organizations_BranchEmail => Get(nameof(Organizations_BranchEmail));
+
+    public static string Organizations_BranchManager => Get(nameof(Organizations_BranchManager));
+
+    public static string Organizations_BranchTimeZone => Get(nameof(Organizations_BranchTimeZone));
+
+    public static string Organizations_BranchCurrency => Get(nameof(Organizations_BranchCurrency));
+
+    public static string Organizations_AllBranches => Get(nameof(Organizations_AllBranches));
+
+    public static string Organizations_OpenTime => Get(nameof(Organizations_OpenTime));
+
+    public static string Organizations_CloseTime => Get(nameof(Organizations_CloseTime));
+
+    public static string Organizations_WorkingDays => Get(nameof(Organizations_WorkingDays));
+
+    public static string Organizations_Monday => Get(nameof(Organizations_Monday));
+
+    public static string Organizations_Tuesday => Get(nameof(Organizations_Tuesday));
+
+    public static string Organizations_Wednesday => Get(nameof(Organizations_Wednesday));
+
+    public static string Organizations_Thursday => Get(nameof(Organizations_Thursday));
+
+    public static string Organizations_Friday => Get(nameof(Organizations_Friday));
+
+    public static string Organizations_Saturday => Get(nameof(Organizations_Saturday));
+
+    public static string Organizations_Sunday => Get(nameof(Organizations_Sunday));
+
+    public static string Organizations_VatPercentage => Get(nameof(Organizations_VatPercentage));
+
+    public static string Organizations_ReceiptHeader => Get(nameof(Organizations_ReceiptHeader));
+
+    public static string Organizations_ReceiptFooter => Get(nameof(Organizations_ReceiptFooter));
+
+    public static string Organizations_ShowLogo => Get(nameof(Organizations_ShowLogo));
+
+    public static string Organizations_MinNoticeHours => Get(nameof(Organizations_MinNoticeHours));
+
+    public static string Organizations_MaxAdvanceBookingDays => Get(nameof(Organizations_MaxAdvanceBookingDays));
+
+    public static string Organizations_AllowSameDayBooking => Get(nameof(Organizations_AllowSameDayBooking));
+
+    public static string Organizations_EmailEnabled => Get(nameof(Organizations_EmailEnabled));
+
+    public static string Organizations_SmsEnabled => Get(nameof(Organizations_SmsEnabled));
+
+    public static string Organizations_ReminderHours => Get(nameof(Organizations_ReminderHours));
+
+    public static string Organizations_SaveSettings => Get(nameof(Organizations_SaveSettings));
+
+    public static string Organizations_SettingsSaved => Get(nameof(Organizations_SettingsSaved));
+
+    public static string Organizations_CurrentOrganization => Get(nameof(Organizations_CurrentOrganization));
+
+    public static string Organizations_CurrentBranch => Get(nameof(Organizations_CurrentBranch));
+
+    public static string Organizations_CurrentRole => Get(nameof(Organizations_CurrentRole));
+
+    public static string Organizations_SwitchRole => Get(nameof(Organizations_SwitchRole));
 }

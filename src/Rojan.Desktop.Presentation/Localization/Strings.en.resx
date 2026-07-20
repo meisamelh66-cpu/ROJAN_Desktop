@@ -216,4 +216,160 @@
   <data name="Settings_Theme_RestartNow" xml:space="preserve">
     <value>Restart Now</value>
   </data>
+  <data name="Nav_Organizations" xml:space="preserve">
+    <value>Organizations</value>
+  </data>
+  <data name="Shell_BranchSwitcher" xml:space="preserve">
+    <value>Switch Branch</value>
+  </data>
+  <data name="Organizations_Title" xml:space="preserve">
+    <value>Organizations &amp; Branches</value>
+  </data>
+  <data name="Organizations_Subtitle" xml:space="preserve">
+    <value>Manage organizations, branches, and role-based access across the multi-branch platform.</value>
+  </data>
+  <data name="Organizations_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Organizations_Section_Organizations" xml:space="preserve">
+    <value>Organizations</value>
+  </data>
+  <data name="Organizations_Section_Branches" xml:space="preserve">
+    <value>Branches</value>
+  </data>
+  <data name="Organizations_Section_BranchSettings" xml:space="preserve">
+    <value>Branch Settings</value>
+  </data>
+  <data name="Organizations_Section_Permissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="Organizations_Section_Session" xml:space="preserve">
+    <value>Session</value>
+  </data>
+  <data name="Organizations_CreateOrganization" xml:space="preserve">
+    <value>Create Organization</value>
+  </data>
+  <data name="Organizations_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Organizations_LegalName" xml:space="preserve">
+    <value>Legal Name</value>
+  </data>
+  <data name="Organizations_TaxInformation" xml:space="preserve">
+    <value>Tax Information</value>
+  </data>
+  <data name="Organizations_Subscription" xml:space="preserve">
+    <value>Subscription</value>
+  </data>
+  <data name="Organizations_AllOrganizations" xml:space="preserve">
+    <value>All Organizations</value>
+  </data>
+  <data name="Organizations_CreateBranch" xml:space="preserve">
+    <value>Create Branch</value>
+  </data>
+  <data name="Organizations_BranchName" xml:space="preserve">
+    <value>Branch Name</value>
+  </data>
+  <data name="Organizations_BranchCode" xml:space="preserve">
+    <value>Branch Code</value>
+  </data>
+  <data name="Organizations_BranchAddress" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Organizations_BranchPhone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Organizations_BranchEmail" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Organizations_BranchManager" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+  <data name="Organizations_BranchTimeZone" xml:space="preserve">
+    <value>Time Zone</value>
+  </data>
+  <data name="Organizations_BranchCurrency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="Organizations_AllBranches" xml:space="preserve">
+    <value>All Branches</value>
+  </data>
+  <data name="Organizations_OpenTime" xml:space="preserve">
+    <value>Open Time</value>
+  </data>
+  <data name="Organizations_CloseTime" xml:space="preserve">
+    <value>Close Time</value>
+  </data>
+  <data name="Organizations_WorkingDays" xml:space="preserve">
+    <value>Working Days</value>
+  </data>
+  <data name="Organizations_Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Organizations_Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Organizations_Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Organizations_Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Organizations_Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Organizations_Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="Organizations_Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Organizations_VatPercentage" xml:space="preserve">
+    <value>VAT Percentage</value>
+  </data>
+  <data name="Organizations_ReceiptHeader" xml:space="preserve">
+    <value>Receipt Header</value>
+  </data>
+  <data name="Organizations_ReceiptFooter" xml:space="preserve">
+    <value>Receipt Footer</value>
+  </data>
+  <data name="Organizations_ShowLogo" xml:space="preserve">
+    <value>Show Logo</value>
+  </data>
+  <data name="Organizations_MinNoticeHours" xml:space="preserve">
+    <value>Minimum Notice (Hours)</value>
+  </data>
+  <data name="Organizations_MaxAdvanceBookingDays" xml:space="preserve">
+    <value>Max Advance Booking (Days)</value>
+  </data>
+  <data name="Organizations_AllowSameDayBooking" xml:space="preserve">
+    <value>Allow Same-Day Booking</value>
+  </data>
+  <data name="Organizations_EmailEnabled" xml:space="preserve">
+    <value>Email Notifications Enabled</value>
+  </data>
+  <data name="Organizations_SmsEnabled" xml:space="preserve">
+    <value>SMS Notifications Enabled</value>
+  </data>
+  <data name="Organizations_ReminderHours" xml:space="preserve">
+    <value>Reminder Hours Before Appointment</value>
+  </data>
+  <data name="Organizations_SaveSettings" xml:space="preserve">
+    <value>Save Settings</value>
+  </data>
+  <data name="Organizations_SettingsSaved" xml:space="preserve">
+    <value>Settings saved.</value>
+  </data>
+  <data name="Organizations_CurrentOrganization" xml:space="preserve">
+    <value>Current Organization</value>
+  </data>
+  <data name="Organizations_CurrentBranch" xml:space="preserve">
+    <value>Current Branch</value>
+  </data>
+  <data name="Organizations_CurrentRole" xml:space="preserve">
+    <value>Current Role</value>
+  </data>
+  <data name="Organizations_SwitchRole" xml:space="preserve">
+    <value>Switch Role</value>
+  </data>
 </root>

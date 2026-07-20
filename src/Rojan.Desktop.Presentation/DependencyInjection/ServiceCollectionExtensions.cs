@@ -9,6 +9,7 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
 using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
+using Rojan.Desktop.Presentation.ViewModels.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 using Rojan.Desktop.Presentation.ViewModels.Services;
 using Rojan.Desktop.Presentation.ViewModels.Settings;
@@ -41,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ReportingPageViewModel>();
         services.AddTransient<AnalyticsPageViewModel>();
         services.AddTransient<AiCenterPageViewModel>();
+        services.AddTransient<OrganizationPageViewModel>();
         services.AddSingleton<ICultureService, CultureService>();
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();

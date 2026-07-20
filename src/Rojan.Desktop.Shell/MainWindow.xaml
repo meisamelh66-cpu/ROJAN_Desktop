@@ -88,6 +88,8 @@
                     <ColumnDefinition Width="Auto" />
                     <!-- Back/Forward -->
                     <ColumnDefinition Width="Auto" />
+                    <!-- Branch Switcher -->
+                    <ColumnDefinition Width="Auto" />
                     <!-- Notification -->
                     <ColumnDefinition Width="Auto" />
                     <!-- User profile -->
@@ -144,8 +146,19 @@
                     </Button>
                 </StackPanel>
 
+                <!-- Branch Switcher (Phase 22: Enterprise Multi-Branch & Organization Platform) - changing the selection live-switches the active branch, no restart, via ICurrentSessionService.SwitchBranchAsync. -->
+                <ComboBox Grid.Column="5"
+                          Width="160"
+                          Margin="8,0,0,0"
+                          VerticalAlignment="Center"
+                          ItemsSource="{Binding AvailableBranches}"
+                          SelectedItem="{Binding CurrentBranch, Mode=TwoWay}"
+                          DisplayMemberPath="Name"
+                          ToolTip="{x:Static loc:Strings.Shell_BranchSwitcher}"
+                          shellChrome:WindowChrome.IsHitTestVisibleInChrome="True" />
+
                 <!-- Notification button -->
-                <Button Grid.Column="5"
+                <Button Grid.Column="6"
                         Style="{StaticResource Rojan.Style.ChromeIconButton}"
                         Command="{Binding ToggleNotificationPanelCommand}"
                         ToolTip="{x:Static loc:Strings.Common_Notifications}"
@@ -155,7 +168,7 @@
                 </Button>
 
                 <!-- User profile placeholder - not functional, UI presence only -->
-                <StackPanel Grid.Column="6" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Ellipse Width="26" Height="26" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
                     <TextBlock Text="{x:Static loc:Strings.Common_GuestUser}"
                                Style="{StaticResource Rojan.TextStyle.Caption}"
@@ -165,7 +178,7 @@
                 </StackPanel>
 
                 <!-- Window commands -->
-                <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="MinimizeButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="{x:Static loc:Strings.Common_Minimize}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Minimize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
                     </Button>

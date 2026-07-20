@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Presentation.Organizations;
 
 namespace Rojan.Desktop.Shell;
 
@@ -19,10 +21,20 @@ namespace Rojan.Desktop.Shell;
 /// NavigationService/INavigationService) - Phase 15 is the first producer
 /// of <see cref="ActiveDialog"/>, filling in the extension point that
 /// property's doc comment has named since Phase 07.
+///
+/// Phase 22: <see cref="NavigationItems"/> is now permission-filtered -
+/// built from every registered module whose <c>RequiredPermission</c> is
+/// either unset (every pre-Phase-22 module) or granted to
+/// <see cref="ICurrentSessionService.CurrentRole"/>. Rebuilt live whenever
+/// <see cref="ICurrentSessionService.SessionChanged"/> fires (a branch or
+/// role switch), so the sidebar always reflects the active session.
 /// </summary>
 public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 {
     private readonly INavigationService _navigationService;
+    private readonly IPermissionEngine _permissionEngine;
+    private readonly ICurrentSessionService _currentSessionService;
+    private readonly IReadOnlyList<ModuleDescriptor> _allModules;
     private NavigationItem _selectedNavigationItem = null!;
     private bool _isSidebarExpanded = true;
     private bool _canGoBack;
@@ -31,12 +43,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private string _statusMessage = Strings.Common_Ready;
     private object? _activeDialog;
 
-    public MainWindowViewModel(IModuleRegistry moduleRegistry, INavigationService navigationService)
+    public MainWindowViewModel(
+        IModuleRegistry moduleRegistry,
+        INavigationService navigationService,
+        IPermissionEngine permissionEngine,
+        ICurrentSessionService currentSessionService)
     {
         _navigationService = navigationService;
+        _permissionEngine = permissionEngine;
+        _currentSessionService = currentSessionService;
+        _allModules = moduleRegistry.Modules;
 
-        NavigationItems = new ObservableCollection<NavigationItem>(
-            moduleRegistry.Modules.Select(descriptor => new NavigationItem(descriptor)));
+        NavigationItems = new ObservableCollection<NavigationItem>(BuildVisibleNavigationItems());
 
         Breadcrumbs = new ObservableCollection<string>();
         Notifications = new ObservableCollection<NotificationItem>();
@@ -53,6 +71,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         ToggleNotificationPanelCommand = new RelayCommand(_ => IsNotificationPanelOpen = !IsNotificationPanelOpen);
         GoBackCommand = new RelayCommand(_ => Navigate(_navigationService.GoBack), _ => CanGoBack);
         GoForwardCommand = new RelayCommand(_ => Navigate(_navigationService.GoForward), _ => CanGoForward);
+
+        _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
         // Goes through the property setter (not a raw field assignment) so
         // the initial selection navigates too - the first module in
@@ -95,6 +115,24 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         get => _isSidebarExpanded;
         set => SetProperty(ref _isSidebarExpanded, value);
     }
+
+    /// <summary>The Branch Switcher's data source - every branch in the current organization.</summary>
+    public IReadOnlyList<BranchDto> AvailableBranches => _currentSessionService.AvailableBranches;
+
+    /// <summary>The Branch Switcher's selection - setting this live-switches the active branch (see <see cref="ICurrentSessionService.SwitchBranchAsync"/>), no restart required.</summary>
+    public BranchDto? CurrentBranch
+    {
+        get => _currentSessionService.CurrentBranch;
+        set
+        {
+            if (value is not null && value.Id != _currentSessionService.CurrentBranch?.Id)
+            {
+                _ = SwitchBranchAsync(value.Id);
+            }
+        }
+    }
+
+    public string CurrentOrganizationName => _currentSessionService.CurrentOrganization?.Name ?? string.Empty;
 
     public bool CanGoBack
     {
@@ -148,5 +186,41 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         CanGoBack = _navigationService.CanGoBack;
         CanGoForward = _navigationService.CanGoForward;
         CommandManager.InvalidateRequerySuggested();
+    }
+
+    /// <summary>Every module whose <c>RequiredPermission</c> is unset (every pre-Phase-22 module, unconditionally visible) or granted to the current session's role.</summary>
+    private IEnumerable<NavigationItem> BuildVisibleNavigationItems() =>
+        _allModules
+            .Where(descriptor => descriptor.Metadata.RequiredPermission is not Permission requiredPermission
+                || _permissionEngine.HasPermission(_currentSessionService.CurrentRole, requiredPermission))
+            .Select(descriptor => new NavigationItem(descriptor));
+
+    /// <summary>Rebuilds <see cref="NavigationItems"/> after a branch/role switch - re-selects the current item if it's still visible, otherwise falls back to the first visible one (never leaves <see cref="SelectedNavigationItem"/> pointing at a now-hidden module).</summary>
+    private void RefreshNavigationItems()
+    {
+        var previousSelectionId = _selectedNavigationItem?.Descriptor.Metadata.Id;
+
+        NavigationItems.Clear();
+        foreach (var item in BuildVisibleNavigationItems())
+        {
+            NavigationItems.Add(item);
+        }
+
+        var stillVisible = NavigationItems.FirstOrDefault(item => item.Descriptor.Metadata.Id == previousSelectionId);
+        SelectedNavigationItem = stillVisible ?? NavigationItems[0];
+    }
+
+    /// <summary>Republishes every header/sidebar property <see cref="ICurrentSessionService"/> backs, then rebuilds navigation - the one handler for both <see cref="SwitchBranchAsync"/> and a role switch fired from elsewhere (e.g. the Organization page's own Session section).</summary>
+    private void OnSessionChanged()
+    {
+        OnPropertyChanged(nameof(CurrentBranch));
+        OnPropertyChanged(nameof(AvailableBranches));
+        OnPropertyChanged(nameof(CurrentOrganizationName));
+        RefreshNavigationItems();
+    }
+
+    private async Task SwitchBranchAsync(string branchId)
+    {
+        await _currentSessionService.SwitchBranchAsync(branchId).ConfigureAwait(true);
     }
 }
