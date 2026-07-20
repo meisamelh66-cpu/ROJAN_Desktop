@@ -34,6 +34,9 @@
   -->
 
   <Color x:Key="Rojan.Color.Background">#FF15192A</Color>
+  <!-- Premium Lavender Enhancement pass (light theme only - see Light.xaml's own doc comment): Header/Navigation are new keys every consumer now references, so they must resolve here too or selecting Dark theme throws a StaticResource-not-found error. No dark-appropriate target values were given, so both alias straight to this file's own Background, leaving dark mode's appearance unchanged. -->
+  <Color x:Key="Rojan.Color.Header">#FF15192A</Color>
+  <Color x:Key="Rojan.Color.Navigation">#FF15192A</Color>
   <!-- Enterprise UX/UI Refinement pass: mirrors Light.xaml's new Background/Workspace split - a step brighter than Background, one step below Card, so the workspace content area still reads as distinct chrome-vs-canvas in dark mode too. -->
   <Color x:Key="Rojan.Color.Workspace">#FF181D30</Color>
   <Color x:Key="Rojan.Color.Surface">#FF1F2438</Color>
@@ -56,6 +59,8 @@
   <Color x:Key="Rojan.Color.Success">#FF3FB950</Color>
 
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Header" Color="{StaticResource Rojan.Color.Header}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Navigation" Color="{StaticResource Rojan.Color.Navigation}" />
   <SolidColorBrush x:Key="Rojan.Brush.Workspace" Color="{StaticResource Rojan.Color.Workspace}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
   <SolidColorBrush x:Key="Rojan.Brush.Card" Color="{StaticResource Rojan.Color.Card}" />

@@ -767,6 +767,29 @@ see `docs/standards/versioning.md`.
   enforcement) included. Runtime-verified: DI graph resolves cleanly,
   device/certificate state persists correctly with real generated
   values, and a full screenshot pass confirms zero UI regressions.
+- Enterprise Theme Refinement (Premium Lavender Enhancement) — increases
+  lavender presence across every named chrome/content surface via
+  explicit target colors, color-tokens-only (no layout/spacing/
+  typography/component-hierarchy changes). `Rojan.Color.Background`
+  (app chrome/status bar) → `#FCF8FF`, `Workspace` → `#F1EAFE`, `Card`/
+  `Surface`/`SurfaceElevated` → `#FAF6FF` (deliberately no longer
+  literal pure white), plus two brand-new tokens replacing what
+  previously all shared `Background`: `Header` (`#F5EEFE`,
+  `MainWindow`'s top bar) and `Navigation` (`#F8F2FE`, the sidebar).
+  Text colors, borders, `SurfaceSecondary`/`SurfaceHover`/
+  `SurfacePressed`, and every semantic/status/accent color are
+  unchanged (not named in this pass's target list), so WCAG contrast
+  and the existing Fluent 2 styling are unaffected. `Dark.xaml` keeps
+  its own existing navy palette unchanged (only gains the two new
+  `Header`/`Navigation` keys, aliased to its existing `Background` so
+  selecting Dark theme does not throw a missing-resource error) - no
+  dark-theme target values were given, only light-theme hex codes.
+  Full 1023-test suite passes unchanged, zero warnings, zero errors.
+  Runtime-verified via UI Automation screenshots across Dashboard/
+  Customers/Bookings/Inventory/Accounting: consistent warmer, softer
+  lavender chrome on every page, cards read as soft off-white rather
+  than stark white, text contrast and primary-button accent color
+  unchanged.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

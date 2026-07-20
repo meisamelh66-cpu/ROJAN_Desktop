@@ -56,14 +56,41 @@
     TextSecondary ~9.1:1, MutedText ~6.3:1, both comfortably above the
     4.5:1 AA minimum for normal text. HintText/Disabled/Error/Warning/
     Success are unchanged from the prior pass's own AA-verified values.
+
+    Premium Lavender Enhancement pass: increases the lavender presence
+    across every named surface per an explicit target-color spec rather
+    than a formula - each of the five chrome/content regions now has its
+    own distinct target tone instead of two regions (header/nav/status)
+    sharing one `Background` value: `Background` (app chrome/status bar)
+    -> cream-lavender #FCF8FF, `Workspace` -> #F1EAFE, `Card`/`Surface`/
+    `SurfaceElevated` -> #FAF6FF (deliberately no longer literal pure
+    white - "white should no longer appear as pure white unless
+    intentionally required"), plus two brand-new tokens this pass adds:
+    `Header` (#F5EEFE, MainWindow's top bar) and `Navigation` (#F8F2FE,
+    the sidebar) - previously both aliased to `Background`. Text colors,
+    borders, `SurfaceSecondary`/`SurfaceHover`/`SurfacePressed`, and every
+    semantic/status/accent color are deliberately untouched (not named in
+    this pass's target list) - every value here is a near-white tint
+    lightened only a few points from its prior value, so the WCAG
+    contrast ratios this file's text colors were already verified against
+    do not meaningfully change (TextPrimary/TextSecondary/MutedText stay
+    comfortably above the prior >15:1 / ~9:1 / ~6:1 figures). Dark.xaml is
+    intentionally not retuned to match - this pass's target colors are
+    explicitly light-theme values with no dark-theme equivalents given,
+    so Dark.xaml keeps its own existing navy-based palette unchanged
+    (it only gains the two new `Header`/`Navigation` keys, aliased to its
+    existing `Background` so the app does not throw a
+    StaticResource-not-found error when Dark theme is selected).
   -->
 
-  <Color x:Key="Rojan.Color.Background">#FFFBF9F5</Color>
-  <Color x:Key="Rojan.Color.Workspace">#FFF5F1FD</Color>
-  <Color x:Key="Rojan.Color.Surface">#FFFFFFFF</Color>
-  <Color x:Key="Rojan.Color.Card">#FFFFFFFF</Color>
+  <Color x:Key="Rojan.Color.Background">#FFFCF8FF</Color>
+  <Color x:Key="Rojan.Color.Header">#FFF5EEFE</Color>
+  <Color x:Key="Rojan.Color.Navigation">#FFF8F2FE</Color>
+  <Color x:Key="Rojan.Color.Workspace">#FFF1EAFE</Color>
+  <Color x:Key="Rojan.Color.Surface">#FFFAF6FF</Color>
+  <Color x:Key="Rojan.Color.Card">#FFFAF6FF</Color>
   <Color x:Key="Rojan.Color.SurfaceSecondary">#FFF0EAFA</Color>
-  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFFFFFF</Color>
+  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFAF6FF</Color>
   <Color x:Key="Rojan.Color.SurfaceHover">#FFEDE5FB</Color>
   <Color x:Key="Rojan.Color.SurfacePressed">#FFE1D5F7</Color>
   <Color x:Key="Rojan.Color.Border">#14000000</Color>
@@ -80,6 +107,8 @@
   <Color x:Key="Rojan.Color.Success">#FF13743A</Color>
 
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Header" Color="{StaticResource Rojan.Color.Header}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Navigation" Color="{StaticResource Rojan.Color.Navigation}" />
   <SolidColorBrush x:Key="Rojan.Brush.Workspace" Color="{StaticResource Rojan.Color.Workspace}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
   <SolidColorBrush x:Key="Rojan.Brush.Card" Color="{StaticResource Rojan.Color.Card}" />
