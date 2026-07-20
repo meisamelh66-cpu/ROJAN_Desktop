@@ -2,28 +2,34 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    ROJAN Desktop Design System - single entry point. Consumers (Shell,
-    every View that self-merges the design system) merge only this one
-    dictionary rather than listing every token/control file individually.
+    ROJAN Desktop Design System - the complete token+control set in one
+    file, same merge order Rojan.Desktop.Shell.Theming.ThemeResources.Apply
+    builds in code at runtime.
 
-    Phase 16: Microsoft Fluent 2 Design System Integration - renamed from
-    Theme.xaml to make this file's role unambiguous now that Light.xaml/
-    Dark.xaml also exist (a bare "Theme.xaml" would be confusable with a
-    single light-or-dark theme file rather than the whole design system).
-    Dark.xaml is merged as the active theme; swap it for Light.xaml here
-    to switch the entire app - see Dark.xaml's own doc comment.
+    Fluent 2 Premium Theme pass: this is no longer the app's live runtime
+    path - App.xaml merges nothing statically, and ThemeResources.Apply
+    (called from App.xaml.cs's OnStartup, before any Window is created)
+    assembles the same files in the same order, choosing Light.xaml or
+    Dark.xaml per the user's persisted theme preference (Light/Dark/
+    System - see Presentation.Theming.IThemeService). This file is kept
+    as a standalone, self-contained convenience aggregate - useful for a
+    design-time preview of a single control/page in isolation, or any
+    future consumer that just wants "the whole design system, one theme,
+    one merge" - with Light.xaml hardcoded as its theme (matching the
+    shipped default); it is not merged by anything in this solution
+    anymore, but every key it defines is identical to what
+    ThemeResources.Apply produces, so nothing that referenced it is
+    broken, just no longer exercised.
 
-    Merge order matters here only for the Colors -> Dark -> Shadows ->
-    Elevation dependency chain (each later file's StaticResource lookups
-    need the earlier ones already merged into the same scope); every
-    other file in this set merges its own dependencies locally too, so
-    WPF's resource-dictionary-merge de-duplication (later entries win on
-    key collision, and there are none here by design) makes any
-    additional ordering safe either way.
+    Merge order matters here (each later file's StaticResource lookups
+    need the earlier ones already merged into the same scope, resolved
+    lazily on first use per ResourceDictionary's own deferred-content
+    behavior) - Colors before the theme file, both before Typography/
+    Controls/ShellChrome/etc., exactly mirroring ThemeResources.Apply.
   -->
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="Colors.xaml" />
-    <ResourceDictionary Source="Dark.xaml" />
+    <ResourceDictionary Source="Light.xaml" />
     <ResourceDictionary Source="Typography.xaml" />
     <ResourceDictionary Source="Spacing.xaml" />
     <ResourceDictionary Source="Shapes.xaml" />

@@ -8,17 +8,7 @@
         "self-sufficient card shown via ActiveDialog" shape as
         Accounting.PosCheckoutView.
 
-        Merges its own RojanTheme.xaml dependency locally (same
-        self-sufficiency rule as every other Design System component).
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Border Background="{StaticResource Rojan.Brush.SurfaceElevated}"
             BorderBrush="{StaticResource Rojan.Brush.Border}"
             BorderThickness="1"

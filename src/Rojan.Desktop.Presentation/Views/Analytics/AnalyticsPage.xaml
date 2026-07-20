@@ -20,17 +20,7 @@
         enum type despite the identical name, per that module's own
         "Application owns its own copy" convention).
 
-        Merges its own RojanTheme.xaml dependency locally (same
-        self-sufficiency rule as every other Design System component).
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32">
             <Grid.RowDefinitions>

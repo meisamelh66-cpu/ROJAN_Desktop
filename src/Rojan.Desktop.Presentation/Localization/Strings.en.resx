@@ -192,4 +192,28 @@
   <data name="Settings_Language_NoPacksInstalled" xml:space="preserve">
     <value>No additional language packs installed.</value>
   </data>
+  <data name="Settings_Theme_SectionTitle" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_Theme_System" xml:space="preserve">
+    <value>Match System</value>
+  </data>
+  <data name="Settings_Theme_CurrentFormat" xml:space="preserve">
+    <value>Current theme: {0}</value>
+  </data>
+  <data name="Settings_Theme_Apply" xml:space="preserve">
+    <value>Apply Theme</value>
+  </data>
+  <data name="Settings_Theme_RestartRequired" xml:space="preserve">
+    <value>Restart required to apply the new theme.</value>
+  </data>
+  <data name="Settings_Theme_RestartNow" xml:space="preserve">
+    <value>Restart Now</value>
+  </data>
 </root>

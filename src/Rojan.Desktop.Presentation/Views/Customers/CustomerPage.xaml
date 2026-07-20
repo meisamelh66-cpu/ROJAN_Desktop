@@ -19,17 +19,7 @@
         DashboardCard/DashboardWidget/KPIValue, the same three components
         Phase 06B built for Dashboard.
 
-        Merges its own RojanTheme.xaml dependency locally (same self-sufficiency
-        rule as every other Design System component).
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -324,7 +314,7 @@
                                         <TextBlock Grid.Column="0"
                                                    Text="{Binding Description}"
                                                    Style="{StaticResource Rojan.TextStyle.Body}"
-                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding OccurredAt, StringFormat={}{0:MMM d, t}}"
                                                    Style="{StaticResource Rojan.TextStyle.Caption}"

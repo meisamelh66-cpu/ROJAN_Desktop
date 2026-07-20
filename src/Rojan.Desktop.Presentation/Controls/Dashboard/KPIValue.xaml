@@ -3,21 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
+    <!--
+        Fluent 2 Premium Theme pass: the Value text's Foreground was
+        Rojan.Brush.ButtonText (white, meant for text drawn on a filled
+        Accent surface) even though this renders directly on the Card
+        background - the same WCAG-failing bug WidgetHeader.xaml had.
+        Fixed to TextPrimary. Also no longer self-merges its own
+        RojanTheme.xaml copy - see Shell/App.xaml.cs's ThemeResources.Apply.
+    -->
     <StackPanel>
         <TextBlock Text="{Binding Label, ElementName=Root}"
                    Style="{StaticResource Rojan.TextStyle.Caption}"
                    Foreground="{StaticResource Rojan.Brush.MutedText}" />
         <TextBlock Text="{Binding Value, ElementName=Root}"
                    Style="{StaticResource Rojan.TextStyle.Display}"
-                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                   Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                    Margin="0,8,0,0" />
     </StackPanel>
 

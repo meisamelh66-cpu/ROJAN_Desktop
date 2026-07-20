@@ -8,15 +8,23 @@
 
     <!--
          Phase 05: the design system itself (tokens + reusable components)
-         lives in Rojan.Desktop.Presentation - Shell only consumes the one
-         aggregate entry point, it does not own or duplicate any theme
-         resource dictionary. -->
+         lives in Rojan.Desktop.Presentation - Shell only consumes it, it
+         does not own or duplicate any theme resource dictionary.
+
+         Fluent 2 Premium Theme pass: Application.Resources is left EMPTY
+         here (no static Source= merge) - which of Light.xaml/Dark.xaml
+         actually gets merged is now a runtime decision (the user's
+         persisted Light/Dark/System preference, resolved by
+         IThemeService), so Rojan.Desktop.Shell.Theming.ThemeResources.Apply
+         builds the merge in code, in OnStartup, before MainWindow (or
+         anything else XAML-based) is created - the same "must happen
+         before any XAML that depends on it" ordering the Localization
+         platform's culture/RTL setup already uses just below this in
+         App.xaml.cs. Every View now consumes this one application-level
+         resource tree instead of each merging its own local copy of the
+         design system. -->
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Rojan.Desktop.Presentation;component/Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <ResourceDictionary />
     </Application.Resources>
 
 </Application>

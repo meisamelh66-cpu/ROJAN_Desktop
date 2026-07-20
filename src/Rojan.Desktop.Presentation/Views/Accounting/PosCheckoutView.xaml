@@ -17,14 +17,11 @@
         offer that - same reasoning BookingWizardView disables Back once at
         Confirmation.
 
-        Merges its own RojanTheme.xaml dependency locally (same
-        self-sufficiency rule as every other Design System component).
+        No longer self-merges its own RojanTheme.xaml copy - see
+        Shell/App.xaml.cs's ThemeResources.Apply.
     -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
             <converters:EnumAtLeastConverter x:Key="EnumAtLeastConverter" />
         </ResourceDictionary>
     </UserControl.Resources>

@@ -2,37 +2,59 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    Phase 16: Light theme - not merged by default (RojanTheme.xaml merges
-    Dark.xaml), built as a complete, genuinely usable alternative rather
-    than a token stub. Same key set as Dark.xaml, light-appropriate
-    values - swap which of the two files RojanTheme.xaml merges to switch
-    the whole app's theme; nothing else needs to change since every
-    consumer references the shared key names, never a raw color.
+    Fluent 2 Premium Light Theme pass: this is now the app's SHIPPED
+    DEFAULT (see Rojan.Desktop.Shell/Theming/ThemeService - resolves to
+    this file unless the user has explicitly chosen Dark, or System
+    resolves to dark). Same key set as Dark.xaml, light-appropriate
+    values - nothing outside Colors.xaml/Light.xaml/Dark.xaml needs to
+    change since every consumer references the shared key names, never a
+    raw color, and ThemeService is the one place that decides which of
+    Light.xaml/Dark.xaml actually gets merged app-wide (see
+    Shell/App.xaml.cs).
 
-    Phase 17A: renamed to the strict semantic names a Fluent 2 compliance
-    audit expects - see Dark.xaml's doc comment for the full rationale
-    (Background/Border/BorderStrong/Disabled renames, new Card token).
+    Warm, layered, never pure white - a deliberate Fluent 2 "premium"
+    surface ramp (Background < SurfaceSecondary < Card/Surface <
+    SurfaceElevated, each one step brighter) built on ROJAN's existing
+    lavender tint rather than Windows' own neutral gray, same "keep
+    ROJAN's identity, don't clone Windows" reasoning Dark.xaml's navy
+    tint already used. Every text color below was checked against this
+    file's own Background/Card tones with the WCAG 2.1 relative-luminance
+    formula and meets at least 4.5:1 (AA, normal text) except Disabled,
+    which WCAG explicitly does not require to meet body-text contrast
+    (disabled controls are not interactive) - HintText and Disabled were
+    both darkened from their Phase 16 values specifically to close a
+    contrast gap this pass found (HintText was ~3.4:1, now ~4.6:1).
 
-    Light-lavender tinted neutrals (not pure white/gray) for the same
-    "keep ROJAN's identity, don't clone Windows" reasoning as Dark.xaml's
-    navy tint.
+    Status colors (Error/Warning/Success) are defined HERE rather than in
+    the theme-invariant Colors.xaml, new in this pass: the Phase 16
+    values were tuned for dark backgrounds and only reach ~3.6:1 on a
+    light surface (fails AA for text, even though it was fine as a
+    dark-theme border/fill color) - Fluent 2's own real token set makes
+    the same call (separate light/dark semantic-status foregrounds), so
+    each theme now gets its own AA-safe shade under the same key names;
+    every existing `Rojan.Brush.Error`/`Warning`/`Success` reference
+    keeps working unchanged.
   -->
 
-  <Color x:Key="Rojan.Color.Background">#FFF6F5FA</Color>
-  <Color x:Key="Rojan.Color.Surface">#FFFFFFFF</Color>
-  <Color x:Key="Rojan.Color.Card">#FFFFFFFF</Color>
-  <Color x:Key="Rojan.Color.SurfaceSecondary">#FFEFEDF6</Color>
-  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFFFFFF</Color>
-  <Color x:Key="Rojan.Color.SurfaceHover">#FFEDEBF5</Color>
-  <Color x:Key="Rojan.Color.SurfacePressed">#FFE3E0EE</Color>
-  <Color x:Key="Rojan.Color.Border">#14000000</Color>
-  <Color x:Key="Rojan.Color.BorderStrong">#29000000</Color>
+  <Color x:Key="Rojan.Color.Background">#FFF7F5FB</Color>
+  <Color x:Key="Rojan.Color.Surface">#FFFDFCFF</Color>
+  <Color x:Key="Rojan.Color.Card">#FFFEFDFF</Color>
+  <Color x:Key="Rojan.Color.SurfaceSecondary">#FFF0EEF7</Color>
+  <Color x:Key="Rojan.Color.SurfaceElevated">#FFFFFEFF</Color>
+  <Color x:Key="Rojan.Color.SurfaceHover">#FFEEEBF6</Color>
+  <Color x:Key="Rojan.Color.SurfacePressed">#FFE4E0EF</Color>
+  <Color x:Key="Rojan.Color.Border">#12000000</Color>
+  <Color x:Key="Rojan.Color.BorderStrong">#26000000</Color>
 
   <Color x:Key="Rojan.Color.TextPrimary">#FF1B1730</Color>
   <Color x:Key="Rojan.Color.TextSecondary">#FF5B5570</Color>
   <Color x:Key="Rojan.Color.MutedText">#FF6E6884</Color>
-  <Color x:Key="Rojan.Color.HintText">#FF87819C</Color>
-  <Color x:Key="Rojan.Color.Disabled">#FFB4AFC4</Color>
+  <Color x:Key="Rojan.Color.HintText">#FF716B8C</Color>
+  <Color x:Key="Rojan.Color.Disabled">#FF9691AC</Color>
+
+  <Color x:Key="Rojan.Color.Error">#FFC42B3A</Color>
+  <Color x:Key="Rojan.Color.Warning">#FF8A5A00</Color>
+  <Color x:Key="Rojan.Color.Success">#FF13743A</Color>
 
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
@@ -49,5 +71,9 @@
   <SolidColorBrush x:Key="Rojan.Brush.MutedText" Color="{StaticResource Rojan.Color.MutedText}" />
   <SolidColorBrush x:Key="Rojan.Brush.HintText" Color="{StaticResource Rojan.Color.HintText}" />
   <SolidColorBrush x:Key="Rojan.Brush.Disabled" Color="{StaticResource Rojan.Color.Disabled}" />
+
+  <SolidColorBrush x:Key="Rojan.Brush.Error" Color="{StaticResource Rojan.Color.Error}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Warning" Color="{StaticResource Rojan.Color.Warning}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Success" Color="{StaticResource Rojan.Color.Success}" />
 
 </ResourceDictionary>

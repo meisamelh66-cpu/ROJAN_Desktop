@@ -4,7 +4,8 @@
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
-             xmlns:settingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Settings">
+             xmlns:settingsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Settings"
+             xmlns:theming="clr-namespace:Rojan.Desktop.Presentation.Theming">
 
     <!--
         Phase 19A: Enterprise Globalization & Localization Platform. The
@@ -22,20 +23,17 @@
         Shell chrome and Dashboard) is Phase 19A's proof that "no
         hardcoded UI text" actually works end to end.
 
-        Merges its own RojanTheme.xaml dependency locally (same
-        self-sufficiency rule as every other Design System component).
+        Fluent 2 Premium Theme pass: a second section, Theme, follows
+        immediately below Language - same restart-required shape
+        (IThemeService.SetThemeModeAsync persists the choice and flags
+        IsThemeRestartRequired rather than switching live), sharing the
+        Language section's own RestartCommand since one relaunch applies
+        whichever selection(s) are pending.
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32" MaxWidth="720" HorizontalAlignment="Left">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -144,8 +142,103 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
+            <!-- Theme section -->
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Settings_Theme_SectionTitle}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentThemeDisplay}" Style="{StaticResource Rojan.TextStyle.Body}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="{x:Static loc:Strings.Settings_Theme_Light}"
+                                Command="{Binding SelectThemeModeCommand}"
+                                CommandParameter="{x:Static theming:ThemeMode.Light}"
+                                Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedThemeMode}" Value="Light">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="{x:Static loc:Strings.Settings_Theme_Dark}"
+                                Command="{Binding SelectThemeModeCommand}"
+                                CommandParameter="{x:Static theming:ThemeMode.Dark}"
+                                Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedThemeMode}" Value="Dark">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="{x:Static loc:Strings.Settings_Theme_System}"
+                                Command="{Binding SelectThemeModeCommand}"
+                                CommandParameter="{x:Static theming:ThemeMode.System}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedThemeMode}" Value="System">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+
+                    <Button Content="{x:Static loc:Strings.Settings_Theme_Apply}"
+                            Command="{Binding ApplyThemeCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+
+                    <TextBlock Text="{Binding ThemeStatusMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Warning}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsThemeRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Button Content="{x:Static loc:Strings.Settings_Theme_RestartNow}"
+                            Command="{Binding RestartCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsThemeRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
             <!-- Available Languages (LANGUAGE STORE FOUNDATION) -->
-            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Settings_Language_AvailableLanguages}" Margin="0,16,0,32">
+            <dashboardControls:DashboardCard Grid.Row="3" Title="{x:Static loc:Strings.Settings_Language_AvailableLanguages}" Margin="0,16,0,32">
                 <StackPanel>
                     <TextBlock Text="{x:Static loc:Strings.Settings_Language_ComingSoon}"
                                Style="{StaticResource Rojan.TextStyle.Body}"

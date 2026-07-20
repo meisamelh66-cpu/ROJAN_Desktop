@@ -176,4 +176,20 @@ public static class Strings
     public static string Settings_Language_CurrentFormat => Get(nameof(Settings_Language_CurrentFormat));
 
     public static string Settings_Language_NoPacksInstalled => Get(nameof(Settings_Language_NoPacksInstalled));
+
+    public static string Settings_Theme_SectionTitle => Get(nameof(Settings_Theme_SectionTitle));
+
+    public static string Settings_Theme_Light => Get(nameof(Settings_Theme_Light));
+
+    public static string Settings_Theme_Dark => Get(nameof(Settings_Theme_Dark));
+
+    public static string Settings_Theme_System => Get(nameof(Settings_Theme_System));
+
+    public static string Settings_Theme_CurrentFormat => Get(nameof(Settings_Theme_CurrentFormat));
+
+    public static string Settings_Theme_Apply => Get(nameof(Settings_Theme_Apply));
+
+    public static string Settings_Theme_RestartRequired => Get(nameof(Settings_Theme_RestartRequired));
+
+    public static string Settings_Theme_RestartNow => Get(nameof(Settings_Theme_RestartNow));
 }

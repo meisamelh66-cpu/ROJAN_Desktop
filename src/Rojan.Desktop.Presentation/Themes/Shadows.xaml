@@ -1,11 +1,11 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Colors.xaml" />
-  </ResourceDictionary.MergedDictionaries>
-
   <!--
+    Fluent 2 Premium Theme pass: no longer self-merges Colors.xaml (for
+    Rojan.Effect.FocusGlow's Accent color below) - see Themes/Controls.xaml's
+    own doc comment for why.
+
     Phase 16: raw shadow building blocks, one per Fluent 2 depth level
     (2/4/8/16 - Fluent's own ambient-shadow scale, minus the very top
     "64" tier this app has no use for). Neutral black shadows, not
@@ -19,6 +19,13 @@
     one - WPF resource dictionaries have no cheap alias mechanism for a
     Freezable like DropShadowEffect, so the two files' values
     intentionally match rather than one referencing the other.
+
+    Fluent 2 Premium Theme pass: opacities lowered (0.24/0.28/0.32/0.4 ->
+    0.10/0.12/0.16/0.22) to match real Fluent 2's genuinely soft ambient
+    shadows - the prior values read as a much heavier, dark-theme-era
+    "film noir" depth effect once seen on Light.xaml's warm, near-white
+    surfaces; ShadowDepth/BlurRadius (the actual size/spread of each
+    tier) are unchanged, only how dark the shadow itself is.
   -->
 
   <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel2"
@@ -26,28 +33,28 @@
                      Direction="270"
                      ShadowDepth="1"
                      BlurRadius="4"
-                     Opacity="0.24" />
+                     Opacity="0.10" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel4"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="2"
                      BlurRadius="8"
-                     Opacity="0.28" />
+                     Opacity="0.12" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel8"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="4"
                      BlurRadius="16"
-                     Opacity="0.32" />
+                     Opacity="0.16" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ShadowLevel16"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="6"
                      BlurRadius="28"
-                     Opacity="0.4" />
+                     Opacity="0.22" />
 
   <!--
     Accent-tinted glow - deliberately kept separate from the neutral

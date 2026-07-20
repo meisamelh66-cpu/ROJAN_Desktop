@@ -3,12 +3,6 @@
                     xmlns:dashboard="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
                     xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
-  <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Colors.xaml" />
-    <ResourceDictionary Source="Typography.xaml" />
-    <ResourceDictionary Source="Controls.xaml" />
-  </ResourceDictionary.MergedDictionaries>
-
   <!--
     Phase 06B: reusable Dashboard widget components. Implicit styles
     (TargetType, no x:Key) - WPF applies these automatically to every
@@ -16,6 +10,10 @@
     no per-instance Style="..." needed. Both are ContentControl-derived
     (see Controls/Dashboard/DashboardCard.cs, DashboardWidget.cs) so they
     get a real Content property for free; visuals live entirely here.
+
+    Fluent 2 Premium Theme pass: no longer self-merges Colors.xaml/
+    Typography.xaml/Controls.xaml - see Themes/Controls.xaml's own doc
+    comment for why.
   -->
 
   <!-- DashboardCard: static titled Card wrapper, no load state. -->

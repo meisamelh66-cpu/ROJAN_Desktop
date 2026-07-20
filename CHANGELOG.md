@@ -471,6 +471,81 @@ see `docs/standards/versioning.md`.
   `StaticResourceExtension` exceptions) — fixed by using
   `Rojan.TextStyle.Display`, the same style `Dashboard.KPIValue`
   already uses for headline numbers; re-verified clean afterward.
+- Fluent 2 Premium Light Theme — a visual-refinement-only pass (no
+  business logic, architecture, or navigation changes) that makes
+  Light.xaml the shipped default theme and adds genuine, working
+  Light/Dark/System theme switching. **Colors.xaml** now documents
+  ROJAN's four brand accents by name (Purple — the one interactive
+  accent, unchanged — Rose Gold, Lavender, Aqua), all explicitly
+  emphasis-only per this pass's instruction; Error/Warning/Success
+  moved out of the theme-invariant file into Light.xaml/Dark.xaml
+  themselves, each theme now carrying its own AA-safe shade (the old
+  invariant values only reached ~3.6:1 against a light background,
+  failing WCAG's 4.5:1 for text). **Light.xaml** was rewritten as a
+  genuinely premium, warm, layered surface ramp (Background <
+  SurfaceSecondary < Card/Surface < SurfaceElevated, never pure
+  white), with HintText/Disabled darkened to close a real contrast
+  gap this pass found. **Typography.xaml** gained six new roles
+  (WindowTitle, Disabled, Hyperlink, Error, Warning, Success), each
+  setting its own Foreground. **Controls.xaml** gained
+  `Rojan.Style.ButtonOutlined` and an implicit `RadioButton` style
+  (the one missing form control) plus an opt-in `Rojan.Style.ToggleSwitch`;
+  Shadows.xaml/Elevation.xaml's opacities were lowered (0.24-0.4 →
+  0.10-0.22) to match Fluent 2's genuinely soft ambient shadows rather
+  than the prior dark-theme-era heavier look. **Three real WCAG bugs
+  found and fixed**: `SectionHeader`'s page title, `WidgetHeader`'s
+  card title, and `KPIValue`'s headline number all used
+  `Rojan.Brush.ButtonText` (white, meant for accent-filled buttons)
+  directly on the Card background — invisible on Light.xaml, harmless
+  only by coincidence on the old dark theme — fixed to `TextPrimary`,
+  along with two more instances of the identical pattern in
+  `DashboardPage`/`CustomerPage`'s activity/timeline rows. **A new
+  Theming platform**, architecturally mirroring the Localization
+  platform exactly: `Presentation.Theming.IThemeService`/`ThemeMode`
+  (Light/Dark/System) and `Shell.Theming.ThemeService` (persists the
+  choice to its own `theme.json`, resolves System via the Windows
+  `AppsUseLightTheme` registry value, defaults to Light on first
+  launch, restart-required — never live — same UX as the language
+  switch). Making the theme choice actually take effect required a
+  real architectural change to how the design system is assembled:
+  every View previously self-merged its own copy of `RojanTheme.xaml`
+  (a "self-sufficient, standalone-Blend-preview" pattern that
+  hardcoded Dark.xaml three times over, in `RojanTheme.xaml`,
+  `Controls.xaml`, and `ShellChrome.xaml`) — this is now built exactly
+  once, in code, by `Shell.Theming.ThemeResources.Apply` inside
+  `App.xaml.cs`'s `OnStartup`, before any Window exists, choosing
+  Light.xaml or Dark.xaml per `IThemeService.ResolvedTheme`; roughly
+  twenty View/Control files had their local `RojanTheme.xaml`
+  self-merge removed (converters/local styles they also carried were
+  preserved) so every consumer now shares the single app-level
+  resource tree the way the Localization platform's culture/RTL setup
+  already worked. `RojanTheme.xaml` itself is kept (now pointing at
+  Light.xaml) as a standalone convenience aggregate — unused by the
+  running app, but not broken for any future consumer, satisfying
+  "maintain backward compatibility." A new Theme section was added to
+  Settings, directly beside Language, sharing its `RestartCommand`
+  (one relaunch applies whichever preference(s) changed) — new
+  `Strings.Settings_Theme_*` keys across fa-IR/en-US/ar-SA. 898/898
+  tests passing (11 new): `Presentation.Tests` (+5:
+  `SettingsPageViewModelTests`' new Theme-section cases — preselect,
+  select-without-persisting, apply-with-restart-required,
+  apply-to-same-theme, localized display text), `Shell.Tests` (+6:
+  `ThemeServiceTests` — first-launch Light default, persisted-mode
+  restore, corrupt-file fallback, System-mode resolution against the
+  live registry without asserting a specific OS value, restart-required
+  semantics for both a changed and an unchanged resolved theme). No
+  new `ArchitectureTests` were needed — the existing dependency-direction
+  checks already cover the new `Presentation.Theming`/`Shell.Theming`
+  namespaces by pattern. Runtime verified end-to-end via UI Automation:
+  first launch (no persisted `theme.json`) rendered the warm Light
+  theme by default across Dashboard and Settings; selecting Dark,
+  applying, and clicking "Restart Now" correctly relaunched the
+  process, persisted `{"mode":"Dark"}`, and rendered the full dark
+  navy theme identically to before this pass; selecting "Match
+  System" and applying correctly persisted `{"mode":"System"}`. No
+  `StaticResourceExtension` errors at any point, confirming the
+  resource-dictionary restructuring resolves correctly end-to-end
+  despite removing every file's redundant self-merge.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

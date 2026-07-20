@@ -21,17 +21,7 @@
         styling from Themes/Controls.xaml automatically (Phase 16), no
         per-page styling needed here.
 
-        Merges its own RojanTheme.xaml dependency locally (same
-        self-sufficiency rule as every other Design System component).
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />

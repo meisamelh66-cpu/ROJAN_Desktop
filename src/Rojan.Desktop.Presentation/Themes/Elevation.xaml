@@ -1,11 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="Colors.xaml" />
-  </ResourceDictionary.MergedDictionaries>
-
   <!--
+    Fluent 2 Premium Theme pass: no longer self-merges Colors.xaml (unused
+    here - every effect below is a literal Black, no StaticResource).
+
     Phase 16: semantic elevation tiers - what a surface's role is, not how
     deep its shadow happens to be. Controls.xaml/ShellChrome.xaml/page
     Views reference these (Rojan.Effect.ElevationX), not
@@ -20,32 +19,33 @@
     is its own definition here rather than a reference into Shadows.xaml.
   -->
 
+  <!-- Fluent 2 Premium Theme pass: opacities lowered to match Shadows.xaml's own tuning - see that file's doc comment. -->
   <DropShadowEffect x:Key="Rojan.Effect.ElevationNavigation"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="1"
                      BlurRadius="4"
-                     Opacity="0.24" />
+                     Opacity="0.10" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ElevationCard"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="2"
                      BlurRadius="8"
-                     Opacity="0.28" />
+                     Opacity="0.12" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ElevationPopover"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="4"
                      BlurRadius="16"
-                     Opacity="0.32" />
+                     Opacity="0.16" />
 
   <DropShadowEffect x:Key="Rojan.Effect.ElevationDialog"
                      Color="Black"
                      Direction="270"
                      ShadowDepth="6"
                      BlurRadius="28"
-                     Opacity="0.4" />
+                     Opacity="0.22" />
 
 </ResourceDictionary>

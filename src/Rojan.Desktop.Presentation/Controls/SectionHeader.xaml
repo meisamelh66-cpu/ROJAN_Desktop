@@ -8,24 +8,22 @@
         accent underline. The one design-system component implemented as a
         UserControl rather than a bare Style (see Themes/Controls.xaml) -
         genuinely composite content, not just a re-skinned standard control.
-        Merges its own resource dependencies locally so it renders
-        correctly regardless of what the consuming Application has merged
-        (same self-sufficiency rule already applied to Gradients.xaml/
-        Shadows.xaml/Controls.xaml).
-    -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Themes/Colors.xaml" />
-                <ResourceDictionary Source="../Themes/Typography.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
 
+        Fluent 2 Premium Theme pass: the title's Foreground was
+        Rojan.Brush.ButtonText (white, meant for text drawn on a filled
+        Accent surface) even though this renders directly on the page
+        background - harmless on the old dark theme (white reads fine on
+        navy) but a real WCAG failure once Light.xaml became the shipped
+        default (white-on-near-white). Fixed to TextPrimary, the correct
+        token for page-level text. Also no longer self-merges its own
+        Colors.xaml/Typography.xaml - every View now consumes the single
+        app-level design-system resources ThemeResources.Apply assembles
+        (see Shell/App.xaml.cs), rather than each merging its own copy.
+    -->
     <StackPanel>
         <TextBlock Text="{Binding Title, ElementName=Root}"
                    Style="{StaticResource Rojan.TextStyle.Title}"
-                   Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                   Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
         <Border Height="2"
                 Width="48"
                 Margin="0,6,0,0"

@@ -2,11 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    Phase 16: Dark theme - the active default (RojanTheme.xaml merges
-    this one). Navy-tinted neutral surface ramp, not pure gray - keeps
-    ROJAN's existing Navy as the brand's dark base rather than adopting
-    Windows' own neutral palette wholesale ("Fluent 2 with ROJAN
-    identity", not a Windows clone).
+    Phase 16: Dark theme - available as an explicit user choice (see
+    Rojan.Desktop.Shell/Theming/ThemeService); Light.xaml is now the
+    shipped default (Fluent 2 Premium Light Theme pass). Navy-tinted
+    neutral surface ramp, not pure gray - keeps ROJAN's existing Navy as
+    the brand's dark base rather than adopting Windows' own neutral
+    palette wholesale ("Fluent 2 with ROJAN identity", not a Windows
+    clone).
 
     Phase 17A: renamed to the strict semantic names a Fluent 2 compliance
     audit expects - Background (was Navy), Border/BorderStrong (was
@@ -17,14 +19,18 @@
     Surface token by coincidence. Every key name here is otherwise
     unchanged from Phase 16.
 
-    Self-contained: every surface/text/border key a page might reference
-    is defined here (and mirrored with light-appropriate values in
-    Light.xaml) - swapping which of the two RojanTheme.xaml merges is the
-    entire theme switch, no other file needs to change. A runtime
-    light/dark toggle is not wired up (no toggle was requested) - same
-    "foundation now, wire up later" pattern already used elsewhere in
-    this app (e.g. the Phase 07 dialog region before Phase 15 gave it a
-    producer).
+    Self-contained: every surface/text/border/status key a page might
+    reference is defined here (and mirrored with light-appropriate
+    values in Light.xaml) - Rojan.Desktop.Shell.Theming.ThemeService is
+    the one place that decides which of Light.xaml/Dark.xaml actually
+    gets merged app-wide, restart-required (same UX as the Localization
+    platform's language switch), see Shell/App.xaml.cs.
+
+    Error/Warning/Success moved here from the theme-invariant
+    Colors.xaml in the same pass - Error was nudged slightly brighter
+    (#E5484D -> #F1555B) to move it from a borderline ~4.45:1 to a
+    comfortable ~5.1:1 against this file's own Background, see
+    Light.xaml's doc comment for the full rationale.
   -->
 
   <Color x:Key="Rojan.Color.Background">#FF15192A</Color>
@@ -43,6 +49,10 @@
   <Color x:Key="Rojan.Color.HintText">#FF8B85A3</Color>
   <Color x:Key="Rojan.Color.Disabled">#FF5C5770</Color>
 
+  <Color x:Key="Rojan.Color.Error">#FFF1555B</Color>
+  <Color x:Key="Rojan.Color.Warning">#FFF2B93D</Color>
+  <Color x:Key="Rojan.Color.Success">#FF3FB950</Color>
+
   <SolidColorBrush x:Key="Rojan.Brush.Background" Color="{StaticResource Rojan.Color.Background}" />
   <SolidColorBrush x:Key="Rojan.Brush.Surface" Color="{StaticResource Rojan.Color.Surface}" />
   <SolidColorBrush x:Key="Rojan.Brush.Card" Color="{StaticResource Rojan.Color.Card}" />
@@ -58,5 +68,9 @@
   <SolidColorBrush x:Key="Rojan.Brush.MutedText" Color="{StaticResource Rojan.Color.MutedText}" />
   <SolidColorBrush x:Key="Rojan.Brush.HintText" Color="{StaticResource Rojan.Color.HintText}" />
   <SolidColorBrush x:Key="Rojan.Brush.Disabled" Color="{StaticResource Rojan.Color.Disabled}" />
+
+  <SolidColorBrush x:Key="Rojan.Brush.Error" Color="{StaticResource Rojan.Color.Error}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Warning" Color="{StaticResource Rojan.Color.Warning}" />
+  <SolidColorBrush x:Key="Rojan.Brush.Success" Color="{StaticResource Rojan.Color.Success}" />
 
 </ResourceDictionary>

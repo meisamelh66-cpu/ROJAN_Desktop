@@ -204,4 +204,28 @@
   <data name="Settings_Language_NoPacksInstalled" xml:space="preserve">
     <value>هیچ بسته زبان اضافی نصب نشده است.</value>
   </data>
+  <data name="Settings_Theme_SectionTitle" xml:space="preserve">
+    <value>پوسته</value>
+  </data>
+  <data name="Settings_Theme_Light" xml:space="preserve">
+    <value>روشن</value>
+  </data>
+  <data name="Settings_Theme_Dark" xml:space="preserve">
+    <value>تیره</value>
+  </data>
+  <data name="Settings_Theme_System" xml:space="preserve">
+    <value>مطابق سیستم</value>
+  </data>
+  <data name="Settings_Theme_CurrentFormat" xml:space="preserve">
+    <value>پوسته فعلی: {0}</value>
+  </data>
+  <data name="Settings_Theme_Apply" xml:space="preserve">
+    <value>اعمال پوسته</value>
+  </data>
+  <data name="Settings_Theme_RestartRequired" xml:space="preserve">
+    <value>برای اعمال پوسته جدید، راه‌اندازی مجدد لازم است.</value>
+  </data>
+  <data name="Settings_Theme_RestartNow" xml:space="preserve">
+    <value>راه‌اندازی مجدد اکنون</value>
+  </data>
 </root>

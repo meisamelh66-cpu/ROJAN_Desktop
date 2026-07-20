@@ -99,8 +99,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse Width="8" Height="8" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" />
                     <TextBlock Text="ROJAN Desktop"
-                               Style="{StaticResource Rojan.TextStyle.SectionHeader}"
-                               Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                               Style="{StaticResource Rojan.TextStyle.WindowTitle}"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center" />
                 </StackPanel>

@@ -19,17 +19,7 @@
         Assistant panel remain static (no repository data), so they use the
         state-less DashboardCard.
 
-        Merges its own RojanTheme.xaml dependency locally (same self-sufficiency
-        rule as every other Design System component).
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32">
             <Grid.ColumnDefinitions>
@@ -111,7 +101,7 @@
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding Description}"
                                                Style="{StaticResource Rojan.TextStyle.Body}"
-                                               Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+                                               Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding OccurredAt, StringFormat={}{0:t}}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"

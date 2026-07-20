@@ -11,14 +11,6 @@
         Employees, Reports, AI Center, Settings) get this single honest
         "not built yet" page rather than nine near-duplicate stand-ins.
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Grid Margin="32">
         <controls:SectionHeader Title="{Binding Title}" VerticalAlignment="Top" HorizontalAlignment="Left" />
 

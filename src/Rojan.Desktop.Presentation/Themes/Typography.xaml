@@ -26,6 +26,19 @@
     HeroTitle -> Display (large KPI numbers, kept beyond the six-step
     body-copy scale for the same "big number display" reasoning as
     before, just renamed to match the requested name).
+
+    Fluent 2 Premium Theme pass: five more roles added below
+    (WindowTitle/Disabled/Hyperlink/Error/Warning/Success), each setting
+    its own Foreground so a consumer only needs
+    `Style="{StaticResource Rojan.TextStyle.X}"` instead of also
+    repeating `Foreground="{StaticResource Rojan.Brush.X}"` - the first
+    time anything in this file references a color/brush key, so (unlike
+    every style above, which is pure type-scale, no color) this file now
+    depends on Colors.xaml/{Light,Dark}.xaml already being merged earlier
+    in the same parent resource-dictionary list - true wherever this file
+    is actually consumed (see App.xaml.cs's ThemeResources.Build, the
+    sole place the design system is assembled since the Fluent 2 Premium
+    Theme pass removed every other file's redundant self-merge).
   -->
   <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI Variable, Segoe UI</FontFamily>
 
@@ -78,6 +91,41 @@
     <Setter Property="FontSize" Value="12" />
     <Setter Property="LineHeight" Value="16" />
     <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+  </Style>
+
+  <!-- Window title - the title-bar brand text (MainWindow's "ROJAN Desktop"), one step down from Title so the title bar doesn't visually compete with a page's own Title. -->
+  <Style x:Key="Rojan.TextStyle.WindowTitle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextPrimary}" />
+  </Style>
+
+  <!-- Disabled body text - same size/weight as Body, muted via the theme's own Disabled brush (deliberately below AA contrast - WCAG does not require disabled, non-interactive text to meet the 4.5:1 minimum, only that it reads as "unavailable"). -->
+  <Style x:Key="Rojan.TextStyle.Disabled" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Disabled}" />
+  </Style>
+
+  <!-- Hyperlink - Accent-colored and underlined (color alone is not a sufficient link affordance for WCAG 1.4.1 "use of color"), body-text size/weight. -->
+  <Style x:Key="Rojan.TextStyle.Hyperlink" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Accent}" />
+    <Setter Property="TextDecorations" Value="Underline" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <!-- Semantic status text - Error/Warning/Success, each theme's own AA-safe shade (see Light.xaml/Dark.xaml doc comments), body-text size/weight. -->
+  <Style x:Key="Rojan.TextStyle.Error" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+  </Style>
+
+  <Style x:Key="Rojan.TextStyle.Warning" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Warning}" />
+  </Style>
+
+  <Style x:Key="Rojan.TextStyle.Success" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
   </Style>
 
 </ResourceDictionary>

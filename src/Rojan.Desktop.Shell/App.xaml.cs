@@ -12,9 +12,11 @@ using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Presentation.Theming;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Shell.Navigation;
+using Rojan.Desktop.Shell.Theming;
 
 namespace Rojan.Desktop.Shell;
 
@@ -57,6 +59,15 @@ public partial class App
         // under en-US. Blocking here happens before any Dispatcher loop is
         // pumping, so there is no synchronization-context deadlock risk.
         _host.StartAsync().GetAwaiter().GetResult();
+
+        // Fluent 2 Premium Theme pass: the design-system resource tree
+        // must be assembled (with the correct Light/Dark color file)
+        // before MainWindow or anything else XAML-based is constructed -
+        // same "before any XAML" ordering the culture setup below already
+        // requires, just for the visual resources instead of strings.
+        var themeService = _host.Services.GetRequiredService<IThemeService>();
+        themeService.InitializeAsync().GetAwaiter().GetResult();
+        ThemeResources.Apply(this, themeService.ResolvedTheme);
 
         // Phase 19A: language must be resolved and the process culture set
         // before anything XAML-related is constructed - MainWindow (and
@@ -109,6 +120,12 @@ public partial class App
         services.AddSingleton<ILanguagePackManager, LanguagePackManager>();
         services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<ILanguagePackRepository, LocalOnlyLanguagePackRepository>();
+
+        // Fluent 2 Premium Theme pass: same "interface in Presentation,
+        // concrete implementation in Shell" split as above - ThemeService
+        // needs file-system (persisted selection) and Windows-registry
+        // (System theme) access, both Shell-level concerns.
+        services.AddSingleton<IThemeService, ThemeService>();
 
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();

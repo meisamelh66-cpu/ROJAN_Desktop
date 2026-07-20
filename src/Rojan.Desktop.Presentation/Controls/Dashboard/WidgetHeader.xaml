@@ -6,19 +6,18 @@
     <!--
         Compact per-widget title - distinct from the page-level
         SectionHeader (which carries the rose-gold accent underline).
-        Self-sufficient: merges its own RojanTheme.xaml dependency, same rule as
-        every other Design System component.
-    -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Themes/RojanTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
 
+        Fluent 2 Premium Theme pass: the title's Foreground was
+        Rojan.Brush.ButtonText (white, meant for text drawn on a filled
+        Accent surface) even though this renders directly on the Card
+        background - harmless on the old dark theme, a real WCAG failure
+        on Light.xaml's near-white Card. Fixed to TextPrimary. Also no
+        longer self-merges its own RojanTheme.xaml copy - every View/
+        control now consumes the single app-level design-system resources
+        (see Shell/App.xaml.cs's ThemeResources.Apply).
+    -->
     <TextBlock Text="{Binding Title, ElementName=Root}"
                Style="{StaticResource Rojan.TextStyle.SectionHeader}"
-               Foreground="{StaticResource Rojan.Brush.ButtonText}" />
+               Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
 
 </UserControl>
