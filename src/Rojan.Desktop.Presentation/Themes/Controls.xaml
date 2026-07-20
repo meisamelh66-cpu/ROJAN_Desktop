@@ -696,4 +696,23 @@
     </Setter>
   </Style>
 
+  <!--
+    Phase 27: Enterprise Notification Center's Badge Counter - a small,
+    fully-rounded pill (built on the existing Rojan.CornerRadius.Pill
+    token, previously unused by any Style) overlaid on the header's bell
+    button. Uses Rojan.Brush.Error (a badge count is inherently an
+    attention-getting signal, the same reasoning a phone app's unread
+    badge is red) rather than the neutral Accent color used elsewhere.
+  -->
+  <Style x:Key="Rojan.Style.NotificationBadge" TargetType="Border">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Error}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Pill}" />
+    <Setter Property="MinWidth" Value="16" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Padding" Value="4,0" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Margin" Value="0,-4,-4,0" />
+  </Style>
+
 </ResourceDictionary>

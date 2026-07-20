@@ -6,6 +6,7 @@
         xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization;assembly=Rojan.Desktop.Presentation"
         xmlns:appOrg="clr-namespace:Rojan.Desktop.Application.Organizations;assembly=Rojan.Desktop.Application"
         xmlns:helpControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Help;assembly=Rojan.Desktop.Presentation"
+        xmlns:notificationViews="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications;assembly=Rojan.Desktop.Presentation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -296,15 +297,32 @@
                     </Popup>
                 </StackPanel>
 
-                <!-- Notification button -->
-                <Button Grid.Column="6"
-                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
-                        Command="{Binding ToggleNotificationPanelCommand}"
-                        ToolTip="{x:Static loc:Strings.Common_Notifications}"
-                        Margin="4,0,0,0"
-                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <TextBlock Text="{StaticResource Rojan.Icon.Notification}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
-                </Button>
+                <!-- Notification button - Phase 27: badge counter overlay shows NotificationCenter.UnreadCount when > 0. -->
+                <Grid Grid.Column="6" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                            Command="{Binding ToggleNotificationPanelCommand}"
+                            ToolTip="{x:Static loc:Strings.Common_Notifications}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Notification}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                    </Button>
+                    <Border IsHitTestVisible="False">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.NotificationBadge}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding NotificationCenter.HasUnread}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding NotificationCenter.UnreadCount}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                   FontSize="9"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
 
                 <!-- User profile placeholder - not functional, UI presence only -->
                 <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -423,10 +441,9 @@
                        Margin="16,0" />
         </Border>
 
-        <!-- ================= Notification region ================= -->
+        <!-- ================= Notification region (Phase 27: Enterprise Notification Center) ================= -->
         <Border Grid.Row="1"
-                Width="320"
-                MaxHeight="360"
+                Width="380"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="0,12,12,0">
@@ -440,45 +457,7 @@
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-            <StackPanel>
-                <TextBlock Text="{x:Static loc:Strings.Common_Notifications}"
-                           Style="{StaticResource Rojan.TextStyle.SectionHeader}"
-                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
-                <ItemsControl ItemsSource="{Binding Notifications}" Margin="0,12,0,0">
-                    <ItemsControl.Style>
-                        <Style TargetType="ItemsControl">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasNotifications}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ItemsControl.Style>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Message}"
-                                       Style="{StaticResource Rojan.TextStyle.Body}"
-                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,8" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Text="{x:Static loc:Strings.Common_NoNotifications}"
-                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           Margin="0,12,0,0">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasNotifications}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </StackPanel>
+            <notificationViews:NotificationCenterPanelView DataContext="{Binding NotificationCenter}" />
         </Border>
 
         <!-- ================= Dialog region ================= -->
@@ -506,6 +485,18 @@
             -->
             <Border x:Name="Scrim" Background="{StaticResource Rojan.Brush.Scrim}" Opacity="0.4" MouseLeftButtonDown="Scrim_MouseLeftButtonDown" />
             <ContentControl Content="{Binding ActiveDialog}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
+        <!--
+            ================= Toast overlay region (Phase 27) =================
+            Non-modal, deliberately rendered above the Dialog region (last in
+            this Grid's Z-order) so a toast - e.g. "connection lost" - stays
+            visible even while a modal dialog is open. Never routed through
+            IDialogService/ActiveDialog - see ToastHostViewModel's own doc
+            comment for why toasts are architecturally separate from dialogs.
+        -->
+        <Grid Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,68,16,0">
+            <ItemsControl ItemsSource="{Binding ToastHost.ActiveToasts}" />
         </Grid>
 
     </Grid>

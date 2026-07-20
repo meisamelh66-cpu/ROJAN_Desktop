@@ -896,6 +896,69 @@ public static class Strings
 
     public static string Help_Breadcrumb_Home => Get(nameof(Help_Breadcrumb_Home));
 
+    // Phase 27: Enterprise Notification Center.
+    public static string Notification_Search_Placeholder => Get(nameof(Notification_Search_Placeholder));
+
+    public static string Notification_Filter_All => Get(nameof(Notification_Filter_All));
+
+    public static string Notification_Filter_Unread => Get(nameof(Notification_Filter_Unread));
+
+    public static string Notification_MarkAllRead => Get(nameof(Notification_MarkAllRead));
+
+    public static string Notification_ClearAll => Get(nameof(Notification_ClearAll));
+
+    public static string Notification_Dismiss => Get(nameof(Notification_Dismiss));
+
+    public static string Notification_NoResults => Get(nameof(Notification_NoResults));
+
+    public static string Notification_SilentMode => Get(nameof(Notification_SilentMode));
+
+    public static string Notification_SilentMode_Description => Get(nameof(Notification_SilentMode_Description));
+
+    public static string Notification_Toast_Close => Get(nameof(Notification_Toast_Close));
+
+    public static string Notification_Category_System => Get(nameof(Notification_Category_System));
+
+    public static string Notification_Category_Customers => Get(nameof(Notification_Category_Customers));
+
+    public static string Notification_Category_Bookings => Get(nameof(Notification_Category_Bookings));
+
+    public static string Notification_Category_Inventory => Get(nameof(Notification_Category_Inventory));
+
+    public static string Notification_Category_Sync => Get(nameof(Notification_Category_Sync));
+
+    public static string Notification_Demo_WelcomeTitle => Get(nameof(Notification_Demo_WelcomeTitle));
+
+    public static string Notification_Demo_WelcomeMessage => Get(nameof(Notification_Demo_WelcomeMessage));
+
+    public static string Notification_Demo_BackupSuccessTitle => Get(nameof(Notification_Demo_BackupSuccessTitle));
+
+    public static string Notification_Demo_BackupSuccessMessage => Get(nameof(Notification_Demo_BackupSuccessMessage));
+
+    public static string Notification_Demo_LowStockTitle => Get(nameof(Notification_Demo_LowStockTitle));
+
+    public static string Notification_Demo_LowStockMessage => Get(nameof(Notification_Demo_LowStockMessage));
+
+    public static string Notification_Demo_SyncFailedTitle => Get(nameof(Notification_Demo_SyncFailedTitle));
+
+    public static string Notification_Demo_SyncFailedMessage => Get(nameof(Notification_Demo_SyncFailedMessage));
+
+    public static string Notification_Demo_NewBookingTitle => Get(nameof(Notification_Demo_NewBookingTitle));
+
+    public static string Notification_Demo_NewBookingMessage => Get(nameof(Notification_Demo_NewBookingMessage));
+
+    public static string Notification_Demo_SecurityAlertTitle => Get(nameof(Notification_Demo_SecurityAlertTitle));
+
+    public static string Notification_Demo_SecurityAlertMessage => Get(nameof(Notification_Demo_SecurityAlertMessage));
+
+    public static string Common_JustNow => Get(nameof(Common_JustNow));
+
+    public static string Common_MinutesAgoFormat => Get(nameof(Common_MinutesAgoFormat));
+
+    public static string Common_HoursAgoFormat => Get(nameof(Common_HoursAgoFormat));
+
+    public static string Common_DaysAgoFormat => Get(nameof(Common_DaysAgoFormat));
+
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its
     /// raw name (e.g. "Active", "Cancelled", "Cash") under the

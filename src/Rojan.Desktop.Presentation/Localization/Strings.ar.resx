@@ -1581,6 +1581,111 @@
   <data name="Help_Breadcrumb_Home" xml:space="preserve">
     <value>الصفحة الرئيسية للمساعدة</value>
   </data>
+  <data name="Notification_Search_Placeholder" xml:space="preserve">
+    <value>البحث في الإشعارات...</value>
+  </data>
+  <data name="Notification_Filter_All" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="Notification_Filter_Unread" xml:space="preserve">
+    <value>غير مقروءة</value>
+  </data>
+  <data name="Notification_MarkAllRead" xml:space="preserve">
+    <value>تعليم الكل كمقروء</value>
+  </data>
+  <data name="Notification_ClearAll" xml:space="preserve">
+    <value>مسح الكل</value>
+  </data>
+  <data name="Notification_Dismiss" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="Notification_NoResults" xml:space="preserve">
+    <value>لا توجد إشعارات تطابق هذه المعايير.</value>
+  </data>
+  <data name="Notification_SilentMode" xml:space="preserve">
+    <value>الوضع الصامت</value>
+  </data>
+  <data name="Notification_SilentMode_Description" xml:space="preserve">
+    <value>أثناء تفعيل الوضع الصامت، تظهر الإشعارات الحرجة فقط كنوافذ منبثقة - وتُسجَّل بقية الإشعارات في مركز الإشعارات فقط.</value>
+  </data>
+  <data name="Notification_Toast_Close" xml:space="preserve">
+    <value>إغلاق الإشعار</value>
+  </data>
+  <data name="Notification_Category_System" xml:space="preserve">
+    <value>النظام</value>
+  </data>
+  <data name="Notification_Category_Customers" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Notification_Category_Bookings" xml:space="preserve">
+    <value>الحجوزات</value>
+  </data>
+  <data name="Notification_Category_Inventory" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Notification_Category_Sync" xml:space="preserve">
+    <value>المزامنة</value>
+  </data>
+  <data name="Notification_Demo_WelcomeTitle" xml:space="preserve">
+    <value>مرحبًا بك في ROJAN Desktop</value>
+  </data>
+  <data name="Notification_Demo_WelcomeMessage" xml:space="preserve">
+    <value>مركز الإشعارات المؤسسي نشط الآن. تظهر هنا إشعارات النظام والعملاء والحجوزات والمخزون.</value>
+  </data>
+  <data name="Notification_Demo_BackupSuccessTitle" xml:space="preserve">
+    <value>اكتمل النسخ الاحتياطي بنجاح</value>
+  </data>
+  <data name="Notification_Demo_BackupSuccessMessage" xml:space="preserve">
+    <value>تم نسخ بيانات عملك احتياطيًا تلقائيًا دون أي مشاكل.</value>
+  </data>
+  <data name="Notification_Demo_LowStockTitle" xml:space="preserve">
+    <value>تحذير انخفاض المخزون</value>
+  </data>
+  <data name="Notification_Demo_LowStockMessage" xml:space="preserve">
+    <value>وصل مخزون "{0}" إلى حد التحذير. يُرجى المراجعة وإعادة الطلب.</value>
+  </data>
+  <data name="Notification_Demo_SyncFailedTitle" xml:space="preserve">
+    <value>فشلت المزامنة</value>
+  </data>
+  <data name="Notification_Demo_SyncFailedMessage" xml:space="preserve">
+    <value>فشلت مزامنة البيانات بسبب مشكلة في الاتصال. يُرجى التحقق من اتصالك بالإنترنت.</value>
+  </data>
+  <data name="Notification_Demo_NewBookingTitle" xml:space="preserve">
+    <value>تم إنشاء حجز جديد</value>
+  </data>
+  <data name="Notification_Demo_NewBookingMessage" xml:space="preserve">
+    <value>تم إنشاء حجز جديد لـ "{0}".</value>
+  </data>
+  <data name="Notification_Demo_SecurityAlertTitle" xml:space="preserve">
+    <value>تنبيه أمني حرج</value>
+  </data>
+  <data name="Notification_Demo_SecurityAlertMessage" xml:space="preserve">
+    <value>تم اكتشاف محاولة تسجيل دخول مشبوهة. يظهر هذا الإشعار حتى أثناء تفعيل الوضع الصامت.</value>
+  </data>
+  <data name="Common_JustNow" xml:space="preserve">
+    <value>الآن</value>
+  </data>
+  <data name="Common_MinutesAgoFormat" xml:space="preserve">
+    <value>منذ {0} دقيقة</value>
+  </data>
+  <data name="Common_HoursAgoFormat" xml:space="preserve">
+    <value>منذ {0} ساعة</value>
+  </data>
+  <data name="Common_DaysAgoFormat" xml:space="preserve">
+    <value>منذ {0} يوم</value>
+  </data>
+  <data name="Enum_Success" xml:space="preserve">
+    <value>نجاح</value>
+  </data>
+  <data name="Enum_Warning" xml:space="preserve">
+    <value>تحذير</value>
+  </data>
+  <data name="Enum_Error" xml:space="preserve">
+    <value>خطأ</value>
+  </data>
+  <data name="Enum_Information" xml:space="preserve">
+    <value>معلومات</value>
+  </data>
   <data name="Help_Shortcut_CloseDialog" xml:space="preserve">
     <value>إغلاق هذه النافذة</value>
   </data>

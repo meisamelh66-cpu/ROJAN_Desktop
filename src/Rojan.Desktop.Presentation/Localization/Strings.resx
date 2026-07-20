@@ -1593,6 +1593,111 @@
   <data name="Help_Breadcrumb_Home" xml:space="preserve">
     <value>خانه راهنما</value>
   </data>
+  <data name="Notification_Search_Placeholder" xml:space="preserve">
+    <value>جستجو در اعلان‌ها...</value>
+  </data>
+  <data name="Notification_Filter_All" xml:space="preserve">
+    <value>همه</value>
+  </data>
+  <data name="Notification_Filter_Unread" xml:space="preserve">
+    <value>خوانده‌نشده</value>
+  </data>
+  <data name="Notification_MarkAllRead" xml:space="preserve">
+    <value>علامت‌گذاری همه به‌عنوان خوانده‌شده</value>
+  </data>
+  <data name="Notification_ClearAll" xml:space="preserve">
+    <value>پاک کردن همه</value>
+  </data>
+  <data name="Notification_Dismiss" xml:space="preserve">
+    <value>نادیده گرفتن</value>
+  </data>
+  <data name="Notification_NoResults" xml:space="preserve">
+    <value>اعلانی با این معیارها یافت نشد.</value>
+  </data>
+  <data name="Notification_SilentMode" xml:space="preserve">
+    <value>حالت سکوت</value>
+  </data>
+  <data name="Notification_SilentMode_Description" xml:space="preserve">
+    <value>در حالت سکوت، اعلان‌های بحرانی همچنان به‌صورت پیام کوچک نمایش داده می‌شوند، اما بقیه فقط در مرکز اعلان‌ها ثبت می‌شوند.</value>
+  </data>
+  <data name="Notification_Toast_Close" xml:space="preserve">
+    <value>بستن اعلان</value>
+  </data>
+  <data name="Notification_Category_System" xml:space="preserve">
+    <value>سیستم</value>
+  </data>
+  <data name="Notification_Category_Customers" xml:space="preserve">
+    <value>مشتریان</value>
+  </data>
+  <data name="Notification_Category_Bookings" xml:space="preserve">
+    <value>رزروها</value>
+  </data>
+  <data name="Notification_Category_Inventory" xml:space="preserve">
+    <value>موجودی</value>
+  </data>
+  <data name="Notification_Category_Sync" xml:space="preserve">
+    <value>همگام‌سازی</value>
+  </data>
+  <data name="Notification_Demo_WelcomeTitle" xml:space="preserve">
+    <value>به ROJAN Desktop خوش آمدید</value>
+  </data>
+  <data name="Notification_Demo_WelcomeMessage" xml:space="preserve">
+    <value>مرکز اعلان‌های سازمانی اکنون فعال است. اعلان‌های سیستم، مشتریان، رزروها و موجودی همگی در اینجا نمایش داده می‌شوند.</value>
+  </data>
+  <data name="Notification_Demo_BackupSuccessTitle" xml:space="preserve">
+    <value>پشتیبان‌گیری با موفقیت انجام شد</value>
+  </data>
+  <data name="Notification_Demo_BackupSuccessMessage" xml:space="preserve">
+    <value>پشتیبان‌گیری خودکار از داده‌های کسب‌وکار شما بدون هیچ مشکلی انجام شد.</value>
+  </data>
+  <data name="Notification_Demo_LowStockTitle" xml:space="preserve">
+    <value>هشدار کمبود موجودی</value>
+  </data>
+  <data name="Notification_Demo_LowStockMessage" xml:space="preserve">
+    <value>موجودی «{0}» به آستانه هشدار رسیده است. بررسی و سفارش مجدد را در نظر بگیرید.</value>
+  </data>
+  <data name="Notification_Demo_SyncFailedTitle" xml:space="preserve">
+    <value>همگام‌سازی ناموفق بود</value>
+  </data>
+  <data name="Notification_Demo_SyncFailedMessage" xml:space="preserve">
+    <value>به دلیل قطع اتصال، همگام‌سازی داده‌ها ناموفق بود. لطفاً اتصال اینترنت خود را بررسی کنید.</value>
+  </data>
+  <data name="Notification_Demo_NewBookingTitle" xml:space="preserve">
+    <value>رزرو جدید ثبت شد</value>
+  </data>
+  <data name="Notification_Demo_NewBookingMessage" xml:space="preserve">
+    <value>یک رزرو جدید برای «{0}» ثبت شد.</value>
+  </data>
+  <data name="Notification_Demo_SecurityAlertTitle" xml:space="preserve">
+    <value>هشدار امنیتی بحرانی</value>
+  </data>
+  <data name="Notification_Demo_SecurityAlertMessage" xml:space="preserve">
+    <value>یک تلاش مشکوک برای ورود شناسایی شد. این اعلان حتی در حالت سکوت نیز نمایش داده می‌شود.</value>
+  </data>
+  <data name="Common_JustNow" xml:space="preserve">
+    <value>همین الان</value>
+  </data>
+  <data name="Common_MinutesAgoFormat" xml:space="preserve">
+    <value>{0} دقیقه پیش</value>
+  </data>
+  <data name="Common_HoursAgoFormat" xml:space="preserve">
+    <value>{0} ساعت پیش</value>
+  </data>
+  <data name="Common_DaysAgoFormat" xml:space="preserve">
+    <value>{0} روز پیش</value>
+  </data>
+  <data name="Enum_Success" xml:space="preserve">
+    <value>موفق</value>
+  </data>
+  <data name="Enum_Warning" xml:space="preserve">
+    <value>هشدار</value>
+  </data>
+  <data name="Enum_Error" xml:space="preserve">
+    <value>خطا</value>
+  </data>
+  <data name="Enum_Information" xml:space="preserve">
+    <value>اطلاعات</value>
+  </data>
   <data name="Help_Shortcut_CloseDialog" xml:space="preserve">
     <value>بستن این پنجره</value>
   </data>

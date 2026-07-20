@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
+using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
@@ -12,6 +13,7 @@ using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.Help;
 using Rojan.Desktop.Domain.HR;
 using Rojan.Desktop.Domain.Inventory;
+using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Specialists;
@@ -27,6 +29,7 @@ using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
 using Rojan.Desktop.Infrastructure.Identity;
 using Rojan.Desktop.Infrastructure.Inventory;
+using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Security;
@@ -87,6 +90,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IHelpRepository, HelpTopicRegistry>();
         services.AddSingleton<IHelpFavoritesStore, LocalHelpFavoritesStore>();
         services.AddSingleton<IHelpRecentlyViewedStore, LocalHelpRecentlyViewedStore>();
+
+        // Phase 27: Enterprise Notification Center.
+        services.AddSingleton<INotificationRepository, LocalNotificationRepository>();
+        services.AddSingleton<ISilentModePreferenceStore, LocalSilentModePreferenceStore>();
 
         return services;
     }

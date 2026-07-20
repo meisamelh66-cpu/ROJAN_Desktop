@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Help;
+using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Help;
@@ -8,8 +9,10 @@ using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Presentation.Notifications;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Help;
+using Rojan.Desktop.Presentation.ViewModels.Notifications;
 
 namespace Rojan.Desktop.Shell;
 
@@ -67,7 +70,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         IHelpContentResolver helpContentResolver,
         IHelpSearchService helpSearchService,
         IHelpFavoritesStore helpFavoritesStore,
-        IHelpRecentlyViewedStore helpRecentlyViewedStore)
+        IHelpRecentlyViewedStore helpRecentlyViewedStore,
+        INotificationService notificationService,
+        INotificationContentResolver notificationContentResolver,
+        INotificationSearchService notificationSearchService,
+        IToastDismissScheduler toastDismissScheduler)
     {
         _navigationService = navigationService;
         _permissionEngine = permissionEngine;
@@ -83,8 +90,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         NavigationItems = new ObservableCollection<NavigationItem>(BuildVisibleNavigationItems());
 
         Breadcrumbs = new ObservableCollection<string>();
-        Notifications = new ObservableCollection<NotificationItem>();
-        Notifications.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNotifications));
+
+        NotificationCenter = new NotificationCenterViewModel(notificationService, notificationContentResolver, notificationSearchService);
+        ToastHost = new ToastHostViewModel(notificationService, notificationContentResolver, toastDismissScheduler);
+        _ = NotificationCenter.InitializeAsync();
 
         BranchGroups = new ObservableCollection<BranchSwitcherGroup>();
         RecentBranches = new ObservableCollection<BranchDto>();
@@ -121,10 +130,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 
     public ObservableCollection<string> Breadcrumbs { get; }
 
-    public ObservableCollection<NotificationItem> Notifications { get; }
+    /// <summary>Phase 27: Enterprise Notification Center - owns the panel's grouped/filtered/searched list, badge count, and Silent Mode toggle. Constructed once here (not per-open), since the Notification Center has no per-context state to seed.</summary>
+    public NotificationCenterViewModel NotificationCenter { get; }
 
-    /// <summary>No producer exists yet, so this is always false today - wired now so the notification panel shows the right thing (list vs. "No notifications.") the moment one does.</summary>
-    public bool HasNotifications => Notifications.Count > 0;
+    /// <summary>Phase 27: the transient toast-popup overlay, entirely separate from <see cref="ActiveDialog"/> - see <see cref="ToastHostViewModel"/>'s own doc comment for why.</summary>
+    public ToastHostViewModel ToastHost { get; }
 
     /// <summary>Header display form of <see cref="Breadcrumbs"/> - a single "Home › Dashboard" string, recomputed whenever the collection changes.</summary>
     public string BreadcrumbText => string.Join(" › ", Breadcrumbs);

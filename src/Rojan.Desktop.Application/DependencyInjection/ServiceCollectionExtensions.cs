@@ -9,6 +9,7 @@ using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Help;
+using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Security;
@@ -159,6 +160,16 @@ public static class ServiceCollectionExtensions
         // same reasoning RetryPolicy above already establishes.
         services.AddSingleton<IHelpQueryService, HelpQueryService>();
         services.AddSingleton<IHelpSearchService, HelpSearchService>();
+
+        // Phase 27: Enterprise Notification Center. NotificationService needs
+        // Infrastructure's INotificationRepository/ISilentModePreferenceStore
+        // (registered in AddInfrastructure()) but is itself pure
+        // orchestration/mapping/event-raising, the same shape HelpQueryService
+        // above establishes. NotificationSearchService is pure matching/
+        // scoring logic with no I/O - same reasoning HelpSearchService/
+        // RetryPolicy already establish.
+        services.AddSingleton<INotificationService, NotificationService>();
+        services.AddSingleton<INotificationSearchService, NotificationSearchService>();
 
         return services;
     }

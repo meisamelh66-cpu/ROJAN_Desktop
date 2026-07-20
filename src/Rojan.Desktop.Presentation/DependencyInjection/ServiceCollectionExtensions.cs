@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Presentation.Help;
 using Rojan.Desktop.Presentation.Localization;
+using Rojan.Desktop.Presentation.Notifications;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.AI;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
@@ -48,6 +49,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();
         services.AddSingleton<IHelpContentResolver, HelpContentResolver>();
+        services.AddSingleton<INotificationContentResolver, NotificationContentResolver>();
+        services.AddSingleton<IToastDismissScheduler, DispatcherToastDismissScheduler>();
         return services;
     }
 }

@@ -33,7 +33,9 @@
                     xmlns:organizationsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Organizations"
                     xmlns:organizationsView="clr-namespace:Rojan.Desktop.Presentation.Views.Organizations"
                     xmlns:helpVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Help"
-                    xmlns:helpView="clr-namespace:Rojan.Desktop.Presentation.Views.Help">
+                    xmlns:helpView="clr-namespace:Rojan.Desktop.Presentation.Views.Help"
+                    xmlns:notificationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Notifications"
+                    xmlns:notificationView="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -117,6 +119,10 @@
 
   <DataTemplate DataType="{x:Type helpVm:HelpDialogViewModel}">
     <helpView:ContextHelpDialogView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type notificationVm:ToastNotificationViewModel}">
+    <notificationView:ToastNotificationView />
   </DataTemplate>
 
 </ResourceDictionary>

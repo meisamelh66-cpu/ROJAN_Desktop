@@ -61,4 +61,8 @@
   <!-- Phase 26: Smart Context Help. -->
   <sys:String x:Key="Rojan.Icon.Help">&#xE897;</sys:String>
 
+  <!-- Phase 27: Enterprise Notification Center - severity icons (Success/Error already covered by CheckCircle/ErrorCircle above). -->
+  <sys:String x:Key="Rojan.Icon.Warning">&#xE7BA;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Information">&#xE946;</sys:String>
+
 </ResourceDictionary>

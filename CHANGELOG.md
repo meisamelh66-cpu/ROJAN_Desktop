@@ -830,6 +830,60 @@ see `docs/standards/versioning.md`.
   clicking a Related Topic link navigates the dialog in place and
   correctly enables Back — see
   `docs/phases/phase-26-smart-context-help.md`.
+- Phase 27 Enterprise Notification Center — a centralized notification
+  service, Fluent-2 toast popups, and an in-app Notification Center
+  panel with search/filtering/grouping/history/badge counter. `Domain.Notifications`
+  (`AppNotification`, `NotificationFilter`, own `NotificationSeverity`/
+  `NotificationPriority` enums, `INotificationRepository`,
+  `NotificationRules` — pure filter matching, group-key fallback,
+  priority ranking, and the Silent Mode toast rule) and
+  `Application.Notifications` (`INotificationService`/`NotificationService`
+  — raise/query/mark-read/dismiss/clear/Silent-Mode plus
+  `NotificationRaised`/`ToastRequested`/`StateChanged` events,
+  `INotificationSearchService`/`NotificationSearchService` — the same
+  weighted, highlighted substring search shape as Phase 26's
+  `HelpSearchService`) are new, dependency-clean layers. Application
+  deliberately owns its **own** mirror `NotificationSeverity`/
+  `NotificationPriority` enums rather than reusing Domain's — the same
+  pattern `Application.Customers.CustomerStatus` already establishes —
+  so Presentation never needs a Domain reference, verified by the
+  unchanged `ArchitectureTests.DependencyDirectionTests`.
+  `Infrastructure.Notifications.LocalNotificationRepository` persists a
+  capped (500-entry) JSON history;
+  `LocalSilentModePreferenceStore` persists the Silent Mode toggle.
+  Silent Mode's rule: while enabled, only `Critical`-priority
+  notifications still produce a toast — the Notification Center/history
+  is never affected, only the toast popup surface.
+  `Presentation.Notifications.NotificationContentResolver` is the one
+  place a notification's resx keys become localized display text (~50
+  new `Strings.cs`/resx entries, including 6 fully-authored demo
+  notifications and 4 new shared `Enum_<MemberName>` severity labels).
+  `ToastHostViewModel`'s auto-dismiss timer is abstracted behind a new
+  `IToastDismissScheduler` (the real `DispatcherTimer`-backed
+  implementation lives outside the `ViewModels` namespace) specifically
+  so it satisfies `ArchitectureTests.ViewModelTestabilityTests` ("no
+  ViewModel depends on `System.Windows.Threading`"). The header bell
+  button's popover — a Phase 07 placeholder explicitly built for this —
+  is now the real Notification Center, with a new
+  `Rojan.Style.NotificationBadge` unread-count pill overlaid on the
+  bell. Toasts render in a brand-new overlay region, deliberately never
+  routed through `IDialogService`/`ActiveDialog` (the modal dialog
+  region holds one value at a time and shows a scrim — structurally
+  incompatible with a stack of non-modal, auto-dismissing popups that
+  must stay visible even while a dialog is open).
+  `MainWindowViewModel` constructs both `NotificationCenterViewModel`
+  and `ToastHostViewModel` directly via `new` (not DI-registered),
+  passing through its own already-injected dependencies. Future
+  push-notification delivery is architecture-only (`RaiseAsync` is
+  already the single entry point a push handler would call) — no push
+  implementation, per spec. No existing page's layout, colors, spacing,
+  or controls changed. 265 new tests (1084 → 1349), full suite passes,
+  zero warnings, zero errors, `ArchitectureTests` (dependency-direction
+  and ViewModel-testability) included. Runtime-verified: 6 seeded demo
+  notifications appear grouped/searchable/filterable in the Notification
+  Center on first launch, the badge shows the correct unread count, and
+  Silent Mode persists across a toggle — see
+  `docs/phases/phase-27-enterprise-notification-center.md`.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

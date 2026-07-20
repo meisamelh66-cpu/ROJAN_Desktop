@@ -1,0 +1,68 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Notifications.ToastNotificationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+
+    <!--
+        Phase 27: Enterprise Notification Center - one toast popup. Same
+        Fluent 2 elevated-card chrome every other overlay in this app
+        already uses (Rojan.Brush.SurfaceElevated + Rojan.CornerRadius.Large
+        + Rojan.Effect.ElevationPopover), plus a severity-colored left
+        accent bar (4px) - the one new visual element this phase
+        introduces, built entirely from existing brushes
+        (Success/Warning/Error/Accent) via NotificationSeverityToBrushConverter,
+        never a new hardcoded color.
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:NotificationSeverityToIconConverter x:Key="SeverityToIconConverter" />
+            <converters:NotificationSeverityToBrushConverter x:Key="SeverityToBrushConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Rojan.Brush.SurfaceElevated}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+            Effect="{StaticResource Rojan.Effect.ElevationPopover}"
+            Width="340"
+            Margin="0,0,0,10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{Binding Severity, Converter={StaticResource SeverityToBrushConverter}}" />
+
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Severity, Converter={StaticResource SeverityToIconConverter}}"
+                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrushConverter}}"
+                       FontSize="18"
+                       Margin="14,14,0,0"
+                       VerticalAlignment="Top" />
+
+            <StackPanel Grid.Column="2" Margin="12,14,8,14">
+                <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Message}" Style="{StaticResource Rojan.TextStyle.Body}" Foreground="{StaticResource Rojan.Brush.TextSecondary}" TextWrapping="Wrap" Margin="0,4,0,0" />
+            </StackPanel>
+
+            <Button Grid.Column="3"
+                    Command="{Binding CloseCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="6"
+                    Cursor="Hand"
+                    VerticalAlignment="Top"
+                    Margin="0,6,6,0"
+                    ToolTip="{x:Static loc:Strings.Notification_Toast_Close}"
+                    AutomationProperties.Name="{x:Static loc:Strings.Notification_Toast_Close}">
+                <TextBlock Text="{StaticResource Rojan.Icon.Close}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

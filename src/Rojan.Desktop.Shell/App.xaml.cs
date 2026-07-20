@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Application.Identity;
+using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Security;
@@ -121,10 +122,78 @@ public partial class App
         var syncQueueService = _host.Services.GetRequiredService<ISyncQueueService>();
         syncQueueService.InitializeAsync().GetAwaiter().GetResult();
 
+        // Phase 27: Enterprise Notification Center. Seeds a realistic
+        // starter set covering every severity/priority/category so the
+        // Notification Center, badge counter, grouping, search, filtering,
+        // and Silent Mode are all genuinely observable on first launch -
+        // guarded by "history is currently empty" so this never re-seeds
+        // duplicate demo entries on a later restart (the persisted history
+        // in %LocalAppData%\RojanDesktop\notifications\history.json is the
+        // real, ongoing notification store from this point on).
+        var notificationService = _host.Services.GetRequiredService<INotificationService>();
+        SeedDemoNotificationsIfEmpty(notificationService);
+
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
         base.OnStartup(e);
+    }
+
+    /// <summary>Phase 27: one-time demo content - see the call site's own doc comment for why this is guarded and where the resulting history actually lives.</summary>
+    private static void SeedDemoNotificationsIfEmpty(INotificationService notificationService)
+    {
+        var existing = notificationService.GetAllAsync().GetAwaiter().GetResult();
+        if (existing.Count > 0)
+        {
+            return;
+        }
+
+        var seeds = new[]
+        {
+            new NotificationRequest(
+                NotificationSeverity.Information,
+                NotificationPriority.Normal,
+                nameof(Strings.Notification_Demo_WelcomeTitle),
+                nameof(Strings.Notification_Demo_WelcomeMessage),
+                Category: "system"),
+            new NotificationRequest(
+                NotificationSeverity.Success,
+                NotificationPriority.Low,
+                nameof(Strings.Notification_Demo_BackupSuccessTitle),
+                nameof(Strings.Notification_Demo_BackupSuccessMessage),
+                Category: "sync"),
+            new NotificationRequest(
+                NotificationSeverity.Warning,
+                NotificationPriority.High,
+                nameof(Strings.Notification_Demo_LowStockTitle),
+                nameof(Strings.Notification_Demo_LowStockMessage),
+                MessageArgs: ["Aromatherapy Massage Oil"],
+                Category: "inventory"),
+            new NotificationRequest(
+                NotificationSeverity.Error,
+                NotificationPriority.Normal,
+                nameof(Strings.Notification_Demo_SyncFailedTitle),
+                nameof(Strings.Notification_Demo_SyncFailedMessage),
+                Category: "sync"),
+            new NotificationRequest(
+                NotificationSeverity.Information,
+                NotificationPriority.Normal,
+                nameof(Strings.Notification_Demo_NewBookingTitle),
+                nameof(Strings.Notification_Demo_NewBookingMessage),
+                MessageArgs: ["Sarah Johnson"],
+                Category: "bookings"),
+            new NotificationRequest(
+                NotificationSeverity.Error,
+                NotificationPriority.Critical,
+                nameof(Strings.Notification_Demo_SecurityAlertTitle),
+                nameof(Strings.Notification_Demo_SecurityAlertMessage),
+                Category: "system"),
+        };
+
+        foreach (var seed in seeds)
+        {
+            notificationService.RaiseAsync(seed).GetAwaiter().GetResult();
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)
