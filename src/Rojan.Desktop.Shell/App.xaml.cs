@@ -300,6 +300,7 @@ public partial class App
         services.AddSingleton<IModule, AiCenterModule>();
         services.AddSingleton<IModule, SettingsModule>();
         services.AddSingleton<IModule, AutomationModule>();
+        services.AddSingleton<IModule, SupportModule>();
     }
 
     /// <summary>

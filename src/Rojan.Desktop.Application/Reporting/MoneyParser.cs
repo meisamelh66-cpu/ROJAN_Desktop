@@ -16,7 +16,12 @@ internal static class MoneyParser
 {
     public static decimal Parse(string value)
     {
-        var trimmed = value.TrimStart('$').Trim();
+        if (value.Contains("رایگان", StringComparison.Ordinal))
+        {
+            return 0m;
+        }
+
+        var trimmed = value.TrimStart('$').Replace("تومان", string.Empty, StringComparison.Ordinal).Replace("﷼", string.Empty, StringComparison.Ordinal).Trim();
         return decimal.TryParse(trimmed, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : 0m;
     }
 }

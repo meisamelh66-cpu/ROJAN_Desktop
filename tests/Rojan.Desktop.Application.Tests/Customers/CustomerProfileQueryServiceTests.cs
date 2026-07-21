@@ -38,10 +38,10 @@ public sealed class CustomerProfileQueryServiceTests
 
         var profile = await sut.GetProfileAsync("customer-1");
 
-        Assert.Contains(profile.Statistics, stat => stat.Label == "Notes" && stat.Value == "2");
-        Assert.Contains(profile.Statistics, stat => stat.Label == "Tags" && stat.Value == "1");
-        Assert.Contains(profile.Statistics, stat => stat.Label == "Lifetime Value" && stat.Value == "$4,820");
-        Assert.Contains(profile.Statistics, stat => stat.Label == "Status" && stat.Value == "Vip");
+        Assert.Contains(profile.Statistics, stat => stat.Label == "یادداشت‌ها" && stat.Value == "2");
+        Assert.Contains(profile.Statistics, stat => stat.Label == "برچسب‌ها" && stat.Value == "1");
+        Assert.Contains(profile.Statistics, stat => stat.Label == "ارزش کل خرید" && stat.Value == "$4,820");
+        Assert.Contains(profile.Statistics, stat => stat.Label == "وضعیت" && stat.Value == "Vip");
     }
 
     [Fact]

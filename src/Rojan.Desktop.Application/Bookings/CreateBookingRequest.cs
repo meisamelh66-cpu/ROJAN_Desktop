@@ -19,4 +19,4 @@ public sealed record CreateBookingRequest(
     string CustomerId = "",
     string ServiceId = "",
     string SpecialistId = "",
-    string Price = "$0");
+    string Price = "0 تومان");

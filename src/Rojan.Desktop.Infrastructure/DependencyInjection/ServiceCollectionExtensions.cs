@@ -6,6 +6,7 @@ using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
+using Rojan.Desktop.Application.Support;
 using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
 using Rojan.Desktop.Domain.Bookings;
@@ -20,6 +21,7 @@ using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Automation;
 using Rojan.Desktop.Domain.Specialists;
+using Rojan.Desktop.Domain.Support;
 using Rojan.Desktop.Domain.Workspaces;
 using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.Automation;
@@ -40,6 +42,7 @@ using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Specialists;
+using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
 using DomainServices = Rojan.Desktop.Domain.Services;
@@ -121,6 +124,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkflowExecutionRepository, LocalWorkflowExecutionRepository>();
         services.AddSingleton<IEmailNotificationService, LocalEmailOutboxService>();
         services.AddSingleton<WorkflowSchedulerService>();
+
+        services.AddSingleton<ISupportMessageRepository, LocalSupportMessageRepository>();
+        services.AddSingleton<IDevelopmentApplicationRepository, LocalDevelopmentApplicationRepository>();
+        services.AddSingleton<IRojanBrandConfiguration, RojanBrandConfiguration>();
 
         return services;
     }

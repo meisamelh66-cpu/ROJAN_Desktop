@@ -303,7 +303,7 @@ public sealed class InventoryPageViewModel : ViewModelBase
             SelectedNewProductCategory.Name,
             SelectedNewProductSupplier.Id,
             SelectedNewProductSupplier.Name,
-            string.IsNullOrWhiteSpace(NewProductUnitPrice) ? "$0" : NewProductUnitPrice,
+            string.IsNullOrWhiteSpace(NewProductUnitPrice) ? "0 تومان" : NewProductUnitPrice,
             NewProductDescription,
             NewProductInitialQuantity,
             NewProductReorderThreshold);

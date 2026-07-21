@@ -122,7 +122,7 @@ public sealed class ReportExecutionQueryServiceTests
         Assert.NotEmpty(result.Rows);
         var totalInvoices = result.Rows.Sum(row => int.Parse(row.Values["invoiceCount"], System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal(3, totalInvoices);
-        Assert.Equal("$250.00", result.Summary["Total Revenue"]);
+        Assert.Equal("250 تومان", result.Summary["درآمد کل"]);
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class ReportExecutionQueryServiceTests
 
         var result = await sut.RunReportAsync("revenue-report", filters);
 
-        Assert.Equal("$185.00", result.Summary["Total Revenue"]);
+        Assert.Equal("185 تومان", result.Summary["درآمد کل"]);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class ReportExecutionQueryServiceTests
         var result = await sut.RunReportAsync("sales-report", []);
 
         Assert.Equal(3, result.Rows.Count);
-        Assert.Contains(result.Rows, row => row.Values["invoiceId"] == "invoice-1" && row.Values["total"] == "$65.00");
+        Assert.Contains(result.Rows, row => row.Values["invoiceId"] == "invoice-1" && row.Values["total"] == "65 تومان");
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public sealed class ReportExecutionQueryServiceTests
         var result = await sut.RunReportAsync("appointments-report", []);
 
         Assert.Equal(3, result.Rows.Count);
-        Assert.Equal("3", result.Summary["Appointments"]);
+        Assert.Equal("3", result.Summary["نوبت‌ها"]);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public sealed class ReportExecutionQueryServiceTests
         Assert.Equal(2, result.Rows.Count);
         var haircutRow = result.Rows.Single(row => row.Values["serviceName"] == "Haircut");
         Assert.Equal("2", haircutRow.Values["bookingCount"]);
-        Assert.Equal("$130.00", haircutRow.Values["revenue"]);
+        Assert.Equal("130 تومان", haircutRow.Values["revenue"]);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public sealed class ReportExecutionQueryServiceTests
 
         var jordanRow = result.Rows.Single(row => row.Values["specialistName"] == "Jordan Lee");
         Assert.Equal("2", jordanRow.Values["bookingCount"]);
-        Assert.Equal("$18.50", jordanRow.Values["commissionEarned"]);
+        Assert.Equal("19 تومان", jordanRow.Values["commissionEarned"]);
     }
 
     [Fact]
@@ -228,9 +228,9 @@ public sealed class ReportExecutionQueryServiceTests
         var result = await sut.RunReportAsync("inventory-valuation", []);
 
         var shampooRow = result.Rows.Single(row => row.Values["productName"] == "Shampoo");
-        Assert.Equal("$1,000.00", shampooRow.Values["totalValue"]);
+        Assert.Equal("1,000 تومان", shampooRow.Values["totalValue"]);
         // Shampoo (50 x $20 = $1,000) + Conditioner (2 x $18 = $36).
-        Assert.Equal("$1,036.00", result.Summary["Total Value"]);
+        Assert.Equal("1,036 تومان", result.Summary["ارزش کل"]);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public sealed class ReportExecutionQueryServiceTests
         var result = await sut.RunReportAsync("payroll-summary", []);
 
         Assert.Equal(2, result.Rows.Count);
-        Assert.Equal("$5,968.50", result.Summary["Total Net Salary"]);
+        Assert.Equal("5,969 تومان", result.Summary["جمع خالص حقوق"]);
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public sealed class ReportExecutionQueryServiceTests
         Assert.Single(result.Rows);
         Assert.Equal("Jordan Lee", result.Rows[0].Values["employeeName"]);
         Assert.Equal("2", result.Rows[0].Values["transactionCount"]);
-        Assert.Equal("$18.50", result.Rows[0].Values["totalCommission"]);
+        Assert.Equal("19 تومان", result.Rows[0].Values["totalCommission"]);
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public sealed class ReportExecutionQueryServiceTests
         var result = await sut.RunReportAsync("daily-dashboard", []);
 
         Assert.Equal(11, result.Rows.Count);
-        Assert.Contains(result.Rows, row => row.Values["metric"] == "Total Revenue");
-        Assert.Contains(result.Rows, row => row.Values["metric"] == "Low Stock Items" && row.Values["value"] == "1");
+        Assert.Contains(result.Rows, row => row.Values["metric"] == "درآمد کل");
+        Assert.Contains(result.Rows, row => row.Values["metric"] == "اقلام رو به اتمام" && row.Values["value"] == "1");
     }
 }

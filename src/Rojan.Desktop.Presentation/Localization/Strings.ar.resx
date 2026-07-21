@@ -2200,4 +2200,307 @@
   <data name="Automation_Approvals_Reject" xml:space="preserve">
     <value>رفض</value>
   </data>
+  <data name="Enum_Start" xml:space="preserve">
+    <value>بدء</value>
+  </data>
+  <data name="Enum_End" xml:space="preserve">
+    <value>نهاية</value>
+  </data>
+  <data name="Enum_Decision" xml:space="preserve">
+    <value>قرار</value>
+  </data>
+  <data name="Enum_Delay" xml:space="preserve">
+    <value>تأخير</value>
+  </data>
+  <data name="Enum_Approval" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="Enum_Condition" xml:space="preserve">
+    <value>شرط</value>
+  </data>
+  <data name="Enum_Notification" xml:space="preserve">
+    <value>إشعار</value>
+  </data>
+  <data name="Enum_Email" xml:space="preserve">
+    <value>بريد إلكتروني</value>
+  </data>
+  <data name="Enum_AiAction" xml:space="preserve">
+    <value>إجراء الذكاء الاصطناعي</value>
+  </data>
+  <data name="Enum_DatabaseAction" xml:space="preserve">
+    <value>إجراء قاعدة البيانات</value>
+  </data>
+  <data name="Enum_ApiAction" xml:space="preserve">
+    <value>إجراء واجهة برمجة التطبيقات</value>
+  </data>
+  <data name="Enum_Draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="Enum_Published" xml:space="preserve">
+    <value>منشور</value>
+  </data>
+  <data name="Enum_Archived" xml:space="preserve">
+    <value>مؤرشف</value>
+  </data>
+  <data name="Enum_AppointmentCreated" xml:space="preserve">
+    <value>إنشاء موعد</value>
+  </data>
+  <data name="Enum_AppointmentCancelled" xml:space="preserve">
+    <value>إلغاء موعد</value>
+  </data>
+  <data name="Enum_CustomerRegistered" xml:space="preserve">
+    <value>تسجيل عميل</value>
+  </data>
+  <data name="Enum_PaymentCompleted" xml:space="preserve">
+    <value>اكتمال الدفع</value>
+  </data>
+  <data name="Enum_LowInventory" xml:space="preserve">
+    <value>نقص المخزون</value>
+  </data>
+  <data name="Enum_EmployeeCreated" xml:space="preserve">
+    <value>إنشاء موظف</value>
+  </data>
+  <data name="Enum_BranchCreated" xml:space="preserve">
+    <value>إنشاء فرع</value>
+  </data>
+  <data name="Enum_LicenseExpired" xml:space="preserve">
+    <value>انتهاء الترخيص</value>
+  </data>
+  <data name="Enum_Login" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="Enum_Logout" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+  <data name="Enum_Running" xml:space="preserve">
+    <value>قيد التشغيل</value>
+  </data>
+  <data name="Enum_Waiting" xml:space="preserve">
+    <value>في الانتظار</value>
+  </data>
+  <data name="Enum_Failed" xml:space="preserve">
+    <value>فشل</value>
+  </data>
+  <data name="Enum_Equals" xml:space="preserve">
+    <value>يساوي</value>
+  </data>
+  <data name="Enum_NotEquals" xml:space="preserve">
+    <value>لا يساوي</value>
+  </data>
+  <data name="Enum_GreaterThan" xml:space="preserve">
+    <value>أكبر من</value>
+  </data>
+  <data name="Enum_GreaterThanOrEqual" xml:space="preserve">
+    <value>أكبر من أو يساوي</value>
+  </data>
+  <data name="Enum_LessThan" xml:space="preserve">
+    <value>أصغر من</value>
+  </data>
+  <data name="Enum_LessThanOrEqual" xml:space="preserve">
+    <value>أصغر من أو يساوي</value>
+  </data>
+  <data name="Enum_Contains" xml:space="preserve">
+    <value>يحتوي</value>
+  </data>
+  <data name="Enum_RaiseNotification" xml:space="preserve">
+    <value>رفع إشعار</value>
+  </data>
+  <data name="Enum_ApplyDiscount" xml:space="preserve">
+    <value>تطبيق خصم</value>
+  </data>
+  <data name="Enum_NotifyManager" xml:space="preserve">
+    <value>إشعار المدير</value>
+  </data>
+  <data name="Enum_TriggerWorkflow" xml:space="preserve">
+    <value>تشغيل سير العمل</value>
+  </data>
+  <data name="Enum_Custom" xml:space="preserve">
+    <value>مخصص</value>
+  </data>
+  <data name="Enum_Hourly" xml:space="preserve">
+    <value>كل ساعة</value>
+  </data>
+  <data name="Enum_Daily" xml:space="preserve">
+    <value>يومي</value>
+  </data>
+  <data name="Enum_Weekly" xml:space="preserve">
+    <value>أسبوعي</value>
+  </data>
+  <data name="Enum_Monthly" xml:space="preserve">
+    <value>شهري</value>
+  </data>
+  <data name="Enum_Cron" xml:space="preserve">
+    <value>دوري مخصص</value>
+  </data>
+  <data name="Enum_Leave" xml:space="preserve">
+    <value>إجازة</value>
+  </data>
+  <data name="Enum_Expense" xml:space="preserve">
+    <value>مصروف</value>
+  </data>
+  <data name="Enum_Branch" xml:space="preserve">
+    <value>فرع</value>
+  </data>
+  <data name="Common_Version" xml:space="preserve">
+    <value>الإصدار</value>
+  </data>
+  <data name="Automation_Jobs_NextRun" xml:space="preserve">
+    <value>التشغيل التالي</value>
+  </data>
+  <data name="Nav_Support" xml:space="preserve">
+    <value>الدعم الفني</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>الدعم الفني</value>
+  </data>
+  <data name="Support_Subtitle" xml:space="preserve">
+    <value>حول ROJAN، قنوات التواصل، وموارد المساعدة</value>
+  </data>
+  <data name="Support_About_Title" xml:space="preserve">
+    <value>حول ROJAN</value>
+  </data>
+  <data name="Support_About_Body" xml:space="preserve">
+    <value>ROJAN منصة متكاملة لإدارة الأعمال لصالونات التجميل ومراكز الخدمات، تجمع الحجوزات والعملاء والمخزون والمحاسبة والموارد البشرية والتقارير في تطبيق واحد.</value>
+  </data>
+  <data name="Support_Contact_Title" xml:space="preserve">
+    <value>اتصل بنا</value>
+  </data>
+  <data name="Support_Contact_Phone" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="Support_Contact_Website" xml:space="preserve">
+    <value>الموقع الرسمي</value>
+  </data>
+  <data name="Support_Contact_OpenWebsite" xml:space="preserve">
+    <value>زيارة الموقع</value>
+  </data>
+  <data name="Support_Message_Title" xml:space="preserve">
+    <value>إرسال رسالة</value>
+  </data>
+  <data name="Support_Message_Type" xml:space="preserve">
+    <value>نوع الرسالة</value>
+  </data>
+  <data name="Support_Message_Subject" xml:space="preserve">
+    <value>الموضوع</value>
+  </data>
+  <data name="Support_Message_Body" xml:space="preserve">
+    <value>نص الرسالة</value>
+  </data>
+  <data name="Support_Message_SenderName" xml:space="preserve">
+    <value>اسمك</value>
+  </data>
+  <data name="Support_Message_SenderEmail" xml:space="preserve">
+    <value>بريدك الإلكتروني</value>
+  </data>
+  <data name="Support_Message_Submit" xml:space="preserve">
+    <value>إرسال الرسالة</value>
+  </data>
+  <data name="Support_Message_Sent" xml:space="preserve">
+    <value>تم إرسال رسالتك بنجاح.</value>
+  </data>
+  <data name="Support_Message_TypeHint" xml:space="preserve">
+    <value>اختر "التواصل مع المدير الأعلى" للتواصل المباشر مع مدير النظام الأعلى؛ أو اختر الإبلاغ عن خطأ أو اقتراح لتلك القنوات.</value>
+  </data>
+  <data name="Support_SendEmail_Title" xml:space="preserve">
+    <value>إرسال بريد إلكتروني</value>
+  </data>
+  <data name="Support_SendEmail_Description" xml:space="preserve">
+    <value>تواصل مباشرة مع فريق الدعم عبر البريد الإلكتروني باستخدام الزر أدناه.</value>
+  </data>
+  <data name="Support_SendEmail_Compose" xml:space="preserve">
+    <value>إنشاء بريد إلكتروني</value>
+  </data>
+  <data name="Support_Participation_Title" xml:space="preserve">
+    <value>طلب المشاركة في التطوير</value>
+  </data>
+  <data name="Support_Participation_FirstName" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="Support_Participation_LastName" xml:space="preserve">
+    <value>اسم العائلة</value>
+  </data>
+  <data name="Support_Participation_Mobile" xml:space="preserve">
+    <value>الجوال</value>
+  </data>
+  <data name="Support_Participation_Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Support_Participation_City" xml:space="preserve">
+    <value>المدينة</value>
+  </data>
+  <data name="Support_Participation_CollaborationArea" xml:space="preserve">
+    <value>مجال التعاون</value>
+  </data>
+  <data name="Support_Participation_GitHub" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="Support_Participation_LinkedIn" xml:space="preserve">
+    <value>LinkedIn</value>
+  </data>
+  <data name="Support_Participation_Portfolio" xml:space="preserve">
+    <value>معرض الأعمال</value>
+  </data>
+  <data name="Support_Participation_Resume" xml:space="preserve">
+    <value>السيرة الذاتية</value>
+  </data>
+  <data name="Support_Participation_Description" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="Support_Participation_Submit" xml:space="preserve">
+    <value>إرسال الطلب</value>
+  </data>
+  <data name="Support_Application_Sent" xml:space="preserve">
+    <value>تم إرسال طلب المشاركة بنجاح.</value>
+  </data>
+  <data name="Support_Faq_Title" xml:space="preserve">
+    <value>الأسئلة الشائعة</value>
+  </data>
+  <data name="Support_Faq_Q1" xml:space="preserve">
+    <value>كيف يمكنني استعادة كلمة المرور؟</value>
+  </data>
+  <data name="Support_Faq_A1" xml:space="preserve">
+    <value>استخدم "نسيت كلمة المرور" في شاشة الدخول، أو تواصل مع الدعم الفني.</value>
+  </data>
+  <data name="Support_Faq_Q2" xml:space="preserve">
+    <value>هل بياناتي متاحة دون اتصال بالإنترنت؟</value>
+  </data>
+  <data name="Support_Faq_A2" xml:space="preserve">
+    <value>نعم، يعمل ROJAN كتطبيق سطح مكتب ويحتفظ بجزء كبير من بياناتك محليًا أيضًا.</value>
+  </data>
+  <data name="Support_Faq_Q3" xml:space="preserve">
+    <value>كيف يمكنني طلب ميزة جديدة؟</value>
+  </data>
+  <data name="Support_Faq_A3" xml:space="preserve">
+    <value>استخدم قسم الاقتراحات في هذه الصفحة.</value>
+  </data>
+  <data name="Support_Guide_Title" xml:space="preserve">
+    <value>دليل الاستخدام</value>
+  </data>
+  <data name="Support_Guide_Body" xml:space="preserve">
+    <value>يتوفر شرح كامل لكل قسم من التطبيق ضمن المساعدة داخل التطبيق (أيقونة المساعدة في الشريط العلوي).</value>
+  </data>
+  <data name="Support_Terms_Title" xml:space="preserve">
+    <value>الشروط وسياسة الخصوصية</value>
+  </data>
+  <data name="Support_Terms_Body" xml:space="preserve">
+    <value>يعني استخدام ROJAN الموافقة على شروط الاستخدام وسياسة الخصوصية. تُستخدم بيانات عملك فقط لتقديم خدمات هذا التطبيق ولا تتم مشاركتها مع أي طرف ثالث دون موافقة.</value>
+  </data>
+  <data name="Support_Version_Title" xml:space="preserve">
+    <value>معلومات الإصدار</value>
+  </data>
+  <data name="Support_Version_AppVersion" xml:space="preserve">
+    <value>إصدار التطبيق</value>
+  </data>
+  <data name="Support_Version_Api" xml:space="preserve">
+    <value>عنوان API</value>
+  </data>
+  <data name="Enum_SuperAdmin" xml:space="preserve">
+    <value>التواصل مع المدير الأعلى</value>
+  </data>
+  <data name="Enum_BugReport" xml:space="preserve">
+    <value>الإبلاغ عن خطأ</value>
+  </data>
+  <data name="Enum_Suggestion" xml:space="preserve">
+    <value>اقتراح</value>
+  </data>
 </root>

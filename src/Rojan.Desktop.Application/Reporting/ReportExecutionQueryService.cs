@@ -111,8 +111,8 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
 
         var summary = new Dictionary<string, string>
         {
-            ["Total Revenue"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)),
-            ["Invoices"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
+            ["درآمد کل"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)),
+            ["تعداد فاکتور"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
         };
         return (rows, summary);
     }
@@ -138,8 +138,8 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
 
         var summary = new Dictionary<string, string>
         {
-            ["Total"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)),
-            ["Invoices"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
+            ["جمع کل"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)),
+            ["تعداد فاکتور"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
         };
         return (rows, summary);
     }
@@ -168,8 +168,8 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
 
         var summary = new Dictionary<string, string>
         {
-            ["Appointments"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
-            ["Total Value"] = FormatCurrency(filtered.Sum(booking => MoneyParser.Parse(booking.Price))),
+            ["نوبت‌ها"] = filtered.Count.ToString(CultureInfo.InvariantCulture),
+            ["ارزش کل"] = FormatCurrency(filtered.Sum(booking => MoneyParser.Parse(booking.Price))),
         };
         return (rows, summary);
     }
@@ -204,7 +204,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             }));
         }
 
-        var summary = new Dictionary<string, string> { ["New Customers"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
+        var summary = new Dictionary<string, string> { ["مشتریان جدید"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
         return (rows, summary);
     }
 
@@ -228,7 +228,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             customer.Status is AppCustomers.CustomerStatus.Active or AppCustomers.CustomerStatus.Vip or AppCustomers.CustomerStatus.Prospect or AppCustomers.CustomerStatus.Lead);
         var summary = new Dictionary<string, string>
         {
-            ["Retention Rate"] = FormatPercentage(total == 0 ? 0m : Math.Round((decimal)retained / total * 100m, 1)),
+            ["نرخ بازگشت"] = FormatPercentage(total == 0 ? 0m : Math.Round((decimal)retained / total * 100m, 1)),
         };
         return (rows, summary);
     }
@@ -256,7 +256,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             }))
             .ToList();
 
-        var summary = new Dictionary<string, string> { ["Bookings"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
+        var summary = new Dictionary<string, string> { ["نوبت‌ها"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
         return (rows, summary);
     }
 
@@ -289,7 +289,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             })
             .ToList();
 
-        var summary = new Dictionary<string, string> { ["Specialists"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        var summary = new Dictionary<string, string> { ["متخصصان"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
         return (rows, summary);
     }
 
@@ -320,7 +320,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             }));
         }
 
-        var summary = new Dictionary<string, string> { ["Total Value"] = FormatCurrency(totalValue) };
+        var summary = new Dictionary<string, string> { ["ارزش کل"] = FormatCurrency(totalValue) };
         return (rows, summary);
     }
 
@@ -335,7 +335,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             ["shortfall"] = Math.Max(0, item.ReorderThreshold - item.QuantityOnHand).ToString(CultureInfo.InvariantCulture),
         })).ToList();
 
-        var summary = new Dictionary<string, string> { ["Low Stock Items"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        var summary = new Dictionary<string, string> { ["اقلام رو به اتمام"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
         return (rows, summary);
     }
 
@@ -359,7 +359,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             ["netSalary"] = FormatCurrency(summary.NetSalary),
         })).ToList();
 
-        var summaryTotals = new Dictionary<string, string> { ["Total Net Salary"] = FormatCurrency(filtered.Sum(summary => summary.NetSalary)) };
+        var summaryTotals = new Dictionary<string, string> { ["جمع خالص حقوق"] = FormatCurrency(filtered.Sum(summary => summary.NetSalary)) };
         return (rows, summaryTotals);
     }
 
@@ -382,7 +382,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             }))
             .ToList();
 
-        var summary = new Dictionary<string, string> { ["Total Commission"] = FormatCurrency(filtered.Sum(t => t.CommissionAmount)) };
+        var summary = new Dictionary<string, string> { ["جمع کمیسیون"] = FormatCurrency(filtered.Sum(t => t.CommissionAmount)) };
         return (rows, summary);
     }
 
@@ -423,7 +423,7 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             }));
         }
 
-        var summary = new Dictionary<string, string> { ["Employees"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        var summary = new Dictionary<string, string> { ["کارمندان"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
         return (rows, summary);
     }
 
@@ -437,31 +437,31 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
 
         var rows = new List<ReportRowDto>
         {
-            MetricRow("Total Revenue", FormatCurrency(summary.TotalRevenue)),
-            MetricRow("Appointments", summary.TotalAppointments.ToString(CultureInfo.InvariantCulture)),
-            MetricRow("Total Customers", summary.TotalCustomers.ToString(CultureInfo.InvariantCulture)),
-            MetricRow("New Customers", summary.NewCustomers.ToString(CultureInfo.InvariantCulture)),
-            MetricRow("Retention Rate", FormatPercentage(summary.RetentionRatePercent)),
-            MetricRow("Top Service", summary.TopServiceName),
-            MetricRow("Top Specialist", summary.TopSpecialistName),
-            MetricRow("Inventory Value", FormatCurrency(summary.InventoryValue)),
-            MetricRow("Low Stock Items", summary.LowStockCount.ToString(CultureInfo.InvariantCulture)),
-            MetricRow("Payroll Total (This Month)", FormatCurrency(summary.PayrollTotal)),
-            MetricRow("Attendance Rate", FormatPercentage(summary.AttendanceRatePercent)),
+            MetricRow("درآمد کل", FormatCurrency(summary.TotalRevenue)),
+            MetricRow("نوبت‌ها", summary.TotalAppointments.ToString(CultureInfo.InvariantCulture)),
+            MetricRow("تعداد مشتریان", summary.TotalCustomers.ToString(CultureInfo.InvariantCulture)),
+            MetricRow("مشتریان جدید", summary.NewCustomers.ToString(CultureInfo.InvariantCulture)),
+            MetricRow("نرخ بازگشت", FormatPercentage(summary.RetentionRatePercent)),
+            MetricRow("محبوب‌ترین خدمت", summary.TopServiceName),
+            MetricRow("برترین متخصص", summary.TopSpecialistName),
+            MetricRow("ارزش موجودی انبار", FormatCurrency(summary.InventoryValue)),
+            MetricRow("اقلام رو به اتمام", summary.LowStockCount.ToString(CultureInfo.InvariantCulture)),
+            MetricRow("جمع حقوق (این ماه)", FormatCurrency(summary.PayrollTotal)),
+            MetricRow("نرخ حضور", FormatPercentage(summary.AttendanceRatePercent)),
         };
 
-        return (rows, new Dictionary<string, string> { ["Period"] = label });
+        return (rows, new Dictionary<string, string> { ["دوره"] = label });
     }
 
     private static ReportRowDto MetricRow(string metric, string value) =>
         new(new Dictionary<string, string> { ["metric"] = metric, ["value"] = value });
 
     // "C2" under CultureInfo.InvariantCulture renders the generic currency
-    // sign ("¤"), not "$" - InvariantCulture has no real currency assigned.
-    // An explicit "$" prefix avoids that, consistent with how every other
-    // read-only module's display-string money (Bookings.Price,
+    // sign ("¤"), not a real symbol - InvariantCulture has no real currency
+    // assigned. An explicit "تومان" suffix avoids that, consistent with how
+    // every other read-only module's display-string money (Bookings.Price,
     // Services.Price, ...) is formatted in this app.
-    private static string FormatCurrency(decimal value) => "$" + value.ToString("N2", CultureInfo.InvariantCulture);
+    private static string FormatCurrency(decimal value) => value.ToString("N0", CultureInfo.InvariantCulture) + " تومان";
 
     private static string FormatPercentage(decimal value) => value.ToString("0.0", CultureInfo.InvariantCulture) + "%";
 }

@@ -29,13 +29,13 @@ public sealed class FakeCalendarRepository : ICalendarRepository
     {
         _schedules =
         [
-            .. BuildWeekSchedule("specialist-1", "Jordan Lee",
+            .. BuildWeekSchedule("specialist-1", "کیانا رادمنش",
                 [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
                 new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0), "schedule-1"),
-            .. BuildWeekSchedule("specialist-2", "Priya Nair",
+            .. BuildWeekSchedule("specialist-2", "سارا امینی",
                 [DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday],
                 new TimeSpan(10, 0, 0), new TimeSpan(18, 0, 0), "schedule-6"),
-            .. BuildWeekSchedule("specialist-3", "Casey Morgan",
+            .. BuildWeekSchedule("specialist-3", "مهسا کریمی",
                 [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
                 new TimeSpan(9, 30, 0), new TimeSpan(17, 30, 0), "schedule-11"),
         ];

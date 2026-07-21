@@ -390,6 +390,8 @@ public static class Strings
 
     public static string Common_Price => Get(nameof(Common_Price));
 
+    public static string Common_Version => Get(nameof(Common_Version));
+
     public static string Modules_NotImplementedYet => Get(nameof(Modules_NotImplementedYet));
 
     public static string ExportDialog_Title => Get(nameof(ExportDialog_Title));
@@ -1127,6 +1129,8 @@ public static class Strings
 
     public static string Automation_Jobs_RunNow => Get(nameof(Automation_Jobs_RunNow));
 
+    public static string Automation_Jobs_NextRun => Get(nameof(Automation_Jobs_NextRun));
+
     public static string Automation_Approvals_Comment => Get(nameof(Automation_Approvals_Comment));
 
     public static string Automation_Approvals_All => Get(nameof(Automation_Approvals_All));
@@ -1153,6 +1157,104 @@ public static class Strings
         var value = Get(key);
         return value == key ? enumMemberName : value;
     }
+
+    public static string Nav_Support => Get(nameof(Nav_Support));
+
+    public static string Support_Title => Get(nameof(Support_Title));
+
+    public static string Support_Subtitle => Get(nameof(Support_Subtitle));
+
+    public static string Support_About_Title => Get(nameof(Support_About_Title));
+
+    public static string Support_About_Body => Get(nameof(Support_About_Body));
+
+    public static string Support_Contact_Title => Get(nameof(Support_Contact_Title));
+
+    public static string Support_Contact_Phone => Get(nameof(Support_Contact_Phone));
+
+    public static string Support_Contact_Website => Get(nameof(Support_Contact_Website));
+
+    public static string Support_Contact_OpenWebsite => Get(nameof(Support_Contact_OpenWebsite));
+
+    public static string Support_Message_Title => Get(nameof(Support_Message_Title));
+
+    public static string Support_Message_Type => Get(nameof(Support_Message_Type));
+
+    public static string Support_Message_Subject => Get(nameof(Support_Message_Subject));
+
+    public static string Support_Message_Body => Get(nameof(Support_Message_Body));
+
+    public static string Support_Message_SenderName => Get(nameof(Support_Message_SenderName));
+
+    public static string Support_Message_SenderEmail => Get(nameof(Support_Message_SenderEmail));
+
+    public static string Support_Message_Submit => Get(nameof(Support_Message_Submit));
+
+    public static string Support_Message_Sent => Get(nameof(Support_Message_Sent));
+
+    public static string Support_Message_TypeHint => Get(nameof(Support_Message_TypeHint));
+
+    public static string Support_SendEmail_Title => Get(nameof(Support_SendEmail_Title));
+
+    public static string Support_SendEmail_Description => Get(nameof(Support_SendEmail_Description));
+
+    public static string Support_SendEmail_Compose => Get(nameof(Support_SendEmail_Compose));
+
+    public static string Support_Participation_Title => Get(nameof(Support_Participation_Title));
+
+    public static string Support_Participation_FirstName => Get(nameof(Support_Participation_FirstName));
+
+    public static string Support_Participation_LastName => Get(nameof(Support_Participation_LastName));
+
+    public static string Support_Participation_Mobile => Get(nameof(Support_Participation_Mobile));
+
+    public static string Support_Participation_Email => Get(nameof(Support_Participation_Email));
+
+    public static string Support_Participation_City => Get(nameof(Support_Participation_City));
+
+    public static string Support_Participation_CollaborationArea => Get(nameof(Support_Participation_CollaborationArea));
+
+    public static string Support_Participation_GitHub => Get(nameof(Support_Participation_GitHub));
+
+    public static string Support_Participation_LinkedIn => Get(nameof(Support_Participation_LinkedIn));
+
+    public static string Support_Participation_Portfolio => Get(nameof(Support_Participation_Portfolio));
+
+    public static string Support_Participation_Resume => Get(nameof(Support_Participation_Resume));
+
+    public static string Support_Participation_Description => Get(nameof(Support_Participation_Description));
+
+    public static string Support_Participation_Submit => Get(nameof(Support_Participation_Submit));
+
+    public static string Support_Application_Sent => Get(nameof(Support_Application_Sent));
+
+    public static string Support_Faq_Title => Get(nameof(Support_Faq_Title));
+
+    public static string Support_Faq_Q1 => Get(nameof(Support_Faq_Q1));
+
+    public static string Support_Faq_A1 => Get(nameof(Support_Faq_A1));
+
+    public static string Support_Faq_Q2 => Get(nameof(Support_Faq_Q2));
+
+    public static string Support_Faq_A2 => Get(nameof(Support_Faq_A2));
+
+    public static string Support_Faq_Q3 => Get(nameof(Support_Faq_Q3));
+
+    public static string Support_Faq_A3 => Get(nameof(Support_Faq_A3));
+
+    public static string Support_Guide_Title => Get(nameof(Support_Guide_Title));
+
+    public static string Support_Guide_Body => Get(nameof(Support_Guide_Body));
+
+    public static string Support_Terms_Title => Get(nameof(Support_Terms_Title));
+
+    public static string Support_Terms_Body => Get(nameof(Support_Terms_Body));
+
+    public static string Support_Version_Title => Get(nameof(Support_Version_Title));
+
+    public static string Support_Version_AppVersion => Get(nameof(Support_Version_AppVersion));
+
+    public static string Support_Version_Api => Get(nameof(Support_Version_Api));
 
     /// <summary>
     /// Phase 26: Smart Context Help. Generic dynamic key lookup - unlike

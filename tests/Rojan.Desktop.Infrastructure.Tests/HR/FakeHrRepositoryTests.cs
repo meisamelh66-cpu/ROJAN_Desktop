@@ -34,7 +34,7 @@ public sealed class FakeHrRepositoryTests
         var employee = await sut.GetEmployeeByIdAsync("employee-1");
 
         Assert.NotNull(employee);
-        Assert.Equal("Jordan Lee", employee.FullName);
+        Assert.Equal("کیانا رادمنش", employee.FullName);
     }
 
     [Fact]

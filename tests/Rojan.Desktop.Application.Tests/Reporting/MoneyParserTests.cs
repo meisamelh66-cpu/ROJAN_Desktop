@@ -15,6 +15,21 @@ public sealed class MoneyParserTests
         Assert.Equal(expected, MoneyParser.Parse(value));
     }
 
+    [Theory]
+    [InlineData("650,000 تومان", 650000)]
+    [InlineData("0 تومان", 0)]
+    [InlineData("120 تومان", 120)]
+    public void Parse_WithTomanSuffix_ReturnsCorrectDecimal(string value, decimal expected)
+    {
+        Assert.Equal(expected, MoneyParser.Parse(value));
+    }
+
+    [Fact]
+    public void Parse_WithRayeganFreeMarker_ReturnsZero()
+    {
+        Assert.Equal(0m, MoneyParser.Parse("رایگان"));
+    }
+
     [Fact]
     public void Parse_WithUnparsableString_ReturnsZero()
     {

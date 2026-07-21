@@ -180,7 +180,9 @@
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
                                                 <Run Text="{Binding Name, Mode=OneWay}" />
-                                                <Run Text=" · v" />
+                                                <Run Text=" · " />
+                                                <Run Text="{x:Static loc:Strings.Common_Version}" />
+                                                <Run Text=" " />
                                                 <Run Text="{Binding Version, Mode=OneWay}" />
                                             </TextBlock>
                                             <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -209,9 +211,9 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appAutomation:WorkflowDefinitionDto}">
                                     <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,6">
-                                        <Run Text="v" /><Run Text="{Binding Version, Mode=OneWay}" />
+                                        <Run Text="{x:Static loc:Strings.Common_Version}" /><Run Text=" " /><Run Text="{Binding Version, Mode=OneWay}" />
                                         <Run Text=" — " />
-                                        <Run Text="{Binding Status, Mode=OneWay}" />
+                                        <Run Text="{Binding Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                                     </TextBlock>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -320,7 +322,9 @@
                                             <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                                 <Run Text="{Binding Action.Type, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
-                                                <Run Text=" · Priority " />
+                                                <Run Text=" · " />
+                                                <Run Text="{x:Static loc:Strings.Automation_Rules_Priority}" />
+                                                <Run Text=": " />
                                                 <Run Text="{Binding Priority, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
@@ -421,7 +425,9 @@
                                             <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                             <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                                 <Run Text="{Binding Frequency, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
-                                                <Run Text=" · Next: " />
+                                                <Run Text=" · " />
+                                                <Run Text="{x:Static loc:Strings.Automation_Jobs_NextRun}" />
+                                                <Run Text=": " />
                                                 <Run Text="{Binding NextRunAt, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>

@@ -1056,6 +1056,82 @@ see `docs/standards/versioning.md`.
   real temp-file JSON (not mocks) — see
   `docs/phases/phase-32-enterprise-automation-workflow-business-rules-engine.md`.
 
+- UI Polish & Localization Sprint (pre-Phase-33) — a full-application pass
+  fixing inconsistencies, localization, theme, and UI quality, no new
+  business features. **Localization**: translated all 12 `Fake*Repository`
+  seed-data fixtures (Customers/Services/Specialists/Bookings/Inventory/
+  Calendar/Organizations/Dashboard/HR/Accounting/Reporting/AI — several
+  hundred strings: names, descriptions, notes, categories, suppliers) from
+  English demo content to a coherent Persian salon-business persona
+  (customers/specialists/employees renamed consistently across every
+  cross-referencing file; organizations/branches renamed to Tehran
+  neighborhoods); added ~50 missing `Enum_*` resx entries (fa-IR/en/ar)
+  the `EnumLabelConverter` was silently falling back to raw English enum
+  names for (`WorkflowStepType`, `WorkflowStatus`, `TriggerType`,
+  `WorkflowExecutionStatus`'s Running/Waiting/Failed,
+  `BusinessRuleOperator`, `BusinessRuleActionType`, `ScheduleFrequency`,
+  `ApprovalType`'s Leave/Expense/Branch) — a real, previously-undetected
+  localization gap in Phase 32's own Automation UI; fixed several literal
+  hardcoded English strings directly in `AutomationPage.xaml` ("v",
+  " · Priority ", " · Next: ") and one binding missing its `EnumLabel`
+  converter entirely (workflow version history's Status column); fixed
+  hardcoded English labels/date-format constructed in the Application
+  layer that reach the UI unlocalized — `KpiEngineQueryService`'s 8 KPI
+  names, `ReportExecutionQueryService`'s dictionary summary keys and
+  `MetricRow` labels across every report type, and
+  `CustomerProfileQueryService.BuildStatistics`'s 5 stat-card labels
+  (`CultureInfo.InvariantCulture`'s `"MMM d, yyyy"` date format also
+  replaced with a numeric `"yyyy/MM/dd"` so it can no longer render
+  English month abbreviations regardless of app language). **Currency**:
+  removed every hardcoded `"$"` literal from seed data and Application
+  defaults, replacing it with Toman-formatted values (`"1,200,000 تومان"`,
+  `"رایگان"` for genuinely complimentary services); `CultureService.
+  GetCultureInfo` now overrides `NumberFormat.CurrencySymbol`/
+  `CurrencyDecimalDigits`/`CurrencyPositivePattern` for the app's fa-IR
+  culture, so every existing `{0:C}` binding across HR/Accounting/
+  Reporting/KPI cards renders `"X تومان"` consistently from one
+  registration rather than needing dozens of individual XAML edits.
+  **Critical fix caught during this pass**: `Reporting.MoneyParser.Parse`/
+  `Accounting.AccountingMapper.ParseMoney` (used by POS Checkout, the
+  Appointments/Service-Popularity/Specialist-Performance/Inventory-
+  Valuation reports, and Analytics' inventory-value aggregation) only
+  stripped a leading `"$"` before calling `decimal.TryParse` — with the
+  new `"650,000 تومان"`-shaped price strings this would have silently
+  parsed to `0m` everywhere, a real regression this sprint's own currency
+  change would have introduced; both parsers now strip the `"تومان"`/
+  `"﷼"` suffix and treat `"رایگان"` as `0m` explicitly, with new test
+  coverage. **Theme**: `Rojan.Color.Workspace` (Light theme's main
+  content-region background) darkened from `#FFF1EAFE` to `#FFCDC7D8`
+  (~15%, RGB scaled by 0.85 - preserves hue/saturation, lands lightness at
+  ~81% vs. the original ~96%); Card/Surface colors and the glass effect
+  are untouched since they're separate tokens. **Support Center**: a new
+  permanent "پشتیبانی" sidebar entry (`Support` vertical slice - Domain/
+  Application/Infrastructure/Presentation, no permission gate, same as
+  `AiCenterModule`) with About/Contact Us/Send Message/Send Email/
+  Development Participation Request/FAQ/User Guide/Terms & Privacy/
+  Version Info sections on one scrollable page (the same "one page,
+  several stacked `DashboardCard` sections" shape `Settings.SettingsPage`
+  already establishes). "Send Message"/"Contact Super Admin"/"Report a
+  Bug"/"Suggestions" share one message form discriminated by a
+  `SupportMessageType` enum rather than four near-identical forms; the
+  Development Participation form (name/mobile/email/city/collaboration
+  area/GitHub/LinkedIn/portfolio/resume/description) is architecture-only
+  per its own scope, persisting locally with no review workflow yet.
+  Website/phone/support-email/API values come from a new
+  `IRojanBrandConfiguration` seam (`Infrastructure.Support.
+  RojanBrandConfiguration`) rather than being hardcoded into any View or
+  ViewModel - changing them means changing one registration. 46 new
+  `Strings.cs`/resx entries across fa-IR/en/ar. **Testing**: 34 new tests
+  (1420 → 1455 total, plus fixing 12 pre-existing tests whose assertions
+  hardcoded now-translated seed values or English report labels) covering
+  `SupportRules` validation, `SupportMessageService`/
+  `DevelopmentApplicationService`, the two Local Support repositories, the
+  new `SupportPageViewModel`, and `MoneyParser`'s Toman/رایگان handling.
+  Full suite passes on both Debug and Release, zero warnings, zero
+  errors. Runtime-verified: both builds clean; the compiled Shell launched
+  and ran 8 seconds with zero Application-log errors before closing
+  cleanly.
+
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
   closing a gap where the documented

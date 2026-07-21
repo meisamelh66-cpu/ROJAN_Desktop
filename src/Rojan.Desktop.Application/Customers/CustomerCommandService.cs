@@ -40,7 +40,7 @@ public sealed class CustomerCommandService : ICustomerCommandService
             request.Email,
             request.Phone,
             DomainCustomers.CustomerStatus.Lead,
-            "$0",
+            "0 تومان",
             DateTimeOffset.Now,
             request.Notes,
             _enterpriseContext.CurrentOrganizationId ?? string.Empty,

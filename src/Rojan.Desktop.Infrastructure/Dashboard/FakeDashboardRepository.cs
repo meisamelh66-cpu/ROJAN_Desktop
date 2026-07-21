@@ -14,10 +14,10 @@ public sealed class FakeDashboardRepository : IDashboardRepository
 {
     private static readonly IReadOnlyList<KpiMetric> Metrics =
     [
-        new KpiMetric("kpi-bookings", "Total Bookings", "128", TrendDirection.Up, 12.5),
-        new KpiMetric("kpi-clients", "Active Clients", "42", TrendDirection.Up, 4.2),
-        new KpiMetric("kpi-revenue", "Revenue (MTD)", "$12,400", TrendDirection.Down, 2.1),
-        new KpiMetric("kpi-tasks", "Pending Tasks", "7", TrendDirection.Flat, 0),
+        new KpiMetric("kpi-bookings", "مجموع نوبت‌ها", "128", TrendDirection.Up, 12.5),
+        new KpiMetric("kpi-clients", "مشتریان فعال", "42", TrendDirection.Up, 4.2),
+        new KpiMetric("kpi-revenue", "درآمد (ماه جاری)", "124,000,000 تومان", TrendDirection.Down, 2.1),
+        new KpiMetric("kpi-tasks", "کارهای در انتظار", "7", TrendDirection.Flat, 0),
     ];
 
     public async Task<IReadOnlyList<KpiMetric>> GetKpiMetricsAsync(CancellationToken cancellationToken = default)
@@ -32,10 +32,10 @@ public sealed class FakeDashboardRepository : IDashboardRepository
         var now = DateTimeOffset.Now;
         return
         [
-            new ActivityEntry("activity-1", "New booking created", now.AddMinutes(-2)),
-            new ActivityEntry("activity-2", "Client profile updated", now.AddHours(-1)),
-            new ActivityEntry("activity-3", "Payment received", now.AddHours(-3)),
-            new ActivityEntry("activity-4", "Task completed", now.AddDays(-1)),
+            new ActivityEntry("activity-1", "نوبت جدید ثبت شد", now.AddMinutes(-2)),
+            new ActivityEntry("activity-2", "پروفایل مشتری به‌روزرسانی شد", now.AddHours(-1)),
+            new ActivityEntry("activity-3", "پرداخت دریافت شد", now.AddHours(-3)),
+            new ActivityEntry("activity-4", "کار تکمیل شد", now.AddDays(-1)),
         ];
     }
 }

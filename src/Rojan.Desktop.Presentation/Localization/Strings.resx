@@ -2212,4 +2212,307 @@
   <data name="Automation_Approvals_Reject" xml:space="preserve">
     <value>رد</value>
   </data>
+  <data name="Enum_Start" xml:space="preserve">
+    <value>شروع</value>
+  </data>
+  <data name="Enum_End" xml:space="preserve">
+    <value>پایان</value>
+  </data>
+  <data name="Enum_Decision" xml:space="preserve">
+    <value>تصمیم</value>
+  </data>
+  <data name="Enum_Delay" xml:space="preserve">
+    <value>تأخیر</value>
+  </data>
+  <data name="Enum_Approval" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+  <data name="Enum_Condition" xml:space="preserve">
+    <value>شرط</value>
+  </data>
+  <data name="Enum_Notification" xml:space="preserve">
+    <value>اعلان</value>
+  </data>
+  <data name="Enum_Email" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Enum_AiAction" xml:space="preserve">
+    <value>اقدام هوش مصنوعی</value>
+  </data>
+  <data name="Enum_DatabaseAction" xml:space="preserve">
+    <value>اقدام پایگاه داده</value>
+  </data>
+  <data name="Enum_ApiAction" xml:space="preserve">
+    <value>اقدام ای‌پی‌آی</value>
+  </data>
+  <data name="Enum_Draft" xml:space="preserve">
+    <value>پیش‌نویس</value>
+  </data>
+  <data name="Enum_Published" xml:space="preserve">
+    <value>منتشرشده</value>
+  </data>
+  <data name="Enum_Archived" xml:space="preserve">
+    <value>بایگانی‌شده</value>
+  </data>
+  <data name="Enum_AppointmentCreated" xml:space="preserve">
+    <value>ایجاد نوبت</value>
+  </data>
+  <data name="Enum_AppointmentCancelled" xml:space="preserve">
+    <value>لغو نوبت</value>
+  </data>
+  <data name="Enum_CustomerRegistered" xml:space="preserve">
+    <value>ثبت‌نام مشتری</value>
+  </data>
+  <data name="Enum_PaymentCompleted" xml:space="preserve">
+    <value>تکمیل پرداخت</value>
+  </data>
+  <data name="Enum_LowInventory" xml:space="preserve">
+    <value>کمبود موجودی</value>
+  </data>
+  <data name="Enum_EmployeeCreated" xml:space="preserve">
+    <value>ایجاد کارمند</value>
+  </data>
+  <data name="Enum_BranchCreated" xml:space="preserve">
+    <value>ایجاد شعبه</value>
+  </data>
+  <data name="Enum_LicenseExpired" xml:space="preserve">
+    <value>انقضای مجوز</value>
+  </data>
+  <data name="Enum_Login" xml:space="preserve">
+    <value>ورود</value>
+  </data>
+  <data name="Enum_Logout" xml:space="preserve">
+    <value>خروج</value>
+  </data>
+  <data name="Enum_Running" xml:space="preserve">
+    <value>در حال اجرا</value>
+  </data>
+  <data name="Enum_Waiting" xml:space="preserve">
+    <value>در انتظار</value>
+  </data>
+  <data name="Enum_Failed" xml:space="preserve">
+    <value>ناموفق</value>
+  </data>
+  <data name="Enum_Equals" xml:space="preserve">
+    <value>برابر است با</value>
+  </data>
+  <data name="Enum_NotEquals" xml:space="preserve">
+    <value>نابرابر است با</value>
+  </data>
+  <data name="Enum_GreaterThan" xml:space="preserve">
+    <value>بزرگتر از</value>
+  </data>
+  <data name="Enum_GreaterThanOrEqual" xml:space="preserve">
+    <value>بزرگتر یا مساوی</value>
+  </data>
+  <data name="Enum_LessThan" xml:space="preserve">
+    <value>کوچکتر از</value>
+  </data>
+  <data name="Enum_LessThanOrEqual" xml:space="preserve">
+    <value>کوچکتر یا مساوی</value>
+  </data>
+  <data name="Enum_Contains" xml:space="preserve">
+    <value>شامل</value>
+  </data>
+  <data name="Enum_RaiseNotification" xml:space="preserve">
+    <value>ثبت اعلان</value>
+  </data>
+  <data name="Enum_ApplyDiscount" xml:space="preserve">
+    <value>اعمال تخفیف</value>
+  </data>
+  <data name="Enum_NotifyManager" xml:space="preserve">
+    <value>اطلاع به مدیر</value>
+  </data>
+  <data name="Enum_TriggerWorkflow" xml:space="preserve">
+    <value>اجرای گردش‌کار</value>
+  </data>
+  <data name="Enum_Custom" xml:space="preserve">
+    <value>سفارشی</value>
+  </data>
+  <data name="Enum_Hourly" xml:space="preserve">
+    <value>ساعتی</value>
+  </data>
+  <data name="Enum_Daily" xml:space="preserve">
+    <value>روزانه</value>
+  </data>
+  <data name="Enum_Weekly" xml:space="preserve">
+    <value>هفتگی</value>
+  </data>
+  <data name="Enum_Monthly" xml:space="preserve">
+    <value>ماهانه</value>
+  </data>
+  <data name="Enum_Cron" xml:space="preserve">
+    <value>دوره سفارشی</value>
+  </data>
+  <data name="Enum_Leave" xml:space="preserve">
+    <value>مرخصی</value>
+  </data>
+  <data name="Enum_Expense" xml:space="preserve">
+    <value>هزینه</value>
+  </data>
+  <data name="Enum_Branch" xml:space="preserve">
+    <value>شعبه</value>
+  </data>
+  <data name="Common_Version" xml:space="preserve">
+    <value>نسخه</value>
+  </data>
+  <data name="Automation_Jobs_NextRun" xml:space="preserve">
+    <value>اجرای بعدی</value>
+  </data>
+  <data name="Nav_Support" xml:space="preserve">
+    <value>پشتیبانی</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>پشتیبانی</value>
+  </data>
+  <data name="Support_Subtitle" xml:space="preserve">
+    <value>درباره ROJAN، راه‌های ارتباطی، و منابع راهنما</value>
+  </data>
+  <data name="Support_About_Title" xml:space="preserve">
+    <value>درباره ROJAN</value>
+  </data>
+  <data name="Support_About_Body" xml:space="preserve">
+    <value>ROJAN یک پلتفرم مدیریت یکپارچه کسب‌وکار برای سالن‌های زیبایی و مراکز خدماتی است که نوبت‌دهی، مشتریان، موجودی انبار، حسابداری، منابع انسانی و گزارش‌گیری را در یک نرم‌افزار واحد گرد هم می‌آورد.</value>
+  </data>
+  <data name="Support_Contact_Title" xml:space="preserve">
+    <value>تماس با ما</value>
+  </data>
+  <data name="Support_Contact_Phone" xml:space="preserve">
+    <value>شماره تماس</value>
+  </data>
+  <data name="Support_Contact_Website" xml:space="preserve">
+    <value>وب‌سایت رسمی</value>
+  </data>
+  <data name="Support_Contact_OpenWebsite" xml:space="preserve">
+    <value>مشاهده وب‌سایت</value>
+  </data>
+  <data name="Support_Message_Title" xml:space="preserve">
+    <value>ارسال پیام</value>
+  </data>
+  <data name="Support_Message_Type" xml:space="preserve">
+    <value>نوع پیام</value>
+  </data>
+  <data name="Support_Message_Subject" xml:space="preserve">
+    <value>موضوع</value>
+  </data>
+  <data name="Support_Message_Body" xml:space="preserve">
+    <value>متن پیام</value>
+  </data>
+  <data name="Support_Message_SenderName" xml:space="preserve">
+    <value>نام شما</value>
+  </data>
+  <data name="Support_Message_SenderEmail" xml:space="preserve">
+    <value>ایمیل شما</value>
+  </data>
+  <data name="Support_Message_Submit" xml:space="preserve">
+    <value>ارسال پیام</value>
+  </data>
+  <data name="Support_Message_Sent" xml:space="preserve">
+    <value>پیام شما با موفقیت ارسال شد.</value>
+  </data>
+  <data name="Support_Message_TypeHint" xml:space="preserve">
+    <value>برای ارتباط مستقیم با مدیر ارشد سامانه، «ارتباط با Super Admin» را انتخاب کنید؛ برای گزارش خطا یا ثبت پیشنهاد، گزینه مربوطه را انتخاب کنید.</value>
+  </data>
+  <data name="Support_SendEmail_Title" xml:space="preserve">
+    <value>ارسال ایمیل</value>
+  </data>
+  <data name="Support_SendEmail_Description" xml:space="preserve">
+    <value>برای ارتباط مستقیم از طریق ایمیل با تیم پشتیبانی، روی دکمه زیر کلیک کنید.</value>
+  </data>
+  <data name="Support_SendEmail_Compose" xml:space="preserve">
+    <value>نوشتن ایمیل</value>
+  </data>
+  <data name="Support_Participation_Title" xml:space="preserve">
+    <value>درخواست مشارکت در توسعه</value>
+  </data>
+  <data name="Support_Participation_FirstName" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Support_Participation_LastName" xml:space="preserve">
+    <value>نام خانوادگی</value>
+  </data>
+  <data name="Support_Participation_Mobile" xml:space="preserve">
+    <value>موبایل</value>
+  </data>
+  <data name="Support_Participation_Email" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Support_Participation_City" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="Support_Participation_CollaborationArea" xml:space="preserve">
+    <value>حوزه همکاری</value>
+  </data>
+  <data name="Support_Participation_GitHub" xml:space="preserve">
+    <value>گیت‌هاب</value>
+  </data>
+  <data name="Support_Participation_LinkedIn" xml:space="preserve">
+    <value>لینکدین</value>
+  </data>
+  <data name="Support_Participation_Portfolio" xml:space="preserve">
+    <value>نمونه کار</value>
+  </data>
+  <data name="Support_Participation_Resume" xml:space="preserve">
+    <value>رزومه</value>
+  </data>
+  <data name="Support_Participation_Description" xml:space="preserve">
+    <value>توضیحات</value>
+  </data>
+  <data name="Support_Participation_Submit" xml:space="preserve">
+    <value>ارسال درخواست</value>
+  </data>
+  <data name="Support_Application_Sent" xml:space="preserve">
+    <value>درخواست مشارکت شما با موفقیت ثبت شد.</value>
+  </data>
+  <data name="Support_Faq_Title" xml:space="preserve">
+    <value>سوالات متداول</value>
+  </data>
+  <data name="Support_Faq_Q1" xml:space="preserve">
+    <value>چگونه می‌توانم رمز عبور خود را بازیابی کنم؟</value>
+  </data>
+  <data name="Support_Faq_A1" xml:space="preserve">
+    <value>از صفحه ورود، گزینه «فراموشی رمز عبور» را انتخاب کنید یا با پشتیبانی تماس بگیرید.</value>
+  </data>
+  <data name="Support_Faq_Q2" xml:space="preserve">
+    <value>آیا اطلاعات من به‌صورت آفلاین هم در دسترس است؟</value>
+  </data>
+  <data name="Support_Faq_A2" xml:space="preserve">
+    <value>بله، ROJAN به‌صورت دسکتاپ اجرا می‌شود و بخش زیادی از اطلاعات به‌صورت محلی نیز ذخیره می‌گردد.</value>
+  </data>
+  <data name="Support_Faq_Q3" xml:space="preserve">
+    <value>چطور می‌توانم درخواست ویژگی جدید ثبت کنم؟</value>
+  </data>
+  <data name="Support_Faq_A3" xml:space="preserve">
+    <value>از بخش «پیشنهادات و انتقادات» همین صفحه استفاده کنید.</value>
+  </data>
+  <data name="Support_Guide_Title" xml:space="preserve">
+    <value>راهنمای نرم‌افزار</value>
+  </data>
+  <data name="Support_Guide_Body" xml:space="preserve">
+    <value>راهنمای کامل هر بخش از نرم‌افزار در راهنمای درون‌برنامه‌ای (آیکن راهنما در نوار بالای صفحه) در دسترس است.</value>
+  </data>
+  <data name="Support_Terms_Title" xml:space="preserve">
+    <value>قوانین و حریم خصوصی</value>
+  </data>
+  <data name="Support_Terms_Body" xml:space="preserve">
+    <value>استفاده از ROJAN به‌معنای پذیرش قوانین استفاده و سیاست حریم خصوصی است. اطلاعات کسب‌وکار شما تنها برای ارائه خدمات این نرم‌افزار استفاده می‌شود و بدون اجازه در اختیار اشخاص ثالث قرار نمی‌گیرد.</value>
+  </data>
+  <data name="Support_Version_Title" xml:space="preserve">
+    <value>اطلاعات نسخه</value>
+  </data>
+  <data name="Support_Version_AppVersion" xml:space="preserve">
+    <value>نسخه نرم‌افزار</value>
+  </data>
+  <data name="Support_Version_Api" xml:space="preserve">
+    <value>آدرس API</value>
+  </data>
+  <data name="Enum_SuperAdmin" xml:space="preserve">
+    <value>ارتباط با Super Admin</value>
+  </data>
+  <data name="Enum_BugReport" xml:space="preserve">
+    <value>گزارش خطا</value>
+  </data>
+  <data name="Enum_Suggestion" xml:space="preserve">
+    <value>پیشنهاد و انتقاد</value>
+  </data>
 </root>

@@ -26,29 +26,29 @@ public sealed class FakeAIRepository : IAIRepository
 
         _sessions =
         [
-            new ConversationSession("session-1", "How is revenue trending this month?", now.AddHours(-3), now.AddHours(-3), true),
-            new ConversationSession("session-2", "Which products are running low?", now.AddDays(-1), now.AddDays(-1), false),
+            new ConversationSession("session-1", "روند درآمد این ماه چطور است؟", now.AddHours(-3), now.AddHours(-3), true),
+            new ConversationSession("session-2", "کدام محصولات رو به اتمام هستند؟", now.AddDays(-1), now.AddDays(-1), false),
         ];
 
         _messages =
         [
-            new ConversationMessage("message-1", "session-1", ConversationRole.User, "How is revenue trending this month?", now.AddHours(-3), 8),
-            new ConversationMessage("message-2", "session-1", ConversationRole.Assistant, "Revenue this month is trending up compared to last month - keep an eye on the Revenue Insights section for the exact numbers.", now.AddHours(-3).AddSeconds(2), 24),
-            new ConversationMessage("message-3", "session-2", ConversationRole.User, "Which products are running low?", now.AddDays(-1), 6),
-            new ConversationMessage("message-4", "session-2", ConversationRole.Assistant, "Check the Inventory Insights section - it lists every product at or below its reorder threshold.", now.AddDays(-1).AddSeconds(2), 20),
+            new ConversationMessage("message-1", "session-1", ConversationRole.User, "روند درآمد این ماه چطور است؟", now.AddHours(-3), 8),
+            new ConversationMessage("message-2", "session-1", ConversationRole.Assistant, "درآمد این ماه نسبت به ماه قبل روند صعودی دارد - برای اعداد دقیق بخش تحلیل درآمد را بررسی کنید.", now.AddHours(-3).AddSeconds(2), 24),
+            new ConversationMessage("message-3", "session-2", ConversationRole.User, "کدام محصولات رو به اتمام هستند؟", now.AddDays(-1), 6),
+            new ConversationMessage("message-4", "session-2", ConversationRole.Assistant, "بخش تحلیل موجودی انبار را بررسی کنید - تمام محصولاتی که به آستانه سفارش مجدد رسیده‌اند را نشان می‌دهد.", now.AddDays(-1).AddSeconds(2), 20),
         ];
 
         _promptTemplates =
         [
-            new PromptTemplate("template-revenue", "Revenue Snapshot", InsightCategory.Revenue, "Summarize revenue performance for {period}, highlighting the trend versus the prior period.", true),
-            new PromptTemplate("template-customer", "Customer Snapshot", InsightCategory.Customer, "Summarize customer growth and retention for {period}.", true),
-            new PromptTemplate("template-appointment", "Appointments Snapshot", InsightCategory.Appointment, "Summarize appointment volume and the most popular services for {period}.", true),
-            new PromptTemplate("template-inventory", "Inventory Snapshot", InsightCategory.Inventory, "Summarize inventory value and any low-stock risks for {period}.", true),
-            new PromptTemplate("template-hr", "Staff Snapshot", InsightCategory.Hr, "Summarize staffing levels and attendance for {period}.", true),
-            new PromptTemplate("template-payroll", "Payroll Snapshot", InsightCategory.Payroll, "Summarize payroll totals for {period}.", true),
-            new PromptTemplate("template-attendance", "Attendance Snapshot", InsightCategory.Attendance, "Summarize attendance rate and any concerning patterns for {period}.", true),
-            new PromptTemplate("template-commission", "Commission Snapshot", InsightCategory.Commission, "Summarize commission earned per specialist for {period}.", true),
-            new PromptTemplate("template-general", "General Business Assistant", InsightCategory.General, "Answer the user's question using the supplied business context for {period}.", true),
+            new PromptTemplate("template-revenue", "خلاصه درآمد", InsightCategory.Revenue, "عملکرد درآمد را برای {period} خلاصه کن و روند آن را نسبت به دوره قبل نشان بده.", true),
+            new PromptTemplate("template-customer", "خلاصه مشتریان", InsightCategory.Customer, "رشد و نگهداشت مشتریان را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-appointment", "خلاصه نوبت‌ها", InsightCategory.Appointment, "حجم نوبت‌ها و محبوب‌ترین خدمات را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-inventory", "خلاصه موجودی", InsightCategory.Inventory, "ارزش موجودی انبار و ریسک‌های کمبود کالا را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-hr", "خلاصه نیروی انسانی", InsightCategory.Hr, "وضعیت نیروی انسانی و حضور و غیاب را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-payroll", "خلاصه حقوق و دستمزد", InsightCategory.Payroll, "جمع حقوق و دستمزد را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-attendance", "خلاصه حضور و غیاب", InsightCategory.Attendance, "نرخ حضور و هرگونه الگوی نگران‌کننده را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-commission", "خلاصه کمیسیون", InsightCategory.Commission, "کمیسیون کسب‌شده هر متخصص را برای {period} خلاصه کن.", true),
+            new PromptTemplate("template-general", "دستیار عمومی کسب‌وکار", InsightCategory.General, "با استفاده از اطلاعات کسب‌وکار ارائه‌شده برای {period} به سؤال کاربر پاسخ بده.", true),
         ];
 
         _providerConfiguration = new AIProviderConfiguration(AIProviderType.Mock, "rojan-mock-v1", true);

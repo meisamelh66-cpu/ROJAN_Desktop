@@ -10,9 +10,9 @@ namespace Rojan.Desktop.Shell.Tests.Navigation;
 /// Switcher - organization grouping, search filtering, and resolving
 /// Favorite/Recently-used branch ids into <see cref="BranchDto"/>
 /// instances. Uses the real <see cref="FakeOrganizationRepository"/> seed
-/// data (org-1 "ROJAN Beauty Group" with branch-1 Downtown/branch-2
-/// Uptown, org-2 "Luxe Salon Collective" with branch-3 Luxe Central) so
-/// grouping/search assertions are against known, real content.
+/// data (org-1 "گروه زیبایی روژان" with branch-1 شعبه ولیعصر/branch-2
+/// شعبه زعفرانیه, org-2 "سالن زیبایی لوکس" with branch-3 شعبه مرکزی لوکس)
+/// so grouping/search assertions are against known, real content.
 /// </summary>
 public sealed class MainWindowViewModelBranchSwitcherTests
 {
@@ -61,7 +61,7 @@ public sealed class MainWindowViewModelBranchSwitcherTests
     {
         var viewModel = CreateViewModel(new StubCurrentSessionService());
 
-        viewModel.BranchSearchText = "Downtown";
+        viewModel.BranchSearchText = "ولیعصر";
 
         var visibleBranches = viewModel.BranchGroups.SelectMany(g => g.Branches).ToList();
         Assert.Single(visibleBranches);
@@ -82,7 +82,7 @@ public sealed class MainWindowViewModelBranchSwitcherTests
     public void BranchSearchText_Cleared_RestoresEveryGroup()
     {
         var viewModel = CreateViewModel(new StubCurrentSessionService());
-        viewModel.BranchSearchText = "Downtown";
+        viewModel.BranchSearchText = "ولیعصر";
 
         viewModel.BranchSearchText = string.Empty;
 

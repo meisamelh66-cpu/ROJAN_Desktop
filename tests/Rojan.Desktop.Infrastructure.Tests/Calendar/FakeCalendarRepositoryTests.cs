@@ -34,9 +34,9 @@ public sealed class FakeCalendarRepositoryTests
         var result = await sut.GetWorkingSchedulesAsync();
 
         var specialistNames = result.Select(schedule => schedule.SpecialistName).Distinct().ToList();
-        Assert.Contains("Jordan Lee", specialistNames);
-        Assert.Contains("Priya Nair", specialistNames);
-        Assert.Contains("Casey Morgan", specialistNames);
+        Assert.Contains("کیانا رادمنش", specialistNames);
+        Assert.Contains("سارا امینی", specialistNames);
+        Assert.Contains("مهسا کریمی", specialistNames);
     }
 
     [Fact]

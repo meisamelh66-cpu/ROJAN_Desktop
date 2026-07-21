@@ -86,7 +86,12 @@
   <Color x:Key="Rojan.Color.Background">#FFFCF8FF</Color>
   <Color x:Key="Rojan.Color.Header">#FFF5EEFE</Color>
   <Color x:Key="Rojan.Color.Navigation">#FFF8F2FE</Color>
-  <Color x:Key="Rojan.Color.Workspace">#FFF1EAFE</Color>
+  <!-- UI Polish Sprint: darkened ~15% from #FFF1EAFE (RGB scaled by 0.85,
+       which preserves hue/saturation and lands lightness at ~81% vs. the
+       original ~96%) - the main workspace background read as too bright
+       against the surrounding Card/Surface tones; cards/glass effect are
+       untouched since they use their own separate Card/Surface colors. -->
+  <Color x:Key="Rojan.Color.Workspace">#FFCDC7D8</Color>
   <Color x:Key="Rojan.Color.Surface">#FFFAF6FF</Color>
   <Color x:Key="Rojan.Color.Card">#FFFAF6FF</Color>
   <Color x:Key="Rojan.Color.SurfaceSecondary">#FFF0EAFA</Color>

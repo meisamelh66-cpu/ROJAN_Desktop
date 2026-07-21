@@ -16,6 +16,7 @@ using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Support;
 using Rojan.Desktop.Application.Workspaces;
 using AppServices = Rojan.Desktop.Application.Services;
 using AiProviders = Rojan.Desktop.Application.AI.Providers;
@@ -217,6 +218,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkflowStepExecutor, AiActionStepExecutor>();
         services.AddSingleton<IWorkflowStepExecutor, DatabaseActionStepExecutor>();
         services.AddSingleton<IWorkflowStepExecutor, ApiActionStepExecutor>();
+
+        services.AddSingleton<ISupportMessageService, SupportMessageService>();
+        services.AddSingleton<IDevelopmentApplicationService, DevelopmentApplicationService>();
 
         return services;
     }

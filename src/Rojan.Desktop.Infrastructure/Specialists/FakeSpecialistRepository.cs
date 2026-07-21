@@ -11,7 +11,7 @@ namespace Rojan.Desktop.Infrastructure.Specialists;
 /// writes for the app's lifetime - registered as a DI singleton (see
 /// Infrastructure's ServiceCollectionExtensions). Seed names match the
 /// specialists already referenced by <c>Bookings.FakeBookingRepository</c>'s
-/// seed data (Jordan Lee, Priya Nair, Casey Morgan) for a cohesive demo -
+/// seed data (کیانا رادمنش, سارا امینی, مهسا کریمی) for a cohesive demo -
 /// not a real cross-slice link, just consistent naming. The small
 /// artificial delays are deliberate, same reasoning as every other fake
 /// repository: without them, Loading states would never actually be
@@ -26,31 +26,31 @@ public sealed class FakeSpecialistRepository : ISpecialistRepository
     {
         _specialists =
         [
-            new Specialist("specialist-1", "Jordan Lee", "Senior Colour Specialist", "jordan.lee@rojan.example",
-                "+1 (555) 020-1001", SpecialistStatus.Active, "Specializes in balayage and creative colour work."),
-            new Specialist("specialist-2", "Priya Nair", "Stylist & Consultant", "priya.nair@rojan.example",
-                "+1 (555) 020-1002", SpecialistStatus.Active, "Leads new-client consultations and styling."),
-            new Specialist("specialist-3", "Casey Morgan", "Spa Therapist", "casey.morgan@rojan.example",
-                "+1 (555) 020-1003", SpecialistStatus.Active, "Manicures, facials, and spa treatments."),
-            new Specialist("specialist-4", "Riley Chen", "Junior Stylist", "riley.chen@rojan.example",
-                "+1 (555) 020-1004", SpecialistStatus.OnLeave, "Currently on parental leave."),
-            new Specialist("specialist-5", "Sam Torres", "Former Colour Specialist", "sam.torres@rojan.example",
-                "+1 (555) 020-1005", SpecialistStatus.Inactive, "No longer with the salon."),
+            new Specialist("specialist-1", "کیانا رادمنش", "متخصص ارشد رنگ مو", "kiana.radmanesh@rojan.example",
+                "0912-020-1001", SpecialistStatus.Active, "متخصص بالیاژ و رنگ‌های خلاقانه مو."),
+            new Specialist("specialist-2", "سارا امینی", "استایلیست و مشاور", "sara.amini@rojan.example",
+                "0912-020-1002", SpecialistStatus.Active, "مسئول مشاوره مشتریان جدید و استایل مو."),
+            new Specialist("specialist-3", "مهسا کریمی", "درمانگر اسپا", "mahsa.karimi@rojan.example",
+                "0912-020-1003", SpecialistStatus.Active, "مانیکور، فیشیال و خدمات اسپا."),
+            new Specialist("specialist-4", "نیلوفر صفایی", "استایلیست جونیور", "niloofar.safaei@rojan.example",
+                "0912-020-1004", SpecialistStatus.OnLeave, "در حال حاضر در مرخصی زایمان."),
+            new Specialist("specialist-5", "پویا احمدپور", "متخصص سابق رنگ مو", "pouya.ahmadpour@rojan.example",
+                "0912-020-1005", SpecialistStatus.Inactive, "دیگر همکار این سالن نیست."),
         ];
 
         _skills =
         [
-            new SpecialistSkill("skill-1", "specialist-1", "Colour"),
-            new SpecialistSkill("skill-2", "specialist-1", "Balayage"),
-            new SpecialistSkill("skill-3", "specialist-1", "Haircut & Style"),
-            new SpecialistSkill("skill-4", "specialist-2", "Consultation"),
-            new SpecialistSkill("skill-5", "specialist-2", "Haircut & Style"),
-            new SpecialistSkill("skill-6", "specialist-2", "Updo"),
-            new SpecialistSkill("skill-7", "specialist-3", "Manicure"),
-            new SpecialistSkill("skill-8", "specialist-3", "Facial"),
-            new SpecialistSkill("skill-9", "specialist-3", "Massage"),
-            new SpecialistSkill("skill-10", "specialist-4", "Haircut & Style"),
-            new SpecialistSkill("skill-11", "specialist-5", "Colour"),
+            new SpecialistSkill("skill-1", "specialist-1", "رنگ مو"),
+            new SpecialistSkill("skill-2", "specialist-1", "بالیاژ"),
+            new SpecialistSkill("skill-3", "specialist-1", "کوتاهی و استایل"),
+            new SpecialistSkill("skill-4", "specialist-2", "مشاوره"),
+            new SpecialistSkill("skill-5", "specialist-2", "کوتاهی و استایل"),
+            new SpecialistSkill("skill-6", "specialist-2", "شینیون"),
+            new SpecialistSkill("skill-7", "specialist-3", "مانیکور"),
+            new SpecialistSkill("skill-8", "specialist-3", "فیشیال"),
+            new SpecialistSkill("skill-9", "specialist-3", "ماساژ"),
+            new SpecialistSkill("skill-10", "specialist-4", "کوتاهی و استایل"),
+            new SpecialistSkill("skill-11", "specialist-5", "رنگ مو"),
         ];
     }
 

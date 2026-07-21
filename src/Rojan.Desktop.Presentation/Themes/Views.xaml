@@ -41,7 +41,9 @@
                     xmlns:workspacesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Workspaces"
                     xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces"
                     xmlns:automationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Automation"
-                    xmlns:automationView="clr-namespace:Rojan.Desktop.Presentation.Views.Automation">
+                    xmlns:automationView="clr-namespace:Rojan.Desktop.Presentation.Views.Automation"
+                    xmlns:supportVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Support"
+                    xmlns:supportView="clr-namespace:Rojan.Desktop.Presentation.Views.Support">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -160,6 +162,11 @@
   <!-- Phase 32: Enterprise Automation, Workflow & Business Rules Engine. -->
   <DataTemplate DataType="{x:Type automationVm:AutomationPageViewModel}">
     <automationView:AutomationPage />
+  </DataTemplate>
+
+  <!-- UI Polish Sprint: Support Center. -->
+  <DataTemplate DataType="{x:Type supportVm:SupportPageViewModel}">
+    <supportView:SupportPage />
   </DataTemplate>
 
 </ResourceDictionary>

@@ -55,10 +55,10 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
 
     private static IReadOnlyList<CustomerStatDto> BuildStatistics(CustomerDto customer, int noteCount, int tagCount) =>
     [
-        new("Lifetime Value", customer.LifetimeValue),
-        new("Status", customer.Status.ToString()),
-        new("Notes", noteCount.ToString(CultureInfo.InvariantCulture)),
-        new("Tags", tagCount.ToString(CultureInfo.InvariantCulture)),
-        new("Last Contacted", customer.LastContactedAt.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)),
+        new("ارزش کل خرید", customer.LifetimeValue),
+        new("وضعیت", customer.Status.ToString()),
+        new("یادداشت‌ها", noteCount.ToString(CultureInfo.InvariantCulture)),
+        new("برچسب‌ها", tagCount.ToString(CultureInfo.InvariantCulture)),
+        new("آخرین تماس", customer.LastContactedAt.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)),
     ];
 }

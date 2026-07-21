@@ -2200,4 +2200,307 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Automation_Approvals_Reject" xml:space="preserve">
     <value>Reject</value>
   </data>
+  <data name="Enum_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Enum_End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Enum_Decision" xml:space="preserve">
+    <value>Decision</value>
+  </data>
+  <data name="Enum_Delay" xml:space="preserve">
+    <value>Delay</value>
+  </data>
+  <data name="Enum_Approval" xml:space="preserve">
+    <value>Approval</value>
+  </data>
+  <data name="Enum_Condition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Enum_Notification" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="Enum_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Enum_AiAction" xml:space="preserve">
+    <value>AI Action</value>
+  </data>
+  <data name="Enum_DatabaseAction" xml:space="preserve">
+    <value>Database Action</value>
+  </data>
+  <data name="Enum_ApiAction" xml:space="preserve">
+    <value>API Action</value>
+  </data>
+  <data name="Enum_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Enum_Published" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Enum_Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
+  <data name="Enum_AppointmentCreated" xml:space="preserve">
+    <value>Appointment Created</value>
+  </data>
+  <data name="Enum_AppointmentCancelled" xml:space="preserve">
+    <value>Appointment Cancelled</value>
+  </data>
+  <data name="Enum_CustomerRegistered" xml:space="preserve">
+    <value>Customer Registered</value>
+  </data>
+  <data name="Enum_PaymentCompleted" xml:space="preserve">
+    <value>Payment Completed</value>
+  </data>
+  <data name="Enum_LowInventory" xml:space="preserve">
+    <value>Low Inventory</value>
+  </data>
+  <data name="Enum_EmployeeCreated" xml:space="preserve">
+    <value>Employee Created</value>
+  </data>
+  <data name="Enum_BranchCreated" xml:space="preserve">
+    <value>Branch Created</value>
+  </data>
+  <data name="Enum_LicenseExpired" xml:space="preserve">
+    <value>License Expired</value>
+  </data>
+  <data name="Enum_Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Enum_Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Enum_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Enum_Waiting" xml:space="preserve">
+    <value>Waiting</value>
+  </data>
+  <data name="Enum_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Enum_Equals" xml:space="preserve">
+    <value>Equals</value>
+  </data>
+  <data name="Enum_NotEquals" xml:space="preserve">
+    <value>Not Equals</value>
+  </data>
+  <data name="Enum_GreaterThan" xml:space="preserve">
+    <value>Greater Than</value>
+  </data>
+  <data name="Enum_GreaterThanOrEqual" xml:space="preserve">
+    <value>Greater Than or Equal</value>
+  </data>
+  <data name="Enum_LessThan" xml:space="preserve">
+    <value>Less Than</value>
+  </data>
+  <data name="Enum_LessThanOrEqual" xml:space="preserve">
+    <value>Less Than or Equal</value>
+  </data>
+  <data name="Enum_Contains" xml:space="preserve">
+    <value>Contains</value>
+  </data>
+  <data name="Enum_RaiseNotification" xml:space="preserve">
+    <value>Raise Notification</value>
+  </data>
+  <data name="Enum_ApplyDiscount" xml:space="preserve">
+    <value>Apply Discount</value>
+  </data>
+  <data name="Enum_NotifyManager" xml:space="preserve">
+    <value>Notify Manager</value>
+  </data>
+  <data name="Enum_TriggerWorkflow" xml:space="preserve">
+    <value>Trigger Workflow</value>
+  </data>
+  <data name="Enum_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Enum_Hourly" xml:space="preserve">
+    <value>Hourly</value>
+  </data>
+  <data name="Enum_Daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="Enum_Weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="Enum_Monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="Enum_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="Enum_Leave" xml:space="preserve">
+    <value>Leave</value>
+  </data>
+  <data name="Enum_Expense" xml:space="preserve">
+    <value>Expense</value>
+  </data>
+  <data name="Enum_Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="Common_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Automation_Jobs_NextRun" xml:space="preserve">
+    <value>Next Run</value>
+  </data>
+  <data name="Nav_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Support_Subtitle" xml:space="preserve">
+    <value>About ROJAN, contact channels, and help resources</value>
+  </data>
+  <data name="Support_About_Title" xml:space="preserve">
+    <value>About ROJAN</value>
+  </data>
+  <data name="Support_About_Body" xml:space="preserve">
+    <value>ROJAN is an all-in-one business management platform for salons and service businesses, bringing bookings, customers, inventory, accounting, HR, and reporting together in one application.</value>
+  </data>
+  <data name="Support_Contact_Title" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="Support_Contact_Phone" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="Support_Contact_Website" xml:space="preserve">
+    <value>Official Website</value>
+  </data>
+  <data name="Support_Contact_OpenWebsite" xml:space="preserve">
+    <value>Visit Website</value>
+  </data>
+  <data name="Support_Message_Title" xml:space="preserve">
+    <value>Send Message</value>
+  </data>
+  <data name="Support_Message_Type" xml:space="preserve">
+    <value>Message Type</value>
+  </data>
+  <data name="Support_Message_Subject" xml:space="preserve">
+    <value>Subject</value>
+  </data>
+  <data name="Support_Message_Body" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Support_Message_SenderName" xml:space="preserve">
+    <value>Your Name</value>
+  </data>
+  <data name="Support_Message_SenderEmail" xml:space="preserve">
+    <value>Your Email</value>
+  </data>
+  <data name="Support_Message_Submit" xml:space="preserve">
+    <value>Send Message</value>
+  </data>
+  <data name="Support_Message_Sent" xml:space="preserve">
+    <value>Your message was sent successfully.</value>
+  </data>
+  <data name="Support_Message_TypeHint" xml:space="preserve">
+    <value>Choose "Contact Super Admin" to reach the platform's senior administrator directly; choose Bug Report or Suggestion for those channels instead.</value>
+  </data>
+  <data name="Support_SendEmail_Title" xml:space="preserve">
+    <value>Send Email</value>
+  </data>
+  <data name="Support_SendEmail_Description" xml:space="preserve">
+    <value>Reach the support team directly by email using the button below.</value>
+  </data>
+  <data name="Support_SendEmail_Compose" xml:space="preserve">
+    <value>Compose Email</value>
+  </data>
+  <data name="Support_Participation_Title" xml:space="preserve">
+    <value>Development Participation Request</value>
+  </data>
+  <data name="Support_Participation_FirstName" xml:space="preserve">
+    <value>First Name</value>
+  </data>
+  <data name="Support_Participation_LastName" xml:space="preserve">
+    <value>Last Name</value>
+  </data>
+  <data name="Support_Participation_Mobile" xml:space="preserve">
+    <value>Mobile</value>
+  </data>
+  <data name="Support_Participation_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Support_Participation_City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Support_Participation_CollaborationArea" xml:space="preserve">
+    <value>Collaboration Area</value>
+  </data>
+  <data name="Support_Participation_GitHub" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="Support_Participation_LinkedIn" xml:space="preserve">
+    <value>LinkedIn</value>
+  </data>
+  <data name="Support_Participation_Portfolio" xml:space="preserve">
+    <value>Portfolio</value>
+  </data>
+  <data name="Support_Participation_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="Support_Participation_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Support_Participation_Submit" xml:space="preserve">
+    <value>Submit Request</value>
+  </data>
+  <data name="Support_Application_Sent" xml:space="preserve">
+    <value>Your participation request was submitted successfully.</value>
+  </data>
+  <data name="Support_Faq_Title" xml:space="preserve">
+    <value>Frequently Asked Questions</value>
+  </data>
+  <data name="Support_Faq_Q1" xml:space="preserve">
+    <value>How do I recover my password?</value>
+  </data>
+  <data name="Support_Faq_A1" xml:space="preserve">
+    <value>Use "Forgot Password" on the login screen, or contact support.</value>
+  </data>
+  <data name="Support_Faq_Q2" xml:space="preserve">
+    <value>Is my data available offline?</value>
+  </data>
+  <data name="Support_Faq_A2" xml:space="preserve">
+    <value>Yes, ROJAN runs as a desktop application and keeps much of your data available locally as well.</value>
+  </data>
+  <data name="Support_Faq_Q3" xml:space="preserve">
+    <value>How do I request a new feature?</value>
+  </data>
+  <data name="Support_Faq_A3" xml:space="preserve">
+    <value>Use the Suggestions section on this page.</value>
+  </data>
+  <data name="Support_Guide_Title" xml:space="preserve">
+    <value>User Guide</value>
+  </data>
+  <data name="Support_Guide_Body" xml:space="preserve">
+    <value>A full walkthrough of every section of the app is available in the in-app Help (the help icon in the top bar).</value>
+  </data>
+  <data name="Support_Terms_Title" xml:space="preserve">
+    <value>Terms &amp; Privacy</value>
+  </data>
+  <data name="Support_Terms_Body" xml:space="preserve">
+    <value>Using ROJAN means accepting its terms of use and privacy policy. Your business data is used only to provide this application's services and is never shared with third parties without consent.</value>
+  </data>
+  <data name="Support_Version_Title" xml:space="preserve">
+    <value>Version Information</value>
+  </data>
+  <data name="Support_Version_AppVersion" xml:space="preserve">
+    <value>App Version</value>
+  </data>
+  <data name="Support_Version_Api" xml:space="preserve">
+    <value>API Address</value>
+  </data>
+  <data name="Enum_SuperAdmin" xml:space="preserve">
+    <value>Contact Super Admin</value>
+  </data>
+  <data name="Enum_BugReport" xml:space="preserve">
+    <value>Bug Report</value>
+  </data>
+  <data name="Enum_Suggestion" xml:space="preserve">
+    <value>Suggestion</value>
+  </data>
 </root>

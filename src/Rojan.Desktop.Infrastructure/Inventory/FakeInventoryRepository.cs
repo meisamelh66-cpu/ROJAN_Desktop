@@ -1,4 +1,4 @@
-﻿using Rojan.Desktop.Domain.Inventory;
+using Rojan.Desktop.Domain.Inventory;
 
 namespace Rojan.Desktop.Infrastructure.Inventory;
 
@@ -33,83 +33,83 @@ public sealed class FakeInventoryRepository : IInventoryRepository
 
         _categories =
         [
-            new ProductCategory("category-1", "Hair Care", "Shampoos, conditioners, and styling products."),
-            new ProductCategory("category-2", "Colour Products", "Permanent and semi-permanent hair colour, developers, and lighteners."),
-            new ProductCategory("category-3", "Nail Care", "Polishes, gels, and manicure/pedicure supplies."),
-            new ProductCategory("category-4", "Skin Care", "Facial cleansers, masks, and treatment serums."),
-            new ProductCategory("category-5", "Spa & Wellness", "Massage oils, aromatherapy, and spa consumables."),
-            new ProductCategory("category-6", "Tools & Equipment", "Reusable tools, brushes, and salon equipment."),
+            new ProductCategory("category-1", "مراقبت مو", "شامپو، نرم‌کننده و محصولات استایل‌دهی."),
+            new ProductCategory("category-2", "محصولات رنگ مو", "رنگ دائم و نیمه‌دائم مو، اکسیدان و پودر دکلره."),
+            new ProductCategory("category-3", "مراقبت ناخن", "لاک، ژل و لوازم مانیکور و پدیکور."),
+            new ProductCategory("category-4", "مراقبت پوست", "پاک‌کننده صورت، ماسک و سرم‌های درمانی."),
+            new ProductCategory("category-5", "اسپا و سلامت", "روغن ماساژ، رایحه‌درمانی و مواد مصرفی اسپا."),
+            new ProductCategory("category-6", "ابزار و تجهیزات", "ابزار قابل‌استفاده مجدد، برس و تجهیزات سالن."),
         ];
 
         _suppliers =
         [
-            new Supplier("supplier-1", "Glow Beauty Supply Co.", "Maria Gonzalez", "orders@glowbeautysupply.example", "+1 (555) 030-2001", SupplierStatus.Active),
-            new Supplier("supplier-2", "Radiant Professional Products", "David Kim", "sales@radiantpro.example", "+1 (555) 030-2002", SupplierStatus.Active),
-            new Supplier("supplier-3", "Luxe Salon Essentials", "Sophie Turner", "accounts@luxesalonessentials.example", "+1 (555) 030-2003", SupplierStatus.Active),
-            new Supplier("supplier-4", "Northline Wholesale", "Tom Baker", "info@northlinewholesale.example", "+1 (555) 030-2004", SupplierStatus.Inactive),
+            new Supplier("supplier-1", "شرکت تأمین زیبایی درخشش", "مریم غفاری", "orders@glowbeautysupply.example", "021-77300201", SupplierStatus.Active),
+            new Supplier("supplier-2", "محصولات حرفه‌ای درخشان", "داوود کریمی", "sales@radiantpro.example", "021-77300202", SupplierStatus.Active),
+            new Supplier("supplier-3", "لوازم ضروری سالن لوکس", "سوگل ترابی", "accounts@luxesalonessentials.example", "021-77300203", SupplierStatus.Active),
+            new Supplier("supplier-4", "بازرگانی شمال", "تورج باقری", "info@northlinewholesale.example", "021-77300204", SupplierStatus.Inactive),
         ];
 
         _products =
         [
-            new Product("product-1", "HC-SHM-001", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$18", ProductStatus.Active, "Sulfate-free hydrating shampoo for salon retail.", "org-1", "branch-1"),
-            new Product("product-2", "HC-COND-002", "Repair Conditioner 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$19", ProductStatus.Active, "Deep-repair conditioner for damaged hair.", "org-1", "branch-1"),
-            new Product("product-3", "CL-DEV-010", "Colour Developer 20 Vol", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$12", ProductStatus.Active, "Standard-strength developer for permanent colour.", "org-1", "branch-1"),
-            new Product("product-4", "CL-PERM-045", "Permanent Hair Colour - Chocolate Brown", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$14", ProductStatus.Active, "Permanent colour, chocolate brown shade.", "org-1", "branch-1"),
-            new Product("product-5", "CL-BLCH-020", "Lightening Powder 500g", "category-2", "Colour Products", "supplier-2", "Radiant Professional Products",
-                "$26", ProductStatus.Active, "Dust-free lightening powder for balayage work.", "org-1", "branch-1"),
-            new Product("product-6", "NL-GEL-030", "Gel Polish - Rose Quartz", "category-3", "Nail Care", "supplier-3", "Luxe Salon Essentials",
-                "$9", ProductStatus.Active, "Long-wear gel polish, rose quartz shade.", "org-1", "branch-2"),
-            new Product("product-7", "NL-BASE-005", "Base & Top Coat Duo", "category-3", "Nail Care", "supplier-3", "Luxe Salon Essentials",
-                "$15", ProductStatus.Active, "Base and top coat set for gel manicures.", "org-1", "branch-1"),
-            new Product("product-8", "SK-MASK-012", "Renewal Clay Mask 250ml", "category-4", "Skin Care", "supplier-1", "Glow Beauty Supply Co.",
-                "$22", ProductStatus.Active, "Deep-cleansing clay mask for facial treatments.", "org-1", "branch-1"),
-            new Product("product-9", "SP-OIL-008", "Aromatherapy Massage Oil 500ml", "category-5", "Spa & Wellness", "supplier-4", "Northline Wholesale",
-                "$16", ProductStatus.Active, "Lavender-scented massage oil blend.", "org-1", "branch-1"),
-            new Product("product-10", "TL-BRSH-090", "Professional Colour Brush Set", "category-6", "Tools & Equipment", "supplier-3", "Luxe Salon Essentials",
-                "$34", ProductStatus.Discontinued, "Set of 4 colour application brushes - replaced by a newer model.", "org-2", "branch-3"),
+            new Product("product-1", "HC-SHM-001", "شامپو مرطوب‌کننده ۱ لیتری", "category-1", "مراقبت مو", "supplier-1", "شرکت تأمین زیبایی درخشش",
+                "180,000 تومان", ProductStatus.Active, "شامپو مرطوب‌کننده بدون سولفات، مخصوص فروش در سالن.", "org-1", "branch-1"),
+            new Product("product-2", "HC-COND-002", "نرم‌کننده ترمیمی ۱ لیتری", "category-1", "مراقبت مو", "supplier-1", "شرکت تأمین زیبایی درخشش",
+                "190,000 تومان", ProductStatus.Active, "نرم‌کننده ترمیم عمیق برای موهای آسیب‌دیده.", "org-1", "branch-1"),
+            new Product("product-3", "CL-DEV-010", "اکسیدان رنگ ۲۰ ولوم", "category-2", "محصولات رنگ مو", "supplier-2", "محصولات حرفه‌ای درخشان",
+                "120,000 تومان", ProductStatus.Active, "اکسیدان استاندارد برای رنگ دائم مو.", "org-1", "branch-1"),
+            new Product("product-4", "CL-PERM-045", "رنگ دائم مو - قهوه‌ای شکلاتی", "category-2", "محصولات رنگ مو", "supplier-2", "محصولات حرفه‌ای درخشان",
+                "140,000 تومان", ProductStatus.Active, "رنگ دائم مو، طیف قهوه‌ای شکلاتی.", "org-1", "branch-1"),
+            new Product("product-5", "CL-BLCH-020", "پودر دکلره ۵۰۰ گرمی", "category-2", "محصولات رنگ مو", "supplier-2", "محصولات حرفه‌ای درخشان",
+                "260,000 تومان", ProductStatus.Active, "پودر دکلره بدون گرد و غبار، مناسب بالیاژ.", "org-1", "branch-1"),
+            new Product("product-6", "NL-GEL-030", "لاک ژل - کوارتز صورتی", "category-3", "مراقبت ناخن", "supplier-3", "لوازم ضروری سالن لوکس",
+                "90,000 تومان", ProductStatus.Active, "لاک ژل ماندگار، رنگ کوارتز صورتی.", "org-1", "branch-2"),
+            new Product("product-7", "NL-BASE-005", "ست بیس و تاپ کوت", "category-3", "مراقبت ناخن", "supplier-3", "لوازم ضروری سالن لوکس",
+                "150,000 تومان", ProductStatus.Active, "ست بیس و تاپ کوت مخصوص مانیکور ژل.", "org-1", "branch-1"),
+            new Product("product-8", "SK-MASK-012", "ماسک گلی ترمیمی ۲۵۰ میلی‌لیتری", "category-4", "مراقبت پوست", "supplier-1", "شرکت تأمین زیبایی درخشش",
+                "220,000 تومان", ProductStatus.Active, "ماسک گلی پاک‌کننده عمیق، مناسب فیشیال.", "org-1", "branch-1"),
+            new Product("product-9", "SP-OIL-008", "روغن ماساژ رایحه‌درمانی ۵۰۰ میلی‌لیتری", "category-5", "اسپا و سلامت", "supplier-4", "بازرگانی شمال",
+                "160,000 تومان", ProductStatus.Active, "ترکیب روغن ماساژ با رایحه اسطوخودوس.", "org-1", "branch-1"),
+            new Product("product-10", "TL-BRSH-090", "ست حرفه‌ای قلم‌موی رنگ", "category-6", "ابزار و تجهیزات", "supplier-3", "لوازم ضروری سالن لوکس",
+                "340,000 تومان", ProductStatus.Discontinued, "مجموعه ۴ عددی قلم‌موی رنگ - با مدل جدیدتر جایگزین شده.", "org-2", "branch-3"),
         ];
 
         _inventoryItems =
         [
-            new InventoryItem("item-1", "product-1", "Hydrating Shampoo 1L", 42, 15),
-            new InventoryItem("item-2", "product-2", "Repair Conditioner 1L", 38, 15),
-            new InventoryItem("item-3", "product-3", "Colour Developer 20 Vol", 8, 10),
-            new InventoryItem("item-4", "product-4", "Permanent Hair Colour - Chocolate Brown", 25, 10),
-            new InventoryItem("item-5", "product-5", "Lightening Powder 500g", 5, 8),
-            new InventoryItem("item-6", "product-6", "Gel Polish - Rose Quartz", 60, 20),
-            new InventoryItem("item-7", "product-7", "Base & Top Coat Duo", 18, 20),
-            new InventoryItem("item-8", "product-8", "Renewal Clay Mask 250ml", 30, 12),
-            new InventoryItem("item-9", "product-9", "Aromatherapy Massage Oil 500ml", 14, 10),
-            new InventoryItem("item-10", "product-10", "Professional Colour Brush Set", 3, 5),
+            new InventoryItem("item-1", "product-1", "شامپو مرطوب‌کننده ۱ لیتری", 42, 15),
+            new InventoryItem("item-2", "product-2", "نرم‌کننده ترمیمی ۱ لیتری", 38, 15),
+            new InventoryItem("item-3", "product-3", "اکسیدان رنگ ۲۰ ولوم", 8, 10),
+            new InventoryItem("item-4", "product-4", "رنگ دائم مو - قهوه‌ای شکلاتی", 25, 10),
+            new InventoryItem("item-5", "product-5", "پودر دکلره ۵۰۰ گرمی", 5, 8),
+            new InventoryItem("item-6", "product-6", "لاک ژل - کوارتز صورتی", 60, 20),
+            new InventoryItem("item-7", "product-7", "ست بیس و تاپ کوت", 18, 20),
+            new InventoryItem("item-8", "product-8", "ماسک گلی ترمیمی ۲۵۰ میلی‌لیتری", 30, 12),
+            new InventoryItem("item-9", "product-9", "روغن ماساژ رایحه‌درمانی ۵۰۰ میلی‌لیتری", 14, 10),
+            new InventoryItem("item-10", "product-10", "ست حرفه‌ای قلم‌موی رنگ", 3, 5),
         ];
 
         _transactions =
         [
-            new StockTransaction("txn-1", "product-1", "Hydrating Shampoo 1L", StockTransactionType.Received, 48, now.AddDays(-30), "Initial stock delivery."),
-            new StockTransaction("txn-2", "product-1", "Hydrating Shampoo 1L", StockTransactionType.Sold, 6, now.AddDays(-5), "Retail sales."),
-            new StockTransaction("txn-3", "product-3", "Colour Developer 20 Vol", StockTransactionType.Received, 20, now.AddDays(-25), "Initial stock delivery."),
-            new StockTransaction("txn-4", "product-3", "Colour Developer 20 Vol", StockTransactionType.Sold, 12, now.AddDays(-3), "Used across colour services."),
-            new StockTransaction("txn-5", "product-4", "Permanent Hair Colour - Chocolate Brown", StockTransactionType.Received, 30, now.AddDays(-25), "Initial stock delivery."),
-            new StockTransaction("txn-6", "product-4", "Permanent Hair Colour - Chocolate Brown", StockTransactionType.Sold, 5, now.AddDays(-2), "Used across colour services."),
-            new StockTransaction("txn-7", "product-5", "Lightening Powder 500g", StockTransactionType.Received, 10, now.AddDays(-20), "Initial stock delivery."),
-            new StockTransaction("txn-8", "product-5", "Lightening Powder 500g", StockTransactionType.Sold, 5, now.AddDays(-1), "Used for balayage service."),
-            new StockTransaction("txn-9", "product-10", "Professional Colour Brush Set", StockTransactionType.Damaged, 2, now.AddDays(-10), "Bristles damaged in cleaning."),
+            new StockTransaction("txn-1", "product-1", "شامپو مرطوب‌کننده ۱ لیتری", StockTransactionType.Received, 48, now.AddDays(-30), "تحویل اولیه موجودی."),
+            new StockTransaction("txn-2", "product-1", "شامپو مرطوب‌کننده ۱ لیتری", StockTransactionType.Sold, 6, now.AddDays(-5), "فروش خرده‌فروشی."),
+            new StockTransaction("txn-3", "product-3", "اکسیدان رنگ ۲۰ ولوم", StockTransactionType.Received, 20, now.AddDays(-25), "تحویل اولیه موجودی."),
+            new StockTransaction("txn-4", "product-3", "اکسیدان رنگ ۲۰ ولوم", StockTransactionType.Sold, 12, now.AddDays(-3), "مصرف‌شده در خدمات رنگ."),
+            new StockTransaction("txn-5", "product-4", "رنگ دائم مو - قهوه‌ای شکلاتی", StockTransactionType.Received, 30, now.AddDays(-25), "تحویل اولیه موجودی."),
+            new StockTransaction("txn-6", "product-4", "رنگ دائم مو - قهوه‌ای شکلاتی", StockTransactionType.Sold, 5, now.AddDays(-2), "مصرف‌شده در خدمات رنگ."),
+            new StockTransaction("txn-7", "product-5", "پودر دکلره ۵۰۰ گرمی", StockTransactionType.Received, 10, now.AddDays(-20), "تحویل اولیه موجودی."),
+            new StockTransaction("txn-8", "product-5", "پودر دکلره ۵۰۰ گرمی", StockTransactionType.Sold, 5, now.AddDays(-1), "مصرف‌شده برای خدمت بالیاژ."),
+            new StockTransaction("txn-9", "product-10", "ست حرفه‌ای قلم‌موی رنگ", StockTransactionType.Damaged, 2, now.AddDays(-10), "موهای قلم‌مو در شست‌وشو آسیب دیده."),
         ];
 
         _serviceMappings =
         [
-            new ServiceProductMapping("mapping-1", "service-2", "Colour Touch-Up", "product-3", "Colour Developer 20 Vol", 1),
-            new ServiceProductMapping("mapping-2", "service-2", "Colour Touch-Up", "product-4", "Permanent Hair Colour - Chocolate Brown", 1),
-            new ServiceProductMapping("mapping-3", "service-3", "Full Package - Balayage & Style", "product-5", "Lightening Powder 500g", 2),
-            new ServiceProductMapping("mapping-4", "service-4", "Manicure", "product-6", "Gel Polish - Rose Quartz", 1),
-            new ServiceProductMapping("mapping-5", "service-4", "Manicure", "product-7", "Base & Top Coat Duo", 1),
-            new ServiceProductMapping("mapping-6", "service-5", "Facial Renewal", "product-8", "Renewal Clay Mask 250ml", 1),
-            new ServiceProductMapping("mapping-7", "service-6", "Massage", "product-9", "Aromatherapy Massage Oil 500ml", 1),
-            new ServiceProductMapping("mapping-8", "service-1", "Haircut & Style", "product-1", "Hydrating Shampoo 1L", 1),
+            new ServiceProductMapping("mapping-1", "service-2", "اصلاح رنگ ریشه", "product-3", "اکسیدان رنگ ۲۰ ولوم", 1),
+            new ServiceProductMapping("mapping-2", "service-2", "اصلاح رنگ ریشه", "product-4", "رنگ دائم مو - قهوه‌ای شکلاتی", 1),
+            new ServiceProductMapping("mapping-3", "service-3", "پکیج کامل - بالیاژ و استایل", "product-5", "پودر دکلره ۵۰۰ گرمی", 2),
+            new ServiceProductMapping("mapping-4", "service-4", "مانیکور", "product-6", "لاک ژل - کوارتز صورتی", 1),
+            new ServiceProductMapping("mapping-5", "service-4", "مانیکور", "product-7", "ست بیس و تاپ کوت", 1),
+            new ServiceProductMapping("mapping-6", "service-5", "فیشیال ترمیمی", "product-8", "ماسک گلی ترمیمی ۲۵۰ میلی‌لیتری", 1),
+            new ServiceProductMapping("mapping-7", "service-6", "ماساژ", "product-9", "روغن ماساژ رایحه‌درمانی ۵۰۰ میلی‌لیتری", 1),
+            new ServiceProductMapping("mapping-8", "service-1", "کوتاهی و استایل مو", "product-1", "شامپو مرطوب‌کننده ۱ لیتری", 1),
         ];
     }
 

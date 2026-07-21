@@ -4,9 +4,9 @@ namespace Rojan.Desktop.Infrastructure.Organizations;
 
 /// <summary>
 /// In-memory <see cref="IOrganizationRepository"/>. Seeds two
-/// organizations - "ROJAN Beauty Group" (two branches, Downtown and
-/// Uptown) and "Luxe Salon Collective" (one branch) - so the platform has
-/// real, genuinely multi-tenant content on first launch, and so
+/// organizations - "گروه زیبایی روژان" (two branches, ولیعصر و زعفرانیه)
+/// and "سالن زیبایی لوکس" (one branch) - so the platform has real,
+/// genuinely multi-tenant content on first launch, and so
 /// <see cref="GetBranchesAsync"/>'s organization-scoped filtering has more
 /// than one organization to actually prove isolation against. Registered
 /// as a singleton (same reasoning as every other Fake repository with
@@ -24,15 +24,15 @@ public sealed class FakeOrganizationRepository : IOrganizationRepository
 
         _organizations =
         [
-            new Organization("org-1", "ROJAN Beauty Group", "ROJAN Beauty Group LLC", string.Empty, "#8E28E7", "TIN-10293847", SubscriptionPlan.Enterprise, OrganizationStatus.Active, now.AddYears(-2), "RBG", "+1-555-0100", "hello@rojanbeauty.example", "1 Corporate Plaza, New York, NY", "America/New_York", "fa-IR", "USD"),
-            new Organization("org-2", "Luxe Salon Collective", "Luxe Salon Collective Inc.", string.Empty, "#2FC6C6", "TIN-55219087", SubscriptionPlan.Professional, OrganizationStatus.Active, now.AddYears(-1), "LSC", "+1-555-0200", "hello@luxesalon.example", "400 Bay Street, San Francisco, CA", "America/Los_Angeles", "en-US", "USD"),
+            new Organization("org-1", "گروه زیبایی روژان", "شرکت گروه زیبایی روژان", string.Empty, "#8E28E7", "TIN-10293847", SubscriptionPlan.Enterprise, OrganizationStatus.Active, now.AddYears(-2), "RBG", "021-88900100", "info@rojanbeauty.example", "تهران، خیابان ولیعصر، برج تجاری مرکزی", "Asia/Tehran", "fa-IR", "تومان"),
+            new Organization("org-2", "سالن زیبایی لوکس", "شرکت سالن زیبایی لوکس", string.Empty, "#2FC6C6", "TIN-55219087", SubscriptionPlan.Professional, OrganizationStatus.Active, now.AddYears(-1), "LSC", "021-88900200", "info@luxesalon.example", "تهران، خیابان کریمخان زند", "Asia/Tehran", "fa-IR", "تومان"),
         ];
 
         _branches =
         [
-            new Branch("branch-1", "org-1", "Downtown", "DT-01", "12 Market Street", "+1-555-0101", "downtown@rojanbeauty.example", "Alex Morgan", "America/New_York", "USD", BranchStatus.Active),
-            new Branch("branch-2", "org-1", "Uptown", "UT-01", "88 Fifth Avenue", "+1-555-0102", "uptown@rojanbeauty.example", "Priya Nair", "America/New_York", "USD", BranchStatus.Active),
-            new Branch("branch-3", "org-2", "Luxe Central", "LC-01", "400 Bay Street", "+1-555-0201", "central@luxesalon.example", "Jordan Lee", "America/Los_Angeles", "USD", BranchStatus.Active),
+            new Branch("branch-1", "org-1", "شعبه ولیعصر", "VLI-01", "خیابان ولیعصر، پلاک ۱۲", "021-88900101", "valiasr@rojanbeauty.example", "بهرام رستمی", "Asia/Tehran", "تومان", BranchStatus.Active),
+            new Branch("branch-2", "org-1", "شعبه زعفرانیه", "ZAF-01", "خیابان زعفرانیه، پلاک ۸۸", "021-88900102", "zaferanieh@rojanbeauty.example", "سارا امینی", "Asia/Tehran", "تومان", BranchStatus.Active),
+            new Branch("branch-3", "org-2", "شعبه مرکزی لوکس", "LUX-01", "خیابان کریمخان زند، پلاک ۴۰۰", "021-88900201", "central@luxesalon.example", "کیانا رادمنش", "Asia/Tehran", "تومان", BranchStatus.Active),
         ];
 
         _branchSettings =
@@ -42,7 +42,7 @@ public sealed class FakeOrganizationRepository : IOrganizationRepository
                 new BusinessHours(new TimeOnly(9, 0), new TimeOnly(19, 0)),
                 [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday],
                 8.5m,
-                new ReceiptSettings("ROJAN Beauty - Downtown", "Thank you for visiting!", true),
+                new ReceiptSettings("سالن روژان - ولیعصر", "از حضور شما سپاسگزاریم!", true),
                 new AppointmentRules(2, 60, true),
                 new NotificationSettings(true, true, 24)),
             new BranchSettings(
@@ -50,7 +50,7 @@ public sealed class FakeOrganizationRepository : IOrganizationRepository
                 new BusinessHours(new TimeOnly(10, 0), new TimeOnly(20, 0)),
                 [DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday],
                 8.5m,
-                new ReceiptSettings("ROJAN Beauty - Uptown", "Thank you for visiting!", true),
+                new ReceiptSettings("سالن روژان - زعفرانیه", "از حضور شما سپاسگزاریم!", true),
                 new AppointmentRules(4, 45, false),
                 new NotificationSettings(true, false, 12)),
             new BranchSettings(
@@ -58,7 +58,7 @@ public sealed class FakeOrganizationRepository : IOrganizationRepository
                 new BusinessHours(new TimeOnly(9, 30), new TimeOnly(18, 30)),
                 [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday, DayOfWeek.Saturday],
                 7.75m,
-                new ReceiptSettings("Luxe Salon Collective", "See you again soon.", false),
+                new ReceiptSettings("سالن زیبایی لوکس", "امیدواریم دوباره شما را ببینیم.", false),
                 new AppointmentRules(1, 90, true),
                 new NotificationSettings(false, true, 6)),
         ];

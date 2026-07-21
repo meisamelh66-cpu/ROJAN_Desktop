@@ -25,7 +25,7 @@ public sealed class OrganizationCommandService : IOrganizationCommandService
         var organization = new DomainOrg.Organization(
             $"org-{Guid.NewGuid():N}", name, legalName, string.Empty, "#8E28E7", taxInformation,
             OrganizationMapper.MapPlan(subscription), DomainOrg.OrganizationStatus.Trial, DateTimeOffset.Now,
-            code, phone, email, address, TimeZoneInfo.Local.Id, "fa-IR", "USD");
+            code, phone, email, address, TimeZoneInfo.Local.Id, "fa-IR", "تومان");
 
         var created = await _repository.CreateOrganizationAsync(organization, cancellationToken).ConfigureAwait(false);
         return OrganizationMapper.MapOrganization(created);

@@ -64,14 +64,14 @@ public sealed class KpiEngineQueryService : IKpiEngineQueryService
 
         return
         [
-            BuildKpi("kpi-revenue", "Revenue", KpiType.Revenue, current.TotalRevenue, previous.TotalRevenue, "$", label),
-            BuildKpi("kpi-appointments", "Appointments", KpiType.Appointments, current.TotalAppointments, previous.TotalAppointments, string.Empty, label),
-            BuildKpi("kpi-customers", "Customers", KpiType.Customers, current.TotalCustomers, current.TotalCustomers, string.Empty, label),
-            BuildKpi("kpi-inventory", "Inventory Value", KpiType.Inventory, current.InventoryValue, current.InventoryValue, "$", label),
-            BuildKpi("kpi-payroll", "Payroll", KpiType.Payroll, current.PayrollTotal, previous.PayrollTotal, "$", label),
-            BuildKpi("kpi-attendance", "Attendance Rate", KpiType.Attendance, current.AttendanceRatePercent, previous.AttendanceRatePercent, "%", label),
-            BuildKpi("kpi-growth", "New Customers", KpiType.Growth, current.NewCustomers, previous.NewCustomers, string.Empty, label),
-            BuildKpi("kpi-trend", "Overall Trend", KpiType.Trend, current.TotalRevenue, previous.TotalRevenue, "$", label),
+            BuildKpi("kpi-revenue", "درآمد", KpiType.Revenue, current.TotalRevenue, previous.TotalRevenue, "تومان", label),
+            BuildKpi("kpi-appointments", "نوبت‌ها", KpiType.Appointments, current.TotalAppointments, previous.TotalAppointments, string.Empty, label),
+            BuildKpi("kpi-customers", "مشتریان", KpiType.Customers, current.TotalCustomers, current.TotalCustomers, string.Empty, label),
+            BuildKpi("kpi-inventory", "ارزش موجودی انبار", KpiType.Inventory, current.InventoryValue, current.InventoryValue, "تومان", label),
+            BuildKpi("kpi-payroll", "حقوق و دستمزد", KpiType.Payroll, current.PayrollTotal, previous.PayrollTotal, "تومان", label),
+            BuildKpi("kpi-attendance", "نرخ حضور", KpiType.Attendance, current.AttendanceRatePercent, previous.AttendanceRatePercent, "%", label),
+            BuildKpi("kpi-growth", "مشتریان جدید", KpiType.Growth, current.NewCustomers, previous.NewCustomers, string.Empty, label),
+            BuildKpi("kpi-trend", "روند کلی", KpiType.Trend, current.TotalRevenue, previous.TotalRevenue, "تومان", label),
         ];
     }
 
