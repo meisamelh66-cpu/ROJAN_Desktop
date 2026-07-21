@@ -39,7 +39,9 @@
                     xmlns:searchVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Search"
                     xmlns:searchView="clr-namespace:Rojan.Desktop.Presentation.Views.Search"
                     xmlns:workspacesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Workspaces"
-                    xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces">
+                    xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces"
+                    xmlns:automationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Automation"
+                    xmlns:automationView="clr-namespace:Rojan.Desktop.Presentation.Views.Automation">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -153,6 +155,11 @@
 
   <DataTemplate DataType="{x:Type workspacesVm:WorkspaceOutlineViewModel}">
     <workspacesView:WorkspaceOutlinePanelView />
+  </DataTemplate>
+
+  <!-- Phase 32: Enterprise Automation, Workflow & Business Rules Engine. -->
+  <DataTemplate DataType="{x:Type automationVm:AutomationPageViewModel}">
+    <automationView:AutomationPage />
   </DataTemplate>
 
 </ResourceDictionary>

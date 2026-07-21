@@ -1002,6 +1002,59 @@ see `docs/standards/versioning.md`.
   bootstrap was confirmed end-to-end by reading the persisted
   `workspaces.json`/`state.json` after the run — see
   `docs/phases/phase-29-enterprise-workspace-window-management.md`.
+- Phase 32 Enterprise Automation, Workflow & Business Rules Engine — a
+  brand-new Clean Architecture vertical slice: a workflow step-graph
+  engine (Start/End/Decision/Delay/Approval/Condition/Notification/Email/
+  AI Action/Database Action/API Action), a configurable Business Rules
+  Engine ("IF Customer is VIP → Apply Discount" etc.), a Trigger Engine
+  (10 trigger types), Cron-ready Scheduled Jobs, multi-step Approval
+  Workflow (Leave/Expense/Inventory/Branch), Draft→Published→Archived
+  Versioning with rollback, execution Monitoring/Audit, retry/backoff
+  Error Recovery, and a summary Dashboard. `Domain.Automation`
+  (`WorkflowStep`/`WorkflowDefinition`, `WorkflowRules` — pure validation/
+  BFS-reachability — `RetryPolicy`/`RetryRules`, `BusinessRule`/
+  `BusinessRuleEngine`, `ScheduledJob`/`ScheduleRules`, `ApprovalRequest`/
+  `ApprovalRules`, `WorkflowExecution`, 5 repository interfaces) and
+  `Application.Automation` (full mirror DTOs + `AutomationMapping`;
+  `WorkflowService`/`BusinessRuleService`/`ScheduledJobService`/
+  `ApprovalService`/`TriggerEngine`; `WorkflowExecutionEngine` — the
+  step-graph run loop with real per-step retry/backoff wired to
+  `Domain.RetryRules`; 11 `IWorkflowStepExecutor` implementations, Database
+  Action/API Action deliberately no-op per this phase's "contracts only,
+  no external calls" scope, the same boundary Requirement 32.7 already set
+  for AI Action's `NoOpAiActionExecutor`) are new, dependency-clean
+  layers — unlike Phase 29, the run loop lives directly in Application
+  (which may reference Domain), so no Presentation-facing pure-logic
+  wrapper was needed this time. `Infrastructure.Automation` persists 5
+  JSON files under `%LocalAppData%\RojanDesktop\automation\` (execution
+  history capped at 500 entries) plus an email outbox (no real SMTP, per
+  Requirement 32.6's own scope) and `WorkflowSchedulerService` — a plain
+  `Timer`-driven class, deliberately **not** an `IHostedService`, started/
+  stopped explicitly around the WPF `Application` lifecycle in
+  `App.xaml.cs`, consistent with this Shell's Generic Host being used for
+  DI composition only. A workflow's `Approval` step pauses its execution
+  (`WorkflowExecutionStatus.Waiting`) via `ApprovalRequest.WorkflowExecutionId`
+  and `ApprovalService.DecideAsync` automatically resumes/fails it once
+  decided — the one seam connecting the two subsystems. Two new
+  permissions (`AutomationView`/`AutomationManage`, granted to
+  `OrganizationManager`/`BranchManager`) exist in both the Domain and
+  Application `Permission` mirrors; `AutomationModule` is the first module
+  to actually populate `ModuleMetadata.RequiredPermission`. New
+  `AutomationPage` (5 tabs: Dashboard/Workflows/Business Rules/Scheduled
+  Jobs/Approvals) built entirely from existing `DashboardCard`/
+  `DashboardWidget`/`KPIValue` controls and Fluent 2 tokens — no new
+  colors, typography, or layout primitives; no existing module changed.
+  46 new `Strings.cs`/resx entries across fa-IR/en/ar — no hardcoded text
+  anywhere in Presentation/Application/Domain/Infrastructure. 157 new
+  tests (1263 → 1420), full suite passes on both Debug and Release, zero
+  warnings, zero errors, `ArchitectureTests` (dependency-direction and
+  ViewModel-testability) included. Runtime-verified: both builds clean;
+  the compiled Shell launched and ran 8 seconds with zero Application-log
+  errors before closing cleanly; the persistence/execution stack itself
+  was verified via the automated suite running the real
+  `Local*Repository`/`WorkflowExecutionEngine`/step-executor code against
+  real temp-file JSON (not mocks) — see
+  `docs/phases/phase-32-enterprise-automation-workflow-business-rules-engine.md`.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

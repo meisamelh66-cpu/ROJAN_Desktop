@@ -22,6 +22,7 @@ using Rojan.Desktop.Presentation.Theming;
 using Rojan.Desktop.Presentation.Workspaces;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
+using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Shell.Navigation;
 using Rojan.Desktop.Shell.Organizations;
 using Rojan.Desktop.Shell.Theming;
@@ -135,6 +136,12 @@ public partial class App
         var notificationService = _host.Services.GetRequiredService<INotificationService>();
         SeedDemoNotificationsIfEmpty(notificationService);
 
+        // Phase 32: Enterprise Automation, Workflow & Business Rules
+        // Engine - starts the Scheduled Jobs background timer (Requirement
+        // 32.4). Stopped in OnExit, symmetrically.
+        var workflowSchedulerService = _host.Services.GetRequiredService<WorkflowSchedulerService>();
+        workflowSchedulerService.Start();
+
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
@@ -202,6 +209,8 @@ public partial class App
     {
         if (_host is not null)
         {
+            _host.Services.GetRequiredService<WorkflowSchedulerService>().Stop();
+
             using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             await _host.StopAsync(stopTimeout.Token);
             _host.Dispose();
@@ -290,6 +299,7 @@ public partial class App
         services.AddSingleton<IModule, AnalyticsModule>();
         services.AddSingleton<IModule, AiCenterModule>();
         services.AddSingleton<IModule, SettingsModule>();
+        services.AddSingleton<IModule, AutomationModule>();
     }
 
     /// <summary>

@@ -39,4 +39,6 @@ public enum Permission
     Reject,
     Import,
     ManageUsers,
+    AutomationView,
+    AutomationManage,
 }

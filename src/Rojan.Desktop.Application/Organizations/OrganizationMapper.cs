@@ -114,6 +114,8 @@ internal static class OrganizationMapper
         DomainOrg.Permission.Reject => Permission.Reject,
         DomainOrg.Permission.Import => Permission.Import,
         DomainOrg.Permission.ManageUsers => Permission.ManageUsers,
+        DomainOrg.Permission.AutomationView => Permission.AutomationView,
+        DomainOrg.Permission.AutomationManage => Permission.AutomationManage,
         _ => throw new ArgumentOutOfRangeException(nameof(permission), permission, "Unknown permission."),
     };
 
@@ -146,6 +148,8 @@ internal static class OrganizationMapper
         Permission.Reject => DomainOrg.Permission.Reject,
         Permission.Import => DomainOrg.Permission.Import,
         Permission.ManageUsers => DomainOrg.Permission.ManageUsers,
+        Permission.AutomationView => DomainOrg.Permission.AutomationView,
+        Permission.AutomationManage => DomainOrg.Permission.AutomationManage,
         _ => throw new ArgumentOutOfRangeException(nameof(permission), permission, "Unknown permission."),
     };
 

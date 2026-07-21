@@ -1,0 +1,530 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Automation.AutomationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:appAutomation="clr-namespace:Rojan.Desktop.Application.Automation;assembly=Rojan.Desktop.Application"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+
+    <!--
+        Phase 32: Enterprise Automation, Workflow & Business Rules Engine.
+        One page, five tabs (a plain button strip + SelectedTabIndex, not
+        a WPF TabControl - no TabControl precedent/style exists elsewhere
+        in this app, and a hand-styled Fluent 2 strip matches every other
+        custom control here). Each tab's outer container keeps
+        AutomationPageViewModel as its DataContext (so its Visibility
+        DataTrigger on SelectedTabIndex resolves) while its inner content
+        overrides DataContext to that tab's own child ViewModel - the same
+        "SectionHeader + DashboardCard/DashboardWidget/KPIValue, no new
+        Design System components" shape every other module page uses.
+    -->
+    <UserControl.Resources>
+        <converters:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <controls:SectionHeader Title="{x:Static loc:Strings.Automation_Title}" />
+            <TextBlock Text="{x:Static loc:Strings.Automation_Subtitle}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       Margin="0,44,0,0" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                        <Setter Property="Margin" Value="0,0,8,0" />
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="{x:Static loc:Strings.Automation_Tab_Dashboard}" Command="{Binding SelectTabCommand}" CommandParameter="0" />
+                <Button Content="{x:Static loc:Strings.Automation_Tab_Workflows}" Command="{Binding SelectTabCommand}" CommandParameter="1" />
+                <Button Content="{x:Static loc:Strings.Automation_Tab_BusinessRules}" Command="{Binding SelectTabCommand}" CommandParameter="2" />
+                <Button Content="{x:Static loc:Strings.Automation_Tab_ScheduledJobs}" Command="{Binding SelectTabCommand}" CommandParameter="3" />
+                <Button Content="{x:Static loc:Strings.Automation_Tab_Approvals}" Command="{Binding SelectTabCommand}" CommandParameter="4" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,24,0,0">
+
+            <!-- ==================== Dashboard ==================== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <StackPanel DataContext="{Binding Dashboard}">
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Automation_Dashboard_Title}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}">
+                        <UniformGrid Columns="4" Rows="2">
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_TotalWorkflows}" Value="{Binding TotalWorkflows}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PublishedWorkflows}" Value="{Binding PublishedWorkflows}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_ExecutionsToday}" Value="{Binding ExecutionsToday}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_FailuresToday}" Value="{Binding FailuresToday}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_SuccessRate}" Value="{Binding SuccessRatePercent, StringFormat={}{0:0.0}%}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_AvgDuration}" Value="{Binding AverageExecutionDurationMs, StringFormat={}{0:0} ms}" />
+                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PendingApprovals}" Value="{Binding PendingApprovals}" />
+                        </UniformGrid>
+                    </dashboardControls:DashboardWidget>
+
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Automation_Dashboard_RecentExecutions}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding RecentExecutions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appAutomation:WorkflowExecutionDto}">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding WorkflowName}" Style="{StaticResource Rojan.TextStyle.Body}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="12,0" />
+                                            <TextBlock Grid.Column="2" Text="{Binding DurationMs, StringFormat={}{0} ms}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{x:Static loc:Strings.Automation_NoExecutionsYet}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RecentExecutions.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ==================== Workflows ==================== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <StackPanel DataContext="{Binding Workflows}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Automation_Workflows_Create}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="200" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewWorkflowName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Workflows_Trigger}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding AvailableTriggerTypes}" SelectedItem="{Binding NewWorkflowTrigger}" Margin="0,4,0,0">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding NewWorkflowDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Button Content="{x:Static loc:Strings.Automation_Workflows_Create}" Command="{Binding CreateDraftCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Automation_Workflows_All}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <ListBox ItemsSource="{Binding Workflows}"
+                                 SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appAutomation:WorkflowDefinitionDto}">
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
+                                                <Run Text="{Binding Name, Mode=OneWay}" />
+                                                <Run Text=" · v" />
+                                                <Run Text="{Binding Version, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button Content="{x:Static loc:Strings.Automation_Workflows_Publish}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,6,0"
+                                                    Command="{Binding DataContext.PublishCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                            <Button Content="{x:Static loc:Strings.Automation_Workflows_RunNow}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,6,0"
+                                                    Command="{Binding DataContext.RunNowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                            <Button Content="{x:Static loc:Strings.Automation_Workflows_Archive}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,6,0"
+                                                    Command="{Binding DataContext.ArchiveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                            <Button Content="{x:Static loc:Strings.Automation_Workflows_Rollback}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,6,0"
+                                                    Command="{Binding DataContext.RollbackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="{x:Static loc:Strings.Common_Delete}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </dashboardControls:DashboardWidget>
+
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Automation_Workflows_VersionHistory}" Margin="0,16,0,0"
+                                                      Visibility="{Binding SelectedWorkflow, Converter={StaticResource CollectionToVisibilityConverter}}">
+                        <ItemsControl ItemsSource="{Binding VersionHistory}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appAutomation:WorkflowDefinitionDto}">
+                                    <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,6">
+                                        <Run Text="v" /><Run Text="{Binding Version, Mode=OneWay}" />
+                                        <Run Text=" — " />
+                                        <Run Text="{Binding Status, Mode=OneWay}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardCard>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ==================== Business Rules ==================== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <StackPanel DataContext="{Binding BusinessRules}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Automation_Rules_Create}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewRuleName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_Field}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewRuleField, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="80" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_Operator}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding NewRuleOperator}" Margin="0,4,0,0">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_Value}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewRuleValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_Priority}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewRulePriority, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_Action}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding AvailableActionTypes}" SelectedItem="{Binding NewRuleActionType}" Margin="0,4,0,0">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Rules_ActionValue}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewRuleActionValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Button Content="{x:Static loc:Strings.Automation_Rules_Create}" Command="{Binding CreateCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Automation_Rules_All}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <ItemsControl ItemsSource="{Binding Rules}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appAutomation:BusinessRuleDto}">
+                                    <Grid Margin="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                <Run Text="{Binding Action.Type, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                <Run Text=" · Priority " />
+                                                <Run Text="{Binding Priority, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.ToggleEnabledCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                                    <Setter Property="Content" Value="{x:Static loc:Strings.Automation_Rules_Disable}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                            <Setter Property="Content" Value="{x:Static loc:Strings.Automation_Rules_Enable}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Grid.Column="2" Content="{x:Static loc:Strings.Common_Delete}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ==================== Scheduled Jobs ==================== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <StackPanel DataContext="{Binding ScheduledJobs}">
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Automation_Jobs_Create}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="160" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewJobName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Jobs_Frequency}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding AvailableFrequencies}" SelectedItem="{Binding NewJobFrequency}" Margin="0,4,0,0">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Jobs_Workflow}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <ComboBox ItemsSource="{Binding PublishedWorkflows}" SelectedItem="{Binding NewJobWorkflow}" DisplayMemberPath="Name" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Automation_Jobs_CronExpression}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding NewJobCronExpression, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <Button Content="{x:Static loc:Strings.Automation_Jobs_Create}" Command="{Binding CreateCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Automation_Jobs_All}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <ItemsControl ItemsSource="{Binding Jobs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appAutomation:ScheduledJobDto}">
+                                    <Grid Margin="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                <Run Text="{Binding Frequency, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                <Run Text=" · Next: " />
+                                                <Run Text="{Binding NextRunAt, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="{x:Static loc:Strings.Automation_Jobs_RunNow}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.RunNowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                        <Button Grid.Column="2" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.ToggleEnabledCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                                    <Setter Property="Content" Value="{x:Static loc:Strings.Automation_Rules_Disable}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                            <Setter Property="Content" Value="{x:Static loc:Strings.Automation_Rules_Enable}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Grid.Column="3" Content="{x:Static loc:Strings.Common_Delete}" Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ==================== Approvals ==================== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <StackPanel DataContext="{Binding Approvals}">
+                    <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16,10" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.Automation_Approvals_Comment}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding DecisionComment, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" BorderThickness="0" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Automation_Approvals_All}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}">
+                        <ItemsControl ItemsSource="{Binding Requests}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appAutomation:ApprovalRequestDto}">
+                                    <Grid Margin="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                <Run Text="{Binding Type, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                <Run Text=" · " />
+                                                <Run Text="{Binding Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="{x:Static loc:Strings.Automation_Approvals_Approve}" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
+                                                    <Setter Property="IsEnabled" Value="False" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="{x:Static appAutomation:ApprovalStatus.Pending}">
+                                                            <Setter Property="IsEnabled" Value="True" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Grid.Column="2" Content="{x:Static loc:Strings.Automation_Approvals_Reject}" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                                    <Setter Property="IsEnabled" Value="False" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="{x:Static appAutomation:ApprovalStatus.Pending}">
+                                                            <Setter Property="IsEnabled" Value="True" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</UserControl>

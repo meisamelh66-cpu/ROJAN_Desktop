@@ -161,6 +161,8 @@ public static class Strings
 
     public static string Nav_Settings => Get(nameof(Nav_Settings));
 
+    public static string Nav_Automation => Get(nameof(Nav_Automation));
+
     public static string Settings_Title => Get(nameof(Settings_Title));
 
     public static string Settings_Subtitle => Get(nameof(Settings_Subtitle));
@@ -1040,6 +1042,98 @@ public static class Strings
     public static string Workspace_Outline_Empty => Get(nameof(Workspace_Outline_Empty));
 
     public static string Workspace_Outline_CloseTooltip => Get(nameof(Workspace_Outline_CloseTooltip));
+
+    // ---- Phase 32: Enterprise Automation, Workflow & Business Rules Engine ----
+
+    public static string Automation_Title => Get(nameof(Automation_Title));
+
+    public static string Automation_Subtitle => Get(nameof(Automation_Subtitle));
+
+    public static string Automation_Tab_Dashboard => Get(nameof(Automation_Tab_Dashboard));
+
+    public static string Automation_Tab_Workflows => Get(nameof(Automation_Tab_Workflows));
+
+    public static string Automation_Tab_BusinessRules => Get(nameof(Automation_Tab_BusinessRules));
+
+    public static string Automation_Tab_ScheduledJobs => Get(nameof(Automation_Tab_ScheduledJobs));
+
+    public static string Automation_Tab_Approvals => Get(nameof(Automation_Tab_Approvals));
+
+    public static string Automation_Dashboard_Title => Get(nameof(Automation_Dashboard_Title));
+
+    public static string Automation_Dashboard_TotalWorkflows => Get(nameof(Automation_Dashboard_TotalWorkflows));
+
+    public static string Automation_Dashboard_PublishedWorkflows => Get(nameof(Automation_Dashboard_PublishedWorkflows));
+
+    public static string Automation_Dashboard_ExecutionsToday => Get(nameof(Automation_Dashboard_ExecutionsToday));
+
+    public static string Automation_Dashboard_FailuresToday => Get(nameof(Automation_Dashboard_FailuresToday));
+
+    public static string Automation_Dashboard_SuccessRate => Get(nameof(Automation_Dashboard_SuccessRate));
+
+    public static string Automation_Dashboard_AvgDuration => Get(nameof(Automation_Dashboard_AvgDuration));
+
+    public static string Automation_Dashboard_PendingApprovals => Get(nameof(Automation_Dashboard_PendingApprovals));
+
+    public static string Automation_Dashboard_RecentExecutions => Get(nameof(Automation_Dashboard_RecentExecutions));
+
+    public static string Automation_NoExecutionsYet => Get(nameof(Automation_NoExecutionsYet));
+
+    public static string Automation_Workflows_Create => Get(nameof(Automation_Workflows_Create));
+
+    public static string Automation_Workflows_Trigger => Get(nameof(Automation_Workflows_Trigger));
+
+    public static string Automation_Workflows_All => Get(nameof(Automation_Workflows_All));
+
+    public static string Automation_Workflows_Publish => Get(nameof(Automation_Workflows_Publish));
+
+    public static string Automation_Workflows_Archive => Get(nameof(Automation_Workflows_Archive));
+
+    public static string Automation_Workflows_RunNow => Get(nameof(Automation_Workflows_RunNow));
+
+    public static string Automation_Workflows_Rollback => Get(nameof(Automation_Workflows_Rollback));
+
+    public static string Automation_Workflows_VersionHistory => Get(nameof(Automation_Workflows_VersionHistory));
+
+    public static string Automation_Rules_Create => Get(nameof(Automation_Rules_Create));
+
+    public static string Automation_Rules_Field => Get(nameof(Automation_Rules_Field));
+
+    public static string Automation_Rules_Operator => Get(nameof(Automation_Rules_Operator));
+
+    public static string Automation_Rules_Value => Get(nameof(Automation_Rules_Value));
+
+    public static string Automation_Rules_Priority => Get(nameof(Automation_Rules_Priority));
+
+    public static string Automation_Rules_Action => Get(nameof(Automation_Rules_Action));
+
+    public static string Automation_Rules_ActionValue => Get(nameof(Automation_Rules_ActionValue));
+
+    public static string Automation_Rules_All => Get(nameof(Automation_Rules_All));
+
+    public static string Automation_Rules_Enable => Get(nameof(Automation_Rules_Enable));
+
+    public static string Automation_Rules_Disable => Get(nameof(Automation_Rules_Disable));
+
+    public static string Automation_Jobs_Create => Get(nameof(Automation_Jobs_Create));
+
+    public static string Automation_Jobs_Frequency => Get(nameof(Automation_Jobs_Frequency));
+
+    public static string Automation_Jobs_Workflow => Get(nameof(Automation_Jobs_Workflow));
+
+    public static string Automation_Jobs_CronExpression => Get(nameof(Automation_Jobs_CronExpression));
+
+    public static string Automation_Jobs_All => Get(nameof(Automation_Jobs_All));
+
+    public static string Automation_Jobs_RunNow => Get(nameof(Automation_Jobs_RunNow));
+
+    public static string Automation_Approvals_Comment => Get(nameof(Automation_Approvals_Comment));
+
+    public static string Automation_Approvals_All => Get(nameof(Automation_Approvals_All));
+
+    public static string Automation_Approvals_Approve => Get(nameof(Automation_Approvals_Approve));
+
+    public static string Automation_Approvals_Reject => Get(nameof(Automation_Approvals_Reject));
 
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its

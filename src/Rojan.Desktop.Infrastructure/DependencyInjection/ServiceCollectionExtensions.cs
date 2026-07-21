@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Api;
+using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Notifications;
@@ -17,9 +18,11 @@ using Rojan.Desktop.Domain.Inventory;
 using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
+using Rojan.Desktop.Domain.Automation;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Domain.Workspaces;
 using Rojan.Desktop.Infrastructure.Accounting;
+using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
 using Rojan.Desktop.Infrastructure.Bookings;
@@ -105,6 +108,19 @@ public static class ServiceCollectionExtensions
 
         // Phase 29: Enterprise Workspace & Window Management.
         services.AddSingleton<IWorkspaceRepository, LocalWorkspaceStore>();
+
+        // Phase 32: Enterprise Automation, Workflow & Business Rules
+        // Engine. WorkflowSchedulerService is started/stopped explicitly
+        // by Shell's composition root (its own Start/Stop, not tied to
+        // this container's lifetime) - registered as a singleton here
+        // purely so Shell can resolve the one shared instance.
+        services.AddSingleton<IWorkflowRepository, LocalWorkflowRepository>();
+        services.AddSingleton<IBusinessRuleRepository, LocalBusinessRuleRepository>();
+        services.AddSingleton<IScheduledJobRepository, LocalScheduledJobRepository>();
+        services.AddSingleton<IApprovalRepository, LocalApprovalRepository>();
+        services.AddSingleton<IWorkflowExecutionRepository, LocalWorkflowExecutionRepository>();
+        services.AddSingleton<IEmailNotificationService, LocalEmailOutboxService>();
+        services.AddSingleton<WorkflowSchedulerService>();
 
         return services;
     }

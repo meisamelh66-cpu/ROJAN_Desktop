@@ -2062,4 +2062,142 @@
   <data name="Help_Default_Notes" xml:space="preserve">
     <value>من المخطط تقديم مساعدة أكثر تفصيلاً لهذه الشاشة في تحديث مستقبلي.</value>
   </data>
+  <data name="Nav_Automation" xml:space="preserve">
+    <value>الأتمتة</value>
+  </data>
+  <data name="Automation_Title" xml:space="preserve">
+    <value>أتمتة المؤسسة</value>
+  </data>
+  <data name="Automation_Subtitle" xml:space="preserve">
+    <value>إدارة سير العمل وقواعد العمل والجداول الزمنية والموافقات.</value>
+  </data>
+  <data name="Automation_Tab_Dashboard" xml:space="preserve">
+    <value>لوحة القيادة</value>
+  </data>
+  <data name="Automation_Tab_Workflows" xml:space="preserve">
+    <value>مسارات العمل</value>
+  </data>
+  <data name="Automation_Tab_BusinessRules" xml:space="preserve">
+    <value>قواعد العمل</value>
+  </data>
+  <data name="Automation_Tab_ScheduledJobs" xml:space="preserve">
+    <value>المهام المجدولة</value>
+  </data>
+  <data name="Automation_Tab_Approvals" xml:space="preserve">
+    <value>الموافقات</value>
+  </data>
+  <data name="Automation_Dashboard_Title" xml:space="preserve">
+    <value>ملخص الأتمتة</value>
+  </data>
+  <data name="Automation_Dashboard_TotalWorkflows" xml:space="preserve">
+    <value>إجمالي مسارات العمل</value>
+  </data>
+  <data name="Automation_Dashboard_PublishedWorkflows" xml:space="preserve">
+    <value>المنشورة</value>
+  </data>
+  <data name="Automation_Dashboard_ExecutionsToday" xml:space="preserve">
+    <value>تنفيذات اليوم</value>
+  </data>
+  <data name="Automation_Dashboard_FailuresToday" xml:space="preserve">
+    <value>إخفاقات اليوم</value>
+  </data>
+  <data name="Automation_Dashboard_SuccessRate" xml:space="preserve">
+    <value>معدل النجاح</value>
+  </data>
+  <data name="Automation_Dashboard_AvgDuration" xml:space="preserve">
+    <value>متوسط مدة التنفيذ</value>
+  </data>
+  <data name="Automation_Dashboard_PendingApprovals" xml:space="preserve">
+    <value>الموافقات المعلقة</value>
+  </data>
+  <data name="Automation_Dashboard_RecentExecutions" xml:space="preserve">
+    <value>التنفيذات الأخيرة</value>
+  </data>
+  <data name="Automation_NoExecutionsYet" xml:space="preserve">
+    <value>لم يتم تسجيل أي تنفيذ بعد.</value>
+  </data>
+  <data name="Automation_Workflows_Create" xml:space="preserve">
+    <value>إنشاء مسار عمل</value>
+  </data>
+  <data name="Automation_Workflows_Trigger" xml:space="preserve">
+    <value>المُحفِّز</value>
+  </data>
+  <data name="Automation_Workflows_All" xml:space="preserve">
+    <value>جميع مسارات العمل</value>
+  </data>
+  <data name="Automation_Workflows_Publish" xml:space="preserve">
+    <value>نشر</value>
+  </data>
+  <data name="Automation_Workflows_Archive" xml:space="preserve">
+    <value>أرشفة</value>
+  </data>
+  <data name="Automation_Workflows_RunNow" xml:space="preserve">
+    <value>تشغيل الآن</value>
+  </data>
+  <data name="Automation_Workflows_Rollback" xml:space="preserve">
+    <value>التراجع</value>
+  </data>
+  <data name="Automation_Workflows_VersionHistory" xml:space="preserve">
+    <value>سجل الإصدارات</value>
+  </data>
+  <data name="Automation_Rules_Create" xml:space="preserve">
+    <value>إنشاء قاعدة</value>
+  </data>
+  <data name="Automation_Rules_Field" xml:space="preserve">
+    <value>الحقل</value>
+  </data>
+  <data name="Automation_Rules_Operator" xml:space="preserve">
+    <value>العامل</value>
+  </data>
+  <data name="Automation_Rules_Value" xml:space="preserve">
+    <value>القيمة</value>
+  </data>
+  <data name="Automation_Rules_Priority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="Automation_Rules_Action" xml:space="preserve">
+    <value>الإجراء</value>
+  </data>
+  <data name="Automation_Rules_ActionValue" xml:space="preserve">
+    <value>قيمة الإجراء</value>
+  </data>
+  <data name="Automation_Rules_All" xml:space="preserve">
+    <value>جميع القواعد</value>
+  </data>
+  <data name="Automation_Rules_Enable" xml:space="preserve">
+    <value>تفعيل</value>
+  </data>
+  <data name="Automation_Rules_Disable" xml:space="preserve">
+    <value>تعطيل</value>
+  </data>
+  <data name="Automation_Jobs_Create" xml:space="preserve">
+    <value>إنشاء مهمة مجدولة</value>
+  </data>
+  <data name="Automation_Jobs_Frequency" xml:space="preserve">
+    <value>التكرار</value>
+  </data>
+  <data name="Automation_Jobs_Workflow" xml:space="preserve">
+    <value>مسار العمل</value>
+  </data>
+  <data name="Automation_Jobs_CronExpression" xml:space="preserve">
+    <value>تعبير Cron</value>
+  </data>
+  <data name="Automation_Jobs_All" xml:space="preserve">
+    <value>جميع المهام المجدولة</value>
+  </data>
+  <data name="Automation_Jobs_RunNow" xml:space="preserve">
+    <value>تشغيل الآن</value>
+  </data>
+  <data name="Automation_Approvals_Comment" xml:space="preserve">
+    <value>تعليق القرار</value>
+  </data>
+  <data name="Automation_Approvals_All" xml:space="preserve">
+    <value>جميع طلبات الموافقة</value>
+  </data>
+  <data name="Automation_Approvals_Approve" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="Automation_Approvals_Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
 </root>

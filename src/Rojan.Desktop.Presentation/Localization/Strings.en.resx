@@ -2062,4 +2062,142 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Help_Default_Notes" xml:space="preserve">
     <value>More detailed help for this screen is planned for a future update.</value>
   </data>
+  <data name="Nav_Automation" xml:space="preserve">
+    <value>Automation</value>
+  </data>
+  <data name="Automation_Title" xml:space="preserve">
+    <value>Enterprise Automation</value>
+  </data>
+  <data name="Automation_Subtitle" xml:space="preserve">
+    <value>Manage workflows, business rules, schedules, and approvals.</value>
+  </data>
+  <data name="Automation_Tab_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Automation_Tab_Workflows" xml:space="preserve">
+    <value>Workflows</value>
+  </data>
+  <data name="Automation_Tab_BusinessRules" xml:space="preserve">
+    <value>Business Rules</value>
+  </data>
+  <data name="Automation_Tab_ScheduledJobs" xml:space="preserve">
+    <value>Scheduled Jobs</value>
+  </data>
+  <data name="Automation_Tab_Approvals" xml:space="preserve">
+    <value>Approvals</value>
+  </data>
+  <data name="Automation_Dashboard_Title" xml:space="preserve">
+    <value>Automation Summary</value>
+  </data>
+  <data name="Automation_Dashboard_TotalWorkflows" xml:space="preserve">
+    <value>Total Workflows</value>
+  </data>
+  <data name="Automation_Dashboard_PublishedWorkflows" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Automation_Dashboard_ExecutionsToday" xml:space="preserve">
+    <value>Executions Today</value>
+  </data>
+  <data name="Automation_Dashboard_FailuresToday" xml:space="preserve">
+    <value>Failures Today</value>
+  </data>
+  <data name="Automation_Dashboard_SuccessRate" xml:space="preserve">
+    <value>Success Rate</value>
+  </data>
+  <data name="Automation_Dashboard_AvgDuration" xml:space="preserve">
+    <value>Avg. Duration</value>
+  </data>
+  <data name="Automation_Dashboard_PendingApprovals" xml:space="preserve">
+    <value>Pending Approvals</value>
+  </data>
+  <data name="Automation_Dashboard_RecentExecutions" xml:space="preserve">
+    <value>Recent Executions</value>
+  </data>
+  <data name="Automation_NoExecutionsYet" xml:space="preserve">
+    <value>No executions recorded yet.</value>
+  </data>
+  <data name="Automation_Workflows_Create" xml:space="preserve">
+    <value>Create Workflow</value>
+  </data>
+  <data name="Automation_Workflows_Trigger" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="Automation_Workflows_All" xml:space="preserve">
+    <value>All Workflows</value>
+  </data>
+  <data name="Automation_Workflows_Publish" xml:space="preserve">
+    <value>Publish</value>
+  </data>
+  <data name="Automation_Workflows_Archive" xml:space="preserve">
+    <value>Archive</value>
+  </data>
+  <data name="Automation_Workflows_RunNow" xml:space="preserve">
+    <value>Run Now</value>
+  </data>
+  <data name="Automation_Workflows_Rollback" xml:space="preserve">
+    <value>Rollback</value>
+  </data>
+  <data name="Automation_Workflows_VersionHistory" xml:space="preserve">
+    <value>Version History</value>
+  </data>
+  <data name="Automation_Rules_Create" xml:space="preserve">
+    <value>Create Rule</value>
+  </data>
+  <data name="Automation_Rules_Field" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="Automation_Rules_Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Automation_Rules_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Automation_Rules_Priority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="Automation_Rules_Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Automation_Rules_ActionValue" xml:space="preserve">
+    <value>Action Value</value>
+  </data>
+  <data name="Automation_Rules_All" xml:space="preserve">
+    <value>All Rules</value>
+  </data>
+  <data name="Automation_Rules_Enable" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Automation_Rules_Disable" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="Automation_Jobs_Create" xml:space="preserve">
+    <value>Create Scheduled Job</value>
+  </data>
+  <data name="Automation_Jobs_Frequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="Automation_Jobs_Workflow" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+  <data name="Automation_Jobs_CronExpression" xml:space="preserve">
+    <value>Cron Expression</value>
+  </data>
+  <data name="Automation_Jobs_All" xml:space="preserve">
+    <value>All Scheduled Jobs</value>
+  </data>
+  <data name="Automation_Jobs_RunNow" xml:space="preserve">
+    <value>Run Now</value>
+  </data>
+  <data name="Automation_Approvals_Comment" xml:space="preserve">
+    <value>Decision Comment</value>
+  </data>
+  <data name="Automation_Approvals_All" xml:space="preserve">
+    <value>All Approval Requests</value>
+  </data>
+  <data name="Automation_Approvals_Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="Automation_Approvals_Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
 </root>

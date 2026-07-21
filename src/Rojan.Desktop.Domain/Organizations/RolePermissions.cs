@@ -38,6 +38,7 @@ public static class RolePermissions
             Permission.BranchManage,
             Permission.Approve, Permission.Reject,
             Permission.ManageUsers,
+            Permission.AutomationView, Permission.AutomationManage,
         },
         [WorkspaceRole.BranchManager] = new HashSet<Permission>
         {
@@ -56,6 +57,7 @@ public static class RolePermissions
             Permission.BranchManage,
             Permission.Approve, Permission.Reject,
             Permission.ManageUsers,
+            Permission.AutomationView, Permission.AutomationManage,
         },
         [WorkspaceRole.Reception] = new HashSet<Permission>
         {

@@ -2074,4 +2074,142 @@
   <data name="Help_Default_Notes" xml:space="preserve">
     <value>راهنمای دقیق‌تر برای این صفحه برای به‌روزرسانی‌های آینده برنامه‌ریزی شده است.</value>
   </data>
+  <data name="Nav_Automation" xml:space="preserve">
+    <value>اتوماسیون</value>
+  </data>
+  <data name="Automation_Title" xml:space="preserve">
+    <value>اتوماسیون سازمانی</value>
+  </data>
+  <data name="Automation_Subtitle" xml:space="preserve">
+    <value>گردش‌کار، قوانین کسب‌وکار، زمان‌بندی و تأییدیه‌ها را مدیریت کنید.</value>
+  </data>
+  <data name="Automation_Tab_Dashboard" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
+  <data name="Automation_Tab_Workflows" xml:space="preserve">
+    <value>گردش‌کارها</value>
+  </data>
+  <data name="Automation_Tab_BusinessRules" xml:space="preserve">
+    <value>قوانین کسب‌وکار</value>
+  </data>
+  <data name="Automation_Tab_ScheduledJobs" xml:space="preserve">
+    <value>کارهای زمان‌بندی‌شده</value>
+  </data>
+  <data name="Automation_Tab_Approvals" xml:space="preserve">
+    <value>تأییدیه‌ها</value>
+  </data>
+  <data name="Automation_Dashboard_Title" xml:space="preserve">
+    <value>خلاصه اتوماسیون</value>
+  </data>
+  <data name="Automation_Dashboard_TotalWorkflows" xml:space="preserve">
+    <value>کل گردش‌کارها</value>
+  </data>
+  <data name="Automation_Dashboard_PublishedWorkflows" xml:space="preserve">
+    <value>منتشرشده</value>
+  </data>
+  <data name="Automation_Dashboard_ExecutionsToday" xml:space="preserve">
+    <value>اجراهای امروز</value>
+  </data>
+  <data name="Automation_Dashboard_FailuresToday" xml:space="preserve">
+    <value>خطاهای امروز</value>
+  </data>
+  <data name="Automation_Dashboard_SuccessRate" xml:space="preserve">
+    <value>نرخ موفقیت</value>
+  </data>
+  <data name="Automation_Dashboard_AvgDuration" xml:space="preserve">
+    <value>میانگین مدت اجرا</value>
+  </data>
+  <data name="Automation_Dashboard_PendingApprovals" xml:space="preserve">
+    <value>تأییدیه‌های در انتظار</value>
+  </data>
+  <data name="Automation_Dashboard_RecentExecutions" xml:space="preserve">
+    <value>اجراهای اخیر</value>
+  </data>
+  <data name="Automation_NoExecutionsYet" xml:space="preserve">
+    <value>هنوز هیچ اجرایی ثبت نشده است.</value>
+  </data>
+  <data name="Automation_Workflows_Create" xml:space="preserve">
+    <value>ایجاد گردش‌کار</value>
+  </data>
+  <data name="Automation_Workflows_Trigger" xml:space="preserve">
+    <value>رویداد راه‌انداز</value>
+  </data>
+  <data name="Automation_Workflows_All" xml:space="preserve">
+    <value>همه گردش‌کارها</value>
+  </data>
+  <data name="Automation_Workflows_Publish" xml:space="preserve">
+    <value>انتشار</value>
+  </data>
+  <data name="Automation_Workflows_Archive" xml:space="preserve">
+    <value>بایگانی</value>
+  </data>
+  <data name="Automation_Workflows_RunNow" xml:space="preserve">
+    <value>اجرای فوری</value>
+  </data>
+  <data name="Automation_Workflows_Rollback" xml:space="preserve">
+    <value>بازگشت به نسخه</value>
+  </data>
+  <data name="Automation_Workflows_VersionHistory" xml:space="preserve">
+    <value>تاریخچه نسخه‌ها</value>
+  </data>
+  <data name="Automation_Rules_Create" xml:space="preserve">
+    <value>ایجاد قانون</value>
+  </data>
+  <data name="Automation_Rules_Field" xml:space="preserve">
+    <value>فیلد</value>
+  </data>
+  <data name="Automation_Rules_Operator" xml:space="preserve">
+    <value>عملگر</value>
+  </data>
+  <data name="Automation_Rules_Value" xml:space="preserve">
+    <value>مقدار</value>
+  </data>
+  <data name="Automation_Rules_Priority" xml:space="preserve">
+    <value>اولویت</value>
+  </data>
+  <data name="Automation_Rules_Action" xml:space="preserve">
+    <value>اقدام</value>
+  </data>
+  <data name="Automation_Rules_ActionValue" xml:space="preserve">
+    <value>مقدار اقدام</value>
+  </data>
+  <data name="Automation_Rules_All" xml:space="preserve">
+    <value>همه قوانین</value>
+  </data>
+  <data name="Automation_Rules_Enable" xml:space="preserve">
+    <value>فعال‌سازی</value>
+  </data>
+  <data name="Automation_Rules_Disable" xml:space="preserve">
+    <value>غیرفعال‌سازی</value>
+  </data>
+  <data name="Automation_Jobs_Create" xml:space="preserve">
+    <value>ایجاد کار زمان‌بندی‌شده</value>
+  </data>
+  <data name="Automation_Jobs_Frequency" xml:space="preserve">
+    <value>دوره تکرار</value>
+  </data>
+  <data name="Automation_Jobs_Workflow" xml:space="preserve">
+    <value>گردش‌کار</value>
+  </data>
+  <data name="Automation_Jobs_CronExpression" xml:space="preserve">
+    <value>عبارت Cron</value>
+  </data>
+  <data name="Automation_Jobs_All" xml:space="preserve">
+    <value>همه کارهای زمان‌بندی‌شده</value>
+  </data>
+  <data name="Automation_Jobs_RunNow" xml:space="preserve">
+    <value>اجرای فوری</value>
+  </data>
+  <data name="Automation_Approvals_Comment" xml:space="preserve">
+    <value>توضیح تصمیم</value>
+  </data>
+  <data name="Automation_Approvals_All" xml:space="preserve">
+    <value>همه تأییدیه‌ها</value>
+  </data>
+  <data name="Automation_Approvals_Approve" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+  <data name="Automation_Approvals_Reject" xml:space="preserve">
+    <value>رد</value>
+  </data>
 </root>

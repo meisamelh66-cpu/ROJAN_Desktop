@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Application.AI;
+using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
@@ -187,6 +188,35 @@ public static class ServiceCollectionExtensions
         // IWorkspaceRepository - the same interface-to-concrete singleton
         // pattern every existing service in this app already uses.
         services.AddSingleton<IWorkspaceService, WorkspaceService>();
+
+        // Phase 32: Enterprise Automation, Workflow & Business Rules
+        // Engine. WorkflowExecutionEngine depends on every registered
+        // IWorkflowStepExecutor (resolved as IEnumerable<T>, one
+        // registration per WorkflowStepType) - registration order here
+        // doesn't matter, the engine keys them by StepType itself.
+        // NoOpAiActionExecutor is pure logic with no I/O, so - unlike
+        // IEmailNotificationService, which needs file-system access and is
+        // registered in Infrastructure - it's registered directly here.
+        services.AddSingleton<IWorkflowService, WorkflowService>();
+        services.AddSingleton<IBusinessRuleService, BusinessRuleService>();
+        services.AddSingleton<IScheduledJobService, ScheduledJobService>();
+        services.AddSingleton<IApprovalService, ApprovalService>();
+        services.AddSingleton<ITriggerEngine, TriggerEngine>();
+        services.AddSingleton<IWorkflowExecutionEngine, WorkflowExecutionEngine>();
+        services.AddSingleton<IAutomationDashboardQueryService, AutomationDashboardQueryService>();
+        services.AddSingleton<IAiActionExecutor, NoOpAiActionExecutor>();
+
+        services.AddSingleton<IWorkflowStepExecutor, StartStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, EndStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, DecisionStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, DelayStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, ApprovalStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, ConditionStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, NotificationStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, EmailStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, AiActionStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, DatabaseActionStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, ApiActionStepExecutor>();
 
         return services;
     }
