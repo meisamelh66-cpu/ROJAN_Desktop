@@ -38,6 +38,7 @@ internal static class AutomationMapping
         DomainAutomation.WorkflowStepType.AiAction => WorkflowStepType.AiAction,
         DomainAutomation.WorkflowStepType.DatabaseAction => WorkflowStepType.DatabaseAction,
         DomainAutomation.WorkflowStepType.ApiAction => WorkflowStepType.ApiAction,
+        DomainAutomation.WorkflowStepType.RunReport => WorkflowStepType.RunReport,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
@@ -54,6 +55,7 @@ internal static class AutomationMapping
         WorkflowStepType.AiAction => DomainAutomation.WorkflowStepType.AiAction,
         WorkflowStepType.DatabaseAction => DomainAutomation.WorkflowStepType.DatabaseAction,
         WorkflowStepType.ApiAction => DomainAutomation.WorkflowStepType.ApiAction,
+        WorkflowStepType.RunReport => DomainAutomation.WorkflowStepType.RunReport,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 

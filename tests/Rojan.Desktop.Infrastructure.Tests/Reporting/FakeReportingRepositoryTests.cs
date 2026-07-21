@@ -6,13 +6,13 @@ namespace Rojan.Desktop.Infrastructure.Tests.Reporting;
 public sealed class FakeReportingRepositoryTests
 {
     [Fact]
-    public async Task GetReportDefinitionsAsync_ReturnsAllFifteenSeededReports()
+    public async Task GetReportDefinitionsAsync_ReturnsAllTwentyEightSeededReports()
     {
         var repository = new FakeReportingRepository();
 
         var definitions = await repository.GetReportDefinitionsAsync();
 
-        Assert.Equal(15, definitions.Count);
+        Assert.Equal(28, definitions.Count);
         Assert.All(definitions, definition => Assert.True(definition.IsSystemDefined));
     }
 
@@ -32,6 +32,19 @@ public sealed class FakeReportingRepositoryTests
     [InlineData("daily-dashboard", ReportType.DailyDashboard)]
     [InlineData("weekly-dashboard", ReportType.WeeklyDashboard)]
     [InlineData("monthly-dashboard", ReportType.MonthlyDashboard)]
+    [InlineData("cash-flow", ReportType.CashFlow)]
+    [InlineData("outstanding-payments", ReportType.OutstandingPayments)]
+    [InlineData("tax-summary", ReportType.TaxSummary)]
+    [InlineData("vip-customers", ReportType.VipCustomers)]
+    [InlineData("inactive-customers", ReportType.InactiveCustomers)]
+    [InlineData("customer-lifetime-value", ReportType.CustomerLifetimeValue)]
+    [InlineData("appointment-status-breakdown", ReportType.AppointmentStatusBreakdown)]
+    [InlineData("peak-hours", ReportType.PeakHours)]
+    [InlineData("inventory-movements", ReportType.InventoryMovements)]
+    [InlineData("supplier-purchases", ReportType.SupplierPurchases)]
+    [InlineData("employee-working-hours", ReportType.EmployeeWorkingHours)]
+    [InlineData("branch-performance", ReportType.BranchPerformance)]
+    [InlineData("ai-usage-summary", ReportType.AiUsageSummary)]
     public async Task GetReportDefinitionByIdAsync_EachSeededReport_HasExpectedReportType(string id, ReportType expectedType)
     {
         var repository = new FakeReportingRepository();

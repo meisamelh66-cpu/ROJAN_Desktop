@@ -11,4 +11,5 @@ public enum FilterType
     Customer,
     Status,
     Category,
+    Supplier,
 }

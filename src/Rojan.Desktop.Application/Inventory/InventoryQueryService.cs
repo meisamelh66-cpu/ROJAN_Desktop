@@ -23,4 +23,10 @@ public sealed class InventoryQueryService : IInventoryQueryService
         var items = await GetInventoryItemsAsync(cancellationToken).ConfigureAwait(true);
         return items.Where(item => item.IsLowStock).ToList();
     }
+
+    public async Task<IReadOnlyList<StockTransactionDto>> GetAllTransactionsAsync(CancellationToken cancellationToken = default)
+    {
+        var transactions = await _repository.GetAllTransactionsAsync(cancellationToken).ConfigureAwait(true);
+        return transactions.OrderByDescending(transaction => transaction.OccurredAt).Select(InventoryMapper.MapTransaction).ToList();
+    }
 }

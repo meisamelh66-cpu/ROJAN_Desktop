@@ -2503,4 +2503,13 @@
   <data name="Enum_Suggestion" xml:space="preserve">
     <value>اقتراح</value>
   </data>
+  <data name="Reporting_RunCancelled" xml:space="preserve">
+    <value>تم إلغاء إنشاء التقرير.</value>
+  </data>
+  <data name="Reporting_CatalogSearchPlaceholder" xml:space="preserve">
+    <value>البحث في التقارير...</value>
+  </data>
+  <data name="Enum_RunReport" xml:space="preserve">
+    <value>تشغيل التقرير</value>
+  </data>
 </root>

@@ -218,6 +218,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkflowStepExecutor, AiActionStepExecutor>();
         services.AddSingleton<IWorkflowStepExecutor, DatabaseActionStepExecutor>();
         services.AddSingleton<IWorkflowStepExecutor, ApiActionStepExecutor>();
+        services.AddSingleton<IWorkflowStepExecutor, RunReportStepExecutor>();
 
         services.AddSingleton<ISupportMessageService, SupportMessageService>();
         services.AddSingleton<IDevelopmentApplicationService, DevelopmentApplicationService>();

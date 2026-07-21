@@ -26,13 +26,13 @@ public sealed class KpiEngineQueryServiceTests
         new StubPayrollQueryService(payrollSummaries ?? []));
 
     [Fact]
-    public async Task GetKpisAsync_ReturnsExactlyEightKpis()
+    public async Task GetKpisAsync_ReturnsExactlyFifteenKpis()
     {
         var sut = CreateSut([]);
 
         var kpis = await sut.GetKpisAsync(AnalyticsPeriod.Daily);
 
-        Assert.Equal(8, kpis.Count);
+        Assert.Equal(15, kpis.Count);
         Assert.Contains(kpis, k => k.KpiType == KpiType.Revenue);
         Assert.Contains(kpis, k => k.KpiType == KpiType.Appointments);
         Assert.Contains(kpis, k => k.KpiType == KpiType.Customers);
@@ -41,6 +41,48 @@ public sealed class KpiEngineQueryServiceTests
         Assert.Contains(kpis, k => k.KpiType == KpiType.Attendance);
         Assert.Contains(kpis, k => k.KpiType == KpiType.Growth);
         Assert.Contains(kpis, k => k.KpiType == KpiType.Trend);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.Profit);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.Expenses);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.CancellationRate);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.AverageTicket);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.AverageServiceTime);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.Retention);
+        Assert.Contains(kpis, k => k.KpiType == KpiType.EmployeeProductivity);
+    }
+
+    [Fact]
+    public async Task GetKpisAsync_CancellationRateKpi_ComputesShareOfCancelledBookings()
+    {
+        IReadOnlyList<AppBookings.BookingDto> bookings =
+        [
+            new("booking-1", "customer-1", "Alice", "service-1", "Haircut", "specialist-1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Completed, string.Empty, "org-1", "branch-1"),
+            new("booking-2", "customer-1", "Alice", "service-1", "Haircut", "specialist-1", "Jordan", Now, 60, "$65", AppBookings.BookingStatus.Cancelled, string.Empty, "org-1", "branch-1"),
+        ];
+        var sut = CreateSut([], bookings);
+
+        var kpis = await sut.GetKpisAsync(AnalyticsPeriod.Daily);
+
+        var cancellationRate = kpis.Single(k => k.KpiType == KpiType.CancellationRate);
+        Assert.Equal(50.0m, cancellationRate.Value);
+    }
+
+    [Fact]
+    public async Task GetKpisAsync_ProfitKpi_SubtractsPayrollFromRevenue()
+    {
+        IReadOnlyList<AppAccounting.InvoiceDto> invoices =
+        [
+            new("invoice-1", "customer-1", "Alice", "booking-1", "BK-1", Now, AppAccounting.InvoiceStatus.Paid, 1000m, 0m, 1000m, string.Empty),
+        ];
+        IReadOnlyList<AppHr.PayrollSummaryDto> payroll =
+        [
+            new("payroll-1", "employee-1", "Jordan", Now.Month, Now.Year, 300m, 0m, 0m, 0m, 300m, Now),
+        ];
+        var sut = CreateSut(invoices, payrollSummaries: payroll);
+
+        var kpis = await sut.GetKpisAsync(AnalyticsPeriod.Monthly);
+
+        var profit = kpis.Single(k => k.KpiType == KpiType.Profit);
+        Assert.Equal(700m, profit.Value);
     }
 
     [Fact]

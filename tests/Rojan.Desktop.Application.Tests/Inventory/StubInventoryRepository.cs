@@ -84,6 +84,9 @@ internal sealed class StubInventoryRepository : IInventoryRepository
     public Task<IReadOnlyList<StockTransaction>> GetTransactionsForProductAsync(string productId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<StockTransaction>>(Transactions.Where(transaction => transaction.ProductId == productId).ToList());
 
+    public Task<IReadOnlyList<StockTransaction>> GetAllTransactionsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<StockTransaction>>(Transactions.ToList());
+
     public Task<StockTransaction> RecordTransactionAsync(StockTransaction transaction, CancellationToken cancellationToken = default)
     {
         Transactions.Add(transaction);

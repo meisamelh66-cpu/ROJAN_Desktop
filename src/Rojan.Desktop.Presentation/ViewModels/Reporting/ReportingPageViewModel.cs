@@ -37,6 +37,8 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
     private string _statusMessage = string.Empty;
     private DateTime? _filterStartDate;
     private DateTime? _filterEndDate;
+    private string _catalogSearchText = string.Empty;
+    private IReadOnlyList<ReportDefinitionDto> _allReportDefinitions = [];
 
     public ReportingPageViewModel(
         IReportCatalogQueryService catalogQueryService,
@@ -172,6 +174,19 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         set => SetProperty(ref _filterEndDate, value);
     }
 
+    /// <summary>Filters the already-loaded catalog client-side (the full catalog is small and fully in memory, unlike Customers/Bookings' server-side search) - Requirement 33.2/33.13's global report search.</summary>
+    public string CatalogSearchText
+    {
+        get => _catalogSearchText;
+        set
+        {
+            if (SetProperty(ref _catalogSearchText, value))
+            {
+                ApplyCatalogFilter();
+            }
+        }
+    }
+
     private async Task LoadAsync()
     {
         State = DashboardState.Loading;
@@ -179,16 +194,12 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var definitions = await _catalogQueryService.GetReportDefinitionsAsync().ConfigureAwait(true);
-            ReportDefinitions.Clear();
-            foreach (var definition in definitions)
-            {
-                ReportDefinitions.Add(definition);
-            }
+            _allReportDefinitions = await _catalogQueryService.GetReportDefinitionsAsync().ConfigureAwait(true);
+            ApplyCatalogFilter();
 
             await ReloadSnapshotsAsync().ConfigureAwait(true);
 
-            State = definitions.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
+            State = _allReportDefinitions.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
         catch (Exception exception)
@@ -196,6 +207,21 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+        }
+    }
+
+    private void ApplyCatalogFilter()
+    {
+        var matching = string.IsNullOrWhiteSpace(CatalogSearchText)
+            ? _allReportDefinitions
+            : _allReportDefinitions.Where(definition =>
+                definition.Name.Contains(CatalogSearchText, StringComparison.OrdinalIgnoreCase)
+                || definition.Description.Contains(CatalogSearchText, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        ReportDefinitions.Clear();
+        foreach (var definition in matching)
+        {
+            ReportDefinitions.Add(definition);
         }
     }
 
@@ -237,11 +263,11 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
             CurrentResult = result;
             await _snapshotCommandService.RecordSnapshotAsync(result, token).ConfigureAwait(true);
             await ReloadSnapshotsAsync().ConfigureAwait(true);
-            StatusMessage = $"Generated {result.Rows.Count} rows.";
+            StatusMessage = $"{result.Rows.Count} {Localization.Strings.Reporting_Rows}";
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Report generation cancelled.";
+            StatusMessage = Localization.Strings.Reporting_RunCancelled;
         }
 #pragma warning disable CA1031 // Report generation must surface any failure as a status message, not crash the page.
         catch (Exception exception)
@@ -271,7 +297,7 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         try
         {
             CurrentResult = await _executionQueryService.RunReportAsync(definition.Id, snapshot.AppliedFilters).ConfigureAwait(true);
-            StatusMessage = $"Generated {CurrentResult.Rows.Count} rows.";
+            StatusMessage = $"{CurrentResult.Rows.Count} {Localization.Strings.Reporting_Rows}";
         }
 #pragma warning disable CA1031 // Report generation must surface any failure as a status message, not crash the page.
         catch (Exception exception)

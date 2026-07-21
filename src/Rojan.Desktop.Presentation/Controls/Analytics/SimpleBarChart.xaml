@@ -49,6 +49,32 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <!--
+            Phase 33: Enterprise Reporting & Business Intelligence Platform.
+            Pie/Donut render as real wedges (native Path/ArcSegment, still no
+            external charting library) instead of degrading to bars;
+            Line/Area/Trend render as a real Polyline. Both built entirely in
+            code-behind (Rebuild()) since the geometry depends on the whole
+            series, same reasoning BarWidth is pre-computed there instead of
+            via a converter. Bar/Column/HeatMap keep the existing bar
+            rendering above (HeatMap has no dedicated renderer yet - Domain's
+            own doc comment documents it as architecture-ready only).
+        -->
+        <Canvas x:Name="PieCanvas" Width="180" Height="180" Margin="0,4,0,4" HorizontalAlignment="Left" Visibility="Collapsed" />
+        <ItemsControl x:Name="PieLegendItemsControl" Visibility="Collapsed">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type local:ChartBarItem}">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <Border Width="10" Height="10" CornerRadius="5" Background="{Binding SliceBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding Label}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding DisplayValue}" Style="{StaticResource Rojan.TextStyle.Caption}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Canvas x:Name="LineCanvas" Height="140" Margin="0,4,0,4" Visibility="Collapsed" />
     </StackPanel>
 
 </UserControl>

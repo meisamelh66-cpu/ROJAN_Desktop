@@ -106,6 +106,35 @@
                         </Style>
                     </StackPanel.Style>
 
+                    <!-- Phase 33: global report search - Requirement 33.2/33.13. -->
+                    <Border Style="{StaticResource Rojan.Style.Panel}" Padding="16,10" Margin="0,0,0,16">
+                        <Grid>
+                            <TextBlock Text="{x:Static loc:Strings.Reporting_CatalogSearchPlaceholder}"
+                                       Foreground="{StaticResource Rojan.Brush.HintText}"
+                                       FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                                       FontSize="15"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CatalogSearchText}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBox Text="{Binding CatalogSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                     CaretBrush="{StaticResource Rojan.Brush.Accent}"
+                                     FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                                     FontSize="15" />
+                        </Grid>
+                    </Border>
+
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Reporting_ReportCatalog}" State="{Binding State}" ErrorMessage="{Binding ErrorMessage}" RetryCommand="{Binding LoadCommand}">
                         <ItemsControl ItemsSource="{Binding ReportDefinitions}">
                             <ItemsControl.ItemTemplate>

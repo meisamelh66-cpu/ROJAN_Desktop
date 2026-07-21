@@ -95,6 +95,7 @@ public static class RolePermissions
             Permission.DashboardView,
             Permission.HrView, Permission.HrManage,
             Permission.Approve, Permission.Reject,
+            Permission.ReportingView,
         },
         [WorkspaceRole.Ai] = new HashSet<Permission>
         {

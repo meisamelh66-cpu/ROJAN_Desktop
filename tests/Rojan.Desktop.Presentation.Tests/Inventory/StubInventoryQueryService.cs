@@ -20,4 +20,7 @@ internal sealed class StubInventoryQueryService : IInventoryQueryService
         var items = await _getItems(cancellationToken).ConfigureAwait(true);
         return items.Where(item => item.IsLowStock).ToList();
     }
+
+    public Task<IReadOnlyList<StockTransactionDto>> GetAllTransactionsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<StockTransactionDto>>([]);
 }

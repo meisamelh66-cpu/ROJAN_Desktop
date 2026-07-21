@@ -664,6 +664,10 @@ public static class Strings
 
     public static string Reporting_Rows => Get(nameof(Reporting_Rows));
 
+    public static string Reporting_RunCancelled => Get(nameof(Reporting_RunCancelled));
+
+    public static string Reporting_CatalogSearchPlaceholder => Get(nameof(Reporting_CatalogSearchPlaceholder));
+
     public static string Ai_Title => Get(nameof(Ai_Title));
 
     public static string Ai_Subtitle => Get(nameof(Ai_Subtitle));

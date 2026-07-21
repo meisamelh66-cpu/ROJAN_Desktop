@@ -1132,6 +1132,55 @@ see `docs/standards/versioning.md`.
   and ran 8 seconds with zero Application-log errors before closing
   cleanly.
 
+- Phase 33 Enterprise Reporting & Business Intelligence Platform — extends
+  the Phase 20 Report Center in place (no new competing module — `Nav_Reports`
+  was already "گزارش‌ها") with 13 new system reports closing real
+  Financial/Customer/Appointment/Inventory/Employee gaps: Cash Flow,
+  Outstanding Payments, Tax Summary (Financial); VIP Customers, Inactive
+  Customers, Customer Lifetime Value (Customer); Appointment Status
+  Breakdown, Peak Hours (Appointment); Inventory Movements, Supplier
+  Purchases (Inventory); Employee Working Hours, Branch Performance
+  (Employee); AI Usage Summary (Dashboards) — each a new `ReportType`
+  member (Domain + Application mirror + `ReportingMapper`), a seeded
+  Persian `ReportDefinition`, and a dedicated `RunXxxAsync` handler in
+  `ReportExecutionQueryService` (grown from 11 to 14 constructor
+  dependencies: `IShiftQueryService`/`IOrganizationQueryService`/
+  `ITokenUsageTracker`, all pre-registered elsewhere). New
+  `IInventoryRepository`/`IInventoryQueryService.GetAllTransactionsAsync()`
+  added (only a per-product variant existed before). KPI Dashboard grew
+  from 8 to 15 `KpiType`s — Profit, Expenses, Cancellation Rate, Average
+  Ticket, Average Service Time, Retention, Employee Productivity added
+  (Profit/Expenses are an honest approximation against Payroll, since no
+  Expense-tracking module exists anywhere in this app — documented the
+  same way the pre-existing Customers/Inventory KPIs document their own
+  "flat trend" limitation). `SimpleBarChart` (previously bar-only) now
+  also renders real Pie/Donut wedges (`Path`+`ArcSegment`/`CombinedGeometry`
+  ring) and real Line/Area/Trend polylines, all native WPF, no new NuGet
+  dependency. Catalog search (`ReportingPageViewModel.CatalogSearchText`)
+  added — client-side substring filter over the now-28-report catalog;
+  Recent/Saved/Pinned reports were already real from Phase 20 and reused
+  unchanged. Report Scheduler bridges into the existing Phase 32
+  Automation Engine via one new `WorkflowStepType.RunReport` +
+  `RunReportStepExecutor` (reads `Config["reportDefinitionId"]`, runs the
+  report unfiltered, always exports a CSV artifact, optionally emails the
+  result location through the existing outbox-only
+  `IEmailNotificationService` when `Config["recipientEmail"]` is set) — a
+  user schedules a report today through the existing Automation page's
+  Workflows/Scheduled Jobs tabs rather than a second, duplicate "Scheduled
+  Reports" UI inside Reporting. `ReportingModule.Metadata.RequiredPermission`
+  (previously `null`, unrestricted) now set to `Permission.ReportingView`;
+  `WorkspaceRole.Hr` was missing that same permission in
+  `RolePermissions.cs` — added. PDF/Excel/Print export remain documented
+  stubs (CSV is real), and Report Builder grouping/sorting/row-level
+  drill-down remain a documented boundary — both consistent with Phase
+  20's original scope and this app's "flagship subset now" pattern. New
+  `Strings.cs`/resx entries across fa-IR/en/ar, no hardcoded text
+  introduced. 33 new tests (1455 → 1488), full suite passes on both Debug
+  and Release, zero warnings, zero errors. Runtime-verified: both builds
+  clean; the compiled Shell launched and ran cleanly with zero
+  Application-log errors before closing — see
+  `docs/phases/phase-33-enterprise-reporting-business-intelligence-platform.md`.
+
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
   closing a gap where the documented

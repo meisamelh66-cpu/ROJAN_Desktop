@@ -1,8 +1,10 @@
 using AppAccounting = Rojan.Desktop.Application.Accounting;
+using AppAI = Rojan.Desktop.Application.AI;
 using AppBookings = Rojan.Desktop.Application.Bookings;
 using AppCustomers = Rojan.Desktop.Application.Customers;
 using AppHr = Rojan.Desktop.Application.HR;
 using AppInventory = Rojan.Desktop.Application.Inventory;
+using AppOrganizations = Rojan.Desktop.Application.Organizations;
 using AppServices = Rojan.Desktop.Application.Services;
 using AppSpecialists = Rojan.Desktop.Application.Specialists;
 
@@ -65,13 +67,17 @@ internal sealed class StubProductQueryService(
 
 internal sealed class StubInventoryQueryService(
     IReadOnlyList<AppInventory.InventoryItemDto> items,
-    IReadOnlyList<AppInventory.InventoryItemDto>? lowStockItems = null) : AppInventory.IInventoryQueryService
+    IReadOnlyList<AppInventory.InventoryItemDto>? lowStockItems = null,
+    IReadOnlyList<AppInventory.StockTransactionDto>? transactions = null) : AppInventory.IInventoryQueryService
 {
     public Task<IReadOnlyList<AppInventory.InventoryItemDto>> GetInventoryItemsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(items);
 
     public Task<IReadOnlyList<AppInventory.InventoryItemDto>> GetLowStockItemsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(lowStockItems ?? items.Where(i => i.IsLowStock).ToList());
+
+    public Task<IReadOnlyList<AppInventory.StockTransactionDto>> GetAllTransactionsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(transactions ?? []);
 }
 
 internal sealed class StubInvoiceQueryService(IReadOnlyList<AppAccounting.InvoiceDto> invoices) : AppAccounting.IInvoiceQueryService
@@ -138,4 +144,50 @@ internal sealed class StubPayrollQueryService(IReadOnlyList<AppHr.PayrollSummary
 
     public Task<AppHr.PayrollSummaryDto?> GetPayrollSummaryForEmployeeAsync(string employeeId, int month, int year, CancellationToken cancellationToken = default) =>
         Task.FromResult(summaries.FirstOrDefault(s => s.EmployeeId == employeeId && s.Month == month && s.Year == year));
+}
+
+internal sealed class StubShiftQueryService(
+    IReadOnlyList<AppHr.ShiftAssignmentDto> assignments,
+    IReadOnlyList<AppHr.ShiftDto>? shifts = null) : AppHr.IShiftQueryService
+{
+    public Task<IReadOnlyList<AppHr.ShiftDto>> GetShiftsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(shifts ?? []);
+
+    public Task<IReadOnlyList<AppHr.ShiftAssignmentDto>> GetShiftAssignmentsForEmployeeAsync(string employeeId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<AppHr.ShiftAssignmentDto>>(assignments.Where(a => a.EmployeeId == employeeId).ToList());
+
+    public Task<IReadOnlyList<AppHr.ShiftAssignmentDto>> GetAllShiftAssignmentsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(assignments);
+}
+
+internal sealed class StubOrganizationQueryService(
+    IReadOnlyList<AppOrganizations.OrganizationDto> organizations,
+    IReadOnlyList<AppOrganizations.BranchDto> branches) : AppOrganizations.IOrganizationQueryService
+{
+    public Task<IReadOnlyList<AppOrganizations.OrganizationDto>> GetOrganizationsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(organizations);
+
+    public Task<AppOrganizations.OrganizationDto?> GetOrganizationByIdAsync(string organizationId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(organizations.FirstOrDefault(o => o.Id == organizationId));
+
+    public Task<IReadOnlyList<AppOrganizations.BranchDto>> GetBranchesAsync(string organizationId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<AppOrganizations.BranchDto>>(branches.Where(b => b.OrganizationId == organizationId).ToList());
+
+    public Task<AppOrganizations.BranchDto?> GetBranchByIdAsync(string branchId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(branches.FirstOrDefault(b => b.Id == branchId));
+
+    public Task<AppOrganizations.BranchSettingsDto?> GetBranchSettingsAsync(string branchId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by Reporting.");
+}
+
+internal sealed class StubTokenUsageTracker(IReadOnlyList<AppAI.TokenUsageRecordDto> records) : AppAI.ITokenUsageTracker
+{
+    public Task<AppAI.TokenUsageRecordDto> RecordAsync(string sessionId, AppAI.AIProviderType providerType, int promptTokens, int completionTokens, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by Reporting.");
+
+    public Task<IReadOnlyList<AppAI.TokenUsageRecordDto>> GetUsageHistoryAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(records);
+
+    public Task<int> GetTotalTokensAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(records.Sum(r => r.TotalTokens));
 }

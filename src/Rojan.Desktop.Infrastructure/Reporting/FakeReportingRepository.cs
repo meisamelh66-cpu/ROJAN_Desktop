@@ -166,6 +166,127 @@ public sealed class FakeReportingRepository : IReportingRepository
                     new ReportColumn("value", "مقدار", ReportColumnDataType.Text),
                 ],
                 []),
+
+            // Phase 33: Enterprise Reporting & Business Intelligence Platform.
+            new ReportDefinition(
+                "cash-flow", "جریان نقدی", "مبالغ نقدی دریافت‌شده روزانه از فاکتورهای پرداخت‌شده.",
+                ReportType.CashFlow, ReportCategory.Financial, true,
+                [
+                    new ReportColumn("date", "تاریخ", ReportColumnDataType.Date),
+                    new ReportColumn("cashIn", "ورودی نقدی", ReportColumnDataType.Currency),
+                ],
+                [FilterType.DateRange]),
+            new ReportDefinition(
+                "outstanding-payments", "مطالبات معوق", "فاکتورهای صادرشده یا نیمه‌پرداخت‌شده که هنوز تسویه نشده‌اند.",
+                ReportType.OutstandingPayments, ReportCategory.Financial, true,
+                [
+                    new ReportColumn("invoiceId", "فاکتور", ReportColumnDataType.Text),
+                    new ReportColumn("customerName", "مشتری", ReportColumnDataType.Text),
+                    new ReportColumn("issuedAt", "تاریخ صدور", ReportColumnDataType.Date),
+                    new ReportColumn("status", "وضعیت", ReportColumnDataType.Text),
+                    new ReportColumn("outstanding", "مبلغ معوق", ReportColumnDataType.Currency),
+                ],
+                [FilterType.DateRange, FilterType.Customer]),
+            new ReportDefinition(
+                "tax-summary", "خلاصه مالیات", "مبلغ مشمول مالیات و مالیات وصول‌شده به تفکیک ماه.",
+                ReportType.TaxSummary, ReportCategory.Financial, true,
+                [
+                    new ReportColumn("period", "دوره", ReportColumnDataType.Text),
+                    new ReportColumn("taxableAmount", "مبلغ مشمول مالیات", ReportColumnDataType.Currency),
+                    new ReportColumn("taxCollected", "مالیات وصول‌شده", ReportColumnDataType.Currency),
+                ],
+                [FilterType.DateRange]),
+            new ReportDefinition(
+                "vip-customers", "مشتریان ویژه", "مشتریان با وضعیت ویژه، مرتب‌شده بر اساس ارزش کل خرید.",
+                ReportType.VipCustomers, ReportCategory.Customers, true,
+                [
+                    new ReportColumn("name", "نام", ReportColumnDataType.Text),
+                    new ReportColumn("company", "شرکت", ReportColumnDataType.Text),
+                    new ReportColumn("lifetimeValue", "ارزش کل خرید", ReportColumnDataType.Currency),
+                    new ReportColumn("lastContacted", "آخرین تماس", ReportColumnDataType.Date),
+                ],
+                []),
+            new ReportDefinition(
+                "inactive-customers", "مشتریان غیرفعال", "مشتریانی که مدت‌هاست تماسی از آن‌ها ثبت نشده.",
+                ReportType.InactiveCustomers, ReportCategory.Customers, true,
+                [
+                    new ReportColumn("name", "نام", ReportColumnDataType.Text),
+                    new ReportColumn("lastContacted", "آخرین تماس", ReportColumnDataType.Date),
+                    new ReportColumn("phone", "تلفن", ReportColumnDataType.Text),
+                ],
+                []),
+            new ReportDefinition(
+                "customer-lifetime-value", "ارزش طول عمر مشتری", "تمام مشتریان مرتب‌شده بر اساس ارزش کل خرید.",
+                ReportType.CustomerLifetimeValue, ReportCategory.Customers, true,
+                [
+                    new ReportColumn("name", "نام", ReportColumnDataType.Text),
+                    new ReportColumn("status", "وضعیت", ReportColumnDataType.Text),
+                    new ReportColumn("lifetimeValue", "ارزش کل خرید", ReportColumnDataType.Currency),
+                ],
+                []),
+            new ReportDefinition(
+                "appointment-status-breakdown", "وضعیت نوبت‌ها", "تعداد و سهم نوبت‌ها به تفکیک وضعیت (تکمیل‌شده، لغوشده، عدم مراجعه و ...).",
+                ReportType.AppointmentStatusBreakdown, ReportCategory.Operations, true,
+                [
+                    new ReportColumn("status", "وضعیت", ReportColumnDataType.Text),
+                    new ReportColumn("count", "تعداد", ReportColumnDataType.Number),
+                    new ReportColumn("percentage", "سهم", ReportColumnDataType.Percentage),
+                ],
+                [FilterType.DateRange]),
+            new ReportDefinition(
+                "peak-hours", "ساعات پرترافیک", "تعداد نوبت به تفکیک ساعت روز، برای شناسایی ساعات و روزهای شلوغ.",
+                ReportType.PeakHours, ReportCategory.Operations, true,
+                [
+                    new ReportColumn("hour", "ساعت", ReportColumnDataType.Text),
+                    new ReportColumn("bookingCount", "تعداد نوبت", ReportColumnDataType.Number),
+                ],
+                [FilterType.DateRange]),
+            new ReportDefinition(
+                "inventory-movements", "گردش موجودی انبار", "تمام تراکنش‌های ورود، فروش، مرجوعی و تعدیل موجودی.",
+                ReportType.InventoryMovements, ReportCategory.Operations, true,
+                [
+                    new ReportColumn("date", "تاریخ", ReportColumnDataType.Date),
+                    new ReportColumn("productName", "محصول", ReportColumnDataType.Text),
+                    new ReportColumn("type", "نوع تراکنش", ReportColumnDataType.Text),
+                    new ReportColumn("quantity", "مقدار", ReportColumnDataType.Number),
+                ],
+                [FilterType.DateRange]),
+            new ReportDefinition(
+                "supplier-purchases", "خرید از تأمین‌کنندگان", "مقدار خرید دریافت‌شده به تفکیک تأمین‌کننده.",
+                ReportType.SupplierPurchases, ReportCategory.Operations, true,
+                [
+                    new ReportColumn("supplierName", "تأمین‌کننده", ReportColumnDataType.Text),
+                    new ReportColumn("transactionCount", "تعداد تراکنش", ReportColumnDataType.Number),
+                    new ReportColumn("totalQuantity", "مجموع مقدار", ReportColumnDataType.Number),
+                ],
+                [FilterType.DateRange, FilterType.Supplier]),
+            new ReportDefinition(
+                "employee-working-hours", "ساعات کاری کارمندان", "مجموع ساعات شیفت اختصاص‌یافته به هر کارمند.",
+                ReportType.EmployeeWorkingHours, ReportCategory.Workforce, true,
+                [
+                    new ReportColumn("employeeName", "کارمند", ReportColumnDataType.Text),
+                    new ReportColumn("shiftCount", "تعداد شیفت", ReportColumnDataType.Number),
+                    new ReportColumn("totalHours", "مجموع ساعات", ReportColumnDataType.Number),
+                ],
+                [FilterType.DateRange, FilterType.Employee]),
+            new ReportDefinition(
+                "branch-performance", "عملکرد شعبه‌ها", "تعداد نوبت و درآمد به تفکیک شعبه.",
+                ReportType.BranchPerformance, ReportCategory.Dashboards, true,
+                [
+                    new ReportColumn("branchName", "شعبه", ReportColumnDataType.Text),
+                    new ReportColumn("bookingCount", "تعداد نوبت", ReportColumnDataType.Number),
+                    new ReportColumn("revenue", "درآمد", ReportColumnDataType.Currency),
+                ],
+                [FilterType.DateRange, FilterType.Branch]),
+            new ReportDefinition(
+                "ai-usage-summary", "خلاصه مصرف هوش مصنوعی", "تعداد نشست و توکن مصرفی به تفکیک ارائه‌دهنده هوش مصنوعی.",
+                ReportType.AiUsageSummary, ReportCategory.Dashboards, true,
+                [
+                    new ReportColumn("provider", "ارائه‌دهنده", ReportColumnDataType.Text),
+                    new ReportColumn("sessionCount", "تعداد نشست", ReportColumnDataType.Number),
+                    new ReportColumn("totalTokens", "مجموع توکن", ReportColumnDataType.Number),
+                ],
+                []),
         ];
 
         var now = DateTimeOffset.Now;

@@ -11,4 +11,13 @@ public enum KpiType
     Attendance,
     Growth,
     Trend,
+
+    // Phase 33: Enterprise Reporting & Business Intelligence Platform.
+    Profit,
+    Expenses,
+    CancellationRate,
+    AverageTicket,
+    AverageServiceTime,
+    Retention,
+    EmployeeProductivity,
 }

@@ -197,6 +197,12 @@ public sealed class FakeInventoryRepository : IInventoryRepository
         return _transactions.Where(transaction => transaction.ProductId == productId).ToList();
     }
 
+    public async Task<IReadOnlyList<StockTransaction>> GetAllTransactionsAsync(CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(300, cancellationToken).ConfigureAwait(true);
+        return _transactions.ToList();
+    }
+
     public async Task<StockTransaction> RecordTransactionAsync(StockTransaction transaction, CancellationToken cancellationToken = default)
     {
         await Task.Delay(200, cancellationToken).ConfigureAwait(true);

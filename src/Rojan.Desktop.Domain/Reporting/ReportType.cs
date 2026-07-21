@@ -21,4 +21,21 @@ public enum ReportType
     DailyDashboard,
     WeeklyDashboard,
     MonthlyDashboard,
+
+    // Phase 33: Enterprise Reporting & Business Intelligence Platform -
+    // fills the remaining Financial/Customers/Operations/Workforce/
+    // Dashboards gaps the original fifteen reports didn't cover.
+    CashFlow,
+    OutstandingPayments,
+    TaxSummary,
+    VipCustomers,
+    InactiveCustomers,
+    CustomerLifetimeValue,
+    AppointmentStatusBreakdown,
+    PeakHours,
+    InventoryMovements,
+    SupplierPurchases,
+    EmployeeWorkingHours,
+    BranchPerformance,
+    AiUsageSummary,
 }

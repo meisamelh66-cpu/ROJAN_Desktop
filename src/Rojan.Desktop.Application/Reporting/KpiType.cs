@@ -11,4 +11,11 @@ public enum KpiType
     Attendance,
     Growth,
     Trend,
+    Profit,
+    Expenses,
+    CancellationRate,
+    AverageTicket,
+    AverageServiceTime,
+    Retention,
+    EmployeeProductivity,
 }

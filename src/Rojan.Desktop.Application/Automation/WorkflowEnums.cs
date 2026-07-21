@@ -14,6 +14,7 @@ public enum WorkflowStepType
     AiAction,
     DatabaseAction,
     ApiAction,
+    RunReport,
 }
 
 /// <summary>Application's own mirror of <c>Domain.Automation.WorkflowStatus</c> - see <see cref="WorkflowStepType"/>'s doc comment for why.</summary>

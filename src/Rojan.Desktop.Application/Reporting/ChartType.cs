@@ -8,4 +8,7 @@ public enum ChartType
     Pie,
     Area,
     Column,
+    Donut,
+    Trend,
+    HeatMap,
 }

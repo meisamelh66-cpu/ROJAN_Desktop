@@ -14,6 +14,9 @@ public enum WorkflowStepType
     AiAction,
     DatabaseAction,
     ApiAction,
+
+    /// <summary>Phase 33: runs a Reporting Center report (<c>Config["reportDefinitionId"]</c>) and records it as an execution artifact - the Report Scheduler's own step, per Requirement 33.12's "integrate with Phase 32 Automation Engine."</summary>
+    RunReport,
 }
 
 /// <summary>A <see cref="WorkflowDefinition"/>'s lifecycle stage - see <c>WorkflowRules</c> for legal transitions.</summary>

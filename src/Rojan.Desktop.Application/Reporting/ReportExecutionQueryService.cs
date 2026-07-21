@@ -1,9 +1,11 @@
 using System.Globalization;
 using AppAccounting = Rojan.Desktop.Application.Accounting;
+using AppAI = Rojan.Desktop.Application.AI;
 using AppBookings = Rojan.Desktop.Application.Bookings;
 using AppCustomers = Rojan.Desktop.Application.Customers;
 using AppHr = Rojan.Desktop.Application.HR;
 using AppInventory = Rojan.Desktop.Application.Inventory;
+using AppOrganizations = Rojan.Desktop.Application.Organizations;
 using AppServices = Rojan.Desktop.Application.Services;
 using AppSpecialists = Rojan.Desktop.Application.Specialists;
 using DomainReporting = Rojan.Desktop.Domain.Reporting;
@@ -30,6 +32,9 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
     private readonly AppHr.IAttendanceQueryService _attendanceQueryService;
     private readonly AppHr.ICommissionQueryService _commissionQueryService;
     private readonly AppHr.IPayrollQueryService _payrollQueryService;
+    private readonly AppHr.IShiftQueryService _shiftQueryService;
+    private readonly AppOrganizations.IOrganizationQueryService _organizationQueryService;
+    private readonly AppAI.ITokenUsageTracker _tokenUsageTracker;
 
     public ReportExecutionQueryService(
         DomainReporting.IReportingRepository reportingRepository,
@@ -42,7 +47,10 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
         AppHr.IEmployeeQueryService employeeQueryService,
         AppHr.IAttendanceQueryService attendanceQueryService,
         AppHr.ICommissionQueryService commissionQueryService,
-        AppHr.IPayrollQueryService payrollQueryService)
+        AppHr.IPayrollQueryService payrollQueryService,
+        AppHr.IShiftQueryService shiftQueryService,
+        AppOrganizations.IOrganizationQueryService organizationQueryService,
+        AppAI.ITokenUsageTracker tokenUsageTracker)
     {
         _reportingRepository = reportingRepository;
         _customerQueryService = customerQueryService;
@@ -55,6 +63,9 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
         _attendanceQueryService = attendanceQueryService;
         _commissionQueryService = commissionQueryService;
         _payrollQueryService = payrollQueryService;
+        _shiftQueryService = shiftQueryService;
+        _organizationQueryService = organizationQueryService;
+        _tokenUsageTracker = tokenUsageTracker;
     }
 
     public async Task<ReportResultDto> RunReportAsync(string reportDefinitionId, IReadOnlyList<ReportFilterDto> filters, CancellationToken cancellationToken = default)
@@ -80,6 +91,19 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
             DomainReporting.ReportType.DailyDashboard => await RunDashboardAsync(AnalyticsPeriod.Daily, cancellationToken).ConfigureAwait(false),
             DomainReporting.ReportType.WeeklyDashboard => await RunDashboardAsync(AnalyticsPeriod.Weekly, cancellationToken).ConfigureAwait(false),
             DomainReporting.ReportType.MonthlyDashboard => await RunDashboardAsync(AnalyticsPeriod.Monthly, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.CashFlow => await RunCashFlowAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.OutstandingPayments => await RunOutstandingPaymentsAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.TaxSummary => await RunTaxSummaryAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.VipCustomers => await RunVipCustomersAsync(cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.InactiveCustomers => await RunInactiveCustomersAsync(cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.CustomerLifetimeValue => await RunCustomerLifetimeValueAsync(cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.AppointmentStatusBreakdown => await RunAppointmentStatusBreakdownAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.PeakHours => await RunPeakHoursAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.InventoryMovements => await RunInventoryMovementsAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.SupplierPurchases => await RunSupplierPurchasesAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.EmployeeWorkingHours => await RunEmployeeWorkingHoursAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.BranchPerformance => await RunBranchPerformanceAsync(filterSet, cancellationToken).ConfigureAwait(false),
+            DomainReporting.ReportType.AiUsageSummary => await RunAiUsageSummaryAsync(cancellationToken).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(reportDefinitionId), definition.ReportType, "Unknown report type."),
         };
 
@@ -451,6 +475,303 @@ public sealed class ReportExecutionQueryService : IReportExecutionQueryService
         };
 
         return (rows, new Dictionary<string, string> { ["دوره"] = label });
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunCashFlowAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var invoices = await _invoiceQueryService.GetInvoicesAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = invoices
+            .Where(invoice => filterSet.IsWithinDateRange(invoice.IssuedAt))
+            .Where(invoice => invoice.Status is AppAccounting.InvoiceStatus.Paid or AppAccounting.InvoiceStatus.PartiallyPaid)
+            .ToList();
+
+        var rows = filtered
+            .GroupBy(invoice => DateOnly.FromDateTime(invoice.IssuedAt.Date))
+            .OrderBy(group => group.Key)
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["date"] = group.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                ["cashIn"] = FormatCurrency(group.Sum(invoice => invoice.Total)),
+            }))
+            .ToList();
+
+        var summary = new Dictionary<string, string> { ["جریان نقدی خالص"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunOutstandingPaymentsAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var invoices = await _invoiceQueryService.GetInvoicesAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = invoices
+            .Where(invoice => filterSet.IsWithinDateRange(invoice.IssuedAt))
+            .Where(invoice => invoice.Status is AppAccounting.InvoiceStatus.Issued or AppAccounting.InvoiceStatus.PartiallyPaid)
+            .Where(invoice => filterSet.Matches(FilterType.Customer, invoice.CustomerId))
+            .OrderByDescending(invoice => invoice.IssuedAt)
+            .ToList();
+
+        var rows = filtered.Select(invoice => new ReportRowDto(new Dictionary<string, string>
+        {
+            ["invoiceId"] = invoice.Id,
+            ["customerName"] = invoice.CustomerName,
+            ["issuedAt"] = invoice.IssuedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["status"] = invoice.Status.ToString(),
+            ["outstanding"] = FormatCurrency(invoice.Total),
+        })).ToList();
+
+        var summary = new Dictionary<string, string> { ["جمع مطالبات"] = FormatCurrency(filtered.Sum(invoice => invoice.Total)) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunTaxSummaryAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var invoices = await _invoiceQueryService.GetInvoicesAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = invoices.Where(invoice => filterSet.IsWithinDateRange(invoice.IssuedAt)).ToList();
+
+        var rows = filtered
+            .GroupBy(invoice => new DateOnly(invoice.IssuedAt.Year, invoice.IssuedAt.Month, 1))
+            .OrderBy(group => group.Key)
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["period"] = group.Key.ToString("yyyy-MM", CultureInfo.InvariantCulture),
+                ["taxableAmount"] = FormatCurrency(group.Sum(invoice => invoice.Subtotal)),
+                ["taxCollected"] = FormatCurrency(group.Sum(invoice => invoice.TaxAmount)),
+            }))
+            .ToList();
+
+        var summary = new Dictionary<string, string> { ["جمع مالیات"] = FormatCurrency(filtered.Sum(invoice => invoice.TaxAmount)) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunVipCustomersAsync(CancellationToken cancellationToken)
+    {
+        var customers = await _customerQueryService.GetCustomersAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = customers.Where(customer => customer.Status == AppCustomers.CustomerStatus.Vip)
+            .OrderByDescending(customer => MoneyParser.Parse(customer.LifetimeValue))
+            .ToList();
+
+        var rows = filtered.Select(customer => new ReportRowDto(new Dictionary<string, string>
+        {
+            ["name"] = customer.FullName,
+            ["company"] = customer.Company,
+            ["lifetimeValue"] = customer.LifetimeValue,
+            ["lastContacted"] = customer.LastContactedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        })).ToList();
+
+        var summary = new Dictionary<string, string> { ["مشتریان ویژه"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunInactiveCustomersAsync(CancellationToken cancellationToken)
+    {
+        var customers = await _customerQueryService.GetCustomersAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = customers.Where(customer => customer.Status == AppCustomers.CustomerStatus.Inactive)
+            .OrderBy(customer => customer.LastContactedAt)
+            .ToList();
+
+        var rows = filtered.Select(customer => new ReportRowDto(new Dictionary<string, string>
+        {
+            ["name"] = customer.FullName,
+            ["lastContacted"] = customer.LastContactedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["phone"] = customer.Phone,
+        })).ToList();
+
+        var summary = new Dictionary<string, string> { ["مشتریان غیرفعال"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunCustomerLifetimeValueAsync(CancellationToken cancellationToken)
+    {
+        var customers = await _customerQueryService.GetCustomersAsync(cancellationToken).ConfigureAwait(false);
+        var ordered = customers.OrderByDescending(customer => MoneyParser.Parse(customer.LifetimeValue)).ToList();
+
+        var rows = ordered.Select(customer => new ReportRowDto(new Dictionary<string, string>
+        {
+            ["name"] = customer.FullName,
+            ["status"] = customer.Status.ToString(),
+            ["lifetimeValue"] = customer.LifetimeValue,
+        })).ToList();
+
+        var summary = new Dictionary<string, string> { ["جمع ارزش مشتریان"] = FormatCurrency(ordered.Sum(customer => MoneyParser.Parse(customer.LifetimeValue))) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunAppointmentStatusBreakdownAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = bookings.Where(booking => filterSet.IsWithinDateRange(booking.ScheduledAt)).ToList();
+        var total = filtered.Count;
+
+        var rows = filtered
+            .GroupBy(booking => booking.Status)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["status"] = group.Key.ToString(),
+                ["count"] = group.Count().ToString(CultureInfo.InvariantCulture),
+                ["percentage"] = FormatPercentage(total == 0 ? 0m : Math.Round((decimal)group.Count() / total * 100m, 1)),
+            }))
+            .ToList();
+
+        var cancelled = filtered.Count(booking => booking.Status == AppBookings.BookingStatus.Cancelled);
+        var summary = new Dictionary<string, string>
+        {
+            ["نرخ لغو"] = FormatPercentage(total == 0 ? 0m : Math.Round((decimal)cancelled / total * 100m, 1)),
+        };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunPeakHoursAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = bookings.Where(booking => filterSet.IsWithinDateRange(booking.ScheduledAt)).ToList();
+
+        var rows = filtered
+            .GroupBy(booking => booking.ScheduledAt.Hour)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["hour"] = $"{group.Key:D2}:00",
+                ["bookingCount"] = group.Count().ToString(CultureInfo.InvariantCulture),
+            }))
+            .ToList();
+
+        var busiestDay = filtered
+            .GroupBy(booking => booking.ScheduledAt.DayOfWeek)
+            .OrderByDescending(group => group.Count())
+            .Select(group => group.Key.ToString())
+            .FirstOrDefault() ?? string.Empty;
+
+        var summary = new Dictionary<string, string> { ["شلوغ‌ترین روز"] = busiestDay };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunInventoryMovementsAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var transactions = await _inventoryQueryService.GetAllTransactionsAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = transactions.Where(transaction => filterSet.IsWithinDateRange(transaction.OccurredAt)).ToList();
+
+        var rows = filtered.Select(transaction => new ReportRowDto(new Dictionary<string, string>
+        {
+            ["date"] = transaction.OccurredAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["productName"] = transaction.ProductName,
+            ["type"] = transaction.Type.ToString(),
+            ["quantity"] = transaction.Quantity.ToString(CultureInfo.InvariantCulture),
+        })).ToList();
+
+        var summary = new Dictionary<string, string> { ["تعداد تراکنش"] = filtered.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunSupplierPurchasesAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var transactions = await _inventoryQueryService.GetAllTransactionsAsync(cancellationToken).ConfigureAwait(false);
+        var products = await _productQueryService.GetProductsAsync(cancellationToken).ConfigureAwait(false);
+        var productsById = products.ToDictionary(product => product.Id);
+
+        var received = transactions
+            .Where(transaction => transaction.Type == AppInventory.StockTransactionType.Received)
+            .Where(transaction => filterSet.IsWithinDateRange(transaction.OccurredAt))
+            .Where(transaction => !productsById.TryGetValue(transaction.ProductId, out var product) || filterSet.Matches(FilterType.Supplier, product.SupplierId))
+            .ToList();
+
+        var rows = received
+            .GroupBy(transaction => productsById.TryGetValue(transaction.ProductId, out var product) ? product.SupplierName : string.Empty)
+            .OrderByDescending(group => group.Sum(t => t.Quantity))
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["supplierName"] = group.Key,
+                ["transactionCount"] = group.Count().ToString(CultureInfo.InvariantCulture),
+                ["totalQuantity"] = group.Sum(t => t.Quantity).ToString(CultureInfo.InvariantCulture),
+            }))
+            .ToList();
+
+        var summary = new Dictionary<string, string> { ["تأمین‌کنندگان"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunEmployeeWorkingHoursAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var assignments = await _shiftQueryService.GetAllShiftAssignmentsAsync(cancellationToken).ConfigureAwait(false);
+        var shifts = await _shiftQueryService.GetShiftsAsync(cancellationToken).ConfigureAwait(false);
+        var shiftsById = shifts.ToDictionary(shift => shift.Id);
+
+        var filtered = assignments
+            .Where(assignment => filterSet.IsWithinDateRange(assignment.AssignedDate.ToDateTime(TimeOnly.MinValue)))
+            .Where(assignment => filterSet.Matches(FilterType.Employee, assignment.EmployeeId))
+            .ToList();
+
+        var rows = filtered
+            .GroupBy(assignment => new { assignment.EmployeeId, assignment.EmployeeName })
+            .Select(group =>
+            {
+                var totalHours = group.Sum(assignment => shiftsById.TryGetValue(assignment.ShiftId, out var shift) ? (shift.EndTime - shift.StartTime).TotalHours : 0);
+                return new ReportRowDto(new Dictionary<string, string>
+                {
+                    ["employeeName"] = group.Key.EmployeeName,
+                    ["shiftCount"] = group.Count().ToString(CultureInfo.InvariantCulture),
+                    ["totalHours"] = totalHours.ToString("0.0", CultureInfo.InvariantCulture),
+                });
+            })
+            .OrderByDescending(row => double.Parse(row.Values["totalHours"], CultureInfo.InvariantCulture))
+            .ToList();
+
+        var summary = new Dictionary<string, string> { ["کارمندان"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunBranchPerformanceAsync(ReportFilterSet filterSet, CancellationToken cancellationToken)
+    {
+        var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(false);
+        var organizations = await _organizationQueryService.GetOrganizationsAsync(cancellationToken).ConfigureAwait(false);
+
+        var branchNamesById = new Dictionary<string, string>();
+        foreach (var organization in organizations)
+        {
+            var branches = await _organizationQueryService.GetBranchesAsync(organization.Id, cancellationToken).ConfigureAwait(false);
+            foreach (var branch in branches)
+            {
+                branchNamesById[branch.Id] = branch.Name;
+            }
+        }
+
+        var filtered = bookings
+            .Where(booking => filterSet.IsWithinDateRange(booking.ScheduledAt))
+            .Where(booking => filterSet.Matches(FilterType.Branch, booking.BranchId))
+            .ToList();
+
+        var rows = filtered
+            .GroupBy(booking => booking.BranchId)
+            .OrderByDescending(group => group.Sum(booking => MoneyParser.Parse(booking.Price)))
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["branchName"] = branchNamesById.TryGetValue(group.Key, out var name) ? name : group.Key,
+                ["bookingCount"] = group.Count().ToString(CultureInfo.InvariantCulture),
+                ["revenue"] = FormatCurrency(group.Sum(booking => MoneyParser.Parse(booking.Price))),
+            }))
+            .ToList();
+
+        var summary = new Dictionary<string, string> { ["شعبه‌ها"] = rows.Count.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
+    }
+
+    private async Task<(IReadOnlyList<ReportRowDto>, IReadOnlyDictionary<string, string>)> RunAiUsageSummaryAsync(CancellationToken cancellationToken)
+    {
+        var usage = await _tokenUsageTracker.GetUsageHistoryAsync(cancellationToken).ConfigureAwait(false);
+
+        var rows = usage
+            .GroupBy(record => record.ProviderType)
+            .OrderByDescending(group => group.Sum(record => record.TotalTokens))
+            .Select(group => new ReportRowDto(new Dictionary<string, string>
+            {
+                ["provider"] = group.Key.ToString(),
+                ["sessionCount"] = group.Select(record => record.SessionId).Distinct().Count().ToString(CultureInfo.InvariantCulture),
+                ["totalTokens"] = group.Sum(record => record.TotalTokens).ToString(CultureInfo.InvariantCulture),
+            }))
+            .ToList();
+
+        var totalTokens = await _tokenUsageTracker.GetTotalTokensAsync(cancellationToken).ConfigureAwait(false);
+        var summary = new Dictionary<string, string> { ["جمع توکن‌ها"] = totalTokens.ToString(CultureInfo.InvariantCulture) };
+        return (rows, summary);
     }
 
     private static ReportRowDto MetricRow(string metric, string value) =>

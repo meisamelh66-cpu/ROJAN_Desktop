@@ -56,6 +56,19 @@ internal static class ReportingMapper
         DomainReporting.ReportType.DailyDashboard => ReportType.DailyDashboard,
         DomainReporting.ReportType.WeeklyDashboard => ReportType.WeeklyDashboard,
         DomainReporting.ReportType.MonthlyDashboard => ReportType.MonthlyDashboard,
+        DomainReporting.ReportType.CashFlow => ReportType.CashFlow,
+        DomainReporting.ReportType.OutstandingPayments => ReportType.OutstandingPayments,
+        DomainReporting.ReportType.TaxSummary => ReportType.TaxSummary,
+        DomainReporting.ReportType.VipCustomers => ReportType.VipCustomers,
+        DomainReporting.ReportType.InactiveCustomers => ReportType.InactiveCustomers,
+        DomainReporting.ReportType.CustomerLifetimeValue => ReportType.CustomerLifetimeValue,
+        DomainReporting.ReportType.AppointmentStatusBreakdown => ReportType.AppointmentStatusBreakdown,
+        DomainReporting.ReportType.PeakHours => ReportType.PeakHours,
+        DomainReporting.ReportType.InventoryMovements => ReportType.InventoryMovements,
+        DomainReporting.ReportType.SupplierPurchases => ReportType.SupplierPurchases,
+        DomainReporting.ReportType.EmployeeWorkingHours => ReportType.EmployeeWorkingHours,
+        DomainReporting.ReportType.BranchPerformance => ReportType.BranchPerformance,
+        DomainReporting.ReportType.AiUsageSummary => ReportType.AiUsageSummary,
         _ => throw new ArgumentOutOfRangeException(nameof(reportType), reportType, "Unknown report type."),
     };
 
@@ -89,6 +102,7 @@ internal static class ReportingMapper
         DomainReporting.FilterType.Customer => FilterType.Customer,
         DomainReporting.FilterType.Status => FilterType.Status,
         DomainReporting.FilterType.Category => FilterType.Category,
+        DomainReporting.FilterType.Supplier => FilterType.Supplier,
         _ => throw new ArgumentOutOfRangeException(nameof(filterType), filterType, "Unknown filter type."),
     };
 
@@ -102,6 +116,7 @@ internal static class ReportingMapper
         FilterType.Customer => DomainReporting.FilterType.Customer,
         FilterType.Status => DomainReporting.FilterType.Status,
         FilterType.Category => DomainReporting.FilterType.Category,
+        FilterType.Supplier => DomainReporting.FilterType.Supplier,
         _ => throw new ArgumentOutOfRangeException(nameof(filterType), filterType, "Unknown filter type."),
     };
 

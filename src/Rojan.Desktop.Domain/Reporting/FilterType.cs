@@ -11,4 +11,7 @@ public enum FilterType
     Customer,
     Status,
     Category,
+
+    /// <summary>Phase 33: filters a report to one <c>Inventory.SupplierDto</c>.</summary>
+    Supplier,
 }

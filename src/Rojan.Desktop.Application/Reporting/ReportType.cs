@@ -18,4 +18,18 @@ public enum ReportType
     DailyDashboard,
     WeeklyDashboard,
     MonthlyDashboard,
+
+    CashFlow,
+    OutstandingPayments,
+    TaxSummary,
+    VipCustomers,
+    InactiveCustomers,
+    CustomerLifetimeValue,
+    AppointmentStatusBreakdown,
+    PeakHours,
+    InventoryMovements,
+    SupplierPurchases,
+    EmployeeWorkingHours,
+    BranchPerformance,
+    AiUsageSummary,
 }

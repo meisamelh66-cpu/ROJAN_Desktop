@@ -1,4 +1,5 @@
 using Rojan.Desktop.Application.Notifications;
+using AppReporting = Rojan.Desktop.Application.Reporting;
 using DomainAutomation = Rojan.Desktop.Domain.Automation;
 
 namespace Rojan.Desktop.Application.Automation;
@@ -185,4 +186,67 @@ public sealed class ApiActionStepExecutor : IWorkflowStepExecutor
 
     public Task<StepExecutionResult> ExecuteAsync(WorkflowStepDto workflowStep, AutomationExecutionContext context, CancellationToken cancellationToken = default) =>
         Task.FromResult(StepExecutionResult.Success());
+}
+
+/// <summary>
+/// Phase 33's bridge from the Automation Engine into the Reporting
+/// Center - Requirement 33.12's "Integrate with Phase 32 Automation
+/// Engine." Runs <c>Config["reportDefinitionId"]</c> (no filters - a
+/// scheduled report always runs its full, unfiltered form) and always
+/// exports a CSV copy so a scheduled run leaves a real artifact behind,
+/// not just an in-memory result the caller immediately discards.
+/// <c>Config["recipientEmail"]</c> is optional - when set, the exported
+/// file's location is emailed via the existing outbox
+/// (<see cref="IEmailNotificationService"/>), the same "architecture
+/// ready for delivery, no real SMTP yet" boundary Requirement 32.6
+/// already established - so this satisfies 33.12's own "architecture
+/// ready for Email delivery" wording exactly.
+/// </summary>
+public sealed class RunReportStepExecutor : IWorkflowStepExecutor
+{
+    private readonly AppReporting.IReportExecutionQueryService _executionQueryService;
+    private readonly AppReporting.IReportExportService _exportService;
+    private readonly IEmailNotificationService _emailService;
+
+    public RunReportStepExecutor(
+        AppReporting.IReportExecutionQueryService executionQueryService,
+        AppReporting.IReportExportService exportService,
+        IEmailNotificationService emailService)
+    {
+        _executionQueryService = executionQueryService;
+        _exportService = exportService;
+        _emailService = emailService;
+    }
+
+    public WorkflowStepType StepType => WorkflowStepType.RunReport;
+
+    public async Task<StepExecutionResult> ExecuteAsync(WorkflowStepDto workflowStep, AutomationExecutionContext context, CancellationToken cancellationToken = default)
+    {
+        if (!workflowStep.Config.TryGetValue("reportDefinitionId", out var reportDefinitionId) || string.IsNullOrWhiteSpace(reportDefinitionId))
+        {
+            return StepExecutionResult.Failure("RunReport step is missing its 'reportDefinitionId' configuration value.");
+        }
+
+        AppReporting.ReportResultDto result;
+        try
+        {
+            result = await _executionQueryService.RunReportAsync(reportDefinitionId, [], cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return StepExecutionResult.Failure(exception.Message);
+        }
+
+        var exportResult = await _exportService.ExportAsync(result, AppReporting.ExportFormat.Csv, cancellationToken).ConfigureAwait(false);
+
+        if (workflowStep.Config.TryGetValue("recipientEmail", out var recipientEmail) && !string.IsNullOrWhiteSpace(recipientEmail))
+        {
+            var body = exportResult.Success
+                ? $"گزارش «{result.ReportName}» با {result.Rows.Count} ردیف تولید شد. فایل: {exportResult.FilePath}"
+                : $"گزارش «{result.ReportName}» با {result.Rows.Count} ردیف تولید شد. خروجی‌گیری ناموفق بود: {exportResult.Message}";
+            await _emailService.SendAsync(new EmailMessage(recipientEmail, $"گزارش زمان‌بندی‌شده: {result.ReportName}", body), cancellationToken).ConfigureAwait(false);
+        }
+
+        return StepExecutionResult.Success();
+    }
 }

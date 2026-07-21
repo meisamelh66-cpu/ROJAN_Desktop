@@ -40,6 +40,9 @@ public interface IInventoryRepository
 
     public Task<IReadOnlyList<StockTransaction>> GetTransactionsForProductAsync(string productId, CancellationToken cancellationToken = default);
 
+    /// <summary>Every transaction across every product - Phase 33's Inventory Movements/Supplier Purchases reports need the whole ledger, not one product's slice.</summary>
+    public Task<IReadOnlyList<StockTransaction>> GetAllTransactionsAsync(CancellationToken cancellationToken = default);
+
     public Task<StockTransaction> RecordTransactionAsync(StockTransaction transaction, CancellationToken cancellationToken = default);
 
     public Task<IReadOnlyList<ServiceProductMapping>> GetServiceMappingsForProductAsync(string productId, CancellationToken cancellationToken = default);

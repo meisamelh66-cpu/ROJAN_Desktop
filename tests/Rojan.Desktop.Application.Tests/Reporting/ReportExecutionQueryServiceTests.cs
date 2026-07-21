@@ -1,9 +1,11 @@
 ﻿using Rojan.Desktop.Application.Reporting;
 using AppAccounting = Rojan.Desktop.Application.Accounting;
+using AppAI = Rojan.Desktop.Application.AI;
 using AppBookings = Rojan.Desktop.Application.Bookings;
 using AppCustomers = Rojan.Desktop.Application.Customers;
 using AppHr = Rojan.Desktop.Application.HR;
 using AppInventory = Rojan.Desktop.Application.Inventory;
+using AppOrganizations = Rojan.Desktop.Application.Organizations;
 using AppServices = Rojan.Desktop.Application.Services;
 using AppSpecialists = Rojan.Desktop.Application.Specialists;
 
@@ -90,18 +92,55 @@ public sealed class ReportExecutionQueryServiceTests
         new("payroll-2", "employee-2", "Priya Nair", Today.Month, Today.Year, 2900m, 0m, 100m, 50m, 2950m, Today),
     ];
 
+    private static readonly IReadOnlyList<AppInventory.StockTransactionDto> Transactions =
+    [
+        new("txn-1", "product-1", "Shampoo", AppInventory.StockTransactionType.Received, 20, Today.AddDays(-2), string.Empty),
+        new("txn-2", "product-2", "Conditioner", AppInventory.StockTransactionType.Received, 10, Today.AddDays(-1), string.Empty),
+        new("txn-3", "product-1", "Shampoo", AppInventory.StockTransactionType.Sold, 4, Today, string.Empty),
+    ];
+
+    private static readonly IReadOnlyList<AppHr.ShiftDto> Shifts =
+    [
+        new("shift-1", "Morning", AppHr.Department.Hair, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)),
+    ];
+
+    private static readonly IReadOnlyList<AppHr.ShiftAssignmentDto> ShiftAssignments =
+    [
+        new("assignment-1", "shift-1", "employee-1", "Jordan Lee", DateOnly.FromDateTime(Today.Date)),
+        new("assignment-2", "shift-1", "employee-2", "Priya Nair", DateOnly.FromDateTime(Today.Date)),
+    ];
+
+    private static readonly IReadOnlyList<AppOrganizations.OrganizationDto> Organizations =
+    [
+        new("org-1", "Acme Co", "Acme Co LLC", string.Empty, "#000000", "TIN-1", AppOrganizations.SubscriptionPlan.Enterprise, AppOrganizations.OrganizationStatus.Active, Today, "AC", "555-0000", "info@acme.example", "Address", "UTC", "en", "USD"),
+    ];
+
+    private static readonly IReadOnlyList<AppOrganizations.BranchDto> Branches =
+    [
+        new("branch-1", "org-1", "Main Branch", "MB-01", "Address", "555-0001", "branch@acme.example", "Manager", "UTC", "USD", AppOrganizations.BranchStatus.Active),
+    ];
+
+    private static readonly IReadOnlyList<AppAI.TokenUsageRecordDto> TokenUsage =
+    [
+        new("usage-1", "session-1", AppAI.AIProviderType.Mock, 8, 24, 32, Today.AddHours(-1)),
+        new("usage-2", "session-2", AppAI.AIProviderType.Mock, 6, 20, 26, Today.AddHours(-2)),
+    ];
+
     private static ReportExecutionQueryService CreateSut() => new(
         new StubReportingRepository(),
         new StubCustomerQueryService(Customers),
         new StubBookingQueryService(Bookings),
         new StubServiceQueryService(Services),
         new StubProductQueryService(Products),
-        new StubInventoryQueryService(InventoryItems),
+        new StubInventoryQueryService(InventoryItems, transactions: Transactions),
         new StubInvoiceQueryService(Invoices),
         new StubEmployeeQueryService(Employees),
         new StubAttendanceQueryService(AttendanceByEmployee),
         new StubCommissionQueryService(CommissionTransactions),
-        new StubPayrollQueryService(PayrollSummaries));
+        new StubPayrollQueryService(PayrollSummaries),
+        new StubShiftQueryService(ShiftAssignments, Shifts),
+        new StubOrganizationQueryService(Organizations, Branches),
+        new StubTokenUsageTracker(TokenUsage));
 
     [Fact]
     public async Task RunReportAsync_WithUnknownReportId_Throws()
@@ -293,5 +332,146 @@ public sealed class ReportExecutionQueryServiceTests
         Assert.Equal(11, result.Rows.Count);
         Assert.Contains(result.Rows, row => row.Values["metric"] == "درآمد کل");
         Assert.Contains(result.Rows, row => row.Values["metric"] == "اقلام رو به اتمام" && row.Values["value"] == "1");
+    }
+
+    [Fact]
+    public async Task RunReportAsync_CashFlow_SumsOnlyPaidAndPartiallyPaidInvoices()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("cash-flow", []);
+
+        Assert.NotEmpty(result.Rows);
+        Assert.Contains("جریان نقدی خالص", result.Summary.Keys);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_OutstandingPayments_ExcludesPaidAndCancelledInvoices()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("outstanding-payments", []);
+
+        Assert.DoesNotContain(result.Rows, row => row.Values["invoiceId"] == "invoice-1");
+        Assert.DoesNotContain(result.Rows, row => row.Values["invoiceId"] == "invoice-3");
+    }
+
+    [Fact]
+    public async Task RunReportAsync_TaxSummary_GroupsByMonth()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("tax-summary", []);
+
+        Assert.NotEmpty(result.Rows);
+        Assert.Contains("جمع مالیات", result.Summary.Keys);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_VipCustomers_OnlyReturnsVipStatusCustomers()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("vip-customers", []);
+
+        Assert.Single(result.Rows);
+        Assert.Equal("Cara Chen", result.Rows[0].Values["name"]);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_InactiveCustomers_OnlyReturnsInactiveStatusCustomers()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("inactive-customers", []);
+
+        Assert.Empty(result.Rows);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_CustomerLifetimeValue_ListsEveryCustomerOrderedByValue()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("customer-lifetime-value", []);
+
+        Assert.Equal(3, result.Rows.Count);
+        Assert.Equal("Cara Chen", result.Rows[0].Values["name"]);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_AppointmentStatusBreakdown_GroupsBookingsByStatus()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("appointment-status-breakdown", []);
+
+        Assert.NotEmpty(result.Rows);
+        Assert.Contains("نرخ لغو", result.Summary.Keys);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_PeakHours_GroupsBookingsByHourOfDay()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("peak-hours", []);
+
+        Assert.NotEmpty(result.Rows);
+        Assert.Contains("شلوغ‌ترین روز", result.Summary.Keys);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_InventoryMovements_ListsEveryTransaction()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("inventory-movements", []);
+
+        Assert.Equal(3, result.Rows.Count);
+    }
+
+    [Fact]
+    public async Task RunReportAsync_SupplierPurchases_OnlyCountsReceivedTransactions()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("supplier-purchases", []);
+
+        Assert.All(result.Rows, row => Assert.True(int.Parse(row.Values["totalQuantity"], System.Globalization.CultureInfo.InvariantCulture) > 0));
+    }
+
+    [Fact]
+    public async Task RunReportAsync_EmployeeWorkingHours_SumsShiftDurationsPerEmployee()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("employee-working-hours", []);
+
+        Assert.Equal(2, result.Rows.Count);
+        Assert.Contains(result.Rows, row => row.Values["employeeName"] == "Jordan Lee" && row.Values["totalHours"] == "8.0");
+    }
+
+    [Fact]
+    public async Task RunReportAsync_BranchPerformance_ResolvesBranchNamesAndAggregatesRevenue()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("branch-performance", []);
+
+        Assert.NotEmpty(result.Rows);
+        Assert.Contains(result.Rows, row => row.Values["branchName"] == "Main Branch");
+    }
+
+    [Fact]
+    public async Task RunReportAsync_AiUsageSummary_GroupsTokenUsageByProvider()
+    {
+        var sut = CreateSut();
+
+        var result = await sut.RunReportAsync("ai-usage-summary", []);
+
+        Assert.Single(result.Rows);
+        Assert.Equal("58", result.Rows[0].Values["totalTokens"]);
+        Assert.Equal("58", result.Summary["جمع توکن‌ها"]);
     }
 }

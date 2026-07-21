@@ -2503,4 +2503,13 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Enum_Suggestion" xml:space="preserve">
     <value>Suggestion</value>
   </data>
+  <data name="Reporting_RunCancelled" xml:space="preserve">
+    <value>Report generation cancelled.</value>
+  </data>
+  <data name="Reporting_CatalogSearchPlaceholder" xml:space="preserve">
+    <value>Search reports...</value>
+  </data>
+  <data name="Enum_RunReport" xml:space="preserve">
+    <value>Run Report</value>
+  </data>
 </root>

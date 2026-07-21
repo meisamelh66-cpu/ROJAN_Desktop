@@ -79,7 +79,7 @@ public sealed class ReportingPageViewModelTests
         Assert.Equal("revenue-report", execution.LastReportDefinitionId);
         Assert.NotNull(sut.CurrentResult);
         Assert.Equal(1, snapshotCommand.RecordCount);
-        Assert.Contains("Generated", sut.StatusMessage, StringComparison.Ordinal);
+        Assert.Contains("rows", sut.StatusMessage, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -8,4 +8,11 @@ public enum ChartType
     Pie,
     Area,
     Column,
+
+    // Phase 33: Enterprise Reporting & Business Intelligence Platform.
+    Donut,
+    Trend,
+
+    /// <summary>Architecture-ready only, per Phase 33's own scope - no renderer exists yet, same "contract without a build-out" boundary Phase 32 set for Database/API workflow steps.</summary>
+    HeatMap,
 }
