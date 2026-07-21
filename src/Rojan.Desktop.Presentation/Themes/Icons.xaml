@@ -76,4 +76,8 @@
   <sys:String x:Key="Rojan.Icon.Workspace">&#xE8A9;</sys:String>
   <sys:String x:Key="Rojan.Icon.Panel">&#xE890;</sys:String>
 
+  <!-- Phase 35: Secure Amount Display - eye toggle for masked monetary KPI values. -->
+  <sys:String x:Key="Rojan.Icon.EyeShow">&#xE7B3;</sys:String>
+  <sys:String x:Key="Rojan.Icon.EyeHide">&#xED1A;</sys:String>
+
 </ResourceDictionary>

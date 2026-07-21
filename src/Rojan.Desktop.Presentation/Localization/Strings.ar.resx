@@ -126,6 +126,30 @@
   <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
     <value>المهام المعلقة</value>
   </data>
+  <data name="Dashboard_Kpi_AvgTransactionValue" xml:space="preserve">
+    <value>متوسط قيمة المعاملة</value>
+  </data>
+  <data name="Dashboard_Kpi_AvgBookingsPerClient" xml:space="preserve">
+    <value>متوسط الحجوزات لكل عميل</value>
+  </data>
+  <data name="Dashboard_TimeRange_Day" xml:space="preserve">
+    <value>يوم</value>
+  </data>
+  <data name="Dashboard_TimeRange_Week" xml:space="preserve">
+    <value>أسبوع</value>
+  </data>
+  <data name="Dashboard_TimeRange_Month" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="Dashboard_TimeRange_Year" xml:space="preserve">
+    <value>سنة</value>
+  </data>
+  <data name="Dashboard_TimeRange_All" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
+    <value>إظهار/إخفاء المبلغ</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>تم إنشاء حجز جديد</value>
   </data>

@@ -23,6 +23,8 @@ public sealed class KpiIconConverter : IValueConverter
             "kpi-clients" => "Rojan.Icon.Customers",
             "kpi-revenue" => "Rojan.Icon.Accounting",
             "kpi-tasks" => "Rojan.Icon.CheckCircle",
+            "derived-avg-transaction" => "Rojan.Icon.Reports",
+            "derived-avg-bookings-per-client" => "Rojan.Icon.Bookings",
             _ => "Rojan.Icon.Dashboard",
         };
 

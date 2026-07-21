@@ -239,6 +239,8 @@ public partial class KpiChart : UserControl
         "kpi-clients" => new ChartConfig(ChartKind.Line, ResolveColor("Rojan.Color.Success")),
         "kpi-bookings" => new ChartConfig(ChartKind.Bar, ResolveColor("Rojan.Color.AccentLavender")),
         "kpi-tasks" => new ChartConfig(ChartKind.Line, ResolveColor("Rojan.Color.Warning")),
+        "derived-avg-transaction" => new ChartConfig(ChartKind.Line, ResolveColor("Rojan.Color.AccentAqua")),
+        "derived-avg-bookings-per-client" => new ChartConfig(ChartKind.Bar, ResolveColor("Rojan.Color.RoseGoldHighlight")),
         _ => new ChartConfig(ChartKind.Line, ResolveColor("Rojan.Color.Accent")),
     };
 

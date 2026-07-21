@@ -14,6 +14,67 @@
         <converters:ActivityDescriptionConverter x:Key="ActivityDescriptionConverter" />
         <converters:KpiIconConverter x:Key="KpiIconConverter" />
         <converters:IndexToIconConverter x:Key="IndexToIconConverter" />
+        <converters:KpiIsMonetaryConverter x:Key="KpiIsMonetaryConverter" />
+        <converters:DerivedKpiValueConverter x:Key="DerivedKpiValueConverter" />
+        <converters:DerivedKpiLabelConverter x:Key="DerivedKpiLabelConverter" />
+
+        <!--
+            Phase 35 (Analytics Expansion): implicit (DataType-keyed, no
+            ItemsControl.ItemTemplate) templates so the KPI ItemsControl's
+            CompositeCollection - the real KpiMetrics plus two synthetic
+            DerivedKpiSpec cards - renders each item through the right
+            template automatically by its runtime type. Both share the same
+            DashboardCard/KPIValue/KpiChart/TrendIndicator/TimeRangeSelector
+            structure so all six cards look, space, and animate identically.
+        -->
+        <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
+            <dashboardControls:DashboardCard Width="248" Margin="0,0,16,16">
+                <StackPanel>
+                    <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
+                                                 Value="{Binding Value}"
+                                                 Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}"
+                                                 IsMonetary="{Binding Id, Converter={StaticResource KpiIsMonetaryConverter}}" />
+                    <dashboardControls:KpiChart Id="{Binding Id}"
+                                                 Value="{Binding Value}"
+                                                 TrendDirection="{Binding TrendDirection}"
+                                                 TrendPercentage="{Binding TrendPercentage}"
+                                                 Margin="0,14,0,10" />
+                    <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
+                                                       Percentage="{Binding TrendPercentage}" />
+                    <dashboardControls:TimeRangeSelector Margin="0,12,0,0" />
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dashboardControls:DerivedKpiSpec}">
+            <dashboardControls:DashboardCard Width="248" Margin="0,0,16,16">
+                <StackPanel>
+                    <dashboardControls:KPIValue Label="{Binding Id, Converter={StaticResource DerivedKpiLabelConverter}}"
+                                                 Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}"
+                                                 IsMonetary="{Binding Id, Converter={StaticResource KpiIsMonetaryConverter}}">
+                        <dashboardControls:KPIValue.Value>
+                            <MultiBinding Converter="{StaticResource DerivedKpiValueConverter}">
+                                <Binding Path="Id" />
+                                <Binding Path="DataContext.KpiMetrics" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                            </MultiBinding>
+                        </dashboardControls:KPIValue.Value>
+                    </dashboardControls:KPIValue>
+                    <dashboardControls:KpiChart Id="{Binding Id}"
+                                                 TrendDirection="Flat"
+                                                 TrendPercentage="0"
+                                                 Margin="0,14,0,10">
+                        <dashboardControls:KpiChart.Value>
+                            <MultiBinding Converter="{StaticResource DerivedKpiValueConverter}">
+                                <Binding Path="Id" />
+                                <Binding Path="DataContext.KpiMetrics" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                            </MultiBinding>
+                        </dashboardControls:KpiChart.Value>
+                    </dashboardControls:KpiChart>
+                    <dashboardControls:TrendIndicator Direction="Flat" Percentage="0" />
+                    <dashboardControls:TimeRangeSelector Margin="0,12,0,0" />
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+        </DataTemplate>
     </UserControl.Resources>
 
     <!--
@@ -127,36 +188,29 @@
                                 </BeginStoryboard>
                             </EventTrigger>
                         </dashboardControls:DashboardWidget.Triggers>
-                        <ItemsControl ItemsSource="{Binding KpiMetrics}">
+                        <!--
+                            Phase 35 (Analytics Expansion): the four real KpiMetrics plus two
+                            synthetic DerivedKpiSpec cards (Average Transaction Value, Average
+                            Bookings per Client - both computed from the same real KpiMetrics,
+                            see DerivedKpiValueConverter) flow through one CompositeCollection so
+                            all six cards wrap together in a single WrapPanel with identical
+                            spacing - not two visually separate blocks. No ItemTemplate here
+                            (removed in favor of this file's Resources' implicit, DataType-keyed
+                            templates) since each item needs its own template by runtime type.
+                        -->
+                        <ItemsControl>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
-                                    <!--
-                                        Phase 34: the previous sprint's purely decorative corner-glow
-                                        Ellipse is replaced by KpiChart - a real per-KPI mini chart
-                                        (see KpiChart.xaml.cs), so the card's "gradient/visual interest"
-                                        now carries actual meaning instead of being ornamental.
-                                    -->
-                                    <dashboardControls:DashboardCard Width="228" Margin="0,0,16,16">
-                                        <StackPanel>
-                                            <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
-                                                                         Value="{Binding Value}"
-                                                                         Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}" />
-                                            <dashboardControls:KpiChart Id="{Binding Id}"
-                                                                         Value="{Binding Value}"
-                                                                         TrendDirection="{Binding TrendDirection}"
-                                                                         TrendPercentage="{Binding TrendPercentage}"
-                                                                         Margin="0,14,0,10" />
-                                            <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
-                                                                               Percentage="{Binding TrendPercentage}" />
-                                        </StackPanel>
-                                    </dashboardControls:DashboardCard>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsSource>
+                                <CompositeCollection>
+                                    <CollectionContainer Collection="{Binding KpiMetrics}" />
+                                    <dashboardControls:DerivedKpiSpec Id="derived-avg-transaction" />
+                                    <dashboardControls:DerivedKpiSpec Id="derived-avg-bookings-per-client" />
+                                </CompositeCollection>
+                            </ItemsControl.ItemsSource>
                         </ItemsControl>
                     </dashboardControls:DashboardWidget>
 

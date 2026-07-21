@@ -138,6 +138,30 @@
   <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
     <value>وظایف در انتظار</value>
   </data>
+  <data name="Dashboard_Kpi_AvgTransactionValue" xml:space="preserve">
+    <value>میانگین ارزش تراکنش</value>
+  </data>
+  <data name="Dashboard_Kpi_AvgBookingsPerClient" xml:space="preserve">
+    <value>میانگین رزرو هر مشتری</value>
+  </data>
+  <data name="Dashboard_TimeRange_Day" xml:space="preserve">
+    <value>روز</value>
+  </data>
+  <data name="Dashboard_TimeRange_Week" xml:space="preserve">
+    <value>هفته</value>
+  </data>
+  <data name="Dashboard_TimeRange_Month" xml:space="preserve">
+    <value>ماه</value>
+  </data>
+  <data name="Dashboard_TimeRange_Year" xml:space="preserve">
+    <value>سال</value>
+  </data>
+  <data name="Dashboard_TimeRange_All" xml:space="preserve">
+    <value>همه</value>
+  </data>
+  <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
+    <value>نمایش/پنهان کردن مبلغ</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>رزرو جدید ایجاد شد</value>
   </data>

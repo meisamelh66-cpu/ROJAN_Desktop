@@ -133,6 +133,22 @@ public static class Strings
 
     public static string Dashboard_Kpi_PendingTasks => Get(nameof(Dashboard_Kpi_PendingTasks));
 
+    public static string Dashboard_Kpi_AvgTransactionValue => Get(nameof(Dashboard_Kpi_AvgTransactionValue));
+
+    public static string Dashboard_Kpi_AvgBookingsPerClient => Get(nameof(Dashboard_Kpi_AvgBookingsPerClient));
+
+    public static string Dashboard_TimeRange_Day => Get(nameof(Dashboard_TimeRange_Day));
+
+    public static string Dashboard_TimeRange_Week => Get(nameof(Dashboard_TimeRange_Week));
+
+    public static string Dashboard_TimeRange_Month => Get(nameof(Dashboard_TimeRange_Month));
+
+    public static string Dashboard_TimeRange_Year => Get(nameof(Dashboard_TimeRange_Year));
+
+    public static string Dashboard_TimeRange_All => Get(nameof(Dashboard_TimeRange_All));
+
+    public static string Dashboard_ToggleAmountVisibility => Get(nameof(Dashboard_ToggleAmountVisibility));
+
     public static string Dashboard_Activity_NewBooking => Get(nameof(Dashboard_Activity_NewBooking));
 
     public static string Dashboard_Activity_ProfileUpdated => Get(nameof(Dashboard_Activity_ProfileUpdated));

@@ -126,6 +126,30 @@
   <data name="Dashboard_Kpi_PendingTasks" xml:space="preserve">
     <value>Pending Tasks</value>
   </data>
+  <data name="Dashboard_Kpi_AvgTransactionValue" xml:space="preserve">
+    <value>Avg. Transaction Value</value>
+  </data>
+  <data name="Dashboard_Kpi_AvgBookingsPerClient" xml:space="preserve">
+    <value>Avg. Bookings per Client</value>
+  </data>
+  <data name="Dashboard_TimeRange_Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Dashboard_TimeRange_Week" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="Dashboard_TimeRange_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Dashboard_TimeRange_Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Dashboard_TimeRange_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
+    <value>Show/hide amount</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>New booking created</value>
   </data>

@@ -1,23 +1,31 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace Rojan.Desktop.Presentation.Controls.Dashboard;
 
 /// <summary>
 /// Label + value pair for a single KPI reading, plus (Dashboard Modernization
-/// Sprint) an optional icon badge and a count-up reveal animation for Value.
-/// The count-up is a pure visual replay of the real, already-bound Value
-/// string - it parses the leading numeric run (keeping any prefix/suffix,
-/// e.g. a currency word, via the shared KpiNumberParsing helper - also used
-/// by KpiChart's mini charts), animates from 0 up to that real number, and
-/// re-renders the exact original format on every tick. If Value isn't a
-/// plain formatted number the pattern can safely parse, it's shown
-/// immediately as-is, unanimated - never a fabricated intermediate shape.
+/// Sprint) an optional icon badge and a count-up reveal animation for Value,
+/// and (Phase 35, Secure Amount Display) an optional mask-until-clicked
+/// privacy state for monetary values. The count-up is a pure visual replay
+/// of the real, already-bound Value string - it parses the leading numeric
+/// run (keeping any prefix/suffix, e.g. a currency word, via the shared
+/// KpiNumberParsing helper - also used by KpiChart's mini charts), animates
+/// from 0 up to that real number, and re-renders the exact original format
+/// on every tick. If Value isn't a plain formatted number the pattern can
+/// safely parse, it's shown immediately as-is, unanimated - never a
+/// fabricated intermediate shape.
 /// </summary>
 public partial class KPIValue : UserControl
 {
+    private const string MaskGlyph = "••••••••";
+    private static readonly TimeSpan AutoHideDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan RevealDuration = TimeSpan.FromMilliseconds(220);
+
     public static readonly DependencyProperty LabelProperty =
         DependencyProperty.Register(
             nameof(Label),
@@ -44,6 +52,27 @@ public partial class KPIValue : UserControl
             nameof(DisplayText),
             typeof(string),
             typeof(KPIValue),
+            new PropertyMetadata(string.Empty, OnDisplayTextChanged));
+
+    public static readonly DependencyProperty IsMonetaryProperty =
+        DependencyProperty.Register(
+            nameof(IsMonetary),
+            typeof(bool),
+            typeof(KPIValue),
+            new PropertyMetadata(false, OnIsMonetaryChanged));
+
+    public static readonly DependencyProperty IsRevealedProperty =
+        DependencyProperty.Register(
+            nameof(IsRevealed),
+            typeof(bool),
+            typeof(KPIValue),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty RenderedTextProperty =
+        DependencyProperty.Register(
+            nameof(RenderedText),
+            typeof(string),
+            typeof(KPIValue),
             new PropertyMetadata(string.Empty));
 
     private static readonly DependencyProperty CountProperty =
@@ -57,6 +86,7 @@ public partial class KPIValue : UserControl
     private string _suffix = string.Empty;
     private bool _useThousandsSeparator;
     private int _decimalPlaces;
+    private DispatcherTimer? _autoHideTimer;
 
     public KPIValue()
     {
@@ -81,8 +111,21 @@ public partial class KPIValue : UserControl
         set => SetValue(IconProperty, value);
     }
 
-    /// <summary>The text actually rendered - either mid count-up-animation or the final real Value. Read-only from a consumer's perspective.</summary>
+    /// <summary>The text actually computed for Value - either mid count-up-animation or the final real Value. Read-only from a consumer's perspective. Not necessarily what's on screen; see RenderedText.</summary>
     public string DisplayText => (string)GetValue(DisplayTextProperty);
+
+    /// <summary>Whether Value is a monetary amount that should be masked until the user reveals it. Non-monetary counts (customers, bookings, tasks) leave this false and behave exactly as before.</summary>
+    public bool IsMonetary
+    {
+        get => (bool)GetValue(IsMonetaryProperty);
+        set => SetValue(IsMonetaryProperty, value);
+    }
+
+    /// <summary>Whether the masked amount is currently shown. Read-only from a consumer's perspective; toggled by clicking the eye button.</summary>
+    public bool IsRevealed => (bool)GetValue(IsRevealedProperty);
+
+    /// <summary>What's actually shown on screen: DisplayText, or a fixed-width mask while a monetary value is hidden. This is the one thing ValueText.Text binds to.</summary>
+    public string RenderedText => (string)GetValue(RenderedTextProperty);
 
     private double Count
     {
@@ -92,6 +135,15 @@ public partial class KPIValue : UserControl
 
     private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
         ((KPIValue)d).AnimateToValue((string?)e.NewValue ?? string.Empty);
+
+    private static void OnDisplayTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((KPIValue)d).UpdateRenderedText();
+
+    private static void OnIsMonetaryChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var self = (KPIValue)d;
+        self.RevealToggle.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
+        self.UpdateRenderedText();
+    }
 
     private void AnimateToValue(string value)
     {
@@ -123,5 +175,56 @@ public partial class KPIValue : UserControl
         }
 
         self.SetValue(DisplayTextProperty, self._prefix + count.ToString(pattern, CultureInfo.InvariantCulture) + self._suffix);
+    }
+
+    private void UpdateRenderedText() =>
+        SetValue(RenderedTextProperty, IsMonetary && !IsRevealed ? MaskGlyph : DisplayText);
+
+    private void RevealToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (IsRevealed)
+        {
+            Hide();
+        }
+        else
+        {
+            Reveal();
+        }
+    }
+
+    private void Reveal()
+    {
+        SetValue(IsRevealedProperty, true);
+        UpdateRenderedText();
+
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+        ValueText.BeginAnimation(OpacityProperty, new DoubleAnimation(0.35, 1, RevealDuration) { EasingFunction = easing });
+        ValueScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.92, 1, RevealDuration) { EasingFunction = easing });
+        ValueScale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.92, 1, RevealDuration) { EasingFunction = easing });
+
+        _autoHideTimer?.Stop();
+        _autoHideTimer = new DispatcherTimer { Interval = AutoHideDelay };
+        _autoHideTimer.Tick += AutoHideTimer_Tick;
+        _autoHideTimer.Start();
+    }
+
+    private void AutoHideTimer_Tick(object? sender, EventArgs e) => Hide();
+
+    private void Hide()
+    {
+        _autoHideTimer?.Stop();
+        if (_autoHideTimer is not null)
+        {
+            _autoHideTimer.Tick -= AutoHideTimer_Tick;
+            _autoHideTimer = null;
+        }
+
+        SetValue(IsRevealedProperty, false);
+        UpdateRenderedText();
+
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+        ValueText.BeginAnimation(OpacityProperty, new DoubleAnimation(0.35, 1, RevealDuration) { EasingFunction = easing });
+        ValueScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.96, 1, RevealDuration) { EasingFunction = easing });
+        ValueScale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.96, 1, RevealDuration) { EasingFunction = easing });
     }
 }
