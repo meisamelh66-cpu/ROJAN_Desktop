@@ -7,6 +7,9 @@
         xmlns:appOrg="clr-namespace:Rojan.Desktop.Application.Organizations;assembly=Rojan.Desktop.Application"
         xmlns:helpControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Help;assembly=Rojan.Desktop.Presentation"
         xmlns:notificationViews="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications;assembly=Rojan.Desktop.Presentation"
+        xmlns:appWorkspaces="clr-namespace:Rojan.Desktop.Application.Workspaces;assembly=Rojan.Desktop.Application"
+        xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces;assembly=Rojan.Desktop.Presentation"
+        xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters;assembly=Rojan.Desktop.Presentation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -77,9 +80,93 @@
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="K" Command="{Binding OpenCommandPaletteCommand}" />
         <KeyBinding Modifiers="Control" Key="P" Command="{Binding OpenCommandPaletteCommand}" />
+
+        <!--
+            Phase 29: Enterprise Workspace & Window Management - one more
+            small addition to the same extensible KeyBinding list Phase 28
+            started. Split/cycle/close/float act on WorkspaceHost.FocusedLeafId
+            (the pane a click last focused) - see WorkspaceHostViewModel's
+            own doc comment for why that fallback lives there rather than
+            in a bound CommandParameter here.
+        -->
+        <KeyBinding Modifiers="Control+Shift" Key="D" Command="{Binding WorkspaceHost.SplitRightCommand}" CommandParameter="{Binding WorkspaceHost.FocusedLeafId}" />
+        <KeyBinding Modifiers="Control+Shift" Key="J" Command="{Binding WorkspaceHost.SplitDownCommand}" CommandParameter="{Binding WorkspaceHost.FocusedLeafId}" />
+        <KeyBinding Key="W" Modifiers="Control" Command="{Binding WorkspaceHost.CloseFocusedTabCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding WorkspaceHost.FloatOutFocusedTabCommand}" />
+        <KeyBinding Key="Tab" Modifiers="Control" Command="{Binding WorkspaceHost.CycleTabNextCommand}" />
+        <KeyBinding Key="Tab" Modifiers="Control+Shift" Command="{Binding WorkspaceHost.CycleTabPreviousCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="W" Command="{Binding WorkspaceHost.ToggleSwitcherCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="R" Command="{Binding WorkspaceHost.ResetWorkspaceCommand}" />
     </Window.InputBindings>
 
     <Window.Resources>
+        <converters:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
+        <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!--
+            Phase 29: Enterprise Workspace & Window Management - one row in
+            the Workspace Switcher popover, same PlacementTarget.DataContext
+            trick BranchSwitcherRowTemplate below already establishes for
+            reaching MainWindowViewModel from inside a Popup's separate
+            visual root.
+        -->
+        <DataTemplate x:Key="WorkspaceSwitcherRowTemplate" DataType="{x:Type appWorkspaces:WorkspaceSummaryDto}">
+            <Border Background="Transparent" Cursor="Hand" Padding="8,6" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick"
+                                  Command="{Binding PlacementTarget.DataContext.WorkspaceHost.SwitchWorkspaceItemCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                                  CommandParameter="{Binding}" />
+                </Border.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="6" Height="6" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Body}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                    <Button Grid.Column="2"
+                            Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand"
+                            Command="{Binding PlacementTarget.DataContext.WorkspaceHost.StartRenameCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                            CommandParameter="{Binding}"
+                            ToolTip="{x:Static loc:Strings.Workspace_Switcher_Rename}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Workspace_Switcher_Rename}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Edit}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                    </Button>
+                    <Button Grid.Column="3"
+                            Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand"
+                            Command="{Binding PlacementTarget.DataContext.WorkspaceHost.DuplicateWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                            CommandParameter="{Binding}"
+                            ToolTip="{x:Static loc:Strings.Workspace_Switcher_Duplicate}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Workspace_Switcher_Duplicate}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Copy}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                    </Button>
+                    <Button Grid.Column="4"
+                            Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand"
+                            Command="{Binding PlacementTarget.DataContext.WorkspaceHost.DeleteWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                            CommandParameter="{Binding}"
+                            ToolTip="{x:Static loc:Strings.Workspace_Switcher_Delete}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Workspace_Switcher_Delete}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Delete}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
         <!--
             Branch Switcher row - reused for Favorites/Recent/every
             organization group. Popup content lives in a separate visual
@@ -147,6 +234,8 @@
                     <!-- Back/Forward -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Branch Switcher -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Phase 29: Workspace Switcher -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Notification -->
                     <ColumnDefinition Width="Auto" />
@@ -327,8 +416,109 @@
                     </Popup>
                 </StackPanel>
 
+                <!--
+                    Phase 29: Enterprise Workspace & Window Management -
+                    Workspace button/popover, same trigger-Button-plus-Popup
+                    chrome the Branch Switcher above already establishes.
+                    Two sections: pane Actions (split/toggle-outline/reset,
+                    acting on WorkspaceHost.FocusedLeafId the same way the
+                    keyboard shortcuts do) and Workspaces (switch/new/
+                    rename/duplicate/delete - WorkspaceSwitcherRowTemplate
+                    above).
+                -->
+                <StackPanel Grid.Column="6" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="WorkspaceSwitcherButton"
+                            Command="{Binding WorkspaceHost.ToggleSwitcherCommand}"
+                            Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                            ToolTip="{x:Static loc:Strings.Workspace_HeaderButton_Tooltip}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Workspace_HeaderButton_Tooltip}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Workspace}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                    </Button>
+
+                    <Popup IsOpen="{Binding WorkspaceHost.IsSwitcherOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding ElementName=WorkspaceSwitcherButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Style="{StaticResource Rojan.Style.Panel}" Width="320" MaxHeight="560" Padding="12" Margin="0,4,0,0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="{x:Static loc:Strings.Workspace_Switcher_Title}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="4,0,0,10" />
+
+                                    <!-- Pane actions -->
+                                    <TextBlock Text="{x:Static loc:Strings.Workspace_HeaderButton_Tooltip}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,0,0,8" />
+                                    <UniformGrid Columns="2" Rows="2">
+                                        <Button Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="2" Content="{x:Static loc:Strings.Workspace_Pane_SplitRight}"
+                                                Command="{Binding WorkspaceHost.SplitRightCommand}" CommandParameter="{Binding WorkspaceHost.FocusedLeafId}" />
+                                        <Button Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="2" Content="{x:Static loc:Strings.Workspace_Pane_SplitDown}"
+                                                Command="{Binding WorkspaceHost.SplitDownCommand}" CommandParameter="{Binding WorkspaceHost.FocusedLeafId}" />
+                                        <Button Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="2" Content="{x:Static loc:Strings.Workspace_DockPanel_Toggle}"
+                                                Command="{Binding WorkspaceHost.ToggleDockPanelCommand}" CommandParameter="outline" />
+                                        <Button Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="2" Content="{x:Static loc:Strings.Workspace_Switcher_Reset}"
+                                                Command="{Binding WorkspaceHost.ResetWorkspaceCommand}" />
+                                    </UniformGrid>
+
+                                    <!-- Recent Workspaces - most-recently-switched-to first, hidden once there's nothing recent yet (a fresh install with only the Default workspace). -->
+                                    <StackPanel Margin="0,16,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding WorkspaceHost.RecentWorkspaces.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="{x:Static loc:Strings.Workspace_Switcher_Recent}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,0,0,4" />
+                                        <ItemsControl ItemsSource="{Binding WorkspaceHost.RecentWorkspaces}" ItemTemplate="{StaticResource WorkspaceSwitcherRowTemplate}" />
+                                    </StackPanel>
+
+                                    <!-- Workspaces -->
+                                    <TextBlock Text="{x:Static loc:Strings.Workspace_Switcher_All}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="4,16,0,4" />
+                                    <ItemsControl ItemsSource="{Binding WorkspaceHost.Workspaces}" ItemTemplate="{StaticResource WorkspaceSwitcherRowTemplate}" />
+
+                                    <!-- New workspace / rename inline editor -->
+                                    <Border Style="{StaticResource Rojan.Style.Panel}" Padding="10,6" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding WorkspaceHost.NewWorkspaceNameText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                                     CaretBrush="{StaticResource Rojan.Brush.Accent}"
+                                                     Tag="{x:Static loc:Strings.Workspace_Switcher_NewNamePlaceholder}"
+                                                     AutomationProperties.Name="{x:Static loc:Strings.Workspace_Switcher_NewNamePlaceholder}" />
+                                            <Button Grid.Column="1"
+                                                    Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand"
+                                                    Command="{Binding WorkspaceHost.ConfirmNameCommand}"
+                                                    ToolTip="{x:Static loc:Strings.Workspace_Switcher_New}"
+                                                    AutomationProperties.Name="{x:Static loc:Strings.Workspace_Switcher_New}">
+                                                <TextBlock Text="{StaticResource Rojan.Icon.Add}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="13" Foreground="{StaticResource Rojan.Brush.Accent}" />
+                                            </Button>
+                                            <Button Grid.Column="2"
+                                                    Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand"
+                                                    Command="{Binding WorkspaceHost.CancelNameEditCommand}"
+                                                    ToolTip="{x:Static loc:Strings.Common_Cancel}"
+                                                    AutomationProperties.Name="{x:Static loc:Strings.Common_Cancel}">
+                                                <TextBlock Text="{StaticResource Rojan.Icon.Dismiss}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+
                 <!-- Notification button - Phase 27: badge counter overlay shows NotificationCenter.UnreadCount when > 0. -->
-                <Grid Grid.Column="6" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Grid Grid.Column="7" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Style="{StaticResource Rojan.Style.ChromeIconButton}"
                             Command="{Binding ToggleNotificationPanelCommand}"
                             ToolTip="{x:Static loc:Strings.Common_Notifications}">
@@ -355,7 +545,7 @@
                 </Grid>
 
                 <!-- User profile placeholder - not functional, UI presence only -->
-                <StackPanel Grid.Column="7" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Ellipse Width="26" Height="26" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
                     <TextBlock Text="{x:Static loc:Strings.Common_GuestUser}"
                                Style="{StaticResource Rojan.TextStyle.Caption}"
@@ -365,7 +555,7 @@
                 </StackPanel>
 
                 <!-- Window commands -->
-                <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="9" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="MinimizeButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="{x:Static loc:Strings.Common_Minimize}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Minimize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
                     </Button>
@@ -450,9 +640,60 @@
                 </DockPanel>
             </Border>
 
-            <!-- Workspace region - real content target, DataTemplate-resolved per the selected module's ViewModel -->
+            <!--
+                Workspace region - real content target, DataTemplate-resolved
+                per the selected module's ViewModel. Phase 29: wraps the
+                pre-existing NavigationHost (unchanged element, unchanged
+                Attach() wiring in MainWindow.xaml.cs) with an optional
+                secondary-pane split and the Workspace Outline dock zone -
+                both zero-width/collapsed by default (HasSecondaryPane
+                false, OutlinePanel.IsVisible false until the user opens
+                it), so a fresh install renders byte-for-byte identical to
+                every prior phase.
+            -->
             <Grid Grid.Column="1" Background="{StaticResource Rojan.Brush.Workspace}">
-                <ContentControl x:Name="NavigationHost" />
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="{Binding WorkspaceHost.OutlinePanel.EffectiveSize, Converter={StaticResource DoubleToGridLengthConverter}}" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Primary pane + optional secondary-pane tree -->
+                <Grid Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="{Binding WorkspaceHost.HasSecondaryPane, Converter={StaticResource BoolToGridLengthConverter}, ConverterParameter=Auto}" />
+                        <ColumnDefinition Width="{Binding WorkspaceHost.HasSecondaryPane, Converter={StaticResource BoolToGridLengthConverter}, ConverterParameter=Star}" />
+                    </Grid.ColumnDefinitions>
+
+                    <ContentControl x:Name="NavigationHost" Grid.Column="0" />
+
+                    <GridSplitter Grid.Column="1"
+                                  Width="6"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  Background="{StaticResource Rojan.Brush.Border}"
+                                  ResizeBehavior="PreviousAndNext"
+                                  ShowsPreview="False"
+                                  Visibility="{Binding WorkspaceHost.HasSecondaryPane, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                    <ContentControl Grid.Column="2" Content="{Binding WorkspaceHost.SecondaryRoot}" />
+                </Grid>
+
+                <!-- Right dock zone: the Workspace Outline panel (Phase 29's flagship dockable panel) -->
+                <GridSplitter Grid.Column="1"
+                              Width="6"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              Background="{StaticResource Rojan.Brush.Border}"
+                              ResizeBehavior="PreviousAndNext"
+                              ShowsPreview="False"
+                              Visibility="{Binding WorkspaceHost.OutlinePanel.IsVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <workspacesView:DockedPanelView Grid.Column="2"
+                                                 Margin="4"
+                                                 DataContext="{Binding WorkspaceHost.OutlinePanel}"
+                                                 Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
             </Grid>
 
         </Grid>

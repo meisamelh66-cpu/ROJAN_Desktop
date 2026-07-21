@@ -18,6 +18,7 @@ using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Specialists;
+using Rojan.Desktop.Domain.Workspaces;
 using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
@@ -37,6 +38,7 @@ using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Specialists;
 using Rojan.Desktop.Infrastructure.Sync;
+using Rojan.Desktop.Infrastructure.Workspaces;
 using DomainServices = Rojan.Desktop.Domain.Services;
 using InfraServices = Rojan.Desktop.Infrastructure.Services;
 
@@ -100,6 +102,9 @@ public static class ServiceCollectionExtensions
         // Phase 28: Enterprise Global Search & Command Palette.
         services.AddSingleton<ISearchHistoryStore, LocalSearchHistoryStore>();
         services.AddSingleton<ISearchFavoritesStore, LocalSearchFavoritesStore>();
+
+        // Phase 29: Enterprise Workspace & Window Management.
+        services.AddSingleton<IWorkspaceRepository, LocalWorkspaceStore>();
 
         return services;
     }

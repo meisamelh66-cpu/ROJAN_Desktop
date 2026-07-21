@@ -37,7 +37,9 @@
                     xmlns:notificationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Notifications"
                     xmlns:notificationView="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications"
                     xmlns:searchVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Search"
-                    xmlns:searchView="clr-namespace:Rojan.Desktop.Presentation.Views.Search">
+                    xmlns:searchView="clr-namespace:Rojan.Desktop.Presentation.Views.Search"
+                    xmlns:workspacesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Workspaces"
+                    xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -129,6 +131,28 @@
 
   <DataTemplate DataType="{x:Type searchVm:CommandPaletteViewModel}">
     <searchView:CommandPaletteView />
+  </DataTemplate>
+
+  <!--
+    Phase 29: Enterprise Workspace & Window Management. PaneLeafViewModel/
+    PaneSplitViewModel are the recursive secondary-pane tree's two node
+    types - a ContentPresenter bound to either PaneNode.First/Second (typed
+    as plain `object`, since either type can appear at any position)
+    resolves through these exactly like every other ViewModel-to-View
+    mapping in this file. WorkspaceOutlineViewModel is the flagship
+    dockable panel's content, hosted inside DockedPanelView the same way
+    any future panel's content would be.
+  -->
+  <DataTemplate DataType="{x:Type workspacesVm:PaneLeafViewModel}">
+    <workspacesView:PaneLeafView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type workspacesVm:PaneSplitViewModel}">
+    <workspacesView:PaneSplitView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type workspacesVm:WorkspaceOutlineViewModel}">
+    <workspacesView:WorkspaceOutlinePanelView />
   </DataTemplate>
 
 </ResourceDictionary>

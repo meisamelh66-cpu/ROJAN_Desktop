@@ -19,11 +19,13 @@ using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Theming;
+using Rojan.Desktop.Presentation.Workspaces;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Shell.Navigation;
 using Rojan.Desktop.Shell.Organizations;
 using Rojan.Desktop.Shell.Theming;
+using Rojan.Desktop.Shell.Workspaces;
 
 namespace Rojan.Desktop.Shell;
 
@@ -246,6 +248,12 @@ public partial class App
 
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();
+
+        // Phase 29: Enterprise Workspace & Window Management - same
+        // "interface in Presentation, concrete implementation in Shell"
+        // split as Navigation above, since it constructs real Window
+        // instances.
+        services.AddSingleton<IFloatingWindowManager, FloatingWindowManager>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<MainWindowViewModel>());

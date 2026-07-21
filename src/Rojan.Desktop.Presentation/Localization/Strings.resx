@@ -1743,6 +1743,69 @@
   <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
     <value>باز کردن تعویض شعبه</value>
   </data>
+  <data name="Search_Command_OpenWorkspaceSwitcher" xml:space="preserve">
+    <value>باز کردن تعویض فضای کاری</value>
+  </data>
+  <data name="Workspace_HeaderButton_Tooltip" xml:space="preserve">
+    <value>فضای کاری</value>
+  </data>
+  <data name="Workspace_Switcher_Title" xml:space="preserve">
+    <value>فضاهای کاری</value>
+  </data>
+  <data name="Workspace_Switcher_NewNamePlaceholder" xml:space="preserve">
+    <value>نام فضای کاری جدید</value>
+  </data>
+  <data name="Workspace_Switcher_New" xml:space="preserve">
+    <value>ایجاد فضای کاری</value>
+  </data>
+  <data name="Workspace_Switcher_Recent" xml:space="preserve">
+    <value>اخیراً استفاده‌شده</value>
+  </data>
+  <data name="Workspace_Switcher_All" xml:space="preserve">
+    <value>همه فضاهای کاری</value>
+  </data>
+  <data name="Workspace_Switcher_Rename" xml:space="preserve">
+    <value>تغییر نام</value>
+  </data>
+  <data name="Workspace_Switcher_Duplicate" xml:space="preserve">
+    <value>تکثیر</value>
+  </data>
+  <data name="Workspace_Switcher_Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Workspace_Switcher_Reset" xml:space="preserve">
+    <value>بازنشانی فضای کاری</value>
+  </data>
+  <data name="Workspace_Pane_SplitRight" xml:space="preserve">
+    <value>تقسیم به راست</value>
+  </data>
+  <data name="Workspace_Pane_SplitDown" xml:space="preserve">
+    <value>تقسیم به پایین</value>
+  </data>
+  <data name="Workspace_Pane_FloatOut" xml:space="preserve">
+    <value>جدا کردن به پنجره</value>
+  </data>
+  <data name="Workspace_Pane_ClosePane" xml:space="preserve">
+    <value>بستن پنل</value>
+  </data>
+  <data name="Workspace_Pane_CloseTab" xml:space="preserve">
+    <value>بستن برگه</value>
+  </data>
+  <data name="Workspace_Pane_AddTab" xml:space="preserve">
+    <value>افزودن برگه</value>
+  </data>
+  <data name="Workspace_DockPanel_Toggle" xml:space="preserve">
+    <value>نمایش/پنهان کردن طرح‌کلی</value>
+  </data>
+  <data name="Workspace_Panel_Outline" xml:space="preserve">
+    <value>طرح‌کلی فضای کاری</value>
+  </data>
+  <data name="Workspace_Outline_Empty" xml:space="preserve">
+    <value>چیزی برای نمایش وجود ندارد.</value>
+  </data>
+  <data name="Workspace_Outline_CloseTooltip" xml:space="preserve">
+    <value>بستن</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>موفق</value>
   </data>

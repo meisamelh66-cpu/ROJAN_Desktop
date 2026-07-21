@@ -15,6 +15,7 @@ using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Workspaces;
 using AppServices = Rojan.Desktop.Application.Services;
 using AiProviders = Rojan.Desktop.Application.AI.Providers;
 
@@ -180,6 +181,12 @@ public static class ServiceCollectionExtensions
         // HelpSearchService/NotificationSearchService already establish.
         services.AddSingleton<IGlobalSearchIndexService, GlobalSearchIndexService>();
         services.AddSingleton<ISearchRankingService, SearchRankingService>();
+
+        // Phase 29: Enterprise Workspace & Window Management. WorkspaceService
+        // orchestrates saved layouts on top of Infrastructure's
+        // IWorkspaceRepository - the same interface-to-concrete singleton
+        // pattern every existing service in this app already uses.
+        services.AddSingleton<IWorkspaceService, WorkspaceService>();
 
         return services;
     }

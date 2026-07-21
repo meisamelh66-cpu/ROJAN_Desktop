@@ -37,6 +37,7 @@ public static class StaticSearchCatalog
         Command("go-back", Strings.Search_Command_GoBack),
         Command("go-forward", Strings.Search_Command_GoForward),
         Command("open-branch-switcher", Strings.Search_Command_OpenBranchSwitcher),
+        Command("open-workspace-switcher", Strings.Search_Command_OpenWorkspaceSwitcher),
     ];
 
     private static SearchCandidate Command(string commandId, string title) =>

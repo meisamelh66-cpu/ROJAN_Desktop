@@ -1731,6 +1731,69 @@
   <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
     <value>Open Branch Switcher</value>
   </data>
+  <data name="Search_Command_OpenWorkspaceSwitcher" xml:space="preserve">
+    <value>Open Workspace Switcher</value>
+  </data>
+  <data name="Workspace_HeaderButton_Tooltip" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+  <data name="Workspace_Switcher_Title" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspace_Switcher_NewNamePlaceholder" xml:space="preserve">
+    <value>New workspace name</value>
+  </data>
+  <data name="Workspace_Switcher_New" xml:space="preserve">
+    <value>Create workspace</value>
+  </data>
+  <data name="Workspace_Switcher_Recent" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="Workspace_Switcher_All" xml:space="preserve">
+    <value>All workspaces</value>
+  </data>
+  <data name="Workspace_Switcher_Rename" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="Workspace_Switcher_Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="Workspace_Switcher_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Workspace_Switcher_Reset" xml:space="preserve">
+    <value>Reset workspace</value>
+  </data>
+  <data name="Workspace_Pane_SplitRight" xml:space="preserve">
+    <value>Split right</value>
+  </data>
+  <data name="Workspace_Pane_SplitDown" xml:space="preserve">
+    <value>Split down</value>
+  </data>
+  <data name="Workspace_Pane_FloatOut" xml:space="preserve">
+    <value>Float out</value>
+  </data>
+  <data name="Workspace_Pane_ClosePane" xml:space="preserve">
+    <value>Close pane</value>
+  </data>
+  <data name="Workspace_Pane_CloseTab" xml:space="preserve">
+    <value>Close tab</value>
+  </data>
+  <data name="Workspace_Pane_AddTab" xml:space="preserve">
+    <value>Add tab</value>
+  </data>
+  <data name="Workspace_DockPanel_Toggle" xml:space="preserve">
+    <value>Toggle Outline panel</value>
+  </data>
+  <data name="Workspace_Panel_Outline" xml:space="preserve">
+    <value>Workspace Outline</value>
+  </data>
+  <data name="Workspace_Outline_Empty" xml:space="preserve">
+    <value>Nothing open yet.</value>
+  </data>
+  <data name="Workspace_Outline_CloseTooltip" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>Success</value>
   </data>

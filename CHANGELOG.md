@@ -941,6 +941,67 @@ see `docs/standards/versioning.md`.
   data, keyboard navigation and execution both work, and Recent
   Searches/Favorites persist across palette re-opens — see
   `docs/phases/phase-28-enterprise-global-search-command-palette.md`.
+- Phase 29 Enterprise Workspace & Window Management — multi-workspace
+  support, dockable panels, floating windows, split view, tab management,
+  workspace save/restore with restore-last-workspace-on-startup, recent
+  workspaces, reset workspace, and 7 new keyboard shortcuts, layered
+  additively around the pre-existing sidebar-driven primary content
+  region (unchanged since Phase 07). `Domain.Workspaces` (`PaneNode` -
+  `PaneLeaf`/`PaneSplit`, a recursive tree - `DockedPanelState`,
+  `FloatingWindowState`, `WorkspaceLayout`, `WorkspaceRules` - pure
+  split/open-tab/close-tab/resize/collapse-empty-split logic,
+  `IWorkspaceRepository`) and `Application.Workspaces` (a full parallel
+  mirror of every Domain type plus `WorkspaceMapping` - the shared
+  Domain<->DTO translation - `IWorkspaceService`/`WorkspaceService` -
+  async, persisted CRUD/switch/save/reset/recent - and `PaneTreeRules` -
+  a pure, synchronous, in-memory DTO-facing wrapper around
+  `WorkspaceRules`, so interactive pane operations stay instant with no
+  I/O per click/drag) are new, dependency-clean layers, the same "own
+  mirror type at each layer boundary" pattern Phase 27/28 established.
+  `Infrastructure.Workspaces.LocalWorkspaceStore` persists
+  `workspaces.json`/`state.json`, with `PaneNode`'s polymorphism handled
+  by a private wire-only `PaneNodeRecord` hierarchy (`JsonDerivedType`)
+  so Domain stays free of any serialization concern; Recent Workspaces is
+  capped at 5. `Presentation.ViewModels.Workspaces.WorkspaceHostViewModel`
+  is the orchestrator - constructed via `new` by `MainWindowViewModel`
+  (not DI-registered), the same "constructed by its opener, lives for the
+  app's lifetime" shape `NotificationCenterViewModel`/`ToastHostViewModel`
+  already establish - with a leaf/tab instance cache so an unrelated
+  structural change never discards a tab's live content ViewModel state.
+  Tab content for a secondary pane resolves through the exact same
+  `ModuleDescriptor.CreateViewModel`/implicit-DataTemplate mechanism the
+  primary pane already uses - zero changes to any of the 14 existing
+  module Views/ViewModels. `Shell.Workspaces.FloatingWindowManager`
+  (`IFloatingWindowManager`) opens real `Window` instances
+  (`FloatingModuleWindow`, reusing `MainWindow`'s WindowChrome idiom, no
+  manual theme merge needed since `ThemeResources.Apply` already merges
+  the whole design system into `Application.Resources`).
+  `MainWindow.xaml`'s pre-existing `NavigationHost` `ContentControl` is
+  untouched - wrapped one `Grid` level deeper by a secondary-pane column
+  and the Workspace Outline dock column (Phase 29's flagship dockable
+  panel - every open tab/floating window, click to focus/close), both
+  zero-width by default via `BoolToGridLengthConverter`/
+  `DoubleToGridLengthConverter`, so a workspace that's never been
+  split/docked renders pixel-identical to Phase 28. One new header
+  button/popover (Workspace switcher: create/rename/duplicate/delete/
+  reset, Recent Workspaces, pane actions) reuses the exact Branch
+  Switcher popover chrome; one new curated command
+  (`open-workspace-switcher`) wires into the Phase 28 Command Palette. 7
+  new `Window.InputBindings` extend the one list Phase 28 started
+  (Ctrl+Shift+D/J split, Ctrl+W close tab, Ctrl+Shift+F float out,
+  Ctrl+Tab/Ctrl+Shift+Tab cycle, Ctrl+Shift+W switcher, Ctrl+Shift+R
+  reset). 20 new `Strings.cs`/resx entries across fa-IR/en/ar, 9 new
+  `Rojan.Icon.*` glyphs (existing Segoe Fluent Icons family) - no
+  hardcoded text anywhere in Presentation/Application/Domain/
+  Infrastructure. No existing page's layout, colors, spacing, or
+  controls changed. 64 new tests (1199 → 1263), full suite passes on
+  both Debug and Release, zero warnings, zero errors, `ArchitectureTests`
+  (dependency-direction and ViewModel-testability) included.
+  Runtime-verified: the app launches and renders identically to Phase 28
+  with the one new header button correctly iconified, and first-run
+  bootstrap was confirmed end-to-end by reading the persisted
+  `workspaces.json`/`state.json` after the run — see
+  `docs/phases/phase-29-enterprise-workspace-window-management.md`.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,

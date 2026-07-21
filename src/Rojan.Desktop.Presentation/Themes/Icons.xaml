@@ -65,4 +65,15 @@
   <sys:String x:Key="Rojan.Icon.Warning">&#xE7BA;</sys:String>
   <sys:String x:Key="Rojan.Icon.Information">&#xE946;</sys:String>
 
+  <!-- Phase 29: Enterprise Workspace & Window Management. -->
+  <sys:String x:Key="Rojan.Icon.Add">&#xE710;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Dismiss">&#xE711;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Edit">&#xE70F;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Delete">&#xE74D;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Copy">&#xE8C8;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Refresh">&#xE72C;</sys:String>
+  <sys:String x:Key="Rojan.Icon.FloatOut">&#xE8A7;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Workspace">&#xE8A9;</sys:String>
+  <sys:String x:Key="Rojan.Icon.Panel">&#xE890;</sys:String>
+
 </ResourceDictionary>

@@ -1,0 +1,37 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Workspaces.DockedPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+
+    <!-- Phase 29: Enterprise Workspace & Window Management. Generic docked-panel chrome (header + close) wrapping whatever ViewModel its DockedPanelViewModel.Content actually is - only the Workspace Outline panel exists today, but nothing here is Outline-specific. -->
+    <Border Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Rojan.Brush.Border}" BorderThickness="0,0,0,1" Padding="10,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding IconGlyph}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" Foreground="{StaticResource Rojan.Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" VerticalAlignment="Center" />
+                    <Button Grid.Column="2"
+                            Command="{Binding ToggleVisibilityCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="4"
+                            Cursor="Hand"
+                            ToolTip="{x:Static loc:Strings.Common_Close}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Common_Close}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Close}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <ContentPresenter Content="{Binding Content}" />
+        </DockPanel>
+    </Border>
+</UserControl>

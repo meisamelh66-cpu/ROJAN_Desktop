@@ -1731,6 +1731,69 @@
   <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
     <value>فتح مبدل الفروع</value>
   </data>
+  <data name="Search_Command_OpenWorkspaceSwitcher" xml:space="preserve">
+    <value>فتح مبدل مساحات العمل</value>
+  </data>
+  <data name="Workspace_HeaderButton_Tooltip" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+  <data name="Workspace_Switcher_Title" xml:space="preserve">
+    <value>مساحات العمل</value>
+  </data>
+  <data name="Workspace_Switcher_NewNamePlaceholder" xml:space="preserve">
+    <value>اسم مساحة العمل الجديدة</value>
+  </data>
+  <data name="Workspace_Switcher_New" xml:space="preserve">
+    <value>إنشاء مساحة عمل</value>
+  </data>
+  <data name="Workspace_Switcher_Recent" xml:space="preserve">
+    <value>الأخيرة</value>
+  </data>
+  <data name="Workspace_Switcher_All" xml:space="preserve">
+    <value>جميع مساحات العمل</value>
+  </data>
+  <data name="Workspace_Switcher_Rename" xml:space="preserve">
+    <value>إعادة تسمية</value>
+  </data>
+  <data name="Workspace_Switcher_Duplicate" xml:space="preserve">
+    <value>تكرار</value>
+  </data>
+  <data name="Workspace_Switcher_Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Workspace_Switcher_Reset" xml:space="preserve">
+    <value>إعادة تعيين مساحة العمل</value>
+  </data>
+  <data name="Workspace_Pane_SplitRight" xml:space="preserve">
+    <value>تقسيم إلى اليمين</value>
+  </data>
+  <data name="Workspace_Pane_SplitDown" xml:space="preserve">
+    <value>تقسيم إلى الأسفل</value>
+  </data>
+  <data name="Workspace_Pane_FloatOut" xml:space="preserve">
+    <value>فصل إلى نافذة</value>
+  </data>
+  <data name="Workspace_Pane_ClosePane" xml:space="preserve">
+    <value>إغلاق اللوحة</value>
+  </data>
+  <data name="Workspace_Pane_CloseTab" xml:space="preserve">
+    <value>إغلاق علامة التبويب</value>
+  </data>
+  <data name="Workspace_Pane_AddTab" xml:space="preserve">
+    <value>إضافة علامة تبويب</value>
+  </data>
+  <data name="Workspace_DockPanel_Toggle" xml:space="preserve">
+    <value>إظهار/إخفاء المخطط العام</value>
+  </data>
+  <data name="Workspace_Panel_Outline" xml:space="preserve">
+    <value>مخطط مساحة العمل</value>
+  </data>
+  <data name="Workspace_Outline_Empty" xml:space="preserve">
+    <value>لا يوجد شيء لعرضه بعد.</value>
+  </data>
+  <data name="Workspace_Outline_CloseTooltip" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>نجاح</value>
   </data>

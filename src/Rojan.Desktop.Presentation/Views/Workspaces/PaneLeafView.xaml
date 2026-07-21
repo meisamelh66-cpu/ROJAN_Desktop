@@ -1,0 +1,132 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Workspaces.PaneLeafView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wsVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Workspaces"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+
+    <!--
+        Phase 29: Enterprise Workspace & Window Management. One secondary
+        pane: a tab strip (click to activate, "x" to close, "+" opens a
+        module picker) plus a toolbar (Split Right/Down, Float Out the
+        active tab, Close Pane) plus the active tab's own content -
+        whichever of the 14 existing module pages it is, rendered exactly
+        as it renders in the primary pane (same View, same DataTemplate
+        resolution), completely unmodified.
+    -->
+    <Border x:Name="RootBorder"
+            Background="{StaticResource Rojan.Brush.Workspace}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsFocused}" Value="True">
+                        <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Accent}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <DockPanel>
+            <Border DockPanel.Dock="Top"
+                    Background="{StaticResource Rojan.Brush.SurfaceSecondary}"
+                    BorderBrush="{StaticResource Rojan.Brush.Border}"
+                    BorderThickness="0,0,0,1"
+                    Padding="4,2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Left">
+                        <ItemsControl ItemsSource="{Binding Tabs}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type wsVm:TabViewModel}">
+                                    <Border Margin="2,0" CornerRadius="{StaticResource Rojan.CornerRadius.Small}" Cursor="Hand">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource Rojan.Brush.Surface}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" Command="{Binding ActivateCommand}" />
+                                        </Border.InputBindings>
+                                        <StackPanel Orientation="Horizontal" Margin="8,4">
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="140" />
+                                            <Button Command="{Binding CloseCommand}"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="4,0,0,0"
+                                                    Cursor="Hand"
+                                                    ToolTip="{x:Static loc:Strings.Workspace_Pane_CloseTab}"
+                                                    AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_CloseTab}">
+                                                <TextBlock Text="{StaticResource Rojan.Icon.Dismiss}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="9" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="AddTabButton"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="6,2"
+                                Cursor="Hand"
+                                Tag="{Binding DataContext.WorkspaceHost.AvailableModules, RelativeSource={RelativeSource AncestorType=Window}}"
+                                ToolTip="{x:Static loc:Strings.Workspace_Pane_AddTab}"
+                                AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_AddTab}">
+                            <Button.ContextMenu>
+                                <ContextMenu ItemsSource="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                    <ContextMenu.ItemContainerStyle>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Header" Value="{Binding Metadata.Title}" />
+                                            <Setter Property="Command" Value="{Binding PlacementTarget.DataContext.AddTabCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                            <Setter Property="CommandParameter" Value="{Binding}" />
+                                        </Style>
+                                    </ContextMenu.ItemContainerStyle>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <TextBlock Text="{StaticResource Rojan.Icon.Add}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                        </Button>
+                        <Button Command="{Binding SplitRightCommand}" Background="Transparent" BorderThickness="0" Padding="6,2" Cursor="Hand"
+                                ToolTip="{x:Static loc:Strings.Workspace_Pane_SplitRight}" AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_SplitRight}">
+                            <TextBlock Text="{StaticResource Rojan.Icon.Workspace}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                        </Button>
+                        <Button Command="{Binding SplitDownCommand}" Background="Transparent" BorderThickness="0" Padding="6,2" Cursor="Hand"
+                                ToolTip="{x:Static loc:Strings.Workspace_Pane_SplitDown}" AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_SplitDown}">
+                            <TextBlock Text="{StaticResource Rojan.Icon.Workspace}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.TextSecondary}" RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="90" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Button>
+                        <Button Command="{Binding ActiveTab.FloatOutCommand}" Background="Transparent" BorderThickness="0" Padding="6,2" Cursor="Hand"
+                                ToolTip="{x:Static loc:Strings.Workspace_Pane_FloatOut}" AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_FloatOut}">
+                            <TextBlock Text="{StaticResource Rojan.Icon.FloatOut}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                        </Button>
+                        <Button Command="{Binding ClosePaneCommand}" Background="Transparent" BorderThickness="0" Padding="6,2" Cursor="Hand"
+                                ToolTip="{x:Static loc:Strings.Workspace_Pane_ClosePane}" AutomationProperties.Name="{x:Static loc:Strings.Workspace_Pane_ClosePane}">
+                            <TextBlock Text="{StaticResource Rojan.Icon.Close}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ContentPresenter Content="{Binding ActiveTab.Content}" />
+        </DockPanel>
+    </Border>
+</UserControl>

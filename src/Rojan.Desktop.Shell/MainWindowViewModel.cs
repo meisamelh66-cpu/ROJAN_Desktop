@@ -4,6 +4,7 @@ using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Search;
+using Rojan.Desktop.Application.Workspaces;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Help;
 using Rojan.Desktop.Presentation.Localization;
@@ -15,6 +16,8 @@ using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Help;
 using Rojan.Desktop.Presentation.ViewModels.Notifications;
 using Rojan.Desktop.Presentation.ViewModels.Search;
+using Rojan.Desktop.Presentation.ViewModels.Workspaces;
+using Rojan.Desktop.Presentation.Workspaces;
 
 namespace Rojan.Desktop.Shell;
 
@@ -85,7 +88,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         IGlobalSearchIndexService globalSearchIndexService,
         ISearchRankingService searchRankingService,
         ISearchHistoryStore searchHistoryStore,
-        ISearchFavoritesStore searchFavoritesStore)
+        ISearchFavoritesStore searchFavoritesStore,
+        IWorkspaceService workspaceService,
+        IFloatingWindowManager floatingWindowManager,
+        IServiceProvider serviceProvider)
     {
         _navigationService = navigationService;
         _permissionEngine = permissionEngine;
@@ -110,6 +116,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         NotificationCenter = new NotificationCenterViewModel(notificationService, notificationContentResolver, notificationSearchService);
         ToastHost = new ToastHostViewModel(notificationService, notificationContentResolver, toastDismissScheduler);
         _ = NotificationCenter.InitializeAsync();
+
+        // Phase 29: Enterprise Workspace & Window Management. Constructed
+        // here (not DI-registered) for the same reason NotificationCenter/
+        // ToastHost are - lives for this ViewModel's lifetime, needs
+        // dependencies only the composition root should hand out
+        // (IServiceProvider, to resolve tab content). Subscribed before
+        // InitializeAsync runs at the end of this constructor, so a
+        // restored workspace whose primary module differs from the
+        // default first item is applied without missing the event.
+        WorkspaceHost = new WorkspaceHostViewModel(workspaceService, moduleRegistry, serviceProvider, floatingWindowManager);
+        WorkspaceHost.PrimaryModuleChangeRequested += (_, moduleId) => ApplyPrimaryModuleFromWorkspace(moduleId);
 
         BranchGroups = new ObservableCollection<BranchSwitcherGroup>();
         RecentBranches = new ObservableCollection<BranchDto>();
@@ -142,6 +159,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         SelectedNavigationItem = NavigationItems[0];
 
         _ = LoadBranchSwitcherDataAsync();
+
+        // Restores the last-active workspace (or bootstraps a default one
+        // on first run) - fired after the above, so
+        // WorkspaceHost.SetPrimaryModuleId's early call from the initial
+        // SelectedNavigationItem assignment (guarded to a no-op-save
+        // before a workspace is loaded, see its own doc comment) never
+        // races this.
+        _ = WorkspaceHost.InitializeAsync(SelectedNavigationItem.Descriptor.Metadata.Id);
     }
 
     public ObservableCollection<NavigationItem> NavigationItems { get; }
@@ -153,6 +178,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 
     /// <summary>Phase 27: the transient toast-popup overlay, entirely separate from <see cref="ActiveDialog"/> - see <see cref="ToastHostViewModel"/>'s own doc comment for why.</summary>
     public ToastHostViewModel ToastHost { get; }
+
+    /// <summary>Phase 29: Enterprise Workspace &amp; Window Management - the secondary-pane tree, docked panels, floating windows, and named/saved workspaces, all layered additively around this ViewModel's existing <see cref="SelectedNavigationItem"/>-driven primary content region.</summary>
+    public WorkspaceHostViewModel WorkspaceHost { get; }
 
     /// <summary>Header display form of <see cref="Breadcrumbs"/> - a single "Home › Dashboard" string, recomputed whenever the collection changes.</summary>
     public string BreadcrumbText => string.Join(" › ", Breadcrumbs);
@@ -170,6 +198,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
                 Breadcrumbs.Add(Strings.Common_Home);
                 Breadcrumbs.Add(value.Title);
                 OnPropertyChanged(nameof(BreadcrumbText));
+                WorkspaceHost.SetPrimaryModuleId(value.Descriptor.Metadata.Id);
             }
         }
     }
@@ -292,6 +321,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         CanGoBack = _navigationService.CanGoBack;
         CanGoForward = _navigationService.CanGoForward;
         CommandManager.InvalidateRequerySuggested();
+    }
+
+    /// <summary>Handles <see cref="WorkspaceHostViewModel.PrimaryModuleChangeRequested"/> (restoring the last workspace, switching workspaces, or falling back after deleting the active one) by re-pointing <see cref="SelectedNavigationItem"/> - a no-op if the requested module isn't currently visible (e.g. hidden by a role change since the workspace was saved).</summary>
+    private void ApplyPrimaryModuleFromWorkspace(string moduleId)
+    {
+        var item = NavigationItems.FirstOrDefault(i => i.Descriptor.Metadata.Id == moduleId);
+        if (item is not null)
+        {
+            SelectedNavigationItem = item;
+        }
     }
 
     /// <summary>Every module whose <c>RequiredPermission</c> is unset (every pre-Phase-22 module, unconditionally visible) or granted to the current session's role.</summary>
@@ -457,6 +496,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
             ["go-back"] = GoBackCommand,
             ["go-forward"] = GoForwardCommand,
             ["open-branch-switcher"] = ToggleBranchSwitcherCommand,
+            ["open-workspace-switcher"] = WorkspaceHost.ToggleSwitcherCommand,
         };
 
         var palette = new CommandPaletteViewModel(

@@ -1,0 +1,17 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Workspaces.PaneSplitView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Phase 29: Enterprise Workspace & Window Management. Two child panes
+        (First/Second - each itself either another split or a leaf, hence
+        recursive) divided by a resizable gutter. The Grid's row/column
+        structure is built once in code-behind from the ViewModel's
+        Orientation (immutable after a split is created - nothing ever
+        changes an existing split's orientation), not via XAML triggers -
+        avoids realizing both a horizontal and a vertical layout of the
+        same recursive content simultaneously, which would double-
+        instantiate every descendant pane's content.
+    -->
+    <Grid x:Name="RootGrid" />
+</UserControl>

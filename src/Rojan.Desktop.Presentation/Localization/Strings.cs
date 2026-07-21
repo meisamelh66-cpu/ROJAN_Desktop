@@ -998,6 +998,49 @@ public static class Strings
 
     public static string Search_Command_OpenBranchSwitcher => Get(nameof(Search_Command_OpenBranchSwitcher));
 
+    /// <summary>Phase 29: Enterprise Workspace &amp; Window Management.</summary>
+    public static string Search_Command_OpenWorkspaceSwitcher => Get(nameof(Search_Command_OpenWorkspaceSwitcher));
+
+    public static string Workspace_HeaderButton_Tooltip => Get(nameof(Workspace_HeaderButton_Tooltip));
+
+    public static string Workspace_Switcher_Title => Get(nameof(Workspace_Switcher_Title));
+
+    public static string Workspace_Switcher_NewNamePlaceholder => Get(nameof(Workspace_Switcher_NewNamePlaceholder));
+
+    public static string Workspace_Switcher_New => Get(nameof(Workspace_Switcher_New));
+
+    public static string Workspace_Switcher_Recent => Get(nameof(Workspace_Switcher_Recent));
+
+    public static string Workspace_Switcher_All => Get(nameof(Workspace_Switcher_All));
+
+    public static string Workspace_Switcher_Rename => Get(nameof(Workspace_Switcher_Rename));
+
+    public static string Workspace_Switcher_Duplicate => Get(nameof(Workspace_Switcher_Duplicate));
+
+    public static string Workspace_Switcher_Delete => Get(nameof(Workspace_Switcher_Delete));
+
+    public static string Workspace_Switcher_Reset => Get(nameof(Workspace_Switcher_Reset));
+
+    public static string Workspace_Pane_SplitRight => Get(nameof(Workspace_Pane_SplitRight));
+
+    public static string Workspace_Pane_SplitDown => Get(nameof(Workspace_Pane_SplitDown));
+
+    public static string Workspace_Pane_FloatOut => Get(nameof(Workspace_Pane_FloatOut));
+
+    public static string Workspace_Pane_ClosePane => Get(nameof(Workspace_Pane_ClosePane));
+
+    public static string Workspace_Pane_CloseTab => Get(nameof(Workspace_Pane_CloseTab));
+
+    public static string Workspace_Pane_AddTab => Get(nameof(Workspace_Pane_AddTab));
+
+    public static string Workspace_DockPanel_Toggle => Get(nameof(Workspace_DockPanel_Toggle));
+
+    public static string Workspace_Panel_Outline => Get(nameof(Workspace_Panel_Outline));
+
+    public static string Workspace_Outline_Empty => Get(nameof(Workspace_Outline_Empty));
+
+    public static string Workspace_Outline_CloseTooltip => Get(nameof(Workspace_Outline_CloseTooltip));
+
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its
     /// raw name (e.g. "Active", "Cancelled", "Cash") under the

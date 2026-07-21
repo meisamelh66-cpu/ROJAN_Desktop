@@ -41,7 +41,10 @@ public sealed class MainWindowViewModelNavigationTests
             TestSearchServices.IndexService,
             TestSearchServices.RankingService,
             TestSearchServices.CreateHistoryStore(),
-            TestSearchServices.CreateFavoritesStore());
+            TestSearchServices.CreateFavoritesStore(),
+            TestWorkspaceServices.CreateService(),
+            TestWorkspaceServices.FloatingWindowManager,
+            TestWorkspaceServices.ServiceProvider);
 
     [Fact]
     public void NavigationItems_ModuleWithNoRequiredPermission_IsAlwaysVisible()
