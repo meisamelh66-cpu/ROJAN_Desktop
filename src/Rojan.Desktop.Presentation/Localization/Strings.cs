@@ -149,6 +149,22 @@ public static class Strings
 
     public static string Dashboard_ToggleAmountVisibility => Get(nameof(Dashboard_ToggleAmountVisibility));
 
+    public static string News_ActiveClientsTrend => Get(nameof(News_ActiveClientsTrend));
+
+    public static string News_Demo_AppointmentCancelled => Get(nameof(News_Demo_AppointmentCancelled));
+
+    public static string News_Demo_CustomerBirthday => Get(nameof(News_Demo_CustomerBirthday));
+
+    public static string News_Demo_RevenueSummary => Get(nameof(News_Demo_RevenueSummary));
+
+    public static string News_Demo_InventoryWarning => Get(nameof(News_Demo_InventoryWarning));
+
+    public static string News_Demo_StaffAttendance => Get(nameof(News_Demo_StaffAttendance));
+
+    public static string News_Demo_AiRecommendation => Get(nameof(News_Demo_AiRecommendation));
+
+    public static string News_Demo_SystemNotification => Get(nameof(News_Demo_SystemNotification));
+
     public static string Dashboard_Activity_NewBooking => Get(nameof(Dashboard_Activity_NewBooking));
 
     public static string Dashboard_Activity_ProfileUpdated => Get(nameof(Dashboard_Activity_ProfileUpdated));

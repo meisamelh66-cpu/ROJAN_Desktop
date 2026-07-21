@@ -162,6 +162,30 @@
   <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
     <value>نمایش/پنهان کردن مبلغ</value>
   </data>
+  <data name="News_ActiveClientsTrend" xml:space="preserve">
+    <value>رشد مشتریان فعال: {0}٪</value>
+  </data>
+  <data name="News_Demo_AppointmentCancelled" xml:space="preserve">
+    <value>یک نوبت توسط مشتری لغو شد</value>
+  </data>
+  <data name="News_Demo_CustomerBirthday" xml:space="preserve">
+    <value>امروز تولد یکی از مشتریان ویژه است</value>
+  </data>
+  <data name="News_Demo_RevenueSummary" xml:space="preserve">
+    <value>خلاصه درآمد امروز آماده مشاهده است</value>
+  </data>
+  <data name="News_Demo_InventoryWarning" xml:space="preserve">
+    <value>موجودی یکی از محصولات رو به اتمام است</value>
+  </data>
+  <data name="News_Demo_StaffAttendance" xml:space="preserve">
+    <value>حضور و غیاب امروز کارکنان ثبت شد</value>
+  </data>
+  <data name="News_Demo_AiRecommendation" xml:space="preserve">
+    <value>دستیار هوش مصنوعی یک پیشنهاد جدید دارد</value>
+  </data>
+  <data name="News_Demo_SystemNotification" xml:space="preserve">
+    <value>به‌روزرسانی جدید سیستم در دسترس است</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>رزرو جدید ایجاد شد</value>
   </data>

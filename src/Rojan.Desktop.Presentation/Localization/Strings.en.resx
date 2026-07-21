@@ -150,6 +150,30 @@
   <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
     <value>Show/hide amount</value>
   </data>
+  <data name="News_ActiveClientsTrend" xml:space="preserve">
+    <value>Active clients trend: {0}%</value>
+  </data>
+  <data name="News_Demo_AppointmentCancelled" xml:space="preserve">
+    <value>An appointment was cancelled by a customer</value>
+  </data>
+  <data name="News_Demo_CustomerBirthday" xml:space="preserve">
+    <value>It's a VIP customer's birthday today</value>
+  </data>
+  <data name="News_Demo_RevenueSummary" xml:space="preserve">
+    <value>Today's revenue summary is ready to view</value>
+  </data>
+  <data name="News_Demo_InventoryWarning" xml:space="preserve">
+    <value>One product is running low on stock</value>
+  </data>
+  <data name="News_Demo_StaffAttendance" xml:space="preserve">
+    <value>Today's staff attendance was recorded</value>
+  </data>
+  <data name="News_Demo_AiRecommendation" xml:space="preserve">
+    <value>The AI assistant has a new suggestion</value>
+  </data>
+  <data name="News_Demo_SystemNotification" xml:space="preserve">
+    <value>A new system update is available</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>New booking created</value>
   </data>

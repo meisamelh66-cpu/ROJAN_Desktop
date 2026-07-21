@@ -132,42 +132,53 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                <!-- Left: welcome header, KPI widget, quick actions, recent activity widget -->
-                <StackPanel Grid.Column="0" Margin="0,0,24,0">
-
-                    <!-- Welcome / header section -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
-                            <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
+                <!-- Welcome / header section - spans both columns so the ticker below can be genuinely full-width. -->
+                <Grid Grid.Row="0" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
+                        <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding GreetingText, ElementName=Root}"
+                                   Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                   HorizontalAlignment="Right" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding DateText, ElementName=Root}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBlock Text="•"
                                        Style="{StaticResource Rojan.TextStyle.Caption}"
                                        Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                       Margin="0,4,0,0" />
+                                       Margin="6,0" />
+                            <TextBlock Text="{Binding TimeText, ElementName=Root}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding GreetingText, ElementName=Root}"
-                                       Style="{StaticResource Rojan.TextStyle.Subtitle}"
-                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                                       HorizontalAlignment="Right" />
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                <TextBlock Text="{Binding DateText, ElementName=Root}"
-                                           Style="{StaticResource Rojan.TextStyle.Caption}"
-                                           Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                <TextBlock Text="•"
-                                           Style="{StaticResource Rojan.TextStyle.Caption}"
-                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                           Margin="6,0" />
-                                <TextBlock Text="{Binding TimeText, ElementName=Root}"
-                                           Style="{StaticResource Rojan.TextStyle.Caption}"
-                                           Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Phase 36: Live News Ticker - full width, directly below the header. -->
+                <dashboardControls:NewsTicker Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Margin="0,16,0,0"
+                                               ItemsSource="{Binding NewsTickerItems, ElementName=Root}" />
+
+                <!-- Left: KPI widget, quick actions, recent activity widget -->
+                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,0">
 
                     <!-- KPI cards region -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
@@ -307,7 +318,7 @@
                 </StackPanel>
 
                 <!-- Right: AI Assistant panel - static, no repository data -->
-                <dashboardControls:DashboardCard Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
+                <dashboardControls:DashboardCard Grid.Row="2" Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
                     <dashboardControls:DashboardCard.RenderTransform>
                         <TranslateTransform Y="12" />
                     </dashboardControls:DashboardCard.RenderTransform>

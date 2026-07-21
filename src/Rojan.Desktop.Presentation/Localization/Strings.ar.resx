@@ -150,6 +150,30 @@
   <data name="Dashboard_ToggleAmountVisibility" xml:space="preserve">
     <value>إظهار/إخفاء المبلغ</value>
   </data>
+  <data name="News_ActiveClientsTrend" xml:space="preserve">
+    <value>اتجاه العملاء النشطين: {0}٪</value>
+  </data>
+  <data name="News_Demo_AppointmentCancelled" xml:space="preserve">
+    <value>تم إلغاء موعد من قبل العميل</value>
+  </data>
+  <data name="News_Demo_CustomerBirthday" xml:space="preserve">
+    <value>اليوم عيد ميلاد أحد كبار العملاء</value>
+  </data>
+  <data name="News_Demo_RevenueSummary" xml:space="preserve">
+    <value>ملخص إيرادات اليوم جاهز للعرض</value>
+  </data>
+  <data name="News_Demo_InventoryWarning" xml:space="preserve">
+    <value>أحد المنتجات على وشك النفاد من المخزون</value>
+  </data>
+  <data name="News_Demo_StaffAttendance" xml:space="preserve">
+    <value>تم تسجيل حضور الموظفين لهذا اليوم</value>
+  </data>
+  <data name="News_Demo_AiRecommendation" xml:space="preserve">
+    <value>المساعد الذكي لديه اقتراح جديد</value>
+  </data>
+  <data name="News_Demo_SystemNotification" xml:space="preserve">
+    <value>يتوفر تحديث جديد للنظام</value>
+  </data>
   <data name="Dashboard_Activity_NewBooking" xml:space="preserve">
     <value>تم إنشاء حجز جديد</value>
   </data>

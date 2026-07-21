@@ -1,0 +1,47 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.NewsTicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Height="38">
+
+    <!--
+        Phase 36 (Live News Ticker): a right-to-left infinite marquee, built
+        entirely in code-behind (see NewsTicker.xaml.cs) since the seamless-
+        loop technique needs the real measured width of one copy of the
+        content. Two identical copies of the item row sit side by side in
+        TrackPanel; a single linear DoubleAnimation (no easing - anything
+        but linear would violate "constant speed") translates TrackPanel
+        left by exactly one copy's width, RepeatBehavior=Forever, which
+        loops with zero visible seam since the visual state at the end of
+        one cycle is pixel-identical to the start.
+
+        Same glass surface as every DashboardCard/DashboardWidget (Card ->
+        SurfaceSecondary gradient, Border brush, ElevationCard effect - all
+        StaticResource references into the existing design system, no new
+        tokens) at this control's own explicit geometry (XLarge/18px
+        corners, 16/6 padding, 38px height) per the sprint's spec.
+    -->
+    <Border CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            Effect="{StaticResource Rojan.Effect.ElevationCard}"
+            Padding="16,6"
+            MouseEnter="Root_MouseEnter"
+            MouseLeave="Root_MouseLeave">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource Rojan.Color.Card}" Offset="0" />
+                <GradientStop Color="{StaticResource Rojan.Color.SurfaceSecondary}" Offset="1" />
+            </LinearGradientBrush>
+        </Border.Background>
+
+        <Border x:Name="ClipHost" ClipToBounds="True">
+            <StackPanel x:Name="TrackPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel.RenderTransform>
+                    <TranslateTransform x:Name="ScrollTransform" X="0" />
+                </StackPanel.RenderTransform>
+            </StackPanel>
+        </Border>
+    </Border>
+
+</UserControl>
