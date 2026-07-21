@@ -1,0 +1,71 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.KpiChart"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Height="46"
+             ClipToBounds="False">
+
+    <!--
+        Phase 34 (Premium KPI Chart Visualization): a per-KPI mini chart
+        built ONLY from the two real values already bound today - the
+        current KpiMetricDto.Value and a "previous period" value derived
+        arithmetically from TrendDirection/TrendPercentage (see
+        KpiNumberParsing.ComputePrevious - the same trend fact
+        TrendIndicator already renders as a percentage, just expressed as
+        an absolute anchor point). No third-party chart library, no
+        fabricated history - see KpiChart.xaml.cs for the full reasoning
+        and the id->chart-kind/color mapping (mirrors KpiIconConverter's
+        existing id switch).
+
+        Two pre-built visual trees, toggled by Visibility per KPI id:
+        LineCanvas (Revenue/Customers/Pending Tasks - a real two-point
+        cubic Bezier with gradient area, glow, and a left-to-right reveal
+        via an animated Clip) and BarGrid (Bookings - two rounded bars,
+        previous vs. current, animated grow via ScaleTransform).
+    -->
+    <Grid>
+        <Canvas x:Name="LineCanvas" SizeChanged="LineCanvas_SizeChanged">
+            <Path x:Name="GlowPath" StrokeThickness="5" Opacity="0">
+                <Path.Effect>
+                    <BlurEffect Radius="7" />
+                </Path.Effect>
+            </Path>
+            <Path x:Name="AreaPath" StrokeThickness="0" Opacity="0" />
+            <Path x:Name="LinePath"
+                  StrokeThickness="2.25"
+                  StrokeLineJoin="Round"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round" />
+            <Ellipse x:Name="StartDot" Width="6" Height="6" />
+            <Ellipse x:Name="EndDot" Width="9" Height="9" />
+        </Canvas>
+
+        <Grid x:Name="BarGrid" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="PreviousBar"
+                    Grid.Column="0"
+                    Width="28"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    RenderTransformOrigin="0.5,1">
+                <Border.RenderTransform>
+                    <ScaleTransform x:Name="PreviousBarScale" ScaleY="0" />
+                </Border.RenderTransform>
+            </Border>
+            <Border x:Name="CurrentBar"
+                    Grid.Column="1"
+                    Width="28"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    RenderTransformOrigin="0.5,1">
+                <Border.RenderTransform>
+                    <ScaleTransform x:Name="CurrentBarScale" ScaleY="0" />
+                </Border.RenderTransform>
+            </Border>
+        </Grid>
+    </Grid>
+
+</UserControl>

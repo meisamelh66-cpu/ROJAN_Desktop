@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -11,16 +10,14 @@ namespace Rojan.Desktop.Presentation.Controls.Dashboard;
 /// Sprint) an optional icon badge and a count-up reveal animation for Value.
 /// The count-up is a pure visual replay of the real, already-bound Value
 /// string - it parses the leading numeric run (keeping any prefix/suffix,
-/// e.g. a currency word), animates from 0 up to that real number, and
+/// e.g. a currency word, via the shared KpiNumberParsing helper - also used
+/// by KpiChart's mini charts), animates from 0 up to that real number, and
 /// re-renders the exact original format on every tick. If Value isn't a
 /// plain formatted number the pattern can safely parse, it's shown
 /// immediately as-is, unanimated - never a fabricated intermediate shape.
 /// </summary>
 public partial class KPIValue : UserControl
 {
-    private static readonly Regex LeadingNumberPattern =
-        new(@"^(?<prefix>[^\d]*)(?<number>[\d,]+(?:\.[\d]+)?)(?<suffix>.*)$", RegexOptions.Compiled);
-
     public static readonly DependencyProperty LabelProperty =
         DependencyProperty.Register(
             nameof(Label),
@@ -98,20 +95,12 @@ public partial class KPIValue : UserControl
 
     private void AnimateToValue(string value)
     {
-        var match = LeadingNumberPattern.Match(value);
-        var numberText = match.Success ? match.Groups["number"].Value : string.Empty;
-
-        if (!match.Success || !double.TryParse(numberText, NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var target))
+        if (!KpiNumberParsing.TryParse(value, out var target, out _prefix, out _suffix, out _useThousandsSeparator, out _decimalPlaces))
         {
             BeginAnimation(CountProperty, null);
             SetValue(DisplayTextProperty, value);
             return;
         }
-
-        _prefix = match.Groups["prefix"].Value;
-        _suffix = match.Groups["suffix"].Value;
-        _useThousandsSeparator = numberText.Contains(',');
-        _decimalPlaces = numberText.Contains('.') ? numberText[(numberText.IndexOf('.') + 1)..].Length : 0;
 
         var animation = new DoubleAnimation
         {
