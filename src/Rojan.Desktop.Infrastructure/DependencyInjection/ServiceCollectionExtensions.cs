@@ -3,6 +3,7 @@ using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Notifications;
+using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
@@ -32,6 +33,7 @@ using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Reporting;
+using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Specialists;
 using Rojan.Desktop.Infrastructure.Sync;
@@ -94,6 +96,10 @@ public static class ServiceCollectionExtensions
         // Phase 27: Enterprise Notification Center.
         services.AddSingleton<INotificationRepository, LocalNotificationRepository>();
         services.AddSingleton<ISilentModePreferenceStore, LocalSilentModePreferenceStore>();
+
+        // Phase 28: Enterprise Global Search & Command Palette.
+        services.AddSingleton<ISearchHistoryStore, LocalSearchHistoryStore>();
+        services.AddSingleton<ISearchFavoritesStore, LocalSearchFavoritesStore>();
 
         return services;
     }

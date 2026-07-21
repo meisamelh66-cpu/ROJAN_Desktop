@@ -1674,6 +1674,63 @@
   <data name="Common_DaysAgoFormat" xml:space="preserve">
     <value>{0} days ago</value>
   </data>
+  <data name="Search_Palette_Placeholder" xml:space="preserve">
+    <value>Search pages, customers, bookings, commands...</value>
+  </data>
+  <data name="Search_Palette_NoResults" xml:space="preserve">
+    <value>No results found.</value>
+  </data>
+  <data name="Search_Palette_RecentSearches" xml:space="preserve">
+    <value>Recent Searches</value>
+  </data>
+  <data name="Search_Palette_ClearHistory" xml:space="preserve">
+    <value>Clear history</value>
+  </data>
+  <data name="Search_Palette_Favorites" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="Search_Type_Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="Search_Type_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Search_Type_Booking" xml:space="preserve">
+    <value>Booking</value>
+  </data>
+  <data name="Search_Type_Specialist" xml:space="preserve">
+    <value>Specialist</value>
+  </data>
+  <data name="Search_Type_Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Search_Type_Product" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="Search_Type_Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="Search_Command_ToggleSidebar" xml:space="preserve">
+    <value>Toggle Sidebar</value>
+  </data>
+  <data name="Search_Command_ToggleNotifications" xml:space="preserve">
+    <value>Toggle Notification Center</value>
+  </data>
+  <data name="Search_Command_OpenHelp" xml:space="preserve">
+    <value>Open Help</value>
+  </data>
+  <data name="Search_Command_ToggleSilentMode" xml:space="preserve">
+    <value>Toggle Silent Mode</value>
+  </data>
+  <data name="Search_Command_GoBack" xml:space="preserve">
+    <value>Go Back</value>
+  </data>
+  <data name="Search_Command_GoForward" xml:space="preserve">
+    <value>Go Forward</value>
+  </data>
+  <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
+    <value>Open Branch Switcher</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>Success</value>
   </data>

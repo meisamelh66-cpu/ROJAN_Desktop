@@ -62,6 +62,23 @@
                                    CornerRadius="0" />
     </shellChrome:WindowChrome.WindowChrome>
 
+    <!--
+        Phase 28: Enterprise Global Search & Command Palette - global
+        keyboard shortcuts, available from anywhere in the window
+        regardless of which control currently has focus (WPF's
+        Window.InputBindings mechanism, not previously used anywhere in
+        this app). Ctrl+K is the primary shortcut (matches VS Code/most
+        modern command-palette conventions); Ctrl+P is bound as an alias
+        to the same command per the spec's "Ctrl+K and Ctrl+P
+        architecture" - both entries in one small, extensible list rather
+        than hardcoded as a single binding, so a future shortcut is just
+        one more KeyBinding here.
+    -->
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Control" Key="K" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Modifiers="Control" Key="P" Command="{Binding OpenCommandPaletteCommand}" />
+    </Window.InputBindings>
+
     <Window.Resources>
         <!--
             Branch Switcher row - reused for Favorites/Recent/every
@@ -157,24 +174,37 @@
                                Foreground="{StaticResource Rojan.Brush.MutedText}" />
                 </StackPanel>
 
-                <!-- Global search placeholder - not functional, UI presence only -->
+                <!-- Phase 28: Global Search & Command Palette entry point - opens the same palette as Ctrl+K/Ctrl+P. -->
                 <Border Grid.Column="3"
                         Style="{StaticResource Rojan.Style.Panel}"
                         Width="240"
                         Height="32"
+                        Cursor="Hand"
+                        ToolTip="{x:Static loc:Strings.Search_Palette_Placeholder}"
+                        AutomationProperties.Name="{x:Static loc:Strings.Common_Search}"
                         shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center">
-                        <TextBlock Text="{StaticResource Rojan.Icon.Search}"
-                                   FontFamily="{StaticResource Rojan.FontFamily.Icons}"
-                                   FontSize="13"
-                                   Foreground="{StaticResource Rojan.Brush.HintText}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="{x:Static loc:Strings.Common_Search}"
-                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick" Command="{Binding OpenCommandPaletteCommand}" />
+                    </Border.InputBindings>
+                    <Grid Margin="10,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{StaticResource Rojan.Icon.Search}"
+                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource Rojan.Brush.HintText}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static loc:Strings.Common_Search}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.HintText}"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="Ctrl+K"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
                                    Foreground="{StaticResource Rojan.Brush.HintText}"
                                    VerticalAlignment="Center"
-                                   Margin="8,0,0,0" />
-                    </StackPanel>
+                                   HorizontalAlignment="Right" />
+                    </Grid>
                 </Border>
 
                 <!-- Back / Forward / Help -->

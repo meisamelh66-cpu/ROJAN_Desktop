@@ -1686,6 +1686,63 @@
   <data name="Common_DaysAgoFormat" xml:space="preserve">
     <value>{0} روز پیش</value>
   </data>
+  <data name="Search_Palette_Placeholder" xml:space="preserve">
+    <value>جستجو در صفحات، مشتریان، رزروها، دستورات...</value>
+  </data>
+  <data name="Search_Palette_NoResults" xml:space="preserve">
+    <value>نتیجه‌ای یافت نشد.</value>
+  </data>
+  <data name="Search_Palette_RecentSearches" xml:space="preserve">
+    <value>جستجوهای اخیر</value>
+  </data>
+  <data name="Search_Palette_ClearHistory" xml:space="preserve">
+    <value>پاک کردن تاریخچه</value>
+  </data>
+  <data name="Search_Palette_Favorites" xml:space="preserve">
+    <value>مورد علاقه‌ها</value>
+  </data>
+  <data name="Search_Type_Page" xml:space="preserve">
+    <value>صفحه</value>
+  </data>
+  <data name="Search_Type_Customer" xml:space="preserve">
+    <value>مشتری</value>
+  </data>
+  <data name="Search_Type_Booking" xml:space="preserve">
+    <value>رزرو</value>
+  </data>
+  <data name="Search_Type_Specialist" xml:space="preserve">
+    <value>متخصص</value>
+  </data>
+  <data name="Search_Type_Service" xml:space="preserve">
+    <value>خدمت</value>
+  </data>
+  <data name="Search_Type_Product" xml:space="preserve">
+    <value>محصول</value>
+  </data>
+  <data name="Search_Type_Command" xml:space="preserve">
+    <value>دستور</value>
+  </data>
+  <data name="Search_Command_ToggleSidebar" xml:space="preserve">
+    <value>نمایش/مخفی کردن نوار کناری</value>
+  </data>
+  <data name="Search_Command_ToggleNotifications" xml:space="preserve">
+    <value>نمایش/مخفی کردن مرکز اعلان‌ها</value>
+  </data>
+  <data name="Search_Command_OpenHelp" xml:space="preserve">
+    <value>باز کردن راهنما</value>
+  </data>
+  <data name="Search_Command_ToggleSilentMode" xml:space="preserve">
+    <value>تغییر حالت سکوت</value>
+  </data>
+  <data name="Search_Command_GoBack" xml:space="preserve">
+    <value>بازگشت</value>
+  </data>
+  <data name="Search_Command_GoForward" xml:space="preserve">
+    <value>جلو رفتن</value>
+  </data>
+  <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
+    <value>باز کردن تعویض شعبه</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>موفق</value>
   </data>

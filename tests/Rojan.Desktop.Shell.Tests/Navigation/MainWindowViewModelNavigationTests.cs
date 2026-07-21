@@ -37,7 +37,11 @@ public sealed class MainWindowViewModelNavigationTests
             TestNotificationServices.CreateNotificationService(),
             TestNotificationServices.ContentResolver,
             TestNotificationServices.SearchService,
-            TestNotificationServices.ToastDismissScheduler);
+            TestNotificationServices.ToastDismissScheduler,
+            TestSearchServices.IndexService,
+            TestSearchServices.RankingService,
+            TestSearchServices.CreateHistoryStore(),
+            TestSearchServices.CreateFavoritesStore());
 
     [Fact]
     public void NavigationItems_ModuleWithNoRequiredPermission_IsAlwaysVisible()

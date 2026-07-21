@@ -959,6 +959,45 @@ public static class Strings
 
     public static string Common_DaysAgoFormat => Get(nameof(Common_DaysAgoFormat));
 
+    // Phase 28: Enterprise Global Search & Command Palette.
+    public static string Search_Palette_Placeholder => Get(nameof(Search_Palette_Placeholder));
+
+    public static string Search_Palette_NoResults => Get(nameof(Search_Palette_NoResults));
+
+    public static string Search_Palette_RecentSearches => Get(nameof(Search_Palette_RecentSearches));
+
+    public static string Search_Palette_ClearHistory => Get(nameof(Search_Palette_ClearHistory));
+
+    public static string Search_Palette_Favorites => Get(nameof(Search_Palette_Favorites));
+
+    public static string Search_Type_Page => Get(nameof(Search_Type_Page));
+
+    public static string Search_Type_Customer => Get(nameof(Search_Type_Customer));
+
+    public static string Search_Type_Booking => Get(nameof(Search_Type_Booking));
+
+    public static string Search_Type_Specialist => Get(nameof(Search_Type_Specialist));
+
+    public static string Search_Type_Service => Get(nameof(Search_Type_Service));
+
+    public static string Search_Type_Product => Get(nameof(Search_Type_Product));
+
+    public static string Search_Type_Command => Get(nameof(Search_Type_Command));
+
+    public static string Search_Command_ToggleSidebar => Get(nameof(Search_Command_ToggleSidebar));
+
+    public static string Search_Command_ToggleNotifications => Get(nameof(Search_Command_ToggleNotifications));
+
+    public static string Search_Command_OpenHelp => Get(nameof(Search_Command_OpenHelp));
+
+    public static string Search_Command_ToggleSilentMode => Get(nameof(Search_Command_ToggleSilentMode));
+
+    public static string Search_Command_GoBack => Get(nameof(Search_Command_GoBack));
+
+    public static string Search_Command_GoForward => Get(nameof(Search_Command_GoForward));
+
+    public static string Search_Command_OpenBranchSwitcher => Get(nameof(Search_Command_OpenBranchSwitcher));
+
     /// <summary>
     /// Looks up a localized display label for a Domain enum member by its
     /// raw name (e.g. "Active", "Cancelled", "Cash") under the

@@ -3,6 +3,7 @@ using System.Windows.Input;
 using System.Windows.Shell;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.ViewModels.Help;
+using Rojan.Desktop.Presentation.ViewModels.Search;
 using Rojan.Desktop.Shell.Navigation;
 
 namespace Rojan.Desktop.Shell;
@@ -69,10 +70,10 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>Phase 26.4: outside-click (scrim click) closes the Context Help Dialog specifically - see Scrim's own doc comment in MainWindow.xaml for why this is not made generic to every dialog.</summary>
+    /// <summary>Phase 26.4/28: outside-click (scrim click) closes the Context Help Dialog/Command Palette specifically - see Scrim's own doc comment in MainWindow.xaml for why this is not made generic to every dialog.</summary>
     private void Scrim_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is MainWindowViewModel { ActiveDialog: HelpDialogViewModel } viewModel)
+        if (DataContext is MainWindowViewModel { ActiveDialog: HelpDialogViewModel or CommandPaletteViewModel } viewModel)
         {
             viewModel.CloseDialog();
         }

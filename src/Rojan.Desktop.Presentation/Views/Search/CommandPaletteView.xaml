@@ -1,0 +1,238 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Views.Search.CommandPaletteView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:searchVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Search"
+             xmlns:controlsSearch="clr-namespace:Rojan.Desktop.Presentation.Controls.Search"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+
+    <!--
+        Phase 28: Enterprise Global Search & Command Palette. Same Fluent 2
+        dialog chrome every overlay in this app already uses
+        (Rojan.Brush.SurfaceElevated + Rojan.CornerRadius.Large +
+        Rojan.Effect.ElevationDialog, see Views.Help.ContextHelpDialogView
+        for the identical pattern) - shown in Shell's existing dialog
+        region via IDialogService, no new visual language introduced.
+        Keyboard navigation (Up/Down/Enter/Esc) is handled in this View's
+        own code-behind on the search TextBox's PreviewKeyDown, the same
+        "self-contained keyboard behavior in the View" shape
+        ContextHelpDialogView's own focus trap already establishes.
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:SearchResultTypeToIconConverter x:Key="TypeToIconConverter" />
+            <converters:SearchResultTypeToLabelConverter x:Key="TypeToLabelConverter" />
+
+            <Style x:Key="ResultListBox" TargetType="ListBox">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="RowChrome" Background="Transparent" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="RowChrome" Property="Background" Value="{StaticResource Rojan.Brush.SurfaceHover}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate x:Key="ResultRowTemplate" DataType="{x:Type searchVm:SearchResultRowViewModel}">
+                <Border Background="Transparent" Padding="10,8" Cursor="Hand">
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.ExecuteResultCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </Border.InputBindings>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Type, Converter={StaticResource TypeToIconConverter}}"
+                                   FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                   Foreground="{StaticResource Rojan.Brush.TextSecondary}"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock controlsSearch:SearchHighlightText.Text="{Binding Title}"
+                                       controlsSearch:SearchHighlightText.Highlights="{Binding TitleHighlights}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Subtitle}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="{Binding Subtitle, Converter={StaticResource CollectionToVisibilityConverter}}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Type, Converter={StaticResource TypeToLabelConverter}}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.HintText}"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0" />
+                        <Button Grid.Column="3"
+                                Command="{Binding ToggleFavoriteCommand}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="4"
+                                Cursor="Hand"
+                                ToolTip="{x:Static loc:Strings.Help_Nav_AddFavorite}"
+                                AutomationProperties.Name="{x:Static loc:Strings.Help_Nav_AddFavorite}">
+                            <TextBlock FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="13">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.FavoriteOutline}" />
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.TextSecondary}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                <Setter Property="Text" Value="{StaticResource Rojan.Icon.FavoriteFilled}" />
+                                                <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Rojan.Brush.SurfaceElevated}"
+            BorderBrush="{StaticResource Rojan.Brush.Border}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+            Effect="{StaticResource Rojan.Effect.ElevationDialog}"
+            Width="640"
+            MaxHeight="520"
+            Padding="4">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Search box -->
+            <Border Grid.Row="0" BorderBrush="{StaticResource Rojan.Brush.Border}" BorderThickness="0,0,0,1" Padding="16,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{StaticResource Rojan.Icon.Search}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="16" Foreground="{StaticResource Rojan.Brush.TextSecondary}" VerticalAlignment="Center" />
+                    <TextBox x:Name="SearchBox"
+                             Grid.Column="1"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                             CaretBrush="{StaticResource Rojan.Brush.Accent}"
+                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
+                             FontSize="15"
+                             Margin="10,0"
+                             Tag="{x:Static loc:Strings.Search_Palette_Placeholder}"
+                             AutomationProperties.Name="{x:Static loc:Strings.Search_Palette_Placeholder}" />
+                    <Button Grid.Column="2"
+                            x:Name="CloseButton"
+                            Command="{Binding CloseCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="6"
+                            Cursor="Hand"
+                            ToolTip="{x:Static loc:Strings.Common_Close}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Common_Close}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Close}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Results (active search) -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsSearchActive, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Margin="8">
+                    <ListBox Style="{StaticResource ResultListBox}"
+                             ItemsSource="{Binding Results}"
+                             ItemTemplate="{StaticResource ResultRowTemplate}"
+                             SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" />
+                    <TextBlock Text="{x:Static loc:Strings.Search_Palette_NoResults}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="10,16">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Results.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Recent searches + Favorites (idle state) -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsSearchActive, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                <StackPanel Margin="8">
+                    <StackPanel Visibility="{Binding RecentSearches, Converter={StaticResource CollectionToVisibilityConverter}}">
+                        <Grid Margin="10,8,10,4">
+                            <TextBlock Text="{x:Static loc:Strings.Search_Palette_RecentSearches}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" HorizontalAlignment="Left" />
+                            <Button Content="{x:Static loc:Strings.Search_Palette_ClearHistory}"
+                                    Command="{Binding ClearHistoryCommand}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand"
+                                    HorizontalAlignment="Right"
+                                    FontSize="11"
+                                    Foreground="{StaticResource Rojan.Brush.Accent}" />
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding RecentSearches}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent" Padding="10,6" Cursor="Hand">
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectRecentSearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        </Border.InputBindings>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource Rojan.Icon.Search}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="11" Foreground="{StaticResource Rojan.Brush.HintText}" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding}" Style="{StaticResource Rojan.TextStyle.Body}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding FavoriteResults, Converter={StaticResource CollectionToVisibilityConverter}}" Margin="0,8,0,0">
+                        <TextBlock Text="{x:Static loc:Strings.Search_Palette_Favorites}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="10,8,10,4" />
+                        <ItemsControl ItemsSource="{Binding FavoriteResults}" ItemTemplate="{StaticResource ResultRowTemplate}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

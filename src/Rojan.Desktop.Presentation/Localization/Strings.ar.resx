@@ -1674,6 +1674,63 @@
   <data name="Common_DaysAgoFormat" xml:space="preserve">
     <value>منذ {0} يوم</value>
   </data>
+  <data name="Search_Palette_Placeholder" xml:space="preserve">
+    <value>البحث في الصفحات والعملاء والحجوزات والأوامر...</value>
+  </data>
+  <data name="Search_Palette_NoResults" xml:space="preserve">
+    <value>لم يتم العثور على نتائج.</value>
+  </data>
+  <data name="Search_Palette_RecentSearches" xml:space="preserve">
+    <value>عمليات البحث الأخيرة</value>
+  </data>
+  <data name="Search_Palette_ClearHistory" xml:space="preserve">
+    <value>مسح السجل</value>
+  </data>
+  <data name="Search_Palette_Favorites" xml:space="preserve">
+    <value>المفضلة</value>
+  </data>
+  <data name="Search_Type_Page" xml:space="preserve">
+    <value>صفحة</value>
+  </data>
+  <data name="Search_Type_Customer" xml:space="preserve">
+    <value>عميل</value>
+  </data>
+  <data name="Search_Type_Booking" xml:space="preserve">
+    <value>حجز</value>
+  </data>
+  <data name="Search_Type_Specialist" xml:space="preserve">
+    <value>أخصائي</value>
+  </data>
+  <data name="Search_Type_Service" xml:space="preserve">
+    <value>خدمة</value>
+  </data>
+  <data name="Search_Type_Product" xml:space="preserve">
+    <value>منتج</value>
+  </data>
+  <data name="Search_Type_Command" xml:space="preserve">
+    <value>أمر</value>
+  </data>
+  <data name="Search_Command_ToggleSidebar" xml:space="preserve">
+    <value>إظهار/إخفاء الشريط الجانبي</value>
+  </data>
+  <data name="Search_Command_ToggleNotifications" xml:space="preserve">
+    <value>إظهار/إخفاء مركز الإشعارات</value>
+  </data>
+  <data name="Search_Command_OpenHelp" xml:space="preserve">
+    <value>فتح المساعدة</value>
+  </data>
+  <data name="Search_Command_ToggleSilentMode" xml:space="preserve">
+    <value>تبديل الوضع الصامت</value>
+  </data>
+  <data name="Search_Command_GoBack" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="Search_Command_GoForward" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Search_Command_OpenBranchSwitcher" xml:space="preserve">
+    <value>فتح مبدل الفروع</value>
+  </data>
   <data name="Enum_Success" xml:space="preserve">
     <value>نجاح</value>
   </data>

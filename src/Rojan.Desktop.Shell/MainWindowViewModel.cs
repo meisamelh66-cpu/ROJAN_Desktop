@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Help;
 using Rojan.Desktop.Presentation.Localization;
@@ -13,6 +14,7 @@ using Rojan.Desktop.Presentation.Notifications;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Help;
 using Rojan.Desktop.Presentation.ViewModels.Notifications;
+using Rojan.Desktop.Presentation.ViewModels.Search;
 
 namespace Rojan.Desktop.Shell;
 
@@ -46,6 +48,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private readonly IHelpSearchService _helpSearchService;
     private readonly IHelpFavoritesStore _helpFavoritesStore;
     private readonly IHelpRecentlyViewedStore _helpRecentlyViewedStore;
+    private readonly IGlobalSearchIndexService _globalSearchIndexService;
+    private readonly ISearchRankingService _searchRankingService;
+    private readonly ISearchHistoryStore _searchHistoryStore;
+    private readonly ISearchFavoritesStore _searchFavoritesStore;
+    private readonly IModuleRegistry _moduleRegistry;
     private readonly IReadOnlyList<ModuleDescriptor> _allModules;
     private NavigationItem _selectedNavigationItem = null!;
     private bool _isSidebarExpanded = true;
@@ -74,7 +81,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         INotificationService notificationService,
         INotificationContentResolver notificationContentResolver,
         INotificationSearchService notificationSearchService,
-        IToastDismissScheduler toastDismissScheduler)
+        IToastDismissScheduler toastDismissScheduler,
+        IGlobalSearchIndexService globalSearchIndexService,
+        ISearchRankingService searchRankingService,
+        ISearchHistoryStore searchHistoryStore,
+        ISearchFavoritesStore searchFavoritesStore)
     {
         _navigationService = navigationService;
         _permissionEngine = permissionEngine;
@@ -85,6 +96,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         _helpSearchService = helpSearchService;
         _helpFavoritesStore = helpFavoritesStore;
         _helpRecentlyViewedStore = helpRecentlyViewedStore;
+        _globalSearchIndexService = globalSearchIndexService;
+        _searchRankingService = searchRankingService;
+        _searchHistoryStore = searchHistoryStore;
+        _searchFavoritesStore = searchFavoritesStore;
+        _moduleRegistry = moduleRegistry;
         _allModules = moduleRegistry.Modules;
 
         NavigationItems = new ObservableCollection<NavigationItem>(BuildVisibleNavigationItems());
@@ -114,6 +130,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         SelectBranchFromSwitcherCommand = new AsyncRelayCommand(parameter => SelectBranchFromSwitcherAsync((BranchDto)parameter!));
         ToggleFavoriteBranchCommand = new AsyncRelayCommand(parameter => ToggleFavoriteBranchAsync((BranchDto)parameter!));
         OpenHelpCommand = new AsyncRelayCommand(parameter => OpenHelpAsync(parameter as string));
+        ToggleSilentModeCommand = new RelayCommand(_ => NotificationCenter.IsSilentModeEnabled = !NotificationCenter.IsSilentModeEnabled);
+        OpenCommandPaletteCommand = new AsyncRelayCommand(_ => OpenCommandPaletteAsync());
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
@@ -250,6 +268,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 
     /// <summary>Phase 26.3: the Smart Help Button's command - opens the Context Help Dialog for <c>moduleId</c> (falls back to the currently-selected module when no explicit id is passed, e.g. a header-level Help button with no per-control context).</summary>
     public ICommand OpenHelpCommand { get; }
+
+    /// <summary>Phase 28: toggles <see cref="NotificationCenterViewModel.IsSilentModeEnabled"/> - exposed as a plain command (rather than requiring the Command Palette to know about that ViewModel's property shape) so it can be registered in the palette's command-action map like every other Shell-level toggle.</summary>
+    public ICommand ToggleSilentModeCommand { get; }
+
+    /// <summary>Phase 28: Enterprise Global Search &amp; Command Palette - opens the palette (Ctrl+K/Ctrl+P, or the header's search box).</summary>
+    public ICommand OpenCommandPaletteCommand { get; }
 
     public ICommand SelectNavigationItemCommand { get; }
 
@@ -411,5 +435,41 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 
         ShowDialog(helpDialog);
         await helpDialog.InitializeAsync(effectiveModuleId).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Constructs a fresh <see cref="CommandPaletteViewModel"/> with this
+    /// ViewModel's already-injected Search dependencies and a command-
+    /// action map built from this ViewModel's own already-wired commands
+    /// - the same constructed-via-<c>new</c>-by-its-opener shape
+    /// <see cref="OpenHelpAsync"/> already establishes, since the palette
+    /// needs the module registry/navigation service/command map no
+    /// constructor-injected dependency alone can supply.
+    /// </summary>
+    private async Task OpenCommandPaletteAsync()
+    {
+        var commandActions = new Dictionary<string, ICommand>
+        {
+            ["toggle-sidebar"] = ToggleSidebarCommand,
+            ["toggle-notifications"] = ToggleNotificationPanelCommand,
+            ["open-help"] = OpenHelpCommand,
+            ["toggle-silent-mode"] = ToggleSilentModeCommand,
+            ["go-back"] = GoBackCommand,
+            ["go-forward"] = GoForwardCommand,
+            ["open-branch-switcher"] = ToggleBranchSwitcherCommand,
+        };
+
+        var palette = new CommandPaletteViewModel(
+            _globalSearchIndexService,
+            _searchRankingService,
+            _searchHistoryStore,
+            _searchFavoritesStore,
+            _moduleRegistry,
+            _navigationService,
+            this,
+            commandActions);
+
+        ShowDialog(palette);
+        await palette.InitializeAsync().ConfigureAwait(true);
     }
 }

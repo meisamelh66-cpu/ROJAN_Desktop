@@ -12,6 +12,7 @@ using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
+using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
 using AppServices = Rojan.Desktop.Application.Services;
@@ -170,6 +171,15 @@ public static class ServiceCollectionExtensions
         // RetryPolicy already establish.
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<INotificationSearchService, NotificationSearchService>();
+
+        // Phase 28: Enterprise Global Search & Command Palette.
+        // GlobalSearchIndexService depends only on other Application-layer
+        // query services already registered above (same layer, not a
+        // violation) - see its own doc comment. SearchRankingService is
+        // pure matching/scoring logic with no I/O - same reasoning
+        // HelpSearchService/NotificationSearchService already establish.
+        services.AddSingleton<IGlobalSearchIndexService, GlobalSearchIndexService>();
+        services.AddSingleton<ISearchRankingService, SearchRankingService>();
 
         return services;
     }

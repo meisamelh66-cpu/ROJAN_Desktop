@@ -35,7 +35,9 @@
                     xmlns:helpVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Help"
                     xmlns:helpView="clr-namespace:Rojan.Desktop.Presentation.Views.Help"
                     xmlns:notificationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Notifications"
-                    xmlns:notificationView="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications">
+                    xmlns:notificationView="clr-namespace:Rojan.Desktop.Presentation.Views.Notifications"
+                    xmlns:searchVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Search"
+                    xmlns:searchView="clr-namespace:Rojan.Desktop.Presentation.Views.Search">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -123,6 +125,10 @@
 
   <DataTemplate DataType="{x:Type notificationVm:ToastNotificationViewModel}">
     <notificationView:ToastNotificationView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type searchVm:CommandPaletteViewModel}">
+    <searchView:CommandPaletteView />
   </DataTemplate>
 
 </ResourceDictionary>

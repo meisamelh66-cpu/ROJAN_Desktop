@@ -34,7 +34,11 @@ public sealed class MainWindowViewModelBranchSwitcherTests
             TestNotificationServices.CreateNotificationService(),
             TestNotificationServices.ContentResolver,
             TestNotificationServices.SearchService,
-            TestNotificationServices.ToastDismissScheduler);
+            TestNotificationServices.ToastDismissScheduler,
+            TestSearchServices.IndexService,
+            TestSearchServices.RankingService,
+            TestSearchServices.CreateHistoryStore(),
+            TestSearchServices.CreateFavoritesStore());
 
     [Fact]
     public void BranchGroups_LoadsEveryOrganizationWithItsOwnBranchesOnly()

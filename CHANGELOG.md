@@ -884,6 +884,63 @@ see `docs/standards/versioning.md`.
   Center on first launch, the badge shows the correct unread count, and
   Silent Mode persists across a toggle — see
   `docs/phases/phase-27-enterprise-notification-center.md`.
+- Phase 28 Enterprise Global Search & Command Palette — a `Ctrl+K`/
+  `Ctrl+P` command palette searching pages, modules, customers,
+  bookings, specialists, services, products, and commands with
+  intelligent ranking, fuzzy matching, recent searches, favorites,
+  search highlighting, and instant results. `Domain.Search`
+  (`MatchSpan`, `FuzzyMatchResult`, `SearchRules.Match` — culture-aware
+  exact/prefix/substring scoring falling back to fuzzy subsequence
+  matching, always scored lower than any substring/prefix/exact match)
+  and `Application.Search` (`SearchResultType` — a UI-facing taxonomy
+  with no Domain equivalent, `HighlightSpan` — a deliberate mirror of
+  `Domain.Search.MatchSpan`, `ISearchRankingService`/
+  `SearchRankingService` — title+keyword weighted scoring plus a
+  type-priority bonus for Commands/Pages and a favorite bonus,
+  `IGlobalSearchIndexService`/`GlobalSearchIndexService` — aggregates
+  live candidates from five sibling Application query services,
+  `ISearchHistoryStore`, `ISearchFavoritesStore`) are new,
+  dependency-clean layers. `Application.Search`'s dependency on
+  `ICustomerQueryService`/`IBookingQueryService`/
+  `ISpecialistQueryService`/`Application.Services.IServiceQueryService`/
+  `IProductQueryService` is an Application-to-Application dependency,
+  not a layer violation, the same shape the existing Reporting/
+  Analytics aggregators already establish — verified by the unchanged
+  `ArchitectureTests.DependencyDirectionTests`.
+  `Infrastructure.Search.LocalSearchHistoryStore` persists up to 10
+  recent searches (case-insensitive dedup-and-move-to-front);
+  `LocalSearchFavoritesStore` persists favorited candidate ids.
+  `Presentation.Search.StaticSearchCatalog` (a static class, not
+  DI-registered) supplies already-localized Page/Command candidates —
+  one per registered module plus 7 curated commands (toggle sidebar,
+  toggle notifications, open help, toggle Silent Mode, go back, go
+  forward, open branch switcher). `CommandPaletteViewModel` is
+  constructed directly via `new` by `MainWindowViewModel` (not
+  DI-registered) so its search state never leaks between opens, the
+  same "constructed by its opener" shape `HelpDialogViewModel` and the
+  Notification Center's ViewModels already establish; a Command result
+  is invoked through a `Dictionary<string, ICommand>` action map
+  `MainWindowViewModel` builds from its own already-wired commands,
+  keeping the palette fully decoupled from Shell. A new
+  `Window.InputBindings` block (first use of this WPF mechanism in the
+  codebase) binds both `Ctrl+K` and `Ctrl+P`; the previously
+  non-functional header search box placeholder is now clickable and
+  opens the same palette. Inside the palette, the search box never
+  loses keyboard focus — its own `PreviewKeyDown` handler drives
+  Up/Down/Enter/Escape against the ViewModel, while the results list is
+  non-focusable and only reflects the selection visually, the classic
+  command-palette UX pattern. 19 new `Strings.cs`/resx entries across
+  fa-IR/en/ar (palette chrome, 7 result-type labels, 7 command titles)
+  — no hardcoded text anywhere in Presentation/Application/Domain/
+  Infrastructure. No existing page's layout, colors, spacing, or
+  controls changed. 51 new tests (1148 → 1199), full suite passes, zero
+  warnings, zero errors, `ArchitectureTests` (dependency-direction and
+  ViewModel-testability) included. Runtime-verified: `Ctrl+K`/`Ctrl+P`
+  and the header search box all open the palette, search returns
+  instant ranked/highlighted results across pages/commands/business
+  data, keyboard navigation and execution both work, and Recent
+  Searches/Favorites persist across palette re-opens — see
+  `docs/phases/phase-28-enterprise-global-search-command-palette.md`.
 
 ### Fixed
 - `.editorconfig`: the `[*Tests.cs]` override now also disables `CA1707`,
