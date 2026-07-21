@@ -14,6 +14,19 @@
     Fluent 2 Premium Theme pass: no longer self-merges Colors.xaml/
     Typography.xaml/Controls.xaml - see Themes/Controls.xaml's own doc
     comment for why.
+
+    Dashboard Modernization Sprint: premium card shell - a soft diagonal
+    gradient (existing Card -> SurfaceSecondary tokens only, both already
+    opaque so no alpha-compositing surprises against whatever sits behind
+    the card), a larger XLarge corner radius, and a hover state (local
+    Storyboards, same Trigger.EnterActions/ExitActions pattern as
+    Controls/Help/HelpButton.xaml) that lifts the card a few px, swaps in
+    a deeper ElevationCardHover shadow, and fades in an accent-tinted glow
+    ring. This chrome lives ONLY here (Rojan.Style.Card itself, used by
+    every other page in the app, is untouched) so the premium look is
+    scoped to the Dashboard as intended. Every existing named part/trigger
+    (Header, LoadingText/EmptyText/ErrorPanel/ContentHost, the State/Title
+    triggers) is preserved unchanged - only the outer chrome changed.
   -->
 
   <!-- DashboardCard: static titled Card wrapper, no load state. -->
@@ -21,17 +34,59 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type dashboard:DashboardCard}">
-          <Border Style="{StaticResource Rojan.Style.Card}">
-            <StackPanel>
-              <dashboard:WidgetHeader x:Name="Header"
-                                       Title="{TemplateBinding Title}"
-                                       Margin="0,0,0,16" />
-              <ContentPresenter />
-            </StackPanel>
-          </Border>
+          <Grid RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+              <TranslateTransform x:Name="CardLift" Y="0" />
+            </Grid.RenderTransform>
+
+            <Border x:Name="CardSurface"
+                    Style="{StaticResource Rojan.Style.Card}"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
+                    Effect="{StaticResource Rojan.Effect.ElevationCard}">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                  <GradientStop Color="{StaticResource Rojan.Color.Card}" Offset="0" />
+                  <GradientStop Color="{StaticResource Rojan.Color.SurfaceSecondary}" Offset="1" />
+                </LinearGradientBrush>
+              </Border.Background>
+              <StackPanel>
+                <dashboard:WidgetHeader x:Name="Header"
+                                         Title="{TemplateBinding Title}"
+                                         Margin="0,0,0,16" />
+                <ContentPresenter />
+              </StackPanel>
+            </Border>
+
+            <!-- Drawn on top, transparent interior (no Background) - only its stroke is visible, so it never occludes CardSurface's content, just outlines it on hover. -->
+            <Border x:Name="GlowRing"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
+                    BorderBrush="{StaticResource Rojan.Brush.Accent}"
+                    BorderThickness="1.5"
+                    IsHitTestVisible="False"
+                    Opacity="0" />
+          </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="Title" Value="{x:Null}">
               <Setter TargetName="Header" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="CardSurface" Property="Effect" Value="{StaticResource Rojan.Effect.ElevationCardHover}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="-3" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="GlowRing" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="0" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="GlowRing" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -44,39 +99,62 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type dashboard:DashboardWidget}">
-          <Border Style="{StaticResource Rojan.Style.Card}">
-            <StackPanel>
-              <dashboard:WidgetHeader x:Name="Header"
-                                       Title="{TemplateBinding Title}"
-                                       Margin="0,0,0,16" />
+          <Grid RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+              <TranslateTransform x:Name="CardLift" Y="0" />
+            </Grid.RenderTransform>
 
-              <TextBlock x:Name="LoadingText"
-                         Text="{x:Static loc:Strings.Common_Loading}"
-                         Style="{StaticResource Rojan.TextStyle.Body}"
-                         Foreground="{StaticResource Rojan.Brush.MutedText}"
-                         Visibility="Collapsed" />
+            <Border x:Name="CardSurface"
+                    Style="{StaticResource Rojan.Style.Card}"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
+                    Effect="{StaticResource Rojan.Effect.ElevationCard}">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                  <GradientStop Color="{StaticResource Rojan.Color.Card}" Offset="0" />
+                  <GradientStop Color="{StaticResource Rojan.Color.SurfaceSecondary}" Offset="1" />
+                </LinearGradientBrush>
+              </Border.Background>
+              <StackPanel>
+                <dashboard:WidgetHeader x:Name="Header"
+                                         Title="{TemplateBinding Title}"
+                                         Margin="0,0,0,16" />
 
-              <TextBlock x:Name="EmptyText"
-                         Text="{x:Static loc:Strings.Common_NoDataAvailable}"
-                         Style="{StaticResource Rojan.TextStyle.Body}"
-                         Foreground="{StaticResource Rojan.Brush.MutedText}"
-                         Visibility="Collapsed" />
-
-              <StackPanel x:Name="ErrorPanel" Visibility="Collapsed">
-                <TextBlock Text="{TemplateBinding ErrorMessage}"
+                <TextBlock x:Name="LoadingText"
+                           Text="{x:Static loc:Strings.Common_Loading}"
                            Style="{StaticResource Rojan.TextStyle.Body}"
-                           Foreground="{StaticResource Rojan.Brush.Error}"
-                           TextWrapping="Wrap" />
-                <Button Content="{x:Static loc:Strings.Common_Retry}"
-                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                        Command="{TemplateBinding RetryCommand}"
-                        Margin="0,12,0,0"
-                        HorizontalAlignment="Left" />
-              </StackPanel>
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           Visibility="Collapsed" />
 
-              <ContentPresenter x:Name="ContentHost" Visibility="Collapsed" />
-            </StackPanel>
-          </Border>
+                <TextBlock x:Name="EmptyText"
+                           Text="{x:Static loc:Strings.Common_NoDataAvailable}"
+                           Style="{StaticResource Rojan.TextStyle.Body}"
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           Visibility="Collapsed" />
+
+                <StackPanel x:Name="ErrorPanel" Visibility="Collapsed">
+                  <TextBlock Text="{TemplateBinding ErrorMessage}"
+                             Style="{StaticResource Rojan.TextStyle.Body}"
+                             Foreground="{StaticResource Rojan.Brush.Error}"
+                             TextWrapping="Wrap" />
+                  <Button Content="{x:Static loc:Strings.Common_Retry}"
+                          Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                          Command="{TemplateBinding RetryCommand}"
+                          Margin="0,12,0,0"
+                          HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <ContentPresenter x:Name="ContentHost" Visibility="Collapsed" />
+              </StackPanel>
+            </Border>
+
+            <!-- Drawn on top, transparent interior (no Background) - only its stroke is visible, so it never occludes CardSurface's content, just outlines it on hover. -->
+            <Border x:Name="GlowRing"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
+                    BorderBrush="{StaticResource Rojan.Brush.Accent}"
+                    BorderThickness="1.5"
+                    IsHitTestVisible="False"
+                    Opacity="0" />
+          </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="Title" Value="{x:Null}">
               <Setter TargetName="Header" Property="Visibility" Value="Collapsed" />
@@ -92,6 +170,25 @@
             </Trigger>
             <Trigger Property="State" Value="Loaded">
               <Setter TargetName="ContentHost" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="CardSurface" Property="Effect" Value="{StaticResource Rojan.Effect.ElevationCardHover}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="-3" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="GlowRing" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="0" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="GlowRing" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

@@ -75,6 +75,15 @@
   <data name="Dashboard_Subtitle" xml:space="preserve">
     <value>Here's what's happening today.</value>
   </data>
+  <data name="Dashboard_Greeting_Morning" xml:space="preserve">
+    <value>Good morning</value>
+  </data>
+  <data name="Dashboard_Greeting_Afternoon" xml:space="preserve">
+    <value>Good afternoon</value>
+  </data>
+  <data name="Dashboard_Greeting_Evening" xml:space="preserve">
+    <value>Good evening</value>
+  </data>
   <data name="Dashboard_KeyMetrics" xml:space="preserve">
     <value>Key Metrics</value>
   </data>

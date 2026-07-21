@@ -10,15 +10,36 @@
         background - the same WCAG-failing bug WidgetHeader.xaml had.
         Fixed to TextPrimary. Also no longer self-merges its own
         RojanTheme.xaml copy - see Shell/App.xaml.cs's ThemeResources.Apply.
+
+        Dashboard Modernization Sprint: added an icon badge (Icon DP, see
+        code-behind's KpiIconConverter usage in DashboardPage.xaml) and
+        switched the Value display to DisplayText, which the code-behind
+        drives with a count-up reveal of the same real Value - see
+        KPIValue.xaml.cs for the parse/animate/fallback logic.
     -->
     <StackPanel>
-        <TextBlock Text="{Binding Label, ElementName=Root}"
-                   Style="{StaticResource Rojan.TextStyle.Caption}"
-                   Foreground="{StaticResource Rojan.Brush.MutedText}" />
-        <TextBlock Text="{Binding Value, ElementName=Root}"
+        <StackPanel Orientation="Horizontal">
+            <Border Width="30"
+                    Height="30"
+                    CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
+                    Background="{StaticResource Rojan.Brush.AccentSubtle}"
+                    Margin="0,0,10,0">
+                <TextBlock Text="{Binding Icon, ElementName=Root}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="15"
+                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="{Binding Label, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock Text="{Binding DisplayText, ElementName=Root}"
                    Style="{StaticResource Rojan.TextStyle.Display}"
                    Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                   Margin="0,8,0,0" />
+                   Margin="0,10,0,0" />
     </StackPanel>
 
 </UserControl>

@@ -3,30 +3,71 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
-    <!-- No longer self-merges its own RojanTheme.xaml copy - see Shell/App.xaml.cs's ThemeResources.Apply. -->
+    <!--
+        No longer self-merges its own RojanTheme.xaml copy - see
+        Shell/App.xaml.cs's ThemeResources.Apply.
+
+        Dashboard Modernization Sprint: the glyph now comes from the app's
+        one icon family (Rojan.Icon.TrendUp/Down/Flat - already defined in
+        Themes/Icons.xaml but previously unused, in favor of raw Unicode
+        triangles) for consistency with "one icon set" elsewhere in this
+        pass, and the whole indicator sits in a small tinted pill
+        (background color reuses the same Success/Error/MutedText color at
+        low opacity - no new brand color). Direction/Percentage data and
+        the direction-to-visual mapping are unchanged (still declarative
+        DataTriggers, no code-behind logic).
+    -->
     <UserControl.Resources>
         <ResourceDictionary>
+            <Style x:Key="Rojan.Style.TrendPill" TargetType="Border">
+                <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Pill}" />
+                <Setter Property="Padding" Value="8,3" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Up">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Success}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Down">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Error}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Flat">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.MutedText}" Opacity="0.12" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
             <Style x:Key="Rojan.Style.TrendGlyph" TargetType="TextBlock">
-                <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
-                <Setter Property="FontWeight" Value="SemiBold" />
-                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Icons}" />
+                <Setter Property="FontSize" Value="11" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Up">
                         <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
-                        <Setter Property="Text" Value="&#9650;" />
+                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendUp}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Down">
                         <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
-                        <Setter Property="Text" Value="&#9660;" />
+                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendDown}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Flat">
                         <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
-                        <Setter Property="Text" Value="&#8212;" />
+                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendFlat}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
 
             <Style x:Key="Rojan.Style.TrendPercentage" TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                <Setter Property="FontWeight" Value="SemiBold" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Direction, ElementName=Root}" Value="Up">
                         <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
@@ -42,12 +83,14 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel Orientation="Horizontal">
-        <TextBlock Style="{StaticResource Rojan.Style.TrendGlyph}" VerticalAlignment="Center" />
-        <TextBlock Text="{Binding Percentage, ElementName=Root, StringFormat={}{0:0.0}%}"
-                   Style="{StaticResource Rojan.Style.TrendPercentage}"
-                   Margin="4,0,0,0"
-                   VerticalAlignment="Center" />
-    </StackPanel>
+    <Border Style="{StaticResource Rojan.Style.TrendPill}" HorizontalAlignment="Left">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Style="{StaticResource Rojan.Style.TrendGlyph}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Percentage, ElementName=Root, StringFormat={}{0:0.0}%}"
+                       Style="{StaticResource Rojan.Style.TrendPercentage}"
+                       Margin="4,0,0,0"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+    </Border>
 
 </UserControl>

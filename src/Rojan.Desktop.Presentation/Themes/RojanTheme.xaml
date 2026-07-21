@@ -33,6 +33,7 @@
     <ResourceDictionary Source="Typography.xaml" />
     <ResourceDictionary Source="Spacing.xaml" />
     <ResourceDictionary Source="Shapes.xaml" />
+    <ResourceDictionary Source="Animations.xaml" />
     <ResourceDictionary Source="Icons.xaml" />
     <ResourceDictionary Source="Shadows.xaml" />
     <ResourceDictionary Source="Elevation.xaml" />

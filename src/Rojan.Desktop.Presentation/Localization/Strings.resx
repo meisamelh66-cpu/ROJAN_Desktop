@@ -87,6 +87,15 @@
   <data name="Dashboard_Subtitle" xml:space="preserve">
     <value>امروز چه خبر است.</value>
   </data>
+  <data name="Dashboard_Greeting_Morning" xml:space="preserve">
+    <value>صبح بخیر</value>
+  </data>
+  <data name="Dashboard_Greeting_Afternoon" xml:space="preserve">
+    <value>ظهر بخیر</value>
+  </data>
+  <data name="Dashboard_Greeting_Evening" xml:space="preserve">
+    <value>عصر بخیر</value>
+  </data>
   <data name="Dashboard_KeyMetrics" xml:space="preserve">
     <value>شاخص‌های کلیدی</value>
   </data>

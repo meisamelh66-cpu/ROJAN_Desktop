@@ -48,4 +48,18 @@
                      BlurRadius="28"
                      Opacity="0.22" />
 
+  <!--
+    Dashboard Modernization Sprint: a deeper hover-state tier for the
+    premium dashboard card shell (ElevationCard's own values, deepened
+    along the same neutral-black Fluent depth scale as ElevationPopover/
+    ElevationDialog above) - "hover elevation" per the sprint spec.
+    Additive; ElevationCard's own rest-state value is untouched.
+  -->
+  <DropShadowEffect x:Key="Rojan.Effect.ElevationCardHover"
+                     Color="Black"
+                     Direction="270"
+                     ShadowDepth="5"
+                     BlurRadius="22"
+                     Opacity="0.20" />
+
 </ResourceDictionary>

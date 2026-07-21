@@ -19,4 +19,7 @@
   <CornerRadius x:Key="Rojan.CornerRadius.Large">12</CornerRadius>
   <CornerRadius x:Key="Rojan.CornerRadius.Pill">999</CornerRadius>
 
+  <!-- Dashboard Modernization Sprint: a softer, larger radius for the premium dashboard card shell (glass/gradient cards), one step beyond Large - additive, no existing consumer retargeted. -->
+  <CornerRadius x:Key="Rojan.CornerRadius.XLarge">18</CornerRadius>
+
 </ResourceDictionary>

@@ -30,6 +30,7 @@ internal static class ThemeResources
         "Typography.xaml",
         "Spacing.xaml",
         "Shapes.xaml",
+        "Animations.xaml",
         "Icons.xaml",
         "Shadows.xaml",
         "Elevation.xaml",

@@ -1,0 +1,25 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Dashboard Modernization Sprint: shared micro-animation primitives -
+    duration/easing only, not full Storyboards. WPF Storyboards target
+    named parts inside a specific ControlTemplate, so a truly shared
+    Storyboard resource can't cleanly retarget across different templates
+    - the one existing animation precedent in this app,
+    Controls/Help/HelpButton.xaml, keeps its Storyboard local for exactly
+    this reason. Every new hover/press/entrance animation added by this
+    sprint follows that same local-Storyboard pattern, but references
+    these two shared tokens so every micro-interaction uses one
+    consistent feel instead of a different hand-picked duration per
+    control. 150-250ms per the sprint's own "never exceed 300ms" rule for
+    hover/press/fade micro-interactions (entrance reveals like a KPI
+    count-up are a separate, intentionally longer animation - see
+    KPIValue.xaml.cs).
+  -->
+  <Duration x:Key="Rojan.Duration.Fast">0:0:0.15</Duration>
+  <Duration x:Key="Rojan.Duration.Medium">0:0:0.25</Duration>
+
+  <CubicEase x:Key="Rojan.Easing.Standard" EasingMode="EaseOut" />
+
+</ResourceDictionary>

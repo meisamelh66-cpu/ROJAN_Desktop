@@ -223,6 +223,83 @@
     </Setter>
   </Style>
 
+  <!--
+    Dashboard Modernization Sprint: Quick Actions button - bigger, rounded
+    (Large radius), room for a leading icon in its Content, a soft resting
+    shadow, and hover/press feedback as a scale change plus the same
+    Accent/AccentHover/AccentPressed fill ButtonPrimary already uses (a
+    scale+color pulse is this app's existing "ripple-like" press feedback
+    pattern - see Controls/Help/HelpButton.xaml - rather than a literal
+    Material ripple, which would need new custom rendering code this
+    presentation-only pass doesn't introduce). Local Storyboards, same
+    Trigger.EnterActions/ExitActions pattern as HelpButton.xaml/
+    DashboardComponents.xaml, using the shared Rojan.Duration.Fast token.
+  -->
+  <Style x:Key="Rojan.Style.ButtonQuickAction" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="18,12" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="ButtonBorder"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+                  Padding="{TemplateBinding Padding}"
+                  Effect="{StaticResource Rojan.Effect.ElevationCard}"
+                  RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+              <ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" />
+            </Border.RenderTransform>
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentHover}" />
+              <Setter TargetName="ButtonBorder" Property="Effect" Value="{StaticResource Rojan.Effect.ElevationCardHover}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1.03" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1.03" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="{StaticResource Rojan.Duration.Fast}" EasingFunction="{StaticResource Rojan.Easing.Standard}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource Rojan.Brush.AccentPressed}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="0.96" Duration="0" />
+                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="0.96" Duration="0" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <!-- ============================= Navigation ============================= -->
 
   <!--

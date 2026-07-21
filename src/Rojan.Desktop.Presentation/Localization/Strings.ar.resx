@@ -75,6 +75,15 @@
   <data name="Dashboard_Subtitle" xml:space="preserve">
     <value>إليك ما يحدث اليوم.</value>
   </data>
+  <data name="Dashboard_Greeting_Morning" xml:space="preserve">
+    <value>صباح الخير</value>
+  </data>
+  <data name="Dashboard_Greeting_Afternoon" xml:space="preserve">
+    <value>طاب يومك</value>
+  </data>
+  <data name="Dashboard_Greeting_Evening" xml:space="preserve">
+    <value>مساء الخير</value>
+  </data>
   <data name="Dashboard_KeyMetrics" xml:space="preserve">
     <value>المقاييس الرئيسية</value>
   </data>

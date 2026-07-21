@@ -99,6 +99,12 @@ public static class Strings
 
     public static string Dashboard_Subtitle => Get(nameof(Dashboard_Subtitle));
 
+    public static string Dashboard_Greeting_Morning => Get(nameof(Dashboard_Greeting_Morning));
+
+    public static string Dashboard_Greeting_Afternoon => Get(nameof(Dashboard_Greeting_Afternoon));
+
+    public static string Dashboard_Greeting_Evening => Get(nameof(Dashboard_Greeting_Evening));
+
     public static string Dashboard_KeyMetrics => Get(nameof(Dashboard_KeyMetrics));
 
     public static string Dashboard_QuickActions => Get(nameof(Dashboard_QuickActions));

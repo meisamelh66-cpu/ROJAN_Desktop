@@ -6,11 +6,14 @@
              xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
              xmlns:appDashboard="clr-namespace:Rojan.Desktop.Application.Dashboard;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
-             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters">
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             x:Name="Root">
 
     <UserControl.Resources>
         <converters:KpiLabelConverter x:Key="KpiLabelConverter" />
         <converters:ActivityDescriptionConverter x:Key="ActivityDescriptionConverter" />
+        <converters:KpiIconConverter x:Key="KpiIconConverter" />
+        <converters:IndexToIconConverter x:Key="IndexToIconConverter" />
     </UserControl.Resources>
 
     <!--
@@ -25,117 +28,294 @@
         Assistant panel remain static (no repository data), so they use the
         state-less DashboardCard.
 
+        Dashboard Modernization Sprint: purely visual layer on top of the
+        above - same DataContext, same bindings, same DataTemplate types.
+        Adds a live greeting/date/time header (GreetingText/DateText/
+        TimeText - see code-behind, driven by the real system clock, not
+        the ViewModel), a soft decorative background layer, per-KPI icons
+        (KpiIconConverter, real stable Ids) with a count-up reveal
+        (KPIValue.xaml.cs), restyled Quick Actions buttons, a restyled AI
+        Assistant panel (breathing icon, honest "coming soon" status dot -
+        no fabricated live/online state), and staggered fade/slide-in
+        entrances. No Charts section this sprint - DashboardPageViewModel
+        exposes single-point KPI readings only, no time-series/category
+        data to chart honestly (see plan notes); left to a future phase
+        that adds real dashboard query models.
     -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="32">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="320" />
-            </Grid.ColumnDefinitions>
+    <Grid>
 
-            <!-- Left: welcome header, KPI widget, quick actions, recent activity widget -->
-            <StackPanel Grid.Column="0" Margin="0,0,24,0">
+        <!-- Decorative layered background - two very soft radial glows in opposite corners, existing brand colors only, IsHitTestVisible=False so it never intercepts input. -->
+        <Grid IsHitTestVisible="False">
+            <Ellipse Width="520" Height="520" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-160,-160,0" Opacity="0.4">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{StaticResource Rojan.Color.AccentLavender}" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="420" Height="420" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-140,0,0,-140" Opacity="0.35">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{StaticResource Rojan.Color.AccentAqua}" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
 
-                <!-- Welcome / header section -->
-                <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
-                <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
-                           Style="{StaticResource Rojan.TextStyle.Caption}"
-                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           Margin="0,4,0,0" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
 
-                <!-- KPI cards region -->
-                <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
-                                                    State="{Binding State}"
-                                                    ErrorMessage="{Binding ErrorMessage}"
-                                                    RetryCommand="{Binding LoadCommand}"
-                                                    Margin="0,24,0,0">
-                    <ItemsControl ItemsSource="{Binding KpiMetrics}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
-                                <dashboardControls:DashboardCard Width="200" Margin="0,0,16,16">
-                                    <StackPanel>
-                                        <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}" Value="{Binding Value}" />
-                                        <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
-                                                                           Percentage="{Binding TrendPercentage}"
-                                                                           Margin="0,8,0,0" />
-                                    </StackPanel>
-                                </dashboardControls:DashboardCard>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </dashboardControls:DashboardWidget>
+                <!-- Left: welcome header, KPI widget, quick actions, recent activity widget -->
+                <StackPanel Grid.Column="0" Margin="0,0,24,0">
 
-                <!-- Quick Actions region: static, no repository data -->
-                <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Dashboard_QuickActions}" Margin="0,24,0,0">
-                    <ItemsControl ItemsSource="{Binding QuickActions}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
-                                <Button Content="{Binding Label}"
-                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                                        Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"
-                                        Margin="0,0,12,12" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <!-- Welcome / header section -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
+                            <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding GreetingText, ElementName=Root}"
+                                       Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                       HorizontalAlignment="Right" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                <TextBlock Text="{Binding DateText, ElementName=Root}"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBlock Text="•"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                           Margin="6,0" />
+                                <TextBlock Text="{Binding TimeText, ElementName=Root}"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- KPI cards region -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,24,0,0"
+                                                        Opacity="0">
+                        <dashboardControls:DashboardWidget.RenderTransform>
+                            <TranslateTransform Y="12" />
+                        </dashboardControls:DashboardWidget.RenderTransform>
+                        <dashboardControls:DashboardWidget.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </dashboardControls:DashboardWidget.Triggers>
+                        <ItemsControl ItemsSource="{Binding KpiMetrics}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
+                                    <dashboardControls:DashboardCard Width="210" Margin="0,0,16,16">
+                                        <Grid>
+                                            <Ellipse Width="90" Height="90" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-24,-24,0" Opacity="0.5" IsHitTestVisible="False">
+                                                <Ellipse.Fill>
+                                                    <RadialGradientBrush>
+                                                        <GradientStop Color="{StaticResource Rojan.Color.AccentLavender}" Offset="0" />
+                                                        <GradientStop Color="Transparent" Offset="1" />
+                                                    </RadialGradientBrush>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                            <StackPanel>
+                                                <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
+                                                                             Value="{Binding Value}"
+                                                                             Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}" />
+                                                <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
+                                                                                   Percentage="{Binding TrendPercentage}"
+                                                                                   Margin="0,10,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </dashboardControls:DashboardCard>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Quick Actions region: static, no repository data -->
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Dashboard_QuickActions}" Margin="0,24,0,0" Opacity="0">
+                        <dashboardControls:DashboardCard.RenderTransform>
+                            <TranslateTransform Y="12" />
+                        </dashboardControls:DashboardCard.RenderTransform>
+                        <dashboardControls:DashboardCard.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard BeginTime="0:0:0.06">
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </dashboardControls:DashboardCard.Triggers>
+                        <ItemsControl ItemsSource="{Binding QuickActions}" AlternationCount="5">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
+                                    <Button Style="{StaticResource Rojan.Style.ButtonQuickAction}"
+                                            Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="0,0,12,12">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}, Converter={StaticResource IndexToIconConverter}}"
+                                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                                       FontSize="15"
+                                                       Margin="0,0,8,0"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Recent Activity region -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_RecentActivity}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,24,0,0"
+                                                        Opacity="0">
+                        <dashboardControls:DashboardWidget.RenderTransform>
+                            <TranslateTransform Y="12" />
+                        </dashboardControls:DashboardWidget.RenderTransform>
+                        <dashboardControls:DashboardWidget.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard BeginTime="0:0:0.12">
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </dashboardControls:DashboardWidget.Triggers>
+                        <ItemsControl ItemsSource="{Binding RecentActivity}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appDashboard:ActivityEntryDto}">
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Converter={StaticResource ActivityDescriptionConverter}}"
+                                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OccurredAt, StringFormat={}{0:t}}"
+                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                   Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+
+                </StackPanel>
+
+                <!-- Right: AI Assistant panel - static, no repository data -->
+                <dashboardControls:DashboardCard Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
+                    <dashboardControls:DashboardCard.RenderTransform>
+                        <TranslateTransform Y="12" />
+                    </dashboardControls:DashboardCard.RenderTransform>
+                    <dashboardControls:DashboardCard.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard BeginTime="0:0:0.06">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </dashboardControls:DashboardCard.Triggers>
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="44"
+                                    Height="44"
+                                    CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                                    Background="{StaticResource Rojan.Brush.AccentSubtle}"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="AiIconScale" ScaleX="1" ScaleY="1" />
+                                </Border.RenderTransform>
+                                <Border.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.65" To="1" Duration="0:0:1.4" />
+                                                <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleX" From="0.94" To="1.05" Duration="0:0:1.4" />
+                                                <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleY" From="0.94" To="1.05" Duration="0:0:1.4" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Border.Triggers>
+                                <TextBlock Text="{StaticResource Rojan.Icon.AICenter}"
+                                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                           FontSize="20"
+                                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Static loc:Strings.Dashboard_AiAssistant}"
+                                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <Ellipse Width="7" Height="7" Fill="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static loc:Strings.Dashboard_ComingSoon}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                               Margin="6,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="{x:Static loc:Strings.Dashboard_AskAi}"
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                IsEnabled="False"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center" />
+                    </StackPanel>
                 </dashboardControls:DashboardCard>
 
-                <!-- Recent Activity region -->
-                <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_RecentActivity}"
-                                                    State="{Binding State}"
-                                                    ErrorMessage="{Binding ErrorMessage}"
-                                                    RetryCommand="{Binding LoadCommand}"
-                                                    Margin="0,24,0,0">
-                    <ItemsControl ItemsSource="{Binding RecentActivity}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type appDashboard:ActivityEntryDto}">
-                                <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="{Binding Converter={StaticResource ActivityDescriptionConverter}}"
-                                               Style="{StaticResource Rojan.TextStyle.Body}"
-                                               Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding OccurredAt, StringFormat={}{0:t}}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </dashboardControls:DashboardWidget>
+            </Grid>
+        </ScrollViewer>
 
-            </StackPanel>
-
-            <!-- Right: AI Assistant panel placeholder - static, no repository data -->
-            <dashboardControls:DashboardCard Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock Text="{x:Static loc:Strings.Dashboard_ComingSoon}"
-                               Style="{StaticResource Rojan.TextStyle.Body}"
-                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16" />
-                    <Button Content="{x:Static loc:Strings.Dashboard_AskAi}"
-                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                            IsEnabled="False"
-                            HorizontalAlignment="Left" />
-                </StackPanel>
-            </dashboardControls:DashboardCard>
-
-        </Grid>
-    </ScrollViewer>
+    </Grid>
 
 </UserControl>
