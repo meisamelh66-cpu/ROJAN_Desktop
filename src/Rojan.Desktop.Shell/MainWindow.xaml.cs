@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Shell;
 using Rojan.Desktop.Presentation.Localization;
+using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.ViewModels.Help;
 using Rojan.Desktop.Presentation.ViewModels.Search;
 using Rojan.Desktop.Shell.Navigation;
@@ -34,6 +35,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         navigationService.Attach(NavigationHost);
+        DashboardNavigationBridge.Current = navigationService;
         FlowDirection = cultureService.GetFlowDirection(localizationService.CurrentLanguage.IsRightToLeft);
         PreviewKeyDown += OnPreviewKeyDown;
     }

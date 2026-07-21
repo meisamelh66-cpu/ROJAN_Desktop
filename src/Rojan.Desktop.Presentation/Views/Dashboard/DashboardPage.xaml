@@ -17,6 +17,7 @@
         <converters:KpiIsMonetaryConverter x:Key="KpiIsMonetaryConverter" />
         <converters:DerivedKpiValueConverter x:Key="DerivedKpiValueConverter" />
         <converters:DerivedKpiLabelConverter x:Key="DerivedKpiLabelConverter" />
+        <converters:KpiMetricsWithDerivedConverter x:Key="KpiMetricsWithDerivedConverter" />
 
         <!--
             Phase 35 (Analytics Expansion): implicit (DataType-keyed, no
@@ -189,28 +190,25 @@
                             </EventTrigger>
                         </dashboardControls:DashboardWidget.Triggers>
                         <!--
-                            Phase 35 (Analytics Expansion): the four real KpiMetrics plus two
-                            synthetic DerivedKpiSpec cards (Average Transaction Value, Average
-                            Bookings per Client - both computed from the same real KpiMetrics,
-                            see DerivedKpiValueConverter) flow through one CompositeCollection so
-                            all six cards wrap together in a single WrapPanel with identical
-                            spacing - not two visually separate blocks. No ItemTemplate here
-                            (removed in favor of this file's Resources' implicit, DataType-keyed
-                            templates) since each item needs its own template by runtime type.
+                            Bug fix: the four real KpiMetrics plus two synthetic DerivedKpiSpec
+                            cards (Average Transaction Value, Average Bookings per Client - both
+                            computed from the same real KpiMetrics, see DerivedKpiValueConverter)
+                            flow through one live view (KpiMetricsWithDerivedConverter /
+                            DashboardKpiCollectionView) so all six cards wrap together in a
+                            single WrapPanel with identical spacing. A prior CompositeCollection/
+                            CollectionContainer approach silently dropped the real four items
+                            (CollectionContainer doesn't inherit DataContext) - this binds
+                            KpiMetrics directly (normal DataContext inheritance) and stays live
+                            as LoadAsync populates it. No ItemTemplate here (this file's
+                            Resources declare implicit, DataType-keyed templates instead) since
+                            each item needs its own template by runtime type.
                         -->
-                        <ItemsControl>
+                        <ItemsControl ItemsSource="{Binding KpiMetrics, Converter={StaticResource KpiMetricsWithDerivedConverter}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemsSource>
-                                <CompositeCollection>
-                                    <CollectionContainer Collection="{Binding KpiMetrics}" />
-                                    <dashboardControls:DerivedKpiSpec Id="derived-avg-transaction" />
-                                    <dashboardControls:DerivedKpiSpec Id="derived-avg-bookings-per-client" />
-                                </CompositeCollection>
-                            </ItemsControl.ItemsSource>
                         </ItemsControl>
                     </dashboardControls:DashboardWidget>
 
@@ -237,9 +235,18 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
+                                    <!--
+                                        Bug fix: QuickActionCommand on the ViewModel is an
+                                        intentional no-op (Phase 06B placeholder, and ViewModels
+                                        are off-limits for this fix) - real navigation is wired
+                                        here instead, via a plain Click handler in
+                                        DashboardPage.xaml.cs, alongside (not replacing) the
+                                        existing Command binding.
+                                    -->
                                     <Button Style="{StaticResource Rojan.Style.ButtonQuickAction}"
                                             Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
+                                            Click="QuickActionButton_Click"
                                             Margin="0,0,12,12">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}, Converter={StaticResource IndexToIconConverter}}"
