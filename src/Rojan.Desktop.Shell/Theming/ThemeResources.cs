@@ -36,6 +36,7 @@ internal static class ThemeResources
         "Elevation.xaml",
         "Controls.xaml",
         "ShellChrome.xaml",
+        "SharedComponents.xaml",
         "DashboardComponents.xaml",
         "Views.xaml",
     ];

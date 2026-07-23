@@ -1,0 +1,85 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Sprint 1 (ROJAN Premium Kit) Commit 4: theme-level styles for controls
+    that live in Controls/Shared - the counterpart to Themes/DashboardComponents.xaml,
+    but for controls with no single-module home. Currently holds only the
+    one style RangeSelector.xaml needs (relocated from DashboardComponents.xaml,
+    unchanged); more Controls/Shared styles land here as later commits need
+    them, the same "populated incrementally, never speculatively" discipline
+    Directory.Packages.props already documents for package references.
+  -->
+
+  <!--
+    Phase 35 (Interactive Dashboard Filters): compact segmented-pill option
+    for RangeSelector - a RadioButton (not ToggleButton) so mutual
+    exclusivity comes for free from GroupName, with a fully custom template
+    since the default RadioButton circle+dot chrome (Themes/Controls.xaml)
+    is the wrong shape for a segmented control. Checked state reuses the
+    existing Accent brush (the sprint's "Active button must have the
+    existing Accent style" requirement) with an animated background
+    crossfade (Rojan.Duration.Fast, the same shared token every other
+    Dashboard hover/press transition in this app uses) rather than an
+    instant Setter swap - "Button transitions must be animated."
+
+    Sprint 1 Commit 4: relocated from Themes/DashboardComponents.xaml
+    unchanged (same key, same values) now that RangeSelector itself lives
+    in Controls/Shared rather than Controls/Dashboard.
+  -->
+  <Style x:Key="Rojan.Style.TimeRangeOption" TargetType="RadioButton">
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border x:Name="OptionBorder"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                  Padding="{TemplateBinding Padding}">
+            <Border.Background>
+              <SolidColorBrush Color="Transparent" />
+            </Border.Background>
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="OptionBorder" Property="Background">
+                <Setter.Value>
+                  <SolidColorBrush Color="{StaticResource Rojan.Color.SurfaceHover}" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <ColorAnimation Storyboard.TargetName="OptionBorder"
+                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                    To="{StaticResource Rojan.Color.Accent}"
+                                    Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <ColorAnimation Storyboard.TargetName="OptionBorder"
+                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                    To="Transparent"
+                                    Duration="{StaticResource Rojan.Duration.Fast}" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+</ResourceDictionary>

@@ -39,6 +39,7 @@
     <ResourceDictionary Source="Elevation.xaml" />
     <ResourceDictionary Source="Controls.xaml" />
     <ResourceDictionary Source="ShellChrome.xaml" />
+    <ResourceDictionary Source="SharedComponents.xaml" />
     <ResourceDictionary Source="DashboardComponents.xaml" />
     <ResourceDictionary Source="Views.xaml" />
   </ResourceDictionary.MergedDictionaries>
