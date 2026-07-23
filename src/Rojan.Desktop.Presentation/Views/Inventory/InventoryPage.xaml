@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appInventory="clr-namespace:Rojan.Desktop.Application.Inventory;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -50,8 +51,8 @@
                 <!-- Low-stock monitoring summary -->
                 <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_TotalProducts}" Value="{Binding Products.Count}" Margin="0,0,32,0" />
-                        <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_LowStockItems}" Value="{Binding LowStockCount}" />
+                        <shared:KPIValue Label="{x:Static loc:Strings.Inventory_TotalProducts}" Value="{Binding Products.Count}" Margin="0,0,32,0" />
+                        <shared:KPIValue Label="{x:Static loc:Strings.Inventory_LowStockItems}" Value="{Binding LowStockCount}" />
                     </StackPanel>
                 </dashboardControls:DashboardCard>
 
@@ -251,8 +252,8 @@
                                                             Margin="0,16,0,0">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_OnHand}" Value="{Binding Stock.QuantityOnHand}" Margin="0,0,32,0" />
-                                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Inventory_ReorderAt}" Value="{Binding Stock.ReorderThreshold}" />
+                                    <shared:KPIValue Label="{x:Static loc:Strings.Inventory_OnHand}" Value="{Binding Stock.QuantityOnHand}" Margin="0,0,32,0" />
+                                    <shared:KPIValue Label="{x:Static loc:Strings.Inventory_ReorderAt}" Value="{Binding Stock.ReorderThreshold}" />
                                 </StackPanel>
                                 <TextBlock Text="{x:Static loc:Strings.Inventory_LowStockWarning}"
                                            Foreground="{StaticResource Rojan.Brush.Warning}"

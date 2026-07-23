@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appAutomation="clr-namespace:Rojan.Desktop.Application.Automation;assembly=Rojan.Desktop.Application"
              xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
@@ -70,13 +71,13 @@
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}">
                         <UniformGrid Columns="4" Rows="2">
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_TotalWorkflows}" Value="{Binding TotalWorkflows}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PublishedWorkflows}" Value="{Binding PublishedWorkflows}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_ExecutionsToday}" Value="{Binding ExecutionsToday}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_FailuresToday}" Value="{Binding FailuresToday}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_SuccessRate}" Value="{Binding SuccessRatePercent, StringFormat={}{0:0.0}%}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_AvgDuration}" Value="{Binding AverageExecutionDurationMs, StringFormat={}{0:0} ms}" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PendingApprovals}" Value="{Binding PendingApprovals}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_TotalWorkflows}" Value="{Binding TotalWorkflows}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PublishedWorkflows}" Value="{Binding PublishedWorkflows}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_ExecutionsToday}" Value="{Binding ExecutionsToday}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_FailuresToday}" Value="{Binding FailuresToday}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_SuccessRate}" Value="{Binding SuccessRatePercent, StringFormat={}{0:0.0}%}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_AvgDuration}" Value="{Binding AverageExecutionDurationMs, StringFormat={}{0:0} ms}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Automation_Dashboard_PendingApprovals}" Value="{Binding PendingApprovals}" />
                         </UniformGrid>
                     </dashboardControls:DashboardWidget>
 

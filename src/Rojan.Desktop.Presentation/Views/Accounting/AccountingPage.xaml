@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appAccounting="clr-namespace:Rojan.Desktop.Application.Accounting;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -45,10 +46,10 @@
             <!-- Revenue KPI cards -->
             <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0" DataContext="{Binding Revenue}">
                 <StackPanel Orientation="Horizontal">
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_TotalRevenue}" Value="{Binding TotalRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_Today}" Value="{Binding TodayRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_Outstanding}" Value="{Binding OutstandingBalance, StringFormat={}{0:C}}" Margin="0,0,24,0" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Accounting_PaidInvoices}" Value="{Binding PaidInvoiceCount}" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Accounting_TotalRevenue}" Value="{Binding TotalRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Accounting_Today}" Value="{Binding TodayRevenue, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Accounting_Outstanding}" Value="{Binding OutstandingBalance, StringFormat={}{0:C}}" Margin="0,0,24,0" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Accounting_PaidInvoices}" Value="{Binding PaidInvoiceCount}" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
 

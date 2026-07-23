@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
              xmlns:appDashboard="clr-namespace:Rojan.Desktop.Application.Dashboard;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
@@ -31,7 +32,7 @@
         <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
             <dashboardControls:DashboardCard Width="248" Margin="0,0,12,12">
                 <StackPanel>
-                    <dashboardControls:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
+                    <shared:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
                                                  Value="{Binding Value}"
                                                  Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}"
                                                  IsMonetary="{Binding Id, Converter={StaticResource KpiIsMonetaryConverter}}" />
@@ -40,9 +41,9 @@
                                                  TrendDirection="{Binding TrendDirection}"
                                                  TrendPercentage="{Binding TrendPercentage}"
                                                  Margin="0,14,0,10" />
-                    <dashboardControls:TrendIndicator Direction="{Binding TrendDirection}"
+                    <shared:TrendIndicator Direction="{Binding TrendDirection}"
                                                        Percentage="{Binding TrendPercentage}" />
-                    <dashboardControls:TimeRangeSelector Margin="0,12,0,0" />
+                    <shared:RangeSelector Margin="0,12,0,0" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
         </DataTemplate>
@@ -50,16 +51,16 @@
         <DataTemplate DataType="{x:Type dashboardControls:DerivedKpiSpec}">
             <dashboardControls:DashboardCard Width="248" Margin="0,0,12,12">
                 <StackPanel>
-                    <dashboardControls:KPIValue Label="{Binding Id, Converter={StaticResource DerivedKpiLabelConverter}}"
+                    <shared:KPIValue Label="{Binding Id, Converter={StaticResource DerivedKpiLabelConverter}}"
                                                  Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}"
                                                  IsMonetary="{Binding Id, Converter={StaticResource KpiIsMonetaryConverter}}">
-                        <dashboardControls:KPIValue.Value>
+                        <shared:KPIValue.Value>
                             <MultiBinding Converter="{StaticResource DerivedKpiValueConverter}">
                                 <Binding Path="Id" />
                                 <Binding Path="DataContext.KpiMetrics" RelativeSource="{RelativeSource AncestorType=UserControl}" />
                             </MultiBinding>
-                        </dashboardControls:KPIValue.Value>
-                    </dashboardControls:KPIValue>
+                        </shared:KPIValue.Value>
+                    </shared:KPIValue>
                     <dashboardControls:KpiChart Id="{Binding Id}"
                                                  TrendDirection="Flat"
                                                  TrendPercentage="0"
@@ -71,8 +72,8 @@
                             </MultiBinding>
                         </dashboardControls:KpiChart.Value>
                     </dashboardControls:KpiChart>
-                    <dashboardControls:TrendIndicator Direction="Flat" Percentage="0" />
-                    <dashboardControls:TimeRangeSelector Margin="0,12,0,0" />
+                    <shared:TrendIndicator Direction="Flat" Percentage="0" />
+                    <shared:RangeSelector Margin="0,12,0,0" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
         </DataTemplate>

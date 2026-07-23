@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appServices="clr-namespace:Rojan.Desktop.Application.Services;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -170,8 +171,8 @@
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, Converter={StaticResource Rojan.Converter.MinutesSuffix}}" Margin="0,0,32,0" />
-                            <dashboardControls:KPIValue Label="{x:Static loc:Strings.Common_Price}" Value="{Binding Service.Price}" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, Converter={StaticResource Rojan.Converter.MinutesSuffix}}" Margin="0,0,32,0" />
+                            <shared:KPIValue Label="{x:Static loc:Strings.Common_Price}" Value="{Binding Service.Price}" />
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 

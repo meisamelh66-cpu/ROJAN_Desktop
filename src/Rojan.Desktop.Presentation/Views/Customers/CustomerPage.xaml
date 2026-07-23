@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appCustomers="clr-namespace:Rojan.Desktop.Application.Customers;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -221,7 +222,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type appCustomers:CustomerStatDto}">
                                     <dashboardControls:DashboardCard Width="170" Margin="0,0,12,12">
-                                        <dashboardControls:KPIValue Label="{Binding Label}" Value="{Binding Value}" />
+                                        <shared:KPIValue Label="{Binding Label}" Value="{Binding Value}" />
                                     </dashboardControls:DashboardCard>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:hrVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.HR"
              xmlns:appHr="clr-namespace:Rojan.Desktop.Application.HR;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
@@ -54,13 +55,13 @@
             <!-- HR Dashboard KPI cards -->
             <dashboardControls:DashboardCard Grid.Row="1" Margin="0,24,0,0">
                 <WrapPanel DataContext="{Binding Summary}">
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_Employees}" Value="{Binding EmployeeCount}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_PresentToday}" Value="{Binding PresentToday}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_LateToday}" Value="{Binding LateToday}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_OnLeave}" Value="{Binding OnLeaveCount}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_PayrollThisMonth}" Value="{Binding PayrollThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_CommissionThisMonth}" Value="{Binding CommissionThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
-                    <dashboardControls:KPIValue Label="{x:Static loc:Strings.Hr_AvgAttendance}" Value="{Binding AverageAttendancePercent, StringFormat={}{0}%}" Margin="0,0,0,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_Employees}" Value="{Binding EmployeeCount}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_PresentToday}" Value="{Binding PresentToday}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_LateToday}" Value="{Binding LateToday}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_OnLeave}" Value="{Binding OnLeaveCount}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_PayrollThisMonth}" Value="{Binding PayrollThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_CommissionThisMonth}" Value="{Binding CommissionThisMonth, StringFormat={}{0:C}}" Margin="0,0,24,12" />
+                    <shared:KPIValue Label="{x:Static loc:Strings.Hr_AvgAttendance}" Value="{Binding AverageAttendancePercent, StringFormat={}{0}%}" Margin="0,0,0,12" />
                 </WrapPanel>
             </dashboardControls:DashboardCard>
 
