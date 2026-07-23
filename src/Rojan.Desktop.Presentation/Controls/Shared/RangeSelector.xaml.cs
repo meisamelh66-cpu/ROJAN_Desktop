@@ -2,7 +2,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Rojan.Desktop.Presentation.Controls.Dashboard;
+namespace Rojan.Desktop.Presentation.Controls.Shared;
 
 /// <summary>Which time range is currently selected on a KpiChart's TimeRangeSelector.</summary>
 public enum TimeRange
@@ -15,12 +15,12 @@ public enum TimeRange
 }
 
 /// <summary>
-/// Five-option segmented time-range control - see TimeRangeSelector.xaml for
+/// Five-option segmented time-range control - see RangeSelector.xaml for
 /// the full Phase 35 reasoning (real, functional selection state; no
 /// historical data to actually filter by yet, so nothing downstream is
 /// wired to SelectedRange today beyond exposing it for a future consumer).
 /// </summary>
-public partial class TimeRangeSelector : UserControl
+public partial class RangeSelector : UserControl
 {
     private static int _instanceCounter;
 
@@ -28,10 +28,10 @@ public partial class TimeRangeSelector : UserControl
         DependencyProperty.Register(
             nameof(SelectedRange),
             typeof(TimeRange),
-            typeof(TimeRangeSelector),
+            typeof(RangeSelector),
             new PropertyMetadata(TimeRange.Month));
 
-    public TimeRangeSelector()
+    public RangeSelector()
     {
         InitializeComponent();
 

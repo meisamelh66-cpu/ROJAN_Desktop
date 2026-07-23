@@ -5,7 +5,9 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
-namespace Rojan.Desktop.Presentation.Controls.Dashboard;
+using Rojan.Desktop.Presentation.Controls.Dashboard;
+
+namespace Rojan.Desktop.Presentation.Controls.Shared;
 
 /// <summary>
 /// Label + value pair for a single KPI reading, plus (Dashboard Modernization

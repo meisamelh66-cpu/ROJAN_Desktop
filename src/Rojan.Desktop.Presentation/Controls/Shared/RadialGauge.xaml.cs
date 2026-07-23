@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Rojan.Desktop.Presentation.Controls.Dashboard;
+namespace Rojan.Desktop.Presentation.Controls.Shared;
 
 /// <summary>
 /// Phase C-2: draws <see cref="Percentage"/> as a clockwise arc starting at
@@ -13,18 +13,18 @@ namespace Rojan.Desktop.Presentation.Controls.Dashboard;
 /// no dependency on Controls/Analytics), since a single-arc primitive is
 /// too small a thing to justify a cross-namespace reference.
 /// </summary>
-public partial class StaffProgressRing : UserControl
+public partial class RadialGauge : UserControl
 {
     private const double Radius = 19;
     private const double Center = 22;
 
     public static readonly DependencyProperty PercentageProperty =
-        DependencyProperty.Register(nameof(Percentage), typeof(int), typeof(StaffProgressRing), new PropertyMetadata(0, OnPercentageChanged));
+        DependencyProperty.Register(nameof(Percentage), typeof(int), typeof(RadialGauge), new PropertyMetadata(0, OnPercentageChanged));
 
     public static readonly DependencyProperty RingBrushProperty =
-        DependencyProperty.Register(nameof(RingBrush), typeof(Brush), typeof(StaffProgressRing), new PropertyMetadata(null, OnPercentageChanged));
+        DependencyProperty.Register(nameof(RingBrush), typeof(Brush), typeof(RadialGauge), new PropertyMetadata(null, OnPercentageChanged));
 
-    public StaffProgressRing()
+    public RadialGauge()
     {
         InitializeComponent();
         Loaded += (_, _) => Redraw();
@@ -44,7 +44,7 @@ public partial class StaffProgressRing : UserControl
 
     private static void OnPercentageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is StaffProgressRing ring)
+        if (d is RadialGauge ring)
         {
             ring.Redraw();
         }

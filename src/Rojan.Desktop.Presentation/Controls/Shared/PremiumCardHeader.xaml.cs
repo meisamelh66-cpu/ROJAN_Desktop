@@ -1,19 +1,19 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Rojan.Desktop.Presentation.Controls.Dashboard;
+namespace Rojan.Desktop.Presentation.Controls.Shared;
 
 /// <summary>Compact per-widget title. No logic beyond the one dependency property.</summary>
-public partial class WidgetHeader : UserControl
+public partial class PremiumCardHeader : UserControl
 {
     public static readonly DependencyProperty TitleProperty =
         DependencyProperty.Register(
             nameof(Title),
             typeof(string),
-            typeof(WidgetHeader),
+            typeof(PremiumCardHeader),
             new PropertyMetadata(string.Empty));
 
-    public WidgetHeader()
+    public PremiumCardHeader()
     {
         InitializeComponent();
     }

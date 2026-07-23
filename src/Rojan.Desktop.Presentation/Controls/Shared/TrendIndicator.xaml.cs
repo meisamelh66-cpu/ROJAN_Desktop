@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Rojan.Desktop.Application.Dashboard;
 
-namespace Rojan.Desktop.Presentation.Controls.Dashboard;
+namespace Rojan.Desktop.Presentation.Controls.Shared;
 
 /// <summary>Up/down/flat glyph + percentage, colored via the semantic success/error/muted brushes. No logic beyond the two dependency properties - direction-to-visual mapping is declarative (DataTriggers in the XAML), not code-behind.</summary>
 public partial class TrendIndicator : UserControl
