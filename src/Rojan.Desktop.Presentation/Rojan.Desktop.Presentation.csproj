@@ -12,4 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
+  <!-- Phase D-1: the ROJAN AI hero banner artwork - a byte-for-byte, unedited copy of docs/assets/rojan_ai_hero_banner.png (this project's first binary asset; every icon/illustration before this was hand-authored WPF vector). Referenced from AiHeroBanner.xaml via a pack URI, never a hardcoded file-system path. -->
+  <ItemGroup>
+    <Resource Include="Assets\rojan_ai_hero_banner.png" />
+  </ItemGroup>
+
 </Project>

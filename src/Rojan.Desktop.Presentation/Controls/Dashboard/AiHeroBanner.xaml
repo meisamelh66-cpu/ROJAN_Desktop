@@ -12,145 +12,103 @@
         via explicit bindings rather than this control assuming a
         DashboardPageViewModel DataContext.
 
-        Background is the existing Accent/AccentPressed/AccentLavender
-        color tokens in a gradient (no new colors) - the "purple gradient
-        hero" the reference calls for, built from the same palette every
-        other Accent-tinted surface in this app already uses. The mascot
-        is a deliberate approximation: Segoe Fluent Icons has no robot
-        illustration, and hand-drawing one from primitive shapes would
-        either look crude or require an external asset (both against this
-        phase's constraints) - so it reuses the existing AICenter glyph
-        (a lightning-bolt-shaped icon already used for AI Assistant
-        elsewhere in this codebase) inside a soft glass orb with a couple
-        of decorative glow dots, rather than fabricating pixel-for-pixel
-        artwork this control can't honestly produce without an asset
-        pipeline.
+        Phase D-1: the background is now the real ROJAN AI artwork
+        (Assets/rojan_ai_hero_banner.png, an unedited copy of the supplied
+        asset - see the .csproj Resource entry) via an ImageBrush, replacing
+        the former hand-authored gradient + decorative glow ellipses (the
+        artwork already has its own robot, glow, and light-streak effects
+        baked in, so the old decorative Grid would only have doubled up on
+        it). The text/button column below is untouched - same Dependency
+        Properties, same bindings, same commands, just layered on top of
+        the new background image instead of the old gradient.
+
+        The app runs under FlowDirection=RightToLeft, which mirrors an
+        ImageBrush horizontally same as any other visual - that would flip
+        the artwork's baked-in text/robot (text reads correctly only
+        left-to-right in the source asset). The outer Border is pinned back
+        to LeftToRight so the background image renders unmirrored, and the
+        inner Grid restores RightToLeft so the text/button column keeps its
+        original position (Grid.Column="0" on the physical right).
+
+        The artwork is a fully-composed banner with its own baked-in logo,
+        headline, subtitle, tags, and CTA button occupying the left ~55% of
+        the source image, with the robot mascot occupying the right side.
+        The ViewModel text overlay covers the same semantic content
+        (headline/subtitle/tag/CTA) dynamically, so showing the artwork's
+        left half would duplicate/overlap it. The ImageBrush.Viewbox below
+        selects only the source's right-hand region (robot + background,
+        no baked text) so the two text layers never compete - the PNG file
+        on disk is untouched, this only selects which part of it is drawn.
     -->
     <Border CornerRadius="{StaticResource Rojan.CornerRadius.XLarge}"
             Padding="28,24"
-            Effect="{StaticResource Rojan.Effect.ElevationCard}">
+            Effect="{StaticResource Rojan.Effect.ElevationCard}"
+            FlowDirection="LeftToRight">
         <Border.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="{StaticResource Rojan.Color.AccentPressed}" Offset="0" />
-                <GradientStop Color="{StaticResource Rojan.Color.Accent}" Offset="0.55" />
-                <GradientStop Color="{StaticResource Rojan.Color.AccentLavender}" Offset="1" />
-            </LinearGradientBrush>
+            <ImageBrush ImageSource="pack://application:,,,/Rojan.Desktop.Presentation;component/Assets/rojan_ai_hero_banner.png"
+                        Stretch="UniformToFill"
+                        Viewbox="0.5516,0.3115,0.4484,0.1430" />
         </Border.Background>
 
-        <Grid>
-            <!-- Decorative glow blobs - "light effects/curved light streaks" from the reference, built from existing accent tokens at low opacity, IsHitTestVisible=False so they never intercept input (same pattern DashboardPage's own background glows already use). -->
-            <Grid IsHitTestVisible="False" ClipToBounds="True">
-                <Ellipse Width="260" Height="260" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-90,-140" Opacity="0.35">
-                    <Ellipse.Fill>
-                        <RadialGradientBrush>
-                            <GradientStop Color="{StaticResource Rojan.Color.ButtonText}" Offset="0" />
-                            <GradientStop Color="Transparent" Offset="1" />
-                        </RadialGradientBrush>
-                    </Ellipse.Fill>
-                </Ellipse>
-                <Ellipse Width="160" Height="160" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-70,40,0" Opacity="0.25">
-                    <Ellipse.Fill>
-                        <RadialGradientBrush>
-                            <GradientStop Color="{StaticResource Rojan.Color.AccentAqua}" Offset="0" />
-                            <GradientStop Color="Transparent" Offset="1" />
-                        </RadialGradientBrush>
-                    </Ellipse.Fill>
-                </Ellipse>
-            </Grid>
+        <Grid FlowDirection="RightToLeft">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <Border CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Padding="10,4" HorizontalAlignment="Right">
-                        <Border.Background>
-                            <SolidColorBrush Color="{StaticResource Rojan.Color.ButtonText}" Opacity="0.16" />
-                        </Border.Background>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource Rojan.Icon.Sparkle}"
-                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding TagLabel, ElementName=Root}"
-                                       Style="{StaticResource Rojan.TextStyle.Caption}"
-                                       Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                                       FontWeight="SemiBold"
-                                       Margin="6,0,0,0"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
-
-                    <TextBlock Text="{Binding Headline, ElementName=Root}"
-                               Style="{StaticResource Rojan.TextStyle.Subtitle}"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                               FontSize="19"
-                               FontWeight="Bold"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Right"
-                               TextAlignment="Right"
-                               Margin="0,14,0,0" />
-
-                    <TextBlock Text="{Binding Subtitle, ElementName=Root}"
-                               Style="{StaticResource Rojan.TextStyle.Body}"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                               Opacity="0.85"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Right"
-                               TextAlignment="Right"
-                               Margin="0,8,0,0" />
-
-                    <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                        <Button Content="{Binding CtaLabel, ElementName=Root}"
-                                Command="{Binding ViewSuggestionsCommand, ElementName=Root}"
-                                Style="{StaticResource Rojan.Style.ButtonHero}" />
-                        <Button Command="{Binding SecondaryCommand, ElementName=Root}"
-                                Style="{StaticResource Rojan.Style.ButtonHeroIcon}"
-                                Margin="10,0,0,0"
-                                ToolTip="{Binding TagLabel, ElementName=Root}">
-                            <TextBlock Text="{StaticResource Rojan.Icon.AICenter}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="15" />
-                        </Button>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Mascot: a soft glass orb around the existing AICenter glyph, not a hand-drawn robot (see doc comment above). -->
-                <Border Grid.Column="1"
-                        Width="96"
-                        Height="96"
-                        CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
-                        Margin="24,0,4,0"
-                        VerticalAlignment="Center"
-                        RenderTransformOrigin="0.5,0.5">
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <Border CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Padding="10,4" HorizontalAlignment="Right">
                     <Border.Background>
-                        <RadialGradientBrush>
-                            <GradientStop Color="{StaticResource Rojan.Color.ButtonText}" Offset="0" />
-                            <GradientStop Color="Transparent" Offset="1" />
-                        </RadialGradientBrush>
+                        <SolidColorBrush Color="{StaticResource Rojan.Color.ButtonText}" Opacity="0.16" />
                     </Border.Background>
-                    <Border.RenderTransform>
-                        <ScaleTransform x:Name="MascotScale" ScaleX="1" ScaleY="1" />
-                    </Border.RenderTransform>
-                    <Border.Triggers>
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                            <BeginStoryboard>
-                                <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                    <DoubleAnimation Storyboard.TargetName="MascotScale" Storyboard.TargetProperty="ScaleX" From="0.96" To="1.04" Duration="0:0:1.8" />
-                                    <DoubleAnimation Storyboard.TargetName="MascotScale" Storyboard.TargetProperty="ScaleY" From="0.96" To="1.04" Duration="0:0:1.8" />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Border.Triggers>
-                    <TextBlock Text="{StaticResource Rojan.Icon.AICenter}"
-                               FontFamily="{StaticResource Rojan.FontFamily.Icons}"
-                               FontSize="34"
-                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{StaticResource Rojan.Icon.Sparkle}"
+                                   FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TagLabel, ElementName=Root}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                   FontWeight="SemiBold"
+                                   Margin="6,0,0,0"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
                 </Border>
-            </Grid>
+
+                <TextBlock Text="{Binding Headline, ElementName=Root}"
+                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                           FontSize="19"
+                           FontWeight="Bold"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Right"
+                           TextAlignment="Right"
+                           Margin="0,14,0,0" />
+
+                <TextBlock Text="{Binding Subtitle, ElementName=Root}"
+                           Style="{StaticResource Rojan.TextStyle.Body}"
+                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                           Opacity="0.85"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Right"
+                           TextAlignment="Right"
+                           Margin="0,8,0,0" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                    <Button Content="{Binding CtaLabel, ElementName=Root}"
+                            Command="{Binding ViewSuggestionsCommand, ElementName=Root}"
+                            Style="{StaticResource Rojan.Style.ButtonHero}" />
+                    <Button Command="{Binding SecondaryCommand, ElementName=Root}"
+                            Style="{StaticResource Rojan.Style.ButtonHeroIcon}"
+                            Margin="10,0,0,0"
+                            ToolTip="{Binding TagLabel, ElementName=Root}">
+                        <TextBlock Text="{StaticResource Rojan.Icon.AICenter}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="15" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Grid.Column="1" is intentionally empty - the background image already shows the robot in this half of the banner (see the ImageBrush above); no separate mascot element needed. -->
         </Grid>
     </Border>
 
