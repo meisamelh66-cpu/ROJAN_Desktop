@@ -106,11 +106,14 @@ dotnet_naming_rule.types_pascal_case.severity = warning
 # §7 mandates cannot build.
 dotnet_diagnostic.CA1707.severity = none
 
-[src/Rojan.Desktop.Presentation/Controls/Shared/*.cs]
+[**/Controls/Shared/*.cs]
 # CA1716 flags the "Shared" namespace segment because it collides with the
 # VB.NET reserved keyword of the same name - a CLS cross-language-consumption
 # concern with no practical relevance to this internal, C#-only WPF desktop
 # app (see the Sprint 1 "ROJAN Premium Kit" plan for why this folder exists).
 # Scoped suppression, same "document why, scope narrowly" precedent as the
-# [*Tests.cs] CA1707 exception above - not a global disable.
+# [*Tests.cs] CA1707 exception above - not a global disable. The `**/` glob
+# covers both src/Rojan.Desktop.Presentation/Controls/Shared (Commit 1) and
+# tests/Rojan.Desktop.Presentation.Tests/Controls/Shared (Commit 5), since
+# Tests.Controls.Shared hits the exact same collision.
 dotnet_diagnostic.CA1716.severity = none
