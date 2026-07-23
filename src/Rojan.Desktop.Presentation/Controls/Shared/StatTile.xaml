@@ -1,0 +1,118 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.StatTile"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!--
+        Sprint 1 (ROJAN Premium Kit): icon+label+value+trend, the shared
+        KPI tile every module's hero strip should use going forward - see
+        StatTile.xaml.cs's own doc comment for why it's self-contained
+        rather than composing Controls.Dashboard.KPIValue/TrendIndicator.
+        The icon-badge-plus-caption row below intentionally follows the
+        exact same layout Controls/Dashboard/KPIValue.xaml already
+        established (visual consistency, not code reuse).
+    -->
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Border Width="30" Height="30" CornerRadius="{StaticResource Rojan.CornerRadius.Medium}" Background="{StaticResource Rojan.Brush.AccentSubtle}" Margin="0,0,10,0">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Icon, ElementName=Root}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding Icon, ElementName=Root}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="15"
+                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="{Binding Label, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+            <TextBlock Text="{Binding Value, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Display}"
+                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                       VerticalAlignment="Bottom" />
+
+            <Border Margin="8,0,0,0" Padding="8,3" VerticalAlignment="Bottom">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="{StaticResource Rojan.CornerRadius.Pill}" />
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Up">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Background">
+                                    <Setter.Value><SolidColorBrush Color="{StaticResource Rojan.Color.Success}" Opacity="0.14" /></Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Down">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Background">
+                                    <Setter.Value><SolidColorBrush Color="{StaticResource Rojan.Color.Error}" Opacity="0.14" /></Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Flat">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Background">
+                                    <Setter.Value><SolidColorBrush Color="{StaticResource Rojan.Color.MutedText}" Opacity="0.12" /></Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Up">
+                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendUp}" />
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Down">
+                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendDown}" />
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Flat">
+                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.TrendFlat}" />
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding TrendText, ElementName=Root}" Margin="4,0,0,0" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Up">
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Down">
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendDirection, ElementName=Root}" Value="Flat">
+                                        <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+
+</UserControl>

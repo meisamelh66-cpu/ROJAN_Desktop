@@ -1,0 +1,72 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.StatusPill"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Sprint 1 (ROJAN Premium Kit): text on a severity-brush-at-low-opacity background - the exact visual technique Controls/Dashboard/TrendIndicator.xaml already established (a brush's Color at Opacity="0.14" as the pill fill), reused here for a generic status/severity label. -->
+    <Border CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Padding="8,3" HorizontalAlignment="Left">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="{StaticResource Rojan.Color.MutedText}" Opacity="0.14" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Info">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Accent}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Success">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Success}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Warning">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Warning}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Error">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="{StaticResource Rojan.Color.Error}" Opacity="0.14" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <TextBlock Text="{Binding Text, ElementName=Root}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.MutedText}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Info">
+                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Accent}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Success">
+                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Success}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Warning">
+                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Warning}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Severity, ElementName=Root}" Value="Error">
+                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Border>
+
+</UserControl>

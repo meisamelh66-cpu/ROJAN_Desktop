@@ -1,0 +1,27 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.MetricChart"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!--
+        Sprint 1 (ROJAN Premium Kit): a generic line/area trend chart,
+        modeled on Controls/Dashboard/KpiChart.xaml but deliberately not
+        moved from it - KpiChart's supporting classes (DerivedKpiSpec,
+        KpiNumberParsing, KpiPrivacy, DashboardKpiCollection) are bound to
+        Dashboard's own KPI DTO shape, not generic. This control instead
+        takes a plain IReadOnlyList<double> so any module can bind it
+        without a Dashboard dependency. Native WPF geometry (Polyline +
+        Polygon), no charting package - same constraint every chart in
+        this app already follows.
+
+        Known boundary (documented, not fixed here): the plot is
+        left-to-right by construction and does not yet mirror under RTL -
+        flagged in the Sprint 1 plan as a required follow-up before any
+        RTL-facing module consumes this control.
+    -->
+    <Grid x:Name="PlotArea" MinHeight="48" ClipToBounds="True">
+        <Polygon x:Name="AreaPolygon" />
+        <Polyline x:Name="LinePolyline" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+    </Grid>
+
+</UserControl>

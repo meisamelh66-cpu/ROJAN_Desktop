@@ -1,0 +1,85 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.Timeline"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
+             x:Name="Root">
+
+    <!--
+        Sprint 1 (ROJAN Premium Kit): the connector line is drawn as a
+        thin vertical Border stretched to the full row height, with the
+        icon dot (an opaque 28x28 circle) drawn on top at the row's top
+        edge - each item's line segment visually continues into the next
+        item's, giving a continuous connector without any fixed-pixel
+        coordinate math. The last item's line trails slightly past its dot
+        with nothing after it - an accepted minor cosmetic detail, not a
+        bug.
+
+        RTL note (Sprint 1 plan, "Medium risk"): built entirely from Grid
+        columns (dot column first, content column second) so FlowDirection
+        mirroring is automatic, the same pattern MainWindow.xaml's
+        navigation-region border already relies on.
+    -->
+    <ItemsControl ItemsSource="{Binding ItemsSource, ElementName=Root}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type shared:TimelineEntry}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Width="28" Margin="0,0,12,0">
+                        <Border Width="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{StaticResource Rojan.Brush.Border}" />
+                        <Border Width="28" Height="28" VerticalAlignment="Top" CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Background="{StaticResource Rojan.Brush.AccentSubtle}">
+                            <TextBlock Text="{Binding Icon}"
+                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource Rojan.Brush.Accent}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Title}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding TimestampText}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+
+                        <TextBlock Text="{Binding Description}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,2,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</UserControl>

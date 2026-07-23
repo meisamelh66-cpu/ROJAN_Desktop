@@ -1,0 +1,45 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.EntityAvatar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!--
+        Sprint 1 (ROJAN Premium Kit): circular initials badge, deterministic
+        per-name accent color (AvatarColorResolver.cs) reusing the app's
+        existing four "emphasis only" brand accents - no new raw color.
+        ImageSource, when set, renders on top of the initials (simple
+        z-order overlay via markup order, not a swap) so a real photo
+        never needs a second "hide initials" trigger.
+    -->
+    <Border Width="{Binding Size, ElementName=Root}"
+            Height="{Binding Size, ElementName=Root}"
+            CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+            Background="{Binding AvatarBrush, ElementName=Root}"
+            ClipToBounds="True">
+        <Grid>
+            <TextBlock Text="{Binding Initials, ElementName=Root}"
+                       Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                       FontWeight="SemiBold"
+                       FontSize="13"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+
+            <Image Source="{Binding ImageSource, ElementName=Root}"
+                   Stretch="UniformToFill"
+                   ToolTip="{Binding EntityName, ElementName=Root}"
+                   AutomationProperties.Name="{Binding EntityName, ElementName=Root}">
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ImageSource, ElementName=Root}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Grid>
+    </Border>
+
+</UserControl>

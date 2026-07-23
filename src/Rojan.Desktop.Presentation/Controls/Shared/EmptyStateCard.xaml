@@ -1,0 +1,54 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Shared.EmptyStateCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Sprint 1 (ROJAN Premium Kit): standardized empty-state message + optional action, for use outside a DashboardWidget's own built-in EmptyText (that one's empty state is baked into its own ControlTemplate and only fires for its own State property; this is the same visual shape for any other context). Icon/ActionText both default to empty and are simply omitted from layout when unset - no smart/localized fallback text is injected here, consistent with every other control in this file (the caller always supplies its own localized strings). -->
+    <Border Style="{StaticResource Rojan.Style.Card}">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="320">
+            <Border Width="48" Height="48" CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Background="{StaticResource Rojan.Brush.SurfaceSecondary}" HorizontalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Icon, ElementName=Root}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding Icon, ElementName=Root}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="20"
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <TextBlock Text="{Binding Message, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Body}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Margin="0,12,0,0" />
+
+            <Button Content="{Binding ActionText, ElementName=Root}"
+                    Command="{Binding ActionCommand, ElementName=Root}"
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.Name="{Binding ActionText, ElementName=Root}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActionText, ElementName=Root}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Border>
+
+</UserControl>
