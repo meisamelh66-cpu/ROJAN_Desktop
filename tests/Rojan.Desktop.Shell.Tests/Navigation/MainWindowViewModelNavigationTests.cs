@@ -29,6 +29,7 @@ public sealed class MainWindowViewModelNavigationTests
             new PermissionEngine(),
             session,
             CreateOrganizationQueryService(),
+            TestThemeServices.Service,
             TestHelpServices.QueryService,
             TestHelpServices.ContentResolver,
             TestHelpServices.SearchService,

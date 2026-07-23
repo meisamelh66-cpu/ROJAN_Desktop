@@ -2569,4 +2569,76 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Enum_RunReport" xml:space="preserve">
     <value>Run Report</value>
   </data>
+  <data name="Header_SubscriptionPlanTooltip" xml:space="preserve">
+    <value>Organization subscription plan</value>
+  </data>
+  <data name="Header_SubscriptionActiveStatus" xml:space="preserve">
+    <value>Your subscription is active</value>
+  </data>
+  <data name="Header_ManageSubscription" xml:space="preserve">
+    <value>Manage Subscription</value>
+  </data>
+  <data name="Role_PlatformOwner" xml:space="preserve">
+    <value>Platform Owner</value>
+  </data>
+  <data name="Role_OrganizationOwner" xml:space="preserve">
+    <value>Organization Owner</value>
+  </data>
+  <data name="Role_OrganizationManager" xml:space="preserve">
+    <value>Organization Manager</value>
+  </data>
+  <data name="Role_BranchManager" xml:space="preserve">
+    <value>Branch Manager</value>
+  </data>
+  <data name="Role_Reception" xml:space="preserve">
+    <value>Reception</value>
+  </data>
+  <data name="Role_Specialist" xml:space="preserve">
+    <value>Specialist</value>
+  </data>
+  <data name="Role_Inventory" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Role_Accounting" xml:space="preserve">
+    <value>Accounting</value>
+  </data>
+  <data name="Role_Hr" xml:space="preserve">
+    <value>HR</value>
+  </data>
+  <data name="Role_Ai" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="Role_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Role_Marketing" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="SubscriptionPlan_Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="SubscriptionPlan_Starter" xml:space="preserve">
+    <value>Starter</value>
+  </data>
+  <data name="SubscriptionPlan_Professional" xml:space="preserve">
+    <value>Professional</value>
+  </data>
+  <data name="SubscriptionPlan_Enterprise" xml:space="preserve">
+    <value>Enterprise</value>
+  </data>
+  <data name="Dashboard_Hero_TagLabel" xml:space="preserve">
+    <value>Today's Smart Suggestion</value>
+  </data>
+  <data name="Dashboard_Hero_Headline" xml:space="preserve">
+    <value>You have 2 open slots today, 5-7 PM.</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle" xml:space="preserve">
+    <value>Enable a 15% discount to attract up to 8 more bookings.</value>
+  </data>
+  <data name="Dashboard_Hero_CtaFormat" xml:space="preserve">
+    <value>View Suggestions ({0})</value>
+  </data>
+  <data name="News_LiveBadge" xml:space="preserve">
+    <value>LIVE</value>
+  </data>
 </root>

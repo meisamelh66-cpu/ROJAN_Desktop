@@ -248,7 +248,7 @@ public partial class DashboardPage : UserControl
         // Demo entries - explicitly authorized fallback for the categories this
         // sprint requires that have no real data source anywhere in the app yet.
         items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.Dismiss"), Text = Strings.News_Demo_AppointmentCancelled, OnClick = () => NavigateOrShowComingSoon<BookingPageViewModel>() });
-        items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.FavoriteFilled"), Text = Strings.News_Demo_CustomerBirthday, OnClick = () => NavigateOrShowComingSoon<CustomerPageViewModel>() });
+        items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.FavoriteFilled"), Text = Strings.News_Demo_CustomerBirthday, OnClick = () => NavigateOrShowComingSoon<CustomerPageViewModel>(), IsLive = true });
         items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.Reports"), Text = Strings.News_Demo_RevenueSummary, OnClick = () => NavigateOrShowComingSoon<ReportingPageViewModel>() });
         items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.Warning"), Text = Strings.News_Demo_InventoryWarning, OnClick = () => NavigateOrShowComingSoon<InventoryPageViewModel>() });
         items.Add(new NewsTickerItem { Icon = ResolveIcon("Rojan.Icon.Specialists"), Text = Strings.News_Demo_StaffAttendance, OnClick = () => NavigateOrShowComingSoon<HrPageViewModel>() });

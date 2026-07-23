@@ -2569,4 +2569,76 @@
   <data name="Enum_RunReport" xml:space="preserve">
     <value>تشغيل التقرير</value>
   </data>
+  <data name="Header_SubscriptionPlanTooltip" xml:space="preserve">
+    <value>خطة اشتراك المؤسسة</value>
+  </data>
+  <data name="Header_SubscriptionActiveStatus" xml:space="preserve">
+    <value>اشتراكك نشط</value>
+  </data>
+  <data name="Header_ManageSubscription" xml:space="preserve">
+    <value>إدارة الاشتراك</value>
+  </data>
+  <data name="Role_PlatformOwner" xml:space="preserve">
+    <value>مالك المنصة</value>
+  </data>
+  <data name="Role_OrganizationOwner" xml:space="preserve">
+    <value>مالك المؤسسة</value>
+  </data>
+  <data name="Role_OrganizationManager" xml:space="preserve">
+    <value>مدير المؤسسة</value>
+  </data>
+  <data name="Role_BranchManager" xml:space="preserve">
+    <value>مدير الفرع</value>
+  </data>
+  <data name="Role_Reception" xml:space="preserve">
+    <value>الاستقبال</value>
+  </data>
+  <data name="Role_Specialist" xml:space="preserve">
+    <value>أخصائي</value>
+  </data>
+  <data name="Role_Inventory" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Role_Accounting" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="Role_Hr" xml:space="preserve">
+    <value>الموارد البشرية</value>
+  </data>
+  <data name="Role_Ai" xml:space="preserve">
+    <value>الذكاء الاصطناعي</value>
+  </data>
+  <data name="Role_Support" xml:space="preserve">
+    <value>الدعم</value>
+  </data>
+  <data name="Role_Marketing" xml:space="preserve">
+    <value>التسويق</value>
+  </data>
+  <data name="SubscriptionPlan_Trial" xml:space="preserve">
+    <value>تجريبي</value>
+  </data>
+  <data name="SubscriptionPlan_Starter" xml:space="preserve">
+    <value>مبتدئ</value>
+  </data>
+  <data name="SubscriptionPlan_Professional" xml:space="preserve">
+    <value>احترافي</value>
+  </data>
+  <data name="SubscriptionPlan_Enterprise" xml:space="preserve">
+    <value>مؤسسي</value>
+  </data>
+  <data name="Dashboard_Hero_TagLabel" xml:space="preserve">
+    <value>اقتراح اليوم الذكي</value>
+  </data>
+  <data name="Dashboard_Hero_Headline" xml:space="preserve">
+    <value>لديك فترتان شاغرتان اليوم من الساعة 5 إلى 7 مساءً.</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle" xml:space="preserve">
+    <value>فعّل خصم 15% لجذب حتى 8 حجوزات إضافية.</value>
+  </data>
+  <data name="Dashboard_Hero_CtaFormat" xml:space="preserve">
+    <value>عرض الاقتراحات ({0})</value>
+  </data>
+  <data name="News_LiveBadge" xml:space="preserve">
+    <value>LIVE</value>
+  </data>
 </root>

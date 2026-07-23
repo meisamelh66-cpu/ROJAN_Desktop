@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
+using Rojan.Desktop.Presentation.Localization;
 
 namespace Rojan.Desktop.Presentation.Controls.Dashboard;
 
@@ -25,6 +27,9 @@ namespace Rojan.Desktop.Presentation.Controls.Dashboard;
 public partial class NewsTicker : UserControl
 {
     private const double PixelsPerSecond = 55;
+    private const int MaxRebuildRetries = 3;
+
+    private int _rebuildRetryCount;
 
     public static readonly DependencyProperty ItemsSourceProperty =
         DependencyProperty.Register(
@@ -40,6 +45,20 @@ public partial class NewsTicker : UserControl
     {
         InitializeComponent();
         Loaded += (_, _) => Rebuild();
+
+        // Phase B-1 fix: complements the bounded Dispatcher retry in
+        // Rebuild() - if ActualWidth was still 0 when Rebuild() last ran
+        // (so it bailed out with nothing rendered), SizeChanged is the
+        // idiomatic WPF signal that a real width is now available.
+        // Guarded to "no clock yet" so this never fights an already-
+        // running marquee on an ordinary window resize.
+        SizeChanged += (_, _) =>
+        {
+            if (_scrollClock is null)
+            {
+                Rebuild();
+            }
+        };
     }
 
     public IEnumerable? ItemsSource
@@ -73,8 +92,13 @@ public partial class NewsTicker : UserControl
 
     private void Root_MouseLeave(object sender, MouseEventArgs e) => _scrollClock?.Controller?.Resume();
 
-    private void Rebuild()
+    private void Rebuild(bool isRetry = false)
     {
+        if (!isRetry)
+        {
+            _rebuildRetryCount = 0;
+        }
+
         if (!IsLoaded || ActualWidth <= 0)
         {
             return;
@@ -100,6 +124,21 @@ public partial class NewsTicker : UserControl
         var copyWidth = copyOne.DesiredSize.Width;
         if (copyWidth <= 0)
         {
+            // Phase B-1 fix: an out-of-band manual Measure() call like the
+            // one above can race a layout pass that hasn't settled yet
+            // (observed intermittently - items added to TrackPanel, but
+            // DesiredSize still reads 0 this tick), which previously left
+            // the ticker silently blank with no retry. Bounded to
+            // MaxRebuildRetries (not an open-ended retry loop) - if the
+            // width is still 0 after a few attempts, something other than
+            // a one-tick layout race is wrong, and retrying forever would
+            // risk starving the dispatcher instead of fixing anything.
+            if (_rebuildRetryCount < MaxRebuildRetries)
+            {
+                _rebuildRetryCount++;
+                Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => Rebuild(isRetry: true)));
+            }
+
             return;
         }
 
@@ -131,6 +170,31 @@ public partial class NewsTicker : UserControl
     private static Button BuildItemButton(NewsTickerItem item)
     {
         var content = new StackPanel { Orientation = Orientation.Horizontal };
+
+        // Phase B-1 (visual refinement): the one reference-parity "LIVE"
+        // badge - a small filled pill reusing Rojan.Brush.Error, the same
+        // token the Notification Center's unread-count badge already uses
+        // for an urgent/live indicator, so this isn't a new color concept.
+        if (item.IsLive)
+        {
+            var badge = new Border
+            {
+                Background = (Brush)System.Windows.Application.Current.FindResource("Rojan.Brush.Error"),
+                CornerRadius = (CornerRadius)System.Windows.Application.Current.FindResource("Rojan.CornerRadius.Pill"),
+                Padding = new Thickness(6, 1, 6, 1),
+                Margin = new Thickness(0, 0, 8, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            badge.Child = new TextBlock
+            {
+                Text = Strings.News_LiveBadge,
+                FontFamily = (FontFamily)System.Windows.Application.Current.FindResource("Rojan.FontFamily.Default"),
+                FontSize = 10,
+                FontWeight = FontWeights.Bold,
+                Foreground = (Brush)System.Windows.Application.Current.FindResource("Rojan.Brush.ButtonText"),
+            };
+            content.Children.Add(badge);
+        }
 
         content.Children.Add(new TextBlock
         {

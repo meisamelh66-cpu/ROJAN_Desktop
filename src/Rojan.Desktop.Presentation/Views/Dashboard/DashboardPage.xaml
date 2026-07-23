@@ -134,6 +134,8 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <!-- Phase B-1: AI Hero Banner -->
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
@@ -171,14 +173,25 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Phase 36: Live News Ticker - full width, directly below the header. -->
-                <dashboardControls:NewsTicker Grid.Row="1"
+                <!-- Phase B-1: AI Hero Banner - full width, directly below the greeting header, above the ticker. -->
+                <dashboardControls:AiHeroBanner Grid.Row="1"
+                                                 Grid.ColumnSpan="2"
+                                                 Margin="0,16,0,0"
+                                                 TagLabel="{Binding HeroTagLabel}"
+                                                 Headline="{Binding HeroHeadline}"
+                                                 Subtitle="{Binding HeroSubtitle}"
+                                                 CtaLabel="{Binding HeroCtaLabel}"
+                                                 ViewSuggestionsCommand="{Binding HeroViewSuggestionsCommand}"
+                                                 SecondaryCommand="{Binding HeroSecondaryCommand}" />
+
+                <!-- Phase 36: Live News Ticker - full width, below the Hero Banner. -->
+                <dashboardControls:NewsTicker Grid.Row="2"
                                                Grid.ColumnSpan="2"
                                                Margin="0,16,0,0"
                                                ItemsSource="{Binding NewsTickerItems, ElementName=Root}" />
 
                 <!-- Left: KPI widget, quick actions, recent activity widget -->
-                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,0">
+                <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,24,0">
 
                     <!-- KPI cards region -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
@@ -318,7 +331,7 @@
                 </StackPanel>
 
                 <!-- Right: AI Assistant panel - static, no repository data -->
-                <dashboardControls:DashboardCard Grid.Row="2" Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
+                <dashboardControls:DashboardCard Grid.Row="3" Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
                     <dashboardControls:DashboardCard.RenderTransform>
                         <TranslateTransform Y="12" />
                     </dashboardControls:DashboardCard.RenderTransform>

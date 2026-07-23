@@ -2581,4 +2581,76 @@
   <data name="Enum_RunReport" xml:space="preserve">
     <value>اجرای گزارش</value>
   </data>
+  <data name="Header_SubscriptionPlanTooltip" xml:space="preserve">
+    <value>طرح اشتراک سازمان</value>
+  </data>
+  <data name="Header_SubscriptionActiveStatus" xml:space="preserve">
+    <value>اشتراک شما فعال است</value>
+  </data>
+  <data name="Header_ManageSubscription" xml:space="preserve">
+    <value>مدیریت اشتراک</value>
+  </data>
+  <data name="Role_PlatformOwner" xml:space="preserve">
+    <value>مالک پلتفرم</value>
+  </data>
+  <data name="Role_OrganizationOwner" xml:space="preserve">
+    <value>مالک سازمان</value>
+  </data>
+  <data name="Role_OrganizationManager" xml:space="preserve">
+    <value>مدیر سازمان</value>
+  </data>
+  <data name="Role_BranchManager" xml:space="preserve">
+    <value>مدیر شعبه</value>
+  </data>
+  <data name="Role_Reception" xml:space="preserve">
+    <value>پذیرش</value>
+  </data>
+  <data name="Role_Specialist" xml:space="preserve">
+    <value>متخصص</value>
+  </data>
+  <data name="Role_Inventory" xml:space="preserve">
+    <value>مسئول موجودی</value>
+  </data>
+  <data name="Role_Accounting" xml:space="preserve">
+    <value>حسابداری</value>
+  </data>
+  <data name="Role_Hr" xml:space="preserve">
+    <value>منابع انسانی</value>
+  </data>
+  <data name="Role_Ai" xml:space="preserve">
+    <value>هوش مصنوعی</value>
+  </data>
+  <data name="Role_Support" xml:space="preserve">
+    <value>پشتیبانی</value>
+  </data>
+  <data name="Role_Marketing" xml:space="preserve">
+    <value>بازاریابی</value>
+  </data>
+  <data name="SubscriptionPlan_Trial" xml:space="preserve">
+    <value>آزمایشی</value>
+  </data>
+  <data name="SubscriptionPlan_Starter" xml:space="preserve">
+    <value>استارتر</value>
+  </data>
+  <data name="SubscriptionPlan_Professional" xml:space="preserve">
+    <value>حرفه‌ای</value>
+  </data>
+  <data name="SubscriptionPlan_Enterprise" xml:space="preserve">
+    <value>سازمانی</value>
+  </data>
+  <data name="Dashboard_Hero_TagLabel" xml:space="preserve">
+    <value>پیشنهاد هوشمند امروز</value>
+  </data>
+  <data name="Dashboard_Hero_Headline" xml:space="preserve">
+    <value>ساعت ۱۷ تا ۱۹ امروز ۲ زمان خالی دارید.</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle" xml:space="preserve">
+    <value>با فعال کردن تخفیف ۱۵٪ می‌توانید تا ۸ رزرو بیشتر جذب کنید.</value>
+  </data>
+  <data name="Dashboard_Hero_CtaFormat" xml:space="preserve">
+    <value>مشاهده پیشنهادها ({0})</value>
+  </data>
+  <data name="News_LiveBadge" xml:space="preserve">
+    <value>LIVE</value>
+  </data>
 </root>

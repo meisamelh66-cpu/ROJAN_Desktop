@@ -263,4 +263,83 @@
     </Setter>
   </Style>
 
+  <!--
+    Phase B-1 (AI Hero Banner): the banner's own gradient background is
+    dark enough that the existing ButtonPrimary/ButtonOutlined styles
+    (built for light Card surfaces) would low-contrast against it, so
+    this is a small, purpose-built pair - still composed entirely from
+    existing tokens (AccentPressed, ButtonText, Pill/Medium corner
+    radius, Duration.Fast), no new raw colors. ButtonHero: the solid CTA
+    pill. ButtonHeroIcon: the secondary glass icon-only square (White-
+    at-opacity, the same "reuse a color token's Brush at low Opacity for
+    a glass surface" technique NewsTicker/DashboardCard already use with
+    Card/SurfaceSecondary).
+  -->
+  <Style x:Key="Rojan.Style.ButtonHero" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource Rojan.Brush.AccentPressed}" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="18,10" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="ButtonBorder"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.85" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.7" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Rojan.Style.ButtonHeroIcon" TargetType="Button">
+    <Setter Property="Width" Value="38" />
+    <Setter Property="Height" Value="38" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Icons}" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="ButtonBorder" CornerRadius="{StaticResource Rojan.CornerRadius.Medium}">
+            <Border.Background>
+              <SolidColorBrush Color="{StaticResource Rojan.Color.ButtonText}" Opacity="0.18" />
+            </Border.Background>
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background">
+                <Setter.Value>
+                  <SolidColorBrush Color="{StaticResource Rojan.Color.ButtonText}" Opacity="0.3" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
 </ResourceDictionary>

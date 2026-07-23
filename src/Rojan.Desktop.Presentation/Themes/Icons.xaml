@@ -19,6 +19,21 @@
   -->
   <FontFamily x:Key="Rojan.FontFamily.Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
+  <!--
+    Reference-parity Phase A follow-up: Segoe Fluent Icons has no crown
+    glyph (verified against Microsoft's official glyph list before
+    reaching for a substitute - see the Subscription card's prior
+    FavoriteFilled placeholder). Rather than fake one with an unrelated
+    font glyph, this is a small hand-authored vector silhouette (a
+    3-peak crown, drawn directly as WPF path mini-language - no external
+    asset file, no icon-font dependency), following the same
+    "Rojan.Icon.X, referenced by name" convention as every glyph above,
+    just backed by a Geometry instead of a font codepoint. Reusable
+    anywhere via <Path Data="{StaticResource Rojan.Icon.Crown.Geometry}"
+    Fill="..." Stretch="Uniform" .../>.
+  -->
+  <Geometry x:Key="Rojan.Icon.Crown.Geometry">M2,18 L22,18 L20,9 L15,13 L12,6 L9,13 L4,9 Z</Geometry>
+
   <!-- Navigation -->
   <sys:String x:Key="Rojan.Icon.Menu">&#xE700;</sys:String>
   <sys:String x:Key="Rojan.Icon.Back">&#xE72B;</sys:String>
@@ -28,6 +43,11 @@
   <sys:String x:Key="Rojan.Icon.Calendar2">&#xE787;</sys:String>
   <sys:String x:Key="Rojan.Icon.Notification">&#xEA8F;</sys:String>
   <sys:String x:Key="Rojan.Icon.Person">&#xE77B;</sys:String>
+  <!-- Reference-parity Phase A: header theme toggle - Brightness/QuietHours are Segoe Fluent Icons' documented sun/moon-equivalent glyphs. -->
+  <sys:String x:Key="Rojan.Icon.ThemeLight">&#xE706;</sys:String>
+  <sys:String x:Key="Rojan.Icon.ThemeDark">&#xE708;</sys:String>
+  <!-- Phase B-1 (AI Hero Banner): ChatSparkle - verified against Microsoft's official Segoe Fluent Icons glyph list, same verification discipline as ThemeLight/ThemeDark/Crown above. -->
+  <sys:String x:Key="Rojan.Icon.Sparkle">&#xEAB7;</sys:String>
 
   <!-- Window chrome -->
   <sys:String x:Key="Rojan.Icon.Minimize">&#xE921;</sys:String>

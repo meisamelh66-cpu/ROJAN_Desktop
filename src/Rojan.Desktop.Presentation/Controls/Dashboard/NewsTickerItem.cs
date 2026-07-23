@@ -15,4 +15,7 @@ public sealed class NewsTickerItem
     public required string Text { get; init; }
 
     public Action? OnClick { get; init; }
+
+    /// <summary>Phase B-1 (visual refinement): shows a small "LIVE" badge before the item - reference-parity for the one ticker item (a VIP birthday alert) that reads as a live/urgent notice, not a generic category. Additive/optional - every existing 3-field item initializer still compiles unchanged.</summary>
+    public bool IsLive { get; init; }
 }

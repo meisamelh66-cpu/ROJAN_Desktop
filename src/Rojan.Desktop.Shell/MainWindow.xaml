@@ -237,6 +237,10 @@
                     <ColumnDefinition Width="Auto" />
                     <!-- Phase 29: Workspace Switcher -->
                     <ColumnDefinition Width="Auto" />
+                    <!-- Reference-parity Phase A: Calendar quick-nav -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Reference-parity Phase A: Theme toggle -->
+                    <ColumnDefinition Width="Auto" />
                     <!-- Notification -->
                     <ColumnDefinition Width="Auto" />
                     <!-- User profile -->
@@ -517,8 +521,40 @@
                     </Popup>
                 </StackPanel>
 
+                <!-- Reference-parity Phase A: Calendar quick-nav - jumps straight to the Calendar module, reusing SelectedNavigationItem's existing navigation pipeline (no new navigation concept). -->
+                <Button Grid.Column="7"
+                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                        Command="{Binding NavigateToModuleCommand}"
+                        CommandParameter="calendar"
+                        Margin="4,0,0,0"
+                        ToolTip="{x:Static loc:Strings.Nav_Calendar}"
+                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Text="{StaticResource Rojan.Icon.Calendar2}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
+                </Button>
+
+                <!-- Reference-parity Phase A: Theme toggle - extends IThemeService (same "select mode, persist, restart required" flow SettingsPageViewModel already uses), not a live instant swap; ToolTip communicates the restart requirement honestly rather than faking a live theme change. -->
+                <Button Grid.Column="8"
+                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                        Command="{Binding ToggleThemeCommand}"
+                        Margin="4,0,0,0"
+                        ToolTip="{x:Static loc:Strings.Settings_Theme_RestartRequired}"
+                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{StaticResource Rojan.Icon.ThemeLight}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ResolvedThemeIsDark}" Value="True">
+                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.ThemeDark}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
+
                 <!-- Notification button - Phase 27: badge counter overlay shows NotificationCenter.UnreadCount when > 0. -->
-                <Grid Grid.Column="7" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Grid Grid.Column="9" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Style="{StaticResource Rojan.Style.ChromeIconButton}"
                             Command="{Binding ToggleNotificationPanelCommand}"
                             ToolTip="{x:Static loc:Strings.Common_Notifications}">
@@ -544,18 +580,33 @@
                     </Border>
                 </Grid>
 
-                <!-- User profile placeholder - not functional, UI presence only -->
-                <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Ellipse Width="26" Height="26" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
-                    <TextBlock Text="{x:Static loc:Strings.Common_GuestUser}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.TextSecondary}"
-                               VerticalAlignment="Center"
-                               Margin="8,0,0,0" />
+                <!-- User profile placeholder - avatar/name still not functional (no User entity in this app, see Common_GuestUser's existing doc trail), but the role subtitle and plan badge are real session data (ICurrentSessionService.CurrentRole / CurrentOrganization.SubscriptionPlan), not fabricated. -->
+                <StackPanel Grid.Column="10" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Ellipse Width="26" Height="26" VerticalAlignment="Center" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
+                    <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Static loc:Strings.Common_GuestUser}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
+                        <TextBlock Text="{Binding CurrentRoleDisplayName}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   FontSize="10" />
+                    </StackPanel>
+                    <Border Background="{StaticResource Rojan.Brush.AccentSubtle}"
+                            CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                            Padding="8,2"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            ToolTip="{x:Static loc:Strings.Header_SubscriptionPlanTooltip}">
+                        <TextBlock Text="{Binding CurrentSubscriptionPlanDisplayName}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.Accent}"
+                                   FontSize="10" />
+                    </Border>
                 </StackPanel>
 
                 <!-- Window commands -->
-                <StackPanel Grid.Column="9" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="11" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="MinimizeButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="{x:Static loc:Strings.Common_Minimize}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Minimize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
                     </Button>
@@ -603,6 +654,68 @@
                             HorizontalAlignment="Left">
                         <TextBlock Text="{StaticResource Rojan.Icon.Menu}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
                     </Button>
+
+                    <!-- Reference-parity Phase A: sidebar logo header block, above the nav list. Reuses the existing collapse-aware text-hiding pattern (see the nav item Title trigger below) rather than inventing a new one. -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="16,4,12,16">
+                        <Border Width="30" Height="30" CornerRadius="{StaticResource Rojan.CornerRadius.Medium}" Background="{StaticResource Rojan.Brush.Accent}">
+                            <TextBlock Text="R" FontWeight="Bold" Foreground="{StaticResource Rojan.Brush.ButtonText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="ROJAN" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" FontWeight="Bold" />
+                            <TextBlock Text="Desktop" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Reference-parity Phase A: subscription card - real data (ICurrentSessionService.CurrentOrganization.SubscriptionPlan via CurrentSubscriptionPlanDisplayName, already added for the header badge), not fabricated. Manage button navigates to the Organizations module (real navigation) rather than being a dead placeholder. -->
+                    <Border DockPanel.Dock="Bottom"
+                            Background="{StaticResource Rojan.Brush.AccentSubtle}"
+                            CornerRadius="{StaticResource Rojan.CornerRadius.Large}"
+                            Margin="12,12,12,16"
+                            Padding="14">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource Rojan.Icon.Crown.Geometry}"
+                                      Fill="{StaticResource Rojan.Brush.Accent}"
+                                      Stretch="Uniform"
+                                      Width="15"
+                                      Height="15"
+                                      VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CurrentSubscriptionPlanDisplayName}"
+                                           Style="{StaticResource Rojan.TextStyle.Body}"
+                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.Header_SubscriptionActiveStatus}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       Margin="0,4,0,10" />
+                            <Button Content="{x:Static loc:Strings.Header_ManageSubscription}"
+                                    Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                    Command="{Binding NavigateToModuleCommand}"
+                                    CommandParameter="organizations"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center" />
+                        </StackPanel>
+                    </Border>
 
                     <ListBox x:Name="NavigationListBox"
                              DockPanel.Dock="Top"

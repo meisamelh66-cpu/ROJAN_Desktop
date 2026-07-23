@@ -13,6 +13,7 @@ using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Notifications;
 using Rojan.Desktop.Presentation.Organizations;
+using Rojan.Desktop.Presentation.Theming;
 using Rojan.Desktop.Presentation.ViewModels.Help;
 using Rojan.Desktop.Presentation.ViewModels.Notifications;
 using Rojan.Desktop.Presentation.ViewModels.Search;
@@ -46,6 +47,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
     private readonly IOrganizationQueryService _organizationQueryService;
+    private readonly IThemeService _themeService;
     private readonly IHelpQueryService _helpQueryService;
     private readonly IHelpContentResolver _helpContentResolver;
     private readonly IHelpSearchService _helpSearchService;
@@ -76,6 +78,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         IPermissionEngine permissionEngine,
         ICurrentSessionService currentSessionService,
         IOrganizationQueryService organizationQueryService,
+        IThemeService themeService,
         IHelpQueryService helpQueryService,
         IHelpContentResolver helpContentResolver,
         IHelpSearchService helpSearchService,
@@ -97,6 +100,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
         _organizationQueryService = organizationQueryService;
+        _themeService = themeService;
         _helpQueryService = helpQueryService;
         _helpContentResolver = helpContentResolver;
         _helpSearchService = helpSearchService;
@@ -149,6 +153,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         OpenHelpCommand = new AsyncRelayCommand(parameter => OpenHelpAsync(parameter as string));
         ToggleSilentModeCommand = new RelayCommand(_ => NotificationCenter.IsSilentModeEnabled = !NotificationCenter.IsSilentModeEnabled);
         OpenCommandPaletteCommand = new AsyncRelayCommand(_ => OpenCommandPaletteAsync());
+        NavigateToModuleCommand = new RelayCommand(parameter =>
+        {
+            if (parameter is string moduleId)
+            {
+                var item = NavigationItems.FirstOrDefault(i => i.Descriptor.Metadata.Id == moduleId);
+                if (item is not null)
+                {
+                    SelectedNavigationItem = item;
+                }
+            }
+        });
+        ToggleThemeCommand = new AsyncRelayCommand(_ => ToggleThemeAsync());
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
@@ -304,6 +320,24 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     /// <summary>Phase 28: Enterprise Global Search &amp; Command Palette - opens the palette (Ctrl+K/Ctrl+P, or the header's search box).</summary>
     public ICommand OpenCommandPaletteCommand { get; }
 
+    /// <summary>Reference-parity Phase A: jumps to a module by id (e.g. the header's Calendar button, the sidebar Subscription card's Manage button) by reusing <see cref="SelectedNavigationItem"/>'s existing navigation pipeline - a no-op if the id isn't in <see cref="NavigationItems"/> (e.g. hidden by a permission gate), same fallback shape as <see cref="ApplyPrimaryModuleFromWorkspace"/>.</summary>
+    public ICommand NavigateToModuleCommand { get; }
+
+    /// <summary>Reference-parity Phase A: toggles the persisted theme selection between Light/Dark via <see cref="IThemeService"/> - same "select, persist, restart required" flow <c>SettingsPageViewModel</c> already uses, not a live instant swap.</summary>
+    public ICommand ToggleThemeCommand { get; }
+
+    /// <summary>Real session data (not fabricated): the current role's localized display name, shown as the header avatar's subtitle.</summary>
+    public string CurrentRoleDisplayName => RoleDisplayName(_currentSessionService.CurrentRole);
+
+    /// <summary>Real session data (not fabricated): the current organization's subscription plan, localized - backs both the header badge and the sidebar Subscription card.</summary>
+    public string CurrentSubscriptionPlanDisplayName =>
+        _currentSessionService.CurrentOrganization is { } organization
+            ? PlanDisplayName(organization.Subscription)
+            : string.Empty;
+
+    /// <summary>Drives the header theme-toggle icon's Light/Dark glyph swap.</summary>
+    public bool ResolvedThemeIsDark => _themeService.ResolvedTheme == ThemeMode.Dark;
+
     public ICommand SelectNavigationItemCommand { get; }
 
     public ICommand ToggleSidebarCommand { get; }
@@ -361,6 +395,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         OnPropertyChanged(nameof(CurrentBranch));
         OnPropertyChanged(nameof(AvailableBranches));
         OnPropertyChanged(nameof(CurrentOrganizationName));
+        OnPropertyChanged(nameof(CurrentRoleDisplayName));
+        OnPropertyChanged(nameof(CurrentSubscriptionPlanDisplayName));
         RefreshNavigationItems();
         RefreshRecentAndFavoriteBranches();
     }
@@ -512,4 +548,38 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         ShowDialog(palette);
         await palette.InitializeAsync().ConfigureAwait(true);
     }
+
+    /// <summary>Toggles <see cref="IThemeService.SelectedMode"/> between Light and Dark (System is not a toggle target - there is no honest single icon-state to represent "follow the OS"), then republishes the header icon/tooltip bindings.</summary>
+    private async Task ToggleThemeAsync()
+    {
+        var nextMode = _themeService.ResolvedTheme == ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark;
+        await _themeService.SetThemeModeAsync(nextMode).ConfigureAwait(true);
+        OnPropertyChanged(nameof(ResolvedThemeIsDark));
+    }
+
+    private static string RoleDisplayName(WorkspaceRole role) => role switch
+    {
+        WorkspaceRole.PlatformOwner => Strings.Role_PlatformOwner,
+        WorkspaceRole.OrganizationOwner => Strings.Role_OrganizationOwner,
+        WorkspaceRole.OrganizationManager => Strings.Role_OrganizationManager,
+        WorkspaceRole.BranchManager => Strings.Role_BranchManager,
+        WorkspaceRole.Reception => Strings.Role_Reception,
+        WorkspaceRole.Specialist => Strings.Role_Specialist,
+        WorkspaceRole.Inventory => Strings.Role_Inventory,
+        WorkspaceRole.Accounting => Strings.Role_Accounting,
+        WorkspaceRole.Hr => Strings.Role_Hr,
+        WorkspaceRole.Ai => Strings.Role_Ai,
+        WorkspaceRole.Support => Strings.Role_Support,
+        WorkspaceRole.Marketing => Strings.Role_Marketing,
+        _ => role.ToString(),
+    };
+
+    private static string PlanDisplayName(SubscriptionPlan plan) => plan switch
+    {
+        SubscriptionPlan.Trial => Strings.SubscriptionPlan_Trial,
+        SubscriptionPlan.Starter => Strings.SubscriptionPlan_Starter,
+        SubscriptionPlan.Professional => Strings.SubscriptionPlan_Professional,
+        SubscriptionPlan.Enterprise => Strings.SubscriptionPlan_Enterprise,
+        _ => plan.ToString(),
+    };
 }

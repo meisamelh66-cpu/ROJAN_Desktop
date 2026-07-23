@@ -1312,4 +1312,54 @@ public static class Strings
     /// <see cref="GetEnumLabel"/>.
     /// </summary>
     public static string GetByKey(string key) => Get(key);
+
+    // Reference-parity Phase A: header role subtitle / subscription badge / sidebar subscription card.
+    public static string Header_SubscriptionPlanTooltip => Get(nameof(Header_SubscriptionPlanTooltip));
+
+    public static string Header_SubscriptionActiveStatus => Get(nameof(Header_SubscriptionActiveStatus));
+
+    public static string Header_ManageSubscription => Get(nameof(Header_ManageSubscription));
+
+    public static string Role_PlatformOwner => Get(nameof(Role_PlatformOwner));
+
+    public static string Role_OrganizationOwner => Get(nameof(Role_OrganizationOwner));
+
+    public static string Role_OrganizationManager => Get(nameof(Role_OrganizationManager));
+
+    public static string Role_BranchManager => Get(nameof(Role_BranchManager));
+
+    public static string Role_Reception => Get(nameof(Role_Reception));
+
+    public static string Role_Specialist => Get(nameof(Role_Specialist));
+
+    public static string Role_Inventory => Get(nameof(Role_Inventory));
+
+    public static string Role_Accounting => Get(nameof(Role_Accounting));
+
+    public static string Role_Hr => Get(nameof(Role_Hr));
+
+    public static string Role_Ai => Get(nameof(Role_Ai));
+
+    public static string Role_Support => Get(nameof(Role_Support));
+
+    public static string Role_Marketing => Get(nameof(Role_Marketing));
+
+    public static string SubscriptionPlan_Trial => Get(nameof(SubscriptionPlan_Trial));
+
+    public static string SubscriptionPlan_Starter => Get(nameof(SubscriptionPlan_Starter));
+
+    public static string SubscriptionPlan_Professional => Get(nameof(SubscriptionPlan_Professional));
+
+    public static string SubscriptionPlan_Enterprise => Get(nameof(SubscriptionPlan_Enterprise));
+
+    // Phase B-1: AI Hero Banner mock content.
+    public static string Dashboard_Hero_TagLabel => Get(nameof(Dashboard_Hero_TagLabel));
+
+    public static string Dashboard_Hero_Headline => Get(nameof(Dashboard_Hero_Headline));
+
+    public static string Dashboard_Hero_Subtitle => Get(nameof(Dashboard_Hero_Subtitle));
+
+    public static string Dashboard_Hero_CtaFormat => Get(nameof(Dashboard_Hero_CtaFormat));
+
+    public static string News_LiveBadge => Get(nameof(News_LiveBadge));
 }
