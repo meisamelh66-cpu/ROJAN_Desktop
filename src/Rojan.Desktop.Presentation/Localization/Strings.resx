@@ -2653,4 +2653,91 @@
   <data name="News_LiveBadge" xml:space="preserve">
     <value>LIVE</value>
   </data>
+  <data name="Dashboard_Analytics_RevenueTrendTitle" xml:space="preserve">
+    <value>روند درآمد هفتگی</value>
+  </data>
+  <data name="Dashboard_Analytics_WeekChip" xml:space="preserve">
+    <value>هفته جاری</value>
+  </data>
+  <data name="Dashboard_Analytics_TopServicesTitle" xml:space="preserve">
+    <value>پرفروش‌ترین خدمات</value>
+  </data>
+  <data name="Dashboard_Analytics_TodayChip" xml:space="preserve">
+    <value>امروز</value>
+  </data>
+  <data name="Dashboard_Analytics_ViewAllServices" xml:space="preserve">
+    <value>مشاهده همه خدمات</value>
+  </data>
+  <data name="Dashboard_Analytics_SalonHealthTitle" xml:space="preserve">
+    <value>سلامت سالن</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthOutOf" xml:space="preserve">
+    <value>از ۱۰۰</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthStatusExcellent" xml:space="preserve">
+    <value>عالی</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthSubtitle" xml:space="preserve">
+    <value>سالن شما در وضعیت بسیار خوبی قرار دارد.</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthDetailsButton" xml:space="preserve">
+    <value>جزئیات امتیاز</value>
+  </data>
+  <data name="Dashboard_Service_HairCutStyle" xml:space="preserve">
+    <value>کوتاهی و استایل مو</value>
+  </data>
+  <data name="Dashboard_Service_RootColorTouchUp" xml:space="preserve">
+    <value>اصلاح رنگ ریشه</value>
+  </data>
+  <data name="Dashboard_Service_KeratinStraightening" xml:space="preserve">
+    <value>کراتینه صافی مو</value>
+  </data>
+  <data name="Dashboard_Service_Manicure" xml:space="preserve">
+    <value>مانیکور</value>
+  </data>
+  <data name="Dashboard_Service_Massage" xml:space="preserve">
+    <value>ماساژ</value>
+  </data>
+  <data name="Dashboard_Staff_Title" xml:space="preserve">
+    <value>وضعیت لحظه‌ای متخصصان</value>
+  </data>
+  <data name="Dashboard_Staff_ViewAll" xml:space="preserve">
+    <value>مشاهده همه متخصصان</value>
+  </data>
+  <data name="Dashboard_Alerts_Title" xml:space="preserve">
+    <value>اعلان‌های اخیر</value>
+  </data>
+  <data name="Dashboard_Staff_Service_HairCut" xml:space="preserve">
+    <value>کوتاهی مو</value>
+  </data>
+  <data name="Dashboard_Staff_Service_ColorHighlight" xml:space="preserve">
+    <value>رنگ و مش</value>
+  </data>
+  <data name="Dashboard_Staff_Service_NailArt" xml:space="preserve">
+    <value>کاشت ناخن</value>
+  </data>
+  <data name="Dashboard_Staff_Service_Keratin" xml:space="preserve">
+    <value>کراتین مو</value>
+  </data>
+  <data name="Dashboard_Staff_MinutesRemainingFormat" xml:space="preserve">
+    <value>{0} دقیقه باقی مانده</value>
+  </data>
+  <data name="Dashboard_Alert_LeaveRequest" xml:space="preserve">
+    <value>درخواست مرخصی نیلوفر صفایی</value>
+  </data>
+  <data name="Dashboard_Alert_InventoryLow" xml:space="preserve">
+    <value>موجودی کراتین مو رو به اتمام است</value>
+  </data>
+  <data name="Dashboard_Alert_PaymentReceived" xml:space="preserve">
+    <value>پرداخت جدید از سوی مشتری دریافت شد</value>
+  </data>
+  <data name="Dashboard_Schedule_Title" xml:space="preserve">
+    <value>برنامه امروز</value>
+  </data>
+  <data name="Dashboard_Schedule_Now" xml:space="preserve">
+    <value>اکنون</value>
+  </data>
+  <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
+    <value>مشاهده برنامه کامل</value>
+  </data>
 </root>

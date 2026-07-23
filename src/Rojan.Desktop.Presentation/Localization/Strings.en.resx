@@ -2641,4 +2641,91 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="News_LiveBadge" xml:space="preserve">
     <value>LIVE</value>
   </data>
+  <data name="Dashboard_Analytics_RevenueTrendTitle" xml:space="preserve">
+    <value>Weekly Revenue Trend</value>
+  </data>
+  <data name="Dashboard_Analytics_WeekChip" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+  <data name="Dashboard_Analytics_TopServicesTitle" xml:space="preserve">
+    <value>Top Services</value>
+  </data>
+  <data name="Dashboard_Analytics_TodayChip" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Dashboard_Analytics_ViewAllServices" xml:space="preserve">
+    <value>View All Services</value>
+  </data>
+  <data name="Dashboard_Analytics_SalonHealthTitle" xml:space="preserve">
+    <value>Salon Health</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthOutOf" xml:space="preserve">
+    <value>out of 100</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthStatusExcellent" xml:space="preserve">
+    <value>Excellent</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthSubtitle" xml:space="preserve">
+    <value>Your salon is in very good condition.</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthDetailsButton" xml:space="preserve">
+    <value>Score Details</value>
+  </data>
+  <data name="Dashboard_Service_HairCutStyle" xml:space="preserve">
+    <value>Haircut &amp; Style</value>
+  </data>
+  <data name="Dashboard_Service_RootColorTouchUp" xml:space="preserve">
+    <value>Root Color Touch-Up</value>
+  </data>
+  <data name="Dashboard_Service_KeratinStraightening" xml:space="preserve">
+    <value>Keratin Hair Straightening</value>
+  </data>
+  <data name="Dashboard_Service_Manicure" xml:space="preserve">
+    <value>Manicure</value>
+  </data>
+  <data name="Dashboard_Service_Massage" xml:space="preserve">
+    <value>Massage</value>
+  </data>
+  <data name="Dashboard_Staff_Title" xml:space="preserve">
+    <value>Live Specialist Status</value>
+  </data>
+  <data name="Dashboard_Staff_ViewAll" xml:space="preserve">
+    <value>View All Specialists</value>
+  </data>
+  <data name="Dashboard_Alerts_Title" xml:space="preserve">
+    <value>Recent Alerts</value>
+  </data>
+  <data name="Dashboard_Staff_Service_HairCut" xml:space="preserve">
+    <value>Haircut</value>
+  </data>
+  <data name="Dashboard_Staff_Service_ColorHighlight" xml:space="preserve">
+    <value>Color &amp; Highlights</value>
+  </data>
+  <data name="Dashboard_Staff_Service_NailArt" xml:space="preserve">
+    <value>Nail Art</value>
+  </data>
+  <data name="Dashboard_Staff_Service_Keratin" xml:space="preserve">
+    <value>Keratin Treatment</value>
+  </data>
+  <data name="Dashboard_Staff_MinutesRemainingFormat" xml:space="preserve">
+    <value>{0} min remaining</value>
+  </data>
+  <data name="Dashboard_Alert_LeaveRequest" xml:space="preserve">
+    <value>Leave request from Niloofar Safaei</value>
+  </data>
+  <data name="Dashboard_Alert_InventoryLow" xml:space="preserve">
+    <value>Keratin treatment stock is running low</value>
+  </data>
+  <data name="Dashboard_Alert_PaymentReceived" xml:space="preserve">
+    <value>New payment received from a customer</value>
+  </data>
+  <data name="Dashboard_Schedule_Title" xml:space="preserve">
+    <value>Today's Schedule</value>
+  </data>
+  <data name="Dashboard_Schedule_Now" xml:space="preserve">
+    <value>Now</value>
+  </data>
+  <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
+    <value>View Full Schedule</value>
+  </data>
 </root>

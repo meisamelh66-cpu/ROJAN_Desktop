@@ -1,0 +1,83 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.SalonHealthCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:analytics="clr-namespace:Rojan.Desktop.Presentation.Controls.Analytics"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             x:Name="Root">
+
+    <!--
+        Phase C-1 (Analytics Row): the ring is SimpleBarChart reused as-is
+        in ChartType.Donut mode (score vs. remaining-to-100) - its
+        Rebuild()/RebuildPie always shows a legend row under the ring for
+        Pie/Donut charts (not suppressible without modifying
+        SimpleBarChart, which is out of scope), so a legend listing
+        "Score"/"Remaining" appears below the ring here - a known,
+        reported deviation from the reference, not a bug. The score
+        number/status/subtitle are overlaid separately (IsHitTestVisible
+        False so they never block the chart), not part of SimpleBarChart
+        itself.
+    -->
+    <dashboardControls:DashboardCard>
+        <StackPanel>
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{StaticResource Rojan.Icon.FavoriteFilled}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="14"
+                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{x:Static loc:Strings.Dashboard_Analytics_SalonHealthTitle}"
+                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                           Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <Grid HorizontalAlignment="Center">
+                <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" />
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            Margin="0,50,0,0"
+                            IsHitTestVisible="False">
+                    <TextBlock Text="{Binding ScoreText, ElementName=Root}"
+                               Style="{StaticResource Rojan.TextStyle.SectionHeader}"
+                               FontSize="28"
+                               Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="{x:Static loc:Strings.Dashboard_Analytics_HealthOutOf}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="{Binding StatusLabel, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Success}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Margin="0,4,0,0" />
+
+            <TextBlock Text="{Binding Subtitle, ElementName=Root}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Margin="0,8,0,0" />
+
+            <Button Content="{x:Static loc:Strings.Dashboard_Analytics_HealthDetailsButton}"
+                    Style="{StaticResource Rojan.Style.ButtonOutlined}"
+                    Command="{Binding DetailsCommand, ElementName=Root}"
+                    IsEnabled="False"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0,12,0,0" />
+        </StackPanel>
+    </dashboardControls:DashboardCard>
+
+</UserControl>

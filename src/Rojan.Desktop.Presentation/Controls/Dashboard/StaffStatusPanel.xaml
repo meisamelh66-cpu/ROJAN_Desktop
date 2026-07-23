@@ -1,0 +1,112 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.StaffStatusPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <converters:StaffProgressColorConverter x:Key="StaffProgressColorConverter" />
+        <converters:StaffInitialConverter x:Key="StaffInitialConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <!-- Phase C-2: Staff Status Panel - DashboardCard's Title left unset (custom icon+title header, same technique as the Analytics Row cards), placed in the freed left column. -->
+    <dashboardControls:DashboardCard>
+        <StackPanel>
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{StaticResource Rojan.Icon.Specialists}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="14"
+                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{x:Static loc:Strings.Dashboard_Staff_Title}"
+                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                           Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="3"
+                           Text="{x:Static loc:Strings.Notification_Filter_All}"
+                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding Items, ElementName=Root}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type dashboardVm:StaffStatusItem}">
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" Width="40" Height="40">
+                                <Border CornerRadius="{StaticResource Rojan.CornerRadius.Pill}" Background="{StaticResource Rojan.Brush.AccentSubtle}">
+                                    <TextBlock Text="{Binding Name, Converter={StaticResource StaffInitialConverter}}"
+                                               Style="{StaticResource Rojan.TextStyle.Body}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource Rojan.Brush.Accent}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <Ellipse Width="11"
+                                         Height="11"
+                                         Fill="{StaticResource Rojan.Brush.Success}"
+                                         Stroke="{StaticResource Rojan.Brush.Card}"
+                                         StrokeThickness="2"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Bottom"
+                                         Visibility="{Binding IsOnline, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}"
+                                           Style="{StaticResource Rojan.TextStyle.Body}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                <TextBlock Text="{Binding ServiceLabel}"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding RemainingTimeText}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0" />
+
+                            <dashboardControls:StaffProgressRing Grid.Column="3"
+                                                                  Percentage="{Binding ProgressPercentage}"
+                                                                  RingBrush="{Binding ProgressPercentage, Converter={StaticResource StaffProgressColorConverter}}"
+                                                                  VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Content="{x:Static loc:Strings.Dashboard_Staff_ViewAll}"
+                    Style="{StaticResource Rojan.Style.ButtonOutlined}"
+                    Command="{Binding ViewAllCommand, ElementName=Root}"
+                    IsEnabled="False"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0,4,0,0" />
+        </StackPanel>
+    </dashboardControls:DashboardCard>
+
+</UserControl>

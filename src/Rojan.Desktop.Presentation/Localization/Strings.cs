@@ -1362,4 +1362,65 @@ public static class Strings
     public static string Dashboard_Hero_CtaFormat => Get(nameof(Dashboard_Hero_CtaFormat));
 
     public static string News_LiveBadge => Get(nameof(News_LiveBadge));
+
+    // Phase C-1: Analytics Row (Revenue Trend / Top Services / Salon Health).
+    public static string Dashboard_Analytics_RevenueTrendTitle => Get(nameof(Dashboard_Analytics_RevenueTrendTitle));
+
+    public static string Dashboard_Analytics_WeekChip => Get(nameof(Dashboard_Analytics_WeekChip));
+
+    public static string Dashboard_Analytics_TopServicesTitle => Get(nameof(Dashboard_Analytics_TopServicesTitle));
+
+    public static string Dashboard_Analytics_TodayChip => Get(nameof(Dashboard_Analytics_TodayChip));
+
+    public static string Dashboard_Analytics_ViewAllServices => Get(nameof(Dashboard_Analytics_ViewAllServices));
+
+    public static string Dashboard_Analytics_SalonHealthTitle => Get(nameof(Dashboard_Analytics_SalonHealthTitle));
+
+    public static string Dashboard_Analytics_HealthOutOf => Get(nameof(Dashboard_Analytics_HealthOutOf));
+
+    public static string Dashboard_Analytics_HealthStatusExcellent => Get(nameof(Dashboard_Analytics_HealthStatusExcellent));
+
+    public static string Dashboard_Analytics_HealthSubtitle => Get(nameof(Dashboard_Analytics_HealthSubtitle));
+
+    public static string Dashboard_Analytics_HealthDetailsButton => Get(nameof(Dashboard_Analytics_HealthDetailsButton));
+
+    public static string Dashboard_Service_HairCutStyle => Get(nameof(Dashboard_Service_HairCutStyle));
+
+    public static string Dashboard_Service_RootColorTouchUp => Get(nameof(Dashboard_Service_RootColorTouchUp));
+
+    public static string Dashboard_Service_KeratinStraightening => Get(nameof(Dashboard_Service_KeratinStraightening));
+
+    public static string Dashboard_Service_Manicure => Get(nameof(Dashboard_Service_Manicure));
+
+    public static string Dashboard_Service_Massage => Get(nameof(Dashboard_Service_Massage));
+
+    // Phase C-2: Staff Status Panel / Recent Alerts Panel.
+    public static string Dashboard_Staff_Title => Get(nameof(Dashboard_Staff_Title));
+
+    public static string Dashboard_Staff_ViewAll => Get(nameof(Dashboard_Staff_ViewAll));
+
+    public static string Dashboard_Alerts_Title => Get(nameof(Dashboard_Alerts_Title));
+
+    public static string Dashboard_Staff_Service_HairCut => Get(nameof(Dashboard_Staff_Service_HairCut));
+
+    public static string Dashboard_Staff_Service_ColorHighlight => Get(nameof(Dashboard_Staff_Service_ColorHighlight));
+
+    public static string Dashboard_Staff_Service_NailArt => Get(nameof(Dashboard_Staff_Service_NailArt));
+
+    public static string Dashboard_Staff_Service_Keratin => Get(nameof(Dashboard_Staff_Service_Keratin));
+
+    public static string Dashboard_Staff_MinutesRemainingFormat => Get(nameof(Dashboard_Staff_MinutesRemainingFormat));
+
+    public static string Dashboard_Alert_LeaveRequest => Get(nameof(Dashboard_Alert_LeaveRequest));
+
+    public static string Dashboard_Alert_InventoryLow => Get(nameof(Dashboard_Alert_InventoryLow));
+
+    public static string Dashboard_Alert_PaymentReceived => Get(nameof(Dashboard_Alert_PaymentReceived));
+
+    // Phase C-2 (final part): Daily Schedule panel.
+    public static string Dashboard_Schedule_Title => Get(nameof(Dashboard_Schedule_Title));
+
+    public static string Dashboard_Schedule_Now => Get(nameof(Dashboard_Schedule_Now));
+
+    public static string Dashboard_Schedule_ViewFull => Get(nameof(Dashboard_Schedule_ViewFull));
 }

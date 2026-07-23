@@ -1,0 +1,89 @@
+<UserControl x:Class="Rojan.Desktop.Presentation.Controls.Dashboard.DailySchedulePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:dashboardVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Dashboard"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <!-- Phase C-2: Daily Schedule panel - same custom icon+title header technique as every other new Dashboard card this phase, placed in the bottom row beside AI Assistant and Quick Actions. -->
+    <dashboardControls:DashboardCard>
+        <StackPanel>
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{StaticResource Rojan.Icon.Calendar}"
+                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                           FontSize="14"
+                           Foreground="{StaticResource Rojan.Brush.Accent}"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{x:Static loc:Strings.Dashboard_Schedule_Title}"
+                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                           Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding Items, ElementName=Root}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type dashboardVm:ScheduleItem}">
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding SpecialistName}"
+                                           Style="{StaticResource Rojan.TextStyle.Body}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                <TextBlock Text="{Binding ServiceLabel}"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Time}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource Rojan.Brush.Accent}"
+                                    CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                                    Padding="8,3"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="{x:Static loc:Strings.Dashboard_Schedule_Now}"
+                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                           Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                           FontWeight="SemiBold" />
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Content="{x:Static loc:Strings.Dashboard_Schedule_ViewFull}"
+                    Style="{StaticResource Rojan.Style.ButtonOutlined}"
+                    Command="{Binding ViewFullScheduleCommand, ElementName=Root}"
+                    IsEnabled="False"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0,4,0,0" />
+        </StackPanel>
+    </dashboardControls:DashboardCard>
+
+</UserControl>

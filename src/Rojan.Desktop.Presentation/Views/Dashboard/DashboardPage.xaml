@@ -236,55 +236,41 @@
                         </ItemsControl>
                     </dashboardControls:DashboardWidget>
 
-                    <!-- Quick Actions region: static, no repository data -->
-                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Dashboard_QuickActions}" Margin="0,24,0,0" Opacity="0">
-                        <dashboardControls:DashboardCard.RenderTransform>
-                            <TranslateTransform Y="12" />
-                        </dashboardControls:DashboardCard.RenderTransform>
-                        <dashboardControls:DashboardCard.Triggers>
-                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard BeginTime="0:0:0.06">
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
-                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </dashboardControls:DashboardCard.Triggers>
-                        <ItemsControl ItemsSource="{Binding QuickActions}" AlternationCount="5">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
-                                    <!--
-                                        Bug fix: QuickActionCommand on the ViewModel is an
-                                        intentional no-op (Phase 06B placeholder, and ViewModels
-                                        are off-limits for this fix) - real navigation is wired
-                                        here instead, via a plain Click handler in
-                                        DashboardPage.xaml.cs, alongside (not replacing) the
-                                        existing Command binding.
-                                    -->
-                                    <Button Style="{StaticResource Rojan.Style.ButtonQuickAction}"
-                                            Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"
-                                            Click="QuickActionButton_Click"
-                                            Margin="0,0,12,12">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}, Converter={StaticResource IndexToIconConverter}}"
-                                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
-                                                       FontSize="15"
-                                                       Margin="0,0,8,0"
-                                                       VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Button>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </dashboardControls:DashboardCard>
+                    <!--
+                        Phase C-1: Analytics Row - unequal Grid columns (not
+                        the KPI row's uniform WrapPanel), since the
+                        reference shows the Revenue Trend card roughly
+                        twice as wide as Salon Health, Top Services in
+                        between. Column 0 renders rightmost under this
+                        app's RTL FlowDirection (confirmed empirically
+                        across every prior phase), so Salon Health (the
+                        narrowest, rightmost in the reference) is Column 0
+                        and Revenue Trend (the widest, leftmost in the
+                        reference) is Column 2 - matching the reference's
+                        actual left-to-right arrangement, not just
+                        "first item = rightmost" by convention.
+                    -->
+                    <Grid Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <dashboardControls:SalonHealthCard Grid.Column="0"
+                                                            Margin="0,0,0,0"
+                                                            Chart="{Binding SalonHealthChart}"
+                                                            ScoreText="{Binding SalonHealthScoreText}"
+                                                            StatusLabel="{Binding SalonHealthStatusLabel}"
+                                                            Subtitle="{Binding SalonHealthSubtitle}"
+                                                            DetailsCommand="{Binding SalonHealthDetailsCommand}" />
+                        <dashboardControls:TopServicesCard Grid.Column="1"
+                                                            Margin="16,0,16,0"
+                                                            Chart="{Binding TopServicesChart}"
+                                                            ViewAllServicesCommand="{Binding ViewAllServicesCommand}" />
+                        <dashboardControls:RevenueTrendCard Grid.Column="2"
+                                                             Chart="{Binding RevenueTrendChart}"
+                                                             DayLabels="{Binding DayLabels}" />
+                    </Grid>
 
                     <!-- Recent Activity region -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_RecentActivity}"
@@ -328,75 +314,173 @@
                         </ItemsControl>
                     </dashboardControls:DashboardWidget>
 
+                    <!--
+                        Phase C-2 (layout-only step): AI Assistant relocated
+                        from its former dedicated Grid.Column="1" (that
+                        column is freed for Staff Status + Recent Alerts in
+                        the next approved step) into a new bottom row
+                        alongside Daily Schedule and Quick Actions, matching
+                        the reference's actual grouping. The AI Assistant
+                        DashboardCard itself - every binding, trigger,
+                        animation, and piece of content below - is moved
+                        verbatim, not rewritten; only its Grid placement
+                        changed. Column widths approximate the reference's
+                        proportions (AI widest, Schedule medium, Quick
+                        Actions narrowest); Schedule/Quick Actions columns
+                        are left empty here, to be populated in the next
+                        approved step.
+                    -->
+                    <Grid Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1.3*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+
+                        <dashboardControls:DashboardCard Grid.Column="2" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
+                            <dashboardControls:DashboardCard.RenderTransform>
+                                <TranslateTransform Y="12" />
+                            </dashboardControls:DashboardCard.RenderTransform>
+                            <dashboardControls:DashboardCard.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard BeginTime="0:0:0.06">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </dashboardControls:DashboardCard.Triggers>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="44"
+                                            Height="44"
+                                            CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                                            Background="{StaticResource Rojan.Brush.AccentSubtle}"
+                                            RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <ScaleTransform x:Name="AiIconScale" ScaleX="1" ScaleY="1" />
+                                        </Border.RenderTransform>
+                                        <Border.Triggers>
+                                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                <BeginStoryboard>
+                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.65" To="1" Duration="0:0:1.4" />
+                                                        <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleX" From="0.94" To="1.05" Duration="0:0:1.4" />
+                                                        <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleY" From="0.94" To="1.05" Duration="0:0:1.4" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Border.Triggers>
+                                        <TextBlock Text="{StaticResource Rojan.Icon.AICenter}"
+                                                   FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                                   FontSize="20"
+                                                   Foreground="{StaticResource Rojan.Brush.Accent}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Static loc:Strings.Dashboard_AiAssistant}"
+                                                   Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <Ellipse Width="7" Height="7" Fill="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{x:Static loc:Strings.Dashboard_ComingSoon}"
+                                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                       Margin="6,0,0,0" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                                <Button Content="{x:Static loc:Strings.Dashboard_AskAi}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                        IsEnabled="False"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center" />
+                            </StackPanel>
+                        </dashboardControls:DashboardCard>
+
+                        <!-- Phase C-2 (final part): Daily Schedule, new. -->
+                        <dashboardControls:DailySchedulePanel Grid.Column="1"
+                                                               Margin="16,0,16,0"
+                                                               Items="{Binding ScheduleItems}"
+                                                               ViewFullScheduleCommand="{Binding ViewFullScheduleCommand}" />
+
+                        <!--
+                            Phase C-2 (final part): Quick Actions relocated
+                            here verbatim - same DashboardCard, same
+                            ItemsControl/DataTemplate/Command/Click handler
+                            as its former position between the Analytics Row
+                            and Recent Activity, not recreated. Only the
+                            ItemsPanel changed, WrapPanel to a vertical
+                            StackPanel (one attribute), since the reference
+                            shows a narrow vertical button stack, not a
+                            wrapping grid - everything the buttons actually
+                            do is untouched.
+                        -->
+                        <dashboardControls:DashboardCard Grid.Column="0" Title="{x:Static loc:Strings.Dashboard_QuickActions}" Opacity="0">
+                            <dashboardControls:DashboardCard.RenderTransform>
+                                <TranslateTransform Y="12" />
+                            </dashboardControls:DashboardCard.RenderTransform>
+                            <dashboardControls:DashboardCard.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard BeginTime="0:0:0.06">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </dashboardControls:DashboardCard.Triggers>
+                            <ItemsControl ItemsSource="{Binding QuickActions}" AlternationCount="5">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type dashboardVm:QuickActionItem}">
+                                        <!--
+                                            Bug fix: QuickActionCommand on the ViewModel is an
+                                            intentional no-op (Phase 06B placeholder, and ViewModels
+                                            are off-limits for this fix) - real navigation is wired
+                                            here instead, via a plain Click handler in
+                                            DashboardPage.xaml.cs, alongside (not replacing) the
+                                            existing Command binding.
+                                        -->
+                                        <Button Style="{StaticResource Rojan.Style.ButtonQuickAction}"
+                                                Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Click="QuickActionButton_Click"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Center"
+                                                Margin="0,0,0,12">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}, Converter={StaticResource IndexToIconConverter}}"
+                                                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                                           FontSize="15"
+                                                           Margin="0,0,8,0"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </dashboardControls:DashboardCard>
+                    </Grid>
+
                 </StackPanel>
 
-                <!-- Right: AI Assistant panel - static, no repository data -->
-                <dashboardControls:DashboardCard Grid.Row="3" Grid.Column="1" Title="{x:Static loc:Strings.Dashboard_AiAssistant}" VerticalAlignment="Top" Opacity="0">
-                    <dashboardControls:DashboardCard.RenderTransform>
-                        <TranslateTransform Y="12" />
-                    </dashboardControls:DashboardCard.RenderTransform>
-                    <dashboardControls:DashboardCard.Triggers>
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                            <BeginStoryboard>
-                                <Storyboard BeginTime="0:0:0.06">
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Rojan.Duration.Medium}" />
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="{StaticResource Rojan.Duration.Medium}" />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </dashboardControls:DashboardCard.Triggers>
-                    <StackPanel>
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Width="44"
-                                    Height="44"
-                                    CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
-                                    Background="{StaticResource Rojan.Brush.AccentSubtle}"
-                                    RenderTransformOrigin="0.5,0.5">
-                                <Border.RenderTransform>
-                                    <ScaleTransform x:Name="AiIconScale" ScaleX="1" ScaleY="1" />
-                                </Border.RenderTransform>
-                                <Border.Triggers>
-                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                        <BeginStoryboard>
-                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.65" To="1" Duration="0:0:1.4" />
-                                                <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleX" From="0.94" To="1.05" Duration="0:0:1.4" />
-                                                <DoubleAnimation Storyboard.TargetName="AiIconScale" Storyboard.TargetProperty="ScaleY" From="0.94" To="1.05" Duration="0:0:1.4" />
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
-                                </Border.Triggers>
-                                <TextBlock Text="{StaticResource Rojan.Icon.AICenter}"
-                                           FontFamily="{StaticResource Rojan.FontFamily.Icons}"
-                                           FontSize="20"
-                                           Foreground="{StaticResource Rojan.Brush.Accent}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="{x:Static loc:Strings.Dashboard_AiAssistant}"
-                                           Style="{StaticResource Rojan.TextStyle.Subtitle}"
-                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
-                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                    <Ellipse Width="7" Height="7" Fill="{StaticResource Rojan.Brush.MutedText}" VerticalAlignment="Center" />
-                                    <TextBlock Text="{x:Static loc:Strings.Dashboard_ComingSoon}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                               Margin="6,0,0,0" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
-                        <Button Content="{x:Static loc:Strings.Dashboard_AskAi}"
-                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                                IsEnabled="False"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center" />
-                    </StackPanel>
-                </dashboardControls:DashboardCard>
+                <!-- Phase C-2: Staff Status Panel + Recent Alerts Panel - the freed left column (former AI Assistant column). -->
+                <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,24,0,0">
+                    <dashboardControls:StaffStatusPanel Items="{Binding StaffStatuses}" ViewAllCommand="{Binding ViewAllStaffCommand}" />
+                    <dashboardControls:RecentAlertsPanel Items="{Binding RecentAlerts}" Margin="0,24,0,0" />
+                </StackPanel>
 
             </Grid>
         </ScrollViewer>

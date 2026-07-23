@@ -2641,4 +2641,91 @@
   <data name="News_LiveBadge" xml:space="preserve">
     <value>LIVE</value>
   </data>
+  <data name="Dashboard_Analytics_RevenueTrendTitle" xml:space="preserve">
+    <value>اتجاه الإيرادات الأسبوعي</value>
+  </data>
+  <data name="Dashboard_Analytics_WeekChip" xml:space="preserve">
+    <value>هذا الأسبوع</value>
+  </data>
+  <data name="Dashboard_Analytics_TopServicesTitle" xml:space="preserve">
+    <value>الخدمات الأكثر مبيعًا</value>
+  </data>
+  <data name="Dashboard_Analytics_TodayChip" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="Dashboard_Analytics_ViewAllServices" xml:space="preserve">
+    <value>عرض جميع الخدمات</value>
+  </data>
+  <data name="Dashboard_Analytics_SalonHealthTitle" xml:space="preserve">
+    <value>صحة الصالون</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthOutOf" xml:space="preserve">
+    <value>من 100</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthStatusExcellent" xml:space="preserve">
+    <value>ممتاز</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthSubtitle" xml:space="preserve">
+    <value>صالونك في حالة جيدة جدًا.</value>
+  </data>
+  <data name="Dashboard_Analytics_HealthDetailsButton" xml:space="preserve">
+    <value>تفاصيل النتيجة</value>
+  </data>
+  <data name="Dashboard_Service_HairCutStyle" xml:space="preserve">
+    <value>قص وتصفيف الشعر</value>
+  </data>
+  <data name="Dashboard_Service_RootColorTouchUp" xml:space="preserve">
+    <value>تجديد لون الجذور</value>
+  </data>
+  <data name="Dashboard_Service_KeratinStraightening" xml:space="preserve">
+    <value>فرد الشعر بالكيراتين</value>
+  </data>
+  <data name="Dashboard_Service_Manicure" xml:space="preserve">
+    <value>مانيكير</value>
+  </data>
+  <data name="Dashboard_Service_Massage" xml:space="preserve">
+    <value>مساج</value>
+  </data>
+  <data name="Dashboard_Staff_Title" xml:space="preserve">
+    <value>حالة الأخصائيين المباشرة</value>
+  </data>
+  <data name="Dashboard_Staff_ViewAll" xml:space="preserve">
+    <value>عرض جميع الأخصائيين</value>
+  </data>
+  <data name="Dashboard_Alerts_Title" xml:space="preserve">
+    <value>التنبيهات الأخيرة</value>
+  </data>
+  <data name="Dashboard_Staff_Service_HairCut" xml:space="preserve">
+    <value>قص الشعر</value>
+  </data>
+  <data name="Dashboard_Staff_Service_ColorHighlight" xml:space="preserve">
+    <value>صبغ وهايلايت</value>
+  </data>
+  <data name="Dashboard_Staff_Service_NailArt" xml:space="preserve">
+    <value>فن الأظافر</value>
+  </data>
+  <data name="Dashboard_Staff_Service_Keratin" xml:space="preserve">
+    <value>علاج الكيراتين</value>
+  </data>
+  <data name="Dashboard_Staff_MinutesRemainingFormat" xml:space="preserve">
+    <value>{0} دقيقة متبقية</value>
+  </data>
+  <data name="Dashboard_Alert_LeaveRequest" xml:space="preserve">
+    <value>طلب إجازة من نيلوفر صفايی</value>
+  </data>
+  <data name="Dashboard_Alert_InventoryLow" xml:space="preserve">
+    <value>مخزون علاج الكيراتين على وشك النفاد</value>
+  </data>
+  <data name="Dashboard_Alert_PaymentReceived" xml:space="preserve">
+    <value>تم استلام دفعة جديدة من عميل</value>
+  </data>
+  <data name="Dashboard_Schedule_Title" xml:space="preserve">
+    <value>برنامج اليوم</value>
+  </data>
+  <data name="Dashboard_Schedule_Now" xml:space="preserve">
+    <value>الآن</value>
+  </data>
+  <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
+    <value>عرض البرنامج الكامل</value>
+  </data>
 </root>
