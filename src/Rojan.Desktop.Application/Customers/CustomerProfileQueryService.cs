@@ -60,14 +60,15 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
             throw new InvalidOperationException($"Customer '{customerId}' was not found.");
         }
 
+        var now = DateTimeOffset.Now;
         var notes = await _repository.GetNotesAsync(customerId, cancellationToken).ConfigureAwait(true);
         var tags = await _repository.GetTagsAsync(customerId, cancellationToken).ConfigureAwait(true);
         var activity = await _repository.GetActivityAsync(customerId, cancellationToken).ConfigureAwait(true);
-        var bookingSummary = await BuildBookingSummaryAsync(customerId, cancellationToken).ConfigureAwait(true);
+        var bookingSummary = await BuildBookingSummaryAsync(customerId, now, cancellationToken).ConfigureAwait(true);
 
         var customerDto = CustomerMapper.MapCustomer(customer);
         var mappedActivity = activity.Select(CustomerMapper.MapActivity).ToList();
-        var insights = CustomerInsightsCalculator.Calculate(bookingSummary, mappedActivity, DateTimeOffset.Now);
+        var insights = CustomerInsightsCalculator.Calculate(bookingSummary, mappedActivity, now);
 
         return new CustomerProfileDto(
             customerDto,
@@ -79,8 +80,8 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
             insights);
     }
 
-    /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to now. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure.</summary>
-    private async Task<CustomerBookingSummaryDto> BuildBookingSummaryAsync(string customerId, CancellationToken cancellationToken)
+    /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to <paramref name="now"/>. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure. <paramref name="now"/> is threaded in from <see cref="GetProfileAsync"/> rather than read here independently, so this split and <see cref="CustomerInsightsCalculator"/>'s day-based rules always agree on what "now" means for one profile load.</summary>
+    private async Task<CustomerBookingSummaryDto> BuildBookingSummaryAsync(string customerId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(true);
         var customerBookings = bookings.Where(booking => booking.CustomerId == customerId).ToList();
@@ -90,7 +91,6 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
             return CustomerBookingSummaryDto.Empty;
         }
 
-        var now = DateTimeOffset.Now;
         var upcoming = customerBookings.Where(booking => booking.ScheduledAt >= now).OrderBy(booking => booking.ScheduledAt).ToList();
         var past = customerBookings.Where(booking => booking.ScheduledAt < now).OrderByDescending(booking => booking.ScheduledAt).ToList();
         var completedCount = customerBookings.Count(booking => booking.Status == AppBookings.BookingStatus.Completed);

@@ -228,4 +228,39 @@ public sealed class CustomerProfileQueryServiceTests
 
         Assert.Equal(EngagementStatus.AtRisk, profile.Insights.EngagementStatus);
     }
+
+    // Sprint 4 Commit 6: end-to-end regression tying the sprint's pieces together.
+
+    [Fact]
+    public async Task GetProfileAsync_AfterLifecycleTransitionAndCompletedBookings_ReflectsUpdatedStatusAndInsightsTogether()
+    {
+        // CustomerCommandService's lifecycle transition (Commit 1, via CustomerRules) and
+        // CustomerProfileQueryService's booking-driven insights (Commit 3/5) read/write through the
+        // same repository but are otherwise fully independent code paths - this verifies they
+        // compose correctly end to end, not just in isolation.
+        var now = DateTimeOffset.Now;
+        var leadCustomer = new DomainCustomers.Customer(
+            "customer-1", "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "+1 555 010 2231",
+            DomainCustomers.CustomerStatus.Lead, "$0", now, "Notes", "org-1", "branch-1");
+        var repository = new StubCustomerRepository([leadCustomer]);
+        var commandService = new CustomerCommandService(repository, new StubEnterpriseContext());
+        var bookingQueryService = new StubBookingQueryService([
+            MakeBooking("booking-1", "customer-1", now.AddDays(-10), AppBookings.BookingStatus.Completed),
+            MakeBooking("booking-2", "customer-1", now.AddDays(-20), AppBookings.BookingStatus.Completed),
+            MakeBooking("booking-3", "customer-1", now.AddDays(-30), AppBookings.BookingStatus.Completed),
+        ]);
+        var profileQueryService = new CustomerProfileQueryService(repository, bookingQueryService, new StubEnterpriseContext());
+
+        // Lead -> Active is a legal transition per CustomerRules.
+        await commandService.UpdateCustomerAsync(new UpdateCustomerRequest(
+            "customer-1", "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "+1 555 010 2231",
+            CustomerStatus.Active, "$1,200", "Became an active customer"));
+
+        var profile = await profileQueryService.GetProfileAsync("customer-1");
+
+        Assert.Equal(CustomerStatus.Active, profile.Customer.Status);
+        Assert.Contains(profile.Statistics, stat => stat.Label == "وضعیت" && stat.Value == "Active");
+        Assert.Equal(3, profile.Insights.CompletedVisitCount);
+        Assert.Equal(LoyaltyLevel.Loyal, profile.Insights.LoyaltyLevel);
+    }
 }

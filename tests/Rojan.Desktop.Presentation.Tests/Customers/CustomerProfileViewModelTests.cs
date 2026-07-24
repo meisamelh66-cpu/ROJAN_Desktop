@@ -282,4 +282,55 @@ public sealed class CustomerProfileViewModelTests
         Assert.Equal(EngagementStatus.Active, sut.EngagementStatus);
         Assert.Equal(5, sut.DaysSinceLastVisit);
     }
+
+    // Sprint 4 Commit 6: end-to-end regression - the full Customer 360 surface (identity, notes,
+    // tags, activity/timeline, statistics, bookings, and Customer Intelligence) populated together
+    // from one profile load, the shape CustomerPage.xaml's Premium UI actually binds against.
+
+    [Fact]
+    public void Constructor_FullProfile_ExposesCompleteCustomer360State()
+    {
+        var now = DateTimeOffset.Now;
+        var upcoming = MakeBooking("booking-upcoming", "customer-1", now.AddDays(5));
+        var past = MakeBooking("booking-past", "customer-1", now.AddDays(-10), AppBookings.BookingStatus.Completed);
+        var bookingSummary = new CustomerBookingSummaryDto([upcoming], [past], TotalBookingCount: 2, CompletedBookingCount: 1, LastAppointmentDate: past.ScheduledAt);
+        var insights = new CustomerInsightsDto(
+            CustomerScore: 40,
+            LoyaltyLevel: LoyaltyLevel.Regular,
+            EngagementStatus: EngagementStatus.Active,
+            VisitCount: 2,
+            CompletedVisitCount: 1,
+            LastVisitDate: past.ScheduledAt,
+            UpcomingVisitCount: 1,
+            DaysSinceLastVisit: 10);
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(
+            MakeProfile(bookingSummary: bookingSummary, insights: insights)));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        // Identity, notes, tags, activity/timeline, statistics - every field CustomerPage.xaml's
+        // identity header, Tags card, Notes card, and Timeline widget bind to.
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal("Amelia Hart", sut.Customer?.FullName);
+        Assert.Equal(CustomerStatus.Active, sut.EditableStatus);
+        Assert.Single(sut.Notes);
+        Assert.Single(sut.Tags);
+        Assert.Single(sut.Activity);
+        Assert.Single(sut.ActivityTimeline);
+        Assert.Single(sut.Statistics);
+
+        // Booking integration (Sprint 4 Commit 3) - the Appointments sections' bindings.
+        Assert.Equal([upcoming], sut.UpcomingAppointments);
+        Assert.Equal([past], sut.PastAppointments);
+        Assert.Equal(2, sut.TotalBookingCount);
+        Assert.Equal(1, sut.CompletedBookingCount);
+        Assert.Equal(past.ScheduledAt, sut.LastAppointmentDate);
+
+        // Customer Intelligence (Sprint 4 Commit 5) - the Insights section's bindings.
+        Assert.Equal(40, sut.CustomerScore);
+        Assert.Equal(LoyaltyLevel.Regular, sut.LoyaltyLevel);
+        Assert.Equal(EngagementStatus.Active, sut.EngagementStatus);
+        Assert.Equal(10, sut.DaysSinceLastVisit);
+    }
 }

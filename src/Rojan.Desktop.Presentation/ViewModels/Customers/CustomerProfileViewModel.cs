@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.Controls.Shared;
@@ -308,6 +309,6 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     {
         Icon = ActivityGlyph.ToString(),
         Title = activity.Description,
-        TimestampText = activity.OccurredAt.ToString("MMM d, t", System.Globalization.CultureInfo.InvariantCulture),
+        TimestampText = activity.OccurredAt.ToString("MMM d, t", CultureInfo.InvariantCulture),
     };
 }
