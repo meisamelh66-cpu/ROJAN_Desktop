@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rojan.Server.Domain.Authentication;
+using Rojan.Server.Domain.Customers;
 
 namespace Rojan.Server.Infrastructure.Persistence;
 
@@ -19,6 +20,13 @@ namespace Rojan.Server.Infrastructure.Persistence;
 /// (Fluent API, applied via <c>ModelBuilder.ApplyConfigurationsFromAssembly</c>
 /// below) - still no EF Core attribute anywhere in
 /// <c>Rojan.Server.Domain</c>.
+///
+/// Sprint 8 Commit 4: Tenant-Aware Customer API. Adds
+/// <see cref="Customers"/> - the first business-module entity, same
+/// direct-record-mapping pattern as the tenant/auth entities above (see
+/// <see cref="Configurations.CustomerConfiguration"/>'s own doc comment
+/// for why it has no foreign key to <see cref="Organizations"/>/
+/// <see cref="Branches"/> despite living in the same database).
 /// </summary>
 public sealed class RojanServerDbContext : DbContext
 {
@@ -34,6 +42,8 @@ public sealed class RojanServerDbContext : DbContext
     public DbSet<User> Users => Set<User>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Customer> Customers => Set<Customer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

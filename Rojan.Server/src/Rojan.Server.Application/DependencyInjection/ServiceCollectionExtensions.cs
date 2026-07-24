@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Server.Application.Authentication;
+using Rojan.Server.Application.Customers;
 using Rojan.Server.Application.Tenancy;
 
 namespace Rojan.Server.Application.DependencyInjection;
@@ -24,6 +25,11 @@ namespace Rojan.Server.Application.DependencyInjection;
 /// <see cref="ITenantContext"/>, which is itself scoped to one HTTP
 /// request (see <c>Infrastructure.Security.ClaimsTenantContext</c>'s own
 /// doc comment).
+///
+/// Sprint 8 Commit 4: Tenant-Aware Customer API. Adds
+/// <see cref="ICustomerService"/> - the first business module service,
+/// same scoped-because-it-depends-on-<see cref="ITenantContext"/>
+/// reasoning as <see cref="ITenantService"/>.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -31,6 +37,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<ITenantService, TenantService>();
+        services.AddScoped<ICustomerService, CustomerService>();
 
         return services;
     }

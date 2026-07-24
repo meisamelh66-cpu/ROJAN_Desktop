@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rojan.Server.Application.Authentication;
 using Rojan.Server.Application.Tenancy;
 using Rojan.Server.Domain.Authentication;
+using Rojan.Server.Domain.Customers;
 using Rojan.Server.Infrastructure.Persistence;
 using Rojan.Server.Infrastructure.Persistence.Repositories;
 using Rojan.Server.Infrastructure.Security;
@@ -42,6 +43,10 @@ namespace Rojan.Server.Infrastructure.DependencyInjection;
 /// <c>Microsoft.AspNetCore.Http.Abstractions</c> reference just for the
 /// <see cref="Microsoft.AspNetCore.Http.IHttpContextAccessor"/> type
 /// itself - no reason to duplicate the registration call in two places.
+///
+/// Sprint 8 Commit 4: Tenant-Aware Customer API. Adds
+/// <see cref="ICustomerRepository"/> - the first business-module
+/// repository, same scoped-DbContext reasoning as the others.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -58,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBranchRepository, EfBranchRepository>();
         services.AddScoped<IUserRepository, EfUserRepository>();
         services.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
+        services.AddScoped<ICustomerRepository, EfCustomerRepository>();
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<ITokenService, JwtTokenService>();
