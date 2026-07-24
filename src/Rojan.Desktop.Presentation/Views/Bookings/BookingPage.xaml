@@ -8,13 +8,21 @@
 
     <!--
         Phase 11: Booking Module Foundation. Same master-detail shape as
-        CustomerPage/DashboardPage: a new-booking form plus a searchless
-        booking list on the left (foundation scope - no calendar view, no
-        conflict detection yet), and the selected booking's details plus
+        CustomerPage/DashboardPage: a new-booking form plus a booking list
+        on the left, and the selected booking's details plus
         status-transition actions (Confirm/Complete/Cancel) on the right.
         Every card/widget here is DashboardCard/DashboardWidget, the same
         Design System components every other module reuses unchanged.
 
+        Sprint 3 Commit 2: added a Search &amp; Filter card between the
+        new-booking form and the list - free-text search plus
+        customer/service/status/date-range filters, all combined into one
+        BookingSearchFilter and run through
+        IBookingQueryService.SearchBookingsAsync (BookingPageViewModel owns
+        the filter-combination logic; this page only binds to it, no
+        filtering logic lives here). Minimal controls only - same
+        TextBox/ComboBox/DatePicker components the New Booking form above
+        already uses, no new Design System component, no visual redesign.
     -->
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
@@ -22,9 +30,10 @@
             <ColumnDefinition Width="380" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: header, new-booking form, booking list -->
+        <!-- Left: header, new-booking form, search/filter, booking list -->
         <Grid Grid.Column="0" Margin="0,0,24,0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -91,7 +100,71 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
-            <dashboardControls:DashboardWidget Grid.Row="2"
+            <!-- Search & Filter: free text plus customer/service/status/date-range, combined by the ViewModel into one BookingSearchFilter -->
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Bookings_SearchAndFilter}" Margin="0,24,0,0">
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Customer}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding CustomerNameFilter, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Service}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding ServiceNameFilter, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ComboBox ItemsSource="{Binding StatusFilterOptions}" SelectedItem="{Binding StatusFilter, Mode=TwoWay}" Margin="0,4,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="{x:Static loc:Strings.Bookings_AllStatuses}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_From}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <DatePicker SelectedDate="{Binding DateFromFilter, Mode=TwoWay}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="{x:Static loc:Strings.Common_To}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <DatePicker SelectedDate="{Binding DateToFilter, Mode=TwoWay}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+            <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Bookings_AllBookings}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"

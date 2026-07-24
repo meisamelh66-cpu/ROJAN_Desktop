@@ -17,4 +17,7 @@ internal sealed class StubBookingQueryService : IBookingQueryService
 
     public Task<BookingDto?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default) =>
         Task.FromResult(_bookings.FirstOrDefault(booking => booking.Id == bookingId));
+
+    public Task<IReadOnlyList<BookingDto>> SearchBookingsAsync(BookingSearchFilter filter, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by BookingWorkflowService.");
 }

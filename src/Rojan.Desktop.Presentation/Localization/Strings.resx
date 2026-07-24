@@ -519,6 +519,12 @@
   <data name="Common_Date" xml:space="preserve">
     <value>تاریخ</value>
   </data>
+  <data name="Common_From" xml:space="preserve">
+    <value>از</value>
+  </data>
+  <data name="Common_To" xml:space="preserve">
+    <value>تا</value>
+  </data>
   <data name="Common_Type" xml:space="preserve">
     <value>نوع</value>
   </data>
@@ -710,6 +716,12 @@
   </data>
   <data name="Bookings_AllBookings" xml:space="preserve">
     <value>همه رزروها</value>
+  </data>
+  <data name="Bookings_SearchAndFilter" xml:space="preserve">
+    <value>جستجو و فیلتر</value>
+  </data>
+  <data name="Bookings_AllStatuses" xml:space="preserve">
+    <value>همه وضعیت‌ها</value>
   </data>
   <data name="Bookings_When" xml:space="preserve">
     <value>زمان</value>

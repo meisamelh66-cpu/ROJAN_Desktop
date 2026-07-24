@@ -23,6 +23,16 @@ namespace Rojan.Desktop.Presentation.ViewModels.Bookings;
 /// real-cross-slice-data Booking Wizard as a dialog - the quick-add form
 /// stays as-is (free text, foundation scope) alongside it, not replaced by
 /// it.
+/// <see cref="SearchText"/>/<see cref="CustomerNameFilter"/>/<see cref="ServiceNameFilter"/>/
+/// <see cref="StatusFilter"/>/<see cref="DateFromFilter"/>/<see cref="DateToFilter"/>
+/// (Sprint 3 Commit 2) are combined into one <see cref="BookingSearchFilter"/>
+/// and run through <see cref="IBookingQueryService.SearchBookingsAsync"/> -
+/// every load (including the initial one and every post-write reload) goes
+/// through this same method now, not a separate <c>GetBookingsAsync</c>
+/// path, so an active filter survives a Confirm/Complete/Cancel/Create
+/// action instead of silently resetting. An all-default filter is
+/// equivalent to the old unfiltered <c>GetBookingsAsync</c> call - see
+/// <see cref="BookingSearchFilter"/>'s own doc comment.
 /// </summary>
 public sealed class BookingPageViewModel : ViewModelBase
 {
@@ -39,6 +49,23 @@ public sealed class BookingPageViewModel : ViewModelBase
     private string _newBookingSpecialistName = string.Empty;
     private DateTime? _newBookingDate = DateTime.Today.AddDays(1);
     private int _newBookingDurationMinutes = 60;
+    private string _searchText = string.Empty;
+    private string _customerNameFilter = string.Empty;
+    private string _serviceNameFilter = string.Empty;
+    private BookingStatus? _statusFilter;
+    private DateTime? _dateFromFilter;
+    private DateTime? _dateToFilter;
+
+    /// <summary>
+    /// Incremented on every filter/load-triggering change; a completed
+    /// <see cref="LoadAsync"/> call discards its result if this no longer
+    /// matches the version it captured when it started - generalizes
+    /// <c>Customers.CustomerPageViewModel.SearchAsync</c>'s single-field
+    /// stale-result guard to Booking's six independent filter fields, any
+    /// of which (typed in rapid succession) could otherwise let an older,
+    /// slower search response overwrite a newer one.
+    /// </summary>
+    private int _filterVersion;
 
     public BookingPageViewModel(
         IBookingQueryService queryService,
@@ -143,14 +170,102 @@ public sealed class BookingPageViewModel : ViewModelBase
         set => SetProperty(ref _newBookingDurationMinutes, value);
     }
 
+    /// <summary>Free text, matched against customer/service/specialist name and notes - the "search over relevant booking fields" requirement.</summary>
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    public string CustomerNameFilter
+    {
+        get => _customerNameFilter;
+        set
+        {
+            if (SetProperty(ref _customerNameFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    public string ServiceNameFilter
+    {
+        get => _serviceNameFilter;
+        set
+        {
+            if (SetProperty(ref _serviceNameFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Null means "every status" - the first entry of <see cref="StatusFilterOptions"/>.</summary>
+    public BookingStatus? StatusFilter
+    {
+        get => _statusFilter;
+        set
+        {
+            if (SetProperty(ref _statusFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    public DateTime? DateFromFilter
+    {
+        get => _dateFromFilter;
+        set
+        {
+            if (SetProperty(ref _dateFromFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    public DateTime? DateToFilter
+    {
+        get => _dateToFilter;
+        set
+        {
+            if (SetProperty(ref _dateToFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Bindable options for the status filter ComboBox - leads with <c>null</c> ("every status") followed by every real <see cref="BookingStatus"/> value.</summary>
+    public IReadOnlyList<BookingStatus?> StatusFilterOptions { get; } =
+        new BookingStatus?[] { null }.Concat(Enum.GetValues<BookingStatus>().Cast<BookingStatus?>()).ToList();
+
     private async Task LoadAsync()
     {
         State = DashboardState.Loading;
         ErrorMessage = null;
 
+        var requestVersion = ++_filterVersion;
+
         try
         {
-            var bookings = await _queryService.GetBookingsAsync().ConfigureAwait(true);
+            var bookings = await _queryService.SearchBookingsAsync(BuildFilter()).ConfigureAwait(true);
+
+            if (requestVersion != _filterVersion)
+            {
+                // A newer filter change (or another reload) started after
+                // this one - its result will win instead, so applying this
+                // now-stale response would flash outdated data.
+                return;
+            }
 
             Bookings.Clear();
             foreach (var booking in bookings)
@@ -175,10 +290,21 @@ public sealed class BookingPageViewModel : ViewModelBase
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
-            State = DashboardState.Error;
+            if (requestVersion == _filterVersion)
+            {
+                ErrorMessage = exception.Message;
+                State = DashboardState.Error;
+            }
         }
     }
+
+    private BookingSearchFilter BuildFilter() => new(
+        SearchText: string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
+        CustomerName: string.IsNullOrWhiteSpace(CustomerNameFilter) ? null : CustomerNameFilter,
+        ServiceName: string.IsNullOrWhiteSpace(ServiceNameFilter) ? null : ServiceNameFilter,
+        Status: StatusFilter,
+        DateFrom: DateFromFilter.HasValue ? DateOnly.FromDateTime(DateFromFilter.Value) : null,
+        DateTo: DateToFilter.HasValue ? DateOnly.FromDateTime(DateToFilter.Value) : null);
 
     private async Task CreateBookingAsync()
     {

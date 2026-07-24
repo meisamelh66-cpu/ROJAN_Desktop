@@ -37,6 +37,57 @@ public sealed class BookingQueryService : IBookingQueryService
         return booking is null || !IsInCurrentSession(booking) ? null : BookingMapper.MapBooking(booking);
     }
 
+    /// <summary>
+    /// Composes over <see cref="DomainBookings.IBookingRepository.GetBookingsAsync"/>
+    /// rather than a dedicated repository search method - search/filtering
+    /// is a read-composition concern Application owns, not a new Domain
+    /// contract, same reasoning as <c>Customers.CustomerQueryService.SearchCustomersAsync</c>.
+    /// Every criterion is applied only when present, so an all-default
+    /// filter falls through to exactly the same pipeline as
+    /// <see cref="GetBookingsAsync"/>.
+    /// </summary>
+    public async Task<IReadOnlyList<BookingDto>> SearchBookingsAsync(BookingSearchFilter filter, CancellationToken cancellationToken = default)
+    {
+        var bookings = ScopeToCurrentSession(await _repository.GetBookingsAsync(cancellationToken).ConfigureAwait(true));
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            bookings = bookings.Where(booking =>
+                booking.CustomerName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                booking.ServiceName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                booking.SpecialistName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                booking.Notes.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.CustomerName))
+        {
+            bookings = bookings.Where(booking => booking.CustomerName.Contains(filter.CustomerName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.ServiceName))
+        {
+            bookings = bookings.Where(booking => booking.ServiceName.Contains(filter.ServiceName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (filter.Status.HasValue)
+        {
+            var domainStatus = BookingMapper.MapStatusToDomain(filter.Status.Value);
+            bookings = bookings.Where(booking => booking.Status == domainStatus);
+        }
+
+        if (filter.DateFrom.HasValue)
+        {
+            bookings = bookings.Where(booking => DateOnly.FromDateTime(booking.ScheduledAt.DateTime) >= filter.DateFrom.Value);
+        }
+
+        if (filter.DateTo.HasValue)
+        {
+            bookings = bookings.Where(booking => DateOnly.FromDateTime(booking.ScheduledAt.DateTime) <= filter.DateTo.Value);
+        }
+
+        return bookings.Select(BookingMapper.MapBooking).ToList();
+    }
+
     private IEnumerable<DomainBookings.Booking> ScopeToCurrentSession(IEnumerable<DomainBookings.Booking> bookings) =>
         bookings.Where(IsInCurrentSession);
 

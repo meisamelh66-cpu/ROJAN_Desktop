@@ -254,4 +254,111 @@ public sealed class BookingPageViewModelTests
         var shown = Assert.Single(dialogService.ShownDialogs);
         Assert.IsType<Rojan.Desktop.Presentation.ViewModels.BookingWorkflow.BookingWizardViewModel>(shown);
     }
+
+    [Fact]
+    public void Constructor_NoFilterApplied_SearchesWithAnAllDefaultFilter()
+    {
+        // "Keep existing booking list behavior unchanged when no filter is applied" -
+        // an all-default BookingSearchFilter is documented to behave identically to the old
+        // unfiltered GetBookingsAsync call (see BookingSearchFilter's own doc comment).
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+
+        var sut = MakeSut(queryService);
+
+        var filter = Assert.Single(queryService.SearchCalls);
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.CustomerName);
+        Assert.Null(filter.ServiceName);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.DateFrom);
+        Assert.Null(filter.DateTo);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(bookings, sut.Bookings);
+    }
+
+    [Fact]
+    public void SearchText_Changed_SearchesWithSearchTextInFilter()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        sut.SearchText = "amelia";
+
+        Assert.Equal("amelia", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void CustomerNameFilter_Changed_SearchesWithCustomerNameInFilter()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        sut.CustomerNameFilter = "Hart";
+
+        Assert.Equal("Hart", queryService.SearchCalls[^1].CustomerName);
+    }
+
+    [Fact]
+    public void ServiceNameFilter_Changed_SearchesWithServiceNameInFilter()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        sut.ServiceNameFilter = "Haircut";
+
+        Assert.Equal("Haircut", queryService.SearchCalls[^1].ServiceName);
+    }
+
+    [Fact]
+    public void StatusFilter_Changed_SearchesWithStatusInFilter()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        sut.StatusFilter = BookingStatus.Confirmed;
+
+        Assert.Equal(BookingStatus.Confirmed, queryService.SearchCalls[^1].Status);
+    }
+
+    [Fact]
+    public void DateRangeFilters_Changed_SearchesWithDateRangeInFilter()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        sut.DateFromFilter = new DateTime(2026, 3, 1);
+        sut.DateToFilter = new DateTime(2026, 3, 31);
+
+        var filter = queryService.SearchCalls[^1];
+        Assert.Equal(new DateOnly(2026, 3, 1), filter.DateFrom);
+        Assert.Equal(new DateOnly(2026, 3, 31), filter.DateTo);
+    }
+
+    [Fact]
+    public void StatusFilterOptions_FirstEntryIsNull_FollowedByEveryBookingStatus()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var sut = MakeSut(queryService);
+
+        Assert.Null(sut.StatusFilterOptions[0]);
+        Assert.Equal(Enum.GetValues<BookingStatus>().Length + 1, sut.StatusFilterOptions.Count);
+    }
+
+    [Fact]
+    public void ConfirmBookingCommand_Executed_ReloadPreservesActiveFilter()
+    {
+        // A status-transition action's reload must not silently drop the user's active filter -
+        // this is the "filter survives a Confirm/Complete/Cancel/Create action" behavior Sprint 3
+        // Commit 2 adds by routing every load through SearchBookingsAsync.
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Pending) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var sut = MakeSut(queryService, commandService);
+        sut.CustomerNameFilter = "Amelia";
+
+        sut.ConfirmBookingCommand.Execute(null);
+
+        Assert.Equal("Amelia", queryService.SearchCalls[^1].CustomerName);
+    }
 }

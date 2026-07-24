@@ -390,6 +390,10 @@ public static class Strings
 
     public static string Common_Date => Get(nameof(Common_Date));
 
+    public static string Common_From => Get(nameof(Common_From));
+
+    public static string Common_To => Get(nameof(Common_To));
+
     public static string Common_Type => Get(nameof(Common_Type));
 
     public static string Common_Quantity => Get(nameof(Common_Quantity));
@@ -519,6 +523,10 @@ public static class Strings
     public static string Bookings_AddBooking => Get(nameof(Bookings_AddBooking));
 
     public static string Bookings_AllBookings => Get(nameof(Bookings_AllBookings));
+
+    public static string Bookings_SearchAndFilter => Get(nameof(Bookings_SearchAndFilter));
+
+    public static string Bookings_AllStatuses => Get(nameof(Bookings_AllStatuses));
 
     public static string Bookings_When => Get(nameof(Bookings_When));
 

@@ -118,4 +118,133 @@ public sealed class BookingQueryServiceTests
 
         Assert.Null(result);
     }
+
+    private static List<DomainBookings.Booking> MakeSearchFixture() =>
+    [
+        new DomainBookings.Booking(
+            "booking-1", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee",
+            new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero), 60, "$65",
+            DomainBookings.BookingStatus.Confirmed, "Prefers quiet chair.", "org-1", "branch-1"),
+        new DomainBookings.Booking(
+            "booking-2", "customer-2", "Noah Bennett", "service-2", "Colour Touch-Up", "specialist-2", "Priya Nair",
+            new DateTimeOffset(2026, 3, 5, 14, 0, 0, TimeSpan.Zero), 90, "$120",
+            DomainBookings.BookingStatus.Pending, string.Empty, "org-1", "branch-1"),
+        new DomainBookings.Booking(
+            "booking-3", "customer-3", "Olivia Chen", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee",
+            new DateTimeOffset(2026, 3, 10, 9, 0, 0, TimeSpan.Zero), 60, "$65",
+            DomainBookings.BookingStatus.Cancelled, "Rescheduled twice already.", "org-1", "branch-1"),
+    ];
+
+    [Fact]
+    public async Task SearchBookingsAsync_EmptyFilter_ReturnsAllBookingsSameAsGetBookingsAsync()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var searchResult = await sut.SearchBookingsAsync(new BookingSearchFilter());
+        var getResult = await sut.GetBookingsAsync();
+
+        Assert.Equal(3, searchResult.Count);
+        Assert.Equal(getResult.Select(booking => booking.Id), searchResult.Select(booking => booking.Id));
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_CustomerNameFilter_ReturnsOnlyMatchingCustomer()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(CustomerName: "amelia"));
+
+        Assert.Equal("booking-1", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_ServiceNameFilter_ReturnsOnlyMatchingService()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(ServiceName: "colour"));
+
+        Assert.Equal("booking-2", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_StatusFilter_ReturnsOnlyMatchingStatus()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(Status: BookingStatus.Cancelled));
+
+        Assert.Equal("booking-3", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_DateRangeFilter_ReturnsOnlyBookingsWithinRange()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(
+            DateFrom: new DateOnly(2026, 3, 3),
+            DateTo: new DateOnly(2026, 3, 8)));
+
+        Assert.Equal("booking-2", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_SearchText_MatchesAcrossCustomerServiceSpecialistAndNotes()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var matchesCustomer = await sut.SearchBookingsAsync(new BookingSearchFilter(SearchText: "bennett"));
+        var matchesService = await sut.SearchBookingsAsync(new BookingSearchFilter(SearchText: "touch-up"));
+        var matchesSpecialist = await sut.SearchBookingsAsync(new BookingSearchFilter(SearchText: "priya"));
+        var matchesNotes = await sut.SearchBookingsAsync(new BookingSearchFilter(SearchText: "quiet chair"));
+
+        Assert.Equal("booking-2", Assert.Single(matchesCustomer).Id);
+        Assert.Equal("booking-2", Assert.Single(matchesService).Id);
+        Assert.Equal("booking-2", Assert.Single(matchesSpecialist).Id);
+        Assert.Equal("booking-1", Assert.Single(matchesNotes).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_CombinedFilters_AreAnded()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(
+            ServiceName: "haircut", Status: BookingStatus.Cancelled));
+
+        Assert.Equal("booking-3", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_NoMatch_ReturnsEmptyList()
+    {
+        var repository = new StubBookingRepository(MakeSearchFixture());
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter(CustomerName: "no-such-customer"));
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task SearchBookingsAsync_BookingInDifferentOrganization_IsExcluded()
+    {
+        var domainBooking = new DomainBookings.Booking(
+            "booking-99", string.Empty, "Other Org Customer", string.Empty, "Service", string.Empty, string.Empty,
+            DateTimeOffset.UnixEpoch, 60, "$0", DomainBookings.BookingStatus.Pending, string.Empty, "org-2", "branch-3");
+        var repository = new StubBookingRepository([domainBooking]);
+        var sut = new BookingQueryService(repository, new StubEnterpriseContext { CurrentOrganizationId = "org-1", CurrentBranchId = "branch-1" });
+
+        var result = await sut.SearchBookingsAsync(new BookingSearchFilter());
+
+        Assert.Empty(result);
+    }
 }

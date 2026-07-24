@@ -507,6 +507,12 @@
   <data name="Common_Date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="Common_From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Common_To" xml:space="preserve">
+    <value>To</value>
+  </data>
   <data name="Common_Type" xml:space="preserve">
     <value>Type</value>
   </data>
@@ -698,6 +704,12 @@
   </data>
   <data name="Bookings_AllBookings" xml:space="preserve">
     <value>All Bookings</value>
+  </data>
+  <data name="Bookings_SearchAndFilter" xml:space="preserve">
+    <value>Search &amp; Filter</value>
+  </data>
+  <data name="Bookings_AllStatuses" xml:space="preserve">
+    <value>All Statuses</value>
   </data>
   <data name="Bookings_When" xml:space="preserve">
     <value>When</value>

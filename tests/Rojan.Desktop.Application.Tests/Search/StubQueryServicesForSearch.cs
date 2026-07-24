@@ -28,6 +28,9 @@ internal sealed class StubBookingQueryServiceForSearch : IBookingQueryService
 
     public Task<BookingDto?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by GlobalSearchIndexService.");
+
+    public Task<IReadOnlyList<BookingDto>> SearchBookingsAsync(BookingSearchFilter filter, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by GlobalSearchIndexService.");
 }
 
 internal sealed class StubSpecialistQueryServiceForSearch : ISpecialistQueryService
