@@ -126,4 +126,74 @@ public sealed class CalendarQueryServiceTests
         var overlapSlot = Assert.Single(result.Slots, slot => slot.Start == overlapStart);
         Assert.Equal(AvailabilityStatus.Unavailable, overlapSlot.Status);
     }
+
+    [Fact]
+    public async Task GetWeeklyAvailabilityAsync_SpecialistHasNoSchedule_ThrowsInvalidOperationException()
+    {
+        var repository = new StubCalendarRepository();
+        var sut = new CalendarQueryService(repository);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetWeeklyAvailabilityAsync("no-such-specialist", TestDate));
+    }
+
+    [Fact]
+    public async Task GetWeeklyAvailabilityAsync_ReturnsSevenDaysStartingAtWeekStart_InOrder()
+    {
+        var repository = new StubCalendarRepository();
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
+        var sut = new CalendarQueryService(repository);
+
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+
+        Assert.Equal("specialist-1", result.SpecialistId);
+        Assert.Equal("Jordan Lee", result.SpecialistName);
+        Assert.Equal(TestDate, result.WeekStart);
+        Assert.Equal(7, result.Days.Count);
+        Assert.Equal(Enumerable.Range(0, 7).Select(offset => TestDate.AddDays(offset)), result.Days.Select(day => day.Date));
+    }
+
+    [Fact]
+    public async Task GetWeeklyAvailabilityAsync_DayNotWorked_HasEmptySlotsAndNullWorkingHours()
+    {
+        var repository = new StubCalendarRepository();
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
+        var sut = new CalendarQueryService(repository);
+
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+
+        var otherDay = result.Days.Single(day => day.Date == TestDate.AddDays(1));
+        Assert.Empty(otherDay.Slots);
+        Assert.Null(otherDay.WorkingStart);
+        Assert.Null(otherDay.WorkingEnd);
+    }
+
+    [Fact]
+    public async Task GetWeeklyAvailabilityAsync_ReflectsBookedAndBreakStatusesOnTheirRespectiveDays()
+    {
+        var repository = new StubCalendarRepository();
+        var bookedDay = TestDate.AddDays(1);
+        var breakStart = new DateTimeOffset(TestDate.Year, TestDate.Month, TestDate.Day, 9, 30, 0, DateTimeOffset.Now.Offset);
+        var bookedStart = new DateTimeOffset(bookedDay.Year, bookedDay.Month, bookedDay.Day, 9, 30, 0, DateTimeOffset.Now.Offset);
+
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0),
+            [new DomainCalendar.TimeSlot(breakStart, breakStart.AddMinutes(30))]));
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-2", "specialist-1", "Jordan Lee", bookedDay.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
+        repository.BookedSlotsBySpecialist["specialist-1"] =
+        [
+            new DomainCalendar.TimeSlot(bookedStart, bookedStart.AddMinutes(30)),
+        ];
+        var sut = new CalendarQueryService(repository);
+
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+
+        var breakDayResult = result.Days.Single(day => day.Date == TestDate);
+        Assert.Contains(breakDayResult.Slots, slot => slot.Status == AvailabilityStatus.Unavailable);
+
+        var bookedDayResult = result.Days.Single(day => day.Date == bookedDay);
+        Assert.Contains(bookedDayResult.Slots, slot => slot.Status == AvailabilityStatus.Booked);
+    }
 }

@@ -36,6 +36,29 @@ public sealed class CalendarQueryService : ICalendarQueryService
     public async Task<DailyAvailabilityDto> GetDailyAvailabilityAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default)
     {
         var schedules = await _repository.GetWorkingSchedulesAsync(cancellationToken).ConfigureAwait(true);
+        var specialistSchedules = GetSpecialistSchedulesOrThrow(schedules, specialistId);
+
+        return await BuildDailyAvailabilityAsync(specialistId, specialistSchedules, scheduleDate, cancellationToken).ConfigureAwait(true);
+    }
+
+    public async Task<WeeklyAvailabilityDto> GetWeeklyAvailabilityAsync(string specialistId, DateOnly weekStart, CancellationToken cancellationToken = default)
+    {
+        var schedules = await _repository.GetWorkingSchedulesAsync(cancellationToken).ConfigureAwait(true);
+        var specialistSchedules = GetSpecialistSchedulesOrThrow(schedules, specialistId);
+        var specialistName = specialistSchedules[0].SpecialistName;
+
+        var days = new List<DailyAvailabilityDto>(7);
+        for (var offset = 0; offset < 7; offset++)
+        {
+            var date = weekStart.AddDays(offset);
+            days.Add(await BuildDailyAvailabilityAsync(specialistId, specialistSchedules, date, cancellationToken).ConfigureAwait(true));
+        }
+
+        return new WeeklyAvailabilityDto(specialistId, specialistName, weekStart, days);
+    }
+
+    private static List<DomainCalendar.WorkingSchedule> GetSpecialistSchedulesOrThrow(IReadOnlyList<DomainCalendar.WorkingSchedule> schedules, string specialistId)
+    {
         var specialistSchedules = schedules.Where(schedule => schedule.SpecialistId == specialistId).ToList();
 
         if (specialistSchedules.Count == 0)
@@ -43,6 +66,12 @@ public sealed class CalendarQueryService : ICalendarQueryService
             throw new InvalidOperationException($"Specialist '{specialistId}' has no working schedule.");
         }
 
+        return specialistSchedules;
+    }
+
+    private async Task<DailyAvailabilityDto> BuildDailyAvailabilityAsync(
+        string specialistId, List<DomainCalendar.WorkingSchedule> specialistSchedules, DateOnly scheduleDate, CancellationToken cancellationToken)
+    {
         var specialistName = specialistSchedules[0].SpecialistName;
         var todaySchedule = specialistSchedules.FirstOrDefault(schedule => schedule.DayOfWeek == scheduleDate.DayOfWeek);
 
