@@ -8,6 +8,7 @@ using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Notifications;
@@ -61,6 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppServices.ServiceCommandService>();
         services.AddSingleton<AppServices.IServiceCommandService>(sp =>
             new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+        services.AddSingleton<IIntelligenceEngine, IntelligenceEngine>();
         services.AddSingleton<ICalendarQueryService, CalendarQueryService>();
         services.AddSingleton<CalendarCommandService>();
         services.AddSingleton<ICalendarCommandService>(sp =>
