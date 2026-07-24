@@ -35,4 +35,25 @@ internal static class ServiceMapper
         DomainServices.ServiceStatus.Discontinued => ServiceStatus.Discontinued,
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown domain service status."),
     };
+
+    /// <summary>Application -&gt; Domain direction, needed by <see cref="ServiceQueryService.SearchServicesAsync(ServiceSearchFilter, CancellationToken)"/> to compare a caller-supplied <see cref="ServiceCategory"/> filter value against Domain data - same reasoning as <c>Customers.CustomerMapper.MapStatusToDomain</c>.</summary>
+    public static DomainServices.ServiceCategory MapCategoryToDomain(ServiceCategory category) => category switch
+    {
+        ServiceCategory.Hair => DomainServices.ServiceCategory.Hair,
+        ServiceCategory.Colour => DomainServices.ServiceCategory.Colour,
+        ServiceCategory.Nails => DomainServices.ServiceCategory.Nails,
+        ServiceCategory.Skin => DomainServices.ServiceCategory.Skin,
+        ServiceCategory.Spa => DomainServices.ServiceCategory.Spa,
+        ServiceCategory.Consultation => DomainServices.ServiceCategory.Consultation,
+        _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown application service category."),
+    };
+
+    /// <summary>Application -&gt; Domain direction, needed by <see cref="ServiceQueryService.SearchServicesAsync(ServiceSearchFilter, CancellationToken)"/> to compare a caller-supplied <see cref="ServiceStatus"/> filter value against Domain data - same reasoning as <c>Customers.CustomerMapper.MapStatusToDomain</c>.</summary>
+    public static DomainServices.ServiceStatus MapStatusToDomain(ServiceStatus status) => status switch
+    {
+        ServiceStatus.Active => DomainServices.ServiceStatus.Active,
+        ServiceStatus.Seasonal => DomainServices.ServiceStatus.Seasonal,
+        ServiceStatus.Discontinued => DomainServices.ServiceStatus.Discontinued,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown application service status."),
+    };
 }

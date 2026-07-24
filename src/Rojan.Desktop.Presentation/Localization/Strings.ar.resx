@@ -684,6 +684,33 @@
   <data name="Services_Assign" xml:space="preserve">
     <value>تعيين</value>
   </data>
+  <data name="Services_SearchAndFilter" xml:space="preserve">
+    <value>بحث وتصفية</value>
+  </data>
+  <data name="Services_AllCategories" xml:space="preserve">
+    <value>كل الفئات</value>
+  </data>
+  <data name="Services_AllStatuses" xml:space="preserve">
+    <value>كل الحالات</value>
+  </data>
+  <data name="Services_MinDuration" xml:space="preserve">
+    <value>الحد الأدنى للمدة</value>
+  </data>
+  <data name="Services_MaxDuration" xml:space="preserve">
+    <value>الحد الأقصى للمدة</value>
+  </data>
+  <data name="Services_MinPrice" xml:space="preserve">
+    <value>الحد الأدنى للسعر</value>
+  </data>
+  <data name="Services_MaxPrice" xml:space="preserve">
+    <value>الحد الأقصى للسعر</value>
+  </data>
+  <data name="Services_ClearFilters" xml:space="preserve">
+    <value>مسح الفلاتر</value>
+  </data>
+  <data name="Services_ResultsCount" xml:space="preserve">
+    <value>النتائج</value>
+  </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>الحجوزات</value>
   </data>

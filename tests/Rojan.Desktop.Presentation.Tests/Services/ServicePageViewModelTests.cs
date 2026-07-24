@@ -63,21 +63,109 @@ public sealed class ServicePageViewModelTests
         Assert.Equal("boom", sut.ErrorMessage);
     }
 
+    // Sprint 5 Commit 2: premium service search and filters. Text/field-matching behavior now
+    // lives in ServiceQueryService (see ServiceQueryServiceTests), so these ViewModel tests assert
+    // on filter composition (what got asked for) - same split Customers/Bookings' own Commit 2
+    // passes established.
+
     [Fact]
-    public void SearchText_MatchesNameOrCategory_FiltersToMatchingServicesOnly()
+    public void Constructor_NoFilterApplied_SearchesWithAnAllDefaultFilter()
     {
-        var services = new List<ServiceDto>
-        {
-            MakeService("service-1", "Haircut & Style", ServiceCategory.Hair),
-            MakeService("service-2", "Manicure", ServiceCategory.Nails),
-            MakeService("service-3", "Facial Renewal", ServiceCategory.Skin),
-        };
+        // "Keep existing service list behavior unchanged when no filter is applied" - an
+        // all-default ServiceSearchFilter is documented to behave identically to the old
+        // unfiltered GetServicesAsync call (see ServiceSearchFilter's own doc comment).
+        var services = new List<ServiceDto> { MakeService("service-1", "Haircut & Style") };
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
+
         var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
 
-        sut.SearchText = "nails";
+        var filter = Assert.Single(queryService.SearchCalls);
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.Category);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.MinDurationMinutes);
+        Assert.Null(filter.MaxDurationMinutes);
+        Assert.Null(filter.MinPrice);
+        Assert.Null(filter.MaxPrice);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(services, sut.Services);
+    }
 
-        Assert.Equal(["service-2"], sut.Services.Select(s => s.Id));
+    [Fact]
+    public void SearchText_Changed_SearchesWithSearchTextInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.SearchText = "manicure";
+
+        Assert.Equal("manicure", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void SelectedCategory_Changed_SearchesWithCategoryInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.SelectedCategory = ServiceCategory.Nails;
+
+        Assert.Equal(ServiceCategory.Nails, queryService.SearchCalls[^1].Category);
+    }
+
+    [Fact]
+    public void SelectedStatus_Changed_SearchesWithStatusInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.SelectedStatus = ServiceStatus.Seasonal;
+
+        Assert.Equal(ServiceStatus.Seasonal, queryService.SearchCalls[^1].Status);
+    }
+
+    [Fact]
+    public void MinDuration_Changed_SearchesWithMinDurationInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.MinDuration = 30;
+
+        Assert.Equal(30, queryService.SearchCalls[^1].MinDurationMinutes);
+    }
+
+    [Fact]
+    public void MaxDuration_Changed_SearchesWithMaxDurationInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.MaxDuration = 90;
+
+        Assert.Equal(90, queryService.SearchCalls[^1].MaxDurationMinutes);
+    }
+
+    [Fact]
+    public void MinPrice_Changed_SearchesWithMinPriceInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.MinPrice = 25m;
+
+        Assert.Equal(25m, queryService.SearchCalls[^1].MinPrice);
+    }
+
+    [Fact]
+    public void MaxPrice_Changed_SearchesWithMaxPriceInFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        sut.MaxPrice = 100m;
+
+        Assert.Equal(100m, queryService.SearchCalls[^1].MaxPrice);
     }
 
     [Fact]
@@ -88,13 +176,95 @@ public sealed class ServicePageViewModelTests
             MakeService("service-1", "Haircut & Style"),
             MakeService("service-2", "Manicure"),
         };
-        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
+        var queryService = new StubServiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<ServiceDto>>(services),
+            searchServicesByFilter: (filter, _) => Task.FromResult<IReadOnlyList<ServiceDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? services
+                    : services.Where(service => service.Name.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
         var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
         sut.SelectedService = services[0];
 
         sut.SearchText = "Manicure";
 
         Assert.Equal(services[1], sut.SelectedService);
+    }
+
+    [Fact]
+    public void SearchCommand_Executed_ReRunsSearchWithCurrentFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService())
+        {
+            SearchText = "manicure",
+        };
+        var callsBeforeExplicitSearch = queryService.SearchCalls.Count;
+
+        sut.SearchCommand.Execute(null);
+
+        Assert.True(queryService.SearchCalls.Count > callsBeforeExplicitSearch);
+        Assert.Equal("manicure", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void ClearFiltersCommand_Executed_ResetsEveryFilterAndReloadsWithDefaultFilter()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService())
+        {
+            SearchText = "manicure",
+            SelectedCategory = ServiceCategory.Nails,
+            SelectedStatus = ServiceStatus.Active,
+            MinDuration = 30,
+            MaxDuration = 90,
+            MinPrice = 10m,
+            MaxPrice = 200m,
+        };
+
+        sut.ClearFiltersCommand.Execute(null);
+
+        Assert.Equal(string.Empty, sut.SearchText);
+        Assert.Null(sut.SelectedCategory);
+        Assert.Null(sut.SelectedStatus);
+        Assert.Null(sut.MinDuration);
+        Assert.Null(sut.MaxDuration);
+        Assert.Null(sut.MinPrice);
+        Assert.Null(sut.MaxPrice);
+
+        var filter = queryService.SearchCalls[^1];
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.Category);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.MinDurationMinutes);
+        Assert.Null(filter.MaxDurationMinutes);
+        Assert.Null(filter.MinPrice);
+        Assert.Null(filter.MaxPrice);
+    }
+
+    [Fact]
+    public void ResultCount_AfterLoad_MatchesServicesCount()
+    {
+        var services = new List<ServiceDto>
+        {
+            MakeService("service-1", "Haircut & Style"),
+            MakeService("service-2", "Manicure"),
+        };
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
+
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        Assert.Equal(2, sut.ResultCount);
+        Assert.Equal(sut.Services.Count, sut.ResultCount);
+    }
+
+    [Fact]
+    public void ResultCount_NoMatches_IsZero()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+
+        Assert.Equal(0, sut.ResultCount);
     }
 
     [Fact]

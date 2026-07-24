@@ -21,6 +21,15 @@
         Every card/widget here is DashboardCard/DashboardWidget/KPIValue -
         no new Design System components needed, same as every other module.
 
+        Sprint 5 Commit 2 (Premium Service Search &amp; Filters): the plain
+        search box became a Search &amp; Filter DashboardCard - free text
+        plus category/status/duration-range/price-range, combined by the
+        ViewModel into one ServiceSearchFilter, same minimal-functional-
+        controls-only shape Customers'/Bookings' own Commit 2 passes
+        already established (plain TextBox/ComboBox rows, no Premium
+        controls, no visual redesign). A ResultCount caption was added
+        below the panel; the list/detail layout and the specialist-
+        assignment card on the right are otherwise unchanged.
     -->
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
@@ -28,7 +37,7 @@
             <ColumnDefinition Width="380" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: header, search box, service catalog -->
+        <!-- Left: header, search &amp; filter, service catalog -->
         <Grid Grid.Column="0" Margin="0,0,24,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -43,36 +52,111 @@
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
-            <Border Grid.Row="1"
-                    Style="{StaticResource Rojan.Style.Panel}"
-                    Padding="16,10"
-                    Margin="0,24,0,0">
-                <Grid>
-                    <TextBlock Text="{x:Static loc:Strings.Services_SearchPlaceholder}"
-                               Foreground="{StaticResource Rojan.Brush.HintText}"
-                               FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                               FontSize="15"
-                               IsHitTestVisible="False">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SearchText}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                             CaretBrush="{StaticResource Rojan.Brush.Accent}"
-                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                             FontSize="15" />
-                </Grid>
-            </Border>
+            <!-- Search & Filter: free text plus category/status/duration/price, combined by the ViewModel into one ServiceSearchFilter -->
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Services_SearchAndFilter}" Margin="0,24,0,0">
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ComboBox ItemsSource="{Binding AvailableCategoryOptions}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" Margin="0,4,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="{x:Static loc:Strings.Services_AllCategories}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ComboBox ItemsSource="{Binding AvailableStatusOptions}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}" Margin="0,4,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="{x:Static loc:Strings.Services_AllStatuses}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Services_MinDuration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding MinDuration, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Services_MaxDuration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding MaxDuration, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Services_MinPrice}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding MinPrice, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Services_MaxPrice}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding MaxPrice, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center">
+                            <Run Text="{x:Static loc:Strings.Services_ResultsCount}" />
+                            <Run Text=": " />
+                            <Run Text="{Binding ResultCount, Mode=OneWay}" />
+                        </TextBlock>
+                        <Button Grid.Column="1"
+                                Content="{x:Static loc:Strings.Services_ClearFilters}"
+                                Command="{Binding ClearFiltersCommand}"
+                                Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                    </Grid>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
 
             <dashboardControls:DashboardWidget Grid.Row="2"
                                                 Title="{x:Static loc:Strings.Services_AllServices}"

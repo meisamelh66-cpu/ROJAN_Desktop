@@ -17,4 +17,7 @@ internal sealed class StubServiceQueryService : IServiceQueryService
 
     public Task<IReadOnlyList<ServiceDto>> SearchServicesAsync(string searchText, CancellationToken cancellationToken = default) =>
         Task.FromResult(_services);
+
+    public Task<IReadOnlyList<ServiceDto>> SearchServicesAsync(ServiceSearchFilter filter, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_services);
 }

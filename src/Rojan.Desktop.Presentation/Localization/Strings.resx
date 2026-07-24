@@ -696,6 +696,33 @@
   <data name="Services_Assign" xml:space="preserve">
     <value>تخصیص</value>
   </data>
+  <data name="Services_SearchAndFilter" xml:space="preserve">
+    <value>جستجو و فیلتر</value>
+  </data>
+  <data name="Services_AllCategories" xml:space="preserve">
+    <value>همه دسته‌ها</value>
+  </data>
+  <data name="Services_AllStatuses" xml:space="preserve">
+    <value>همه وضعیت‌ها</value>
+  </data>
+  <data name="Services_MinDuration" xml:space="preserve">
+    <value>حداقل مدت‌زمان</value>
+  </data>
+  <data name="Services_MaxDuration" xml:space="preserve">
+    <value>حداکثر مدت‌زمان</value>
+  </data>
+  <data name="Services_MinPrice" xml:space="preserve">
+    <value>حداقل قیمت</value>
+  </data>
+  <data name="Services_MaxPrice" xml:space="preserve">
+    <value>حداکثر قیمت</value>
+  </data>
+  <data name="Services_ClearFilters" xml:space="preserve">
+    <value>پاک کردن فیلترها</value>
+  </data>
+  <data name="Services_ResultsCount" xml:space="preserve">
+    <value>تعداد نتایج</value>
+  </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>رزروها</value>
   </data>

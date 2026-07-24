@@ -510,6 +510,24 @@ public static class Strings
 
     public static string Services_Assign => Get(nameof(Services_Assign));
 
+    public static string Services_SearchAndFilter => Get(nameof(Services_SearchAndFilter));
+
+    public static string Services_AllCategories => Get(nameof(Services_AllCategories));
+
+    public static string Services_AllStatuses => Get(nameof(Services_AllStatuses));
+
+    public static string Services_MinDuration => Get(nameof(Services_MinDuration));
+
+    public static string Services_MaxDuration => Get(nameof(Services_MaxDuration));
+
+    public static string Services_MinPrice => Get(nameof(Services_MinPrice));
+
+    public static string Services_MaxPrice => Get(nameof(Services_MaxPrice));
+
+    public static string Services_ClearFilters => Get(nameof(Services_ClearFilters));
+
+    public static string Services_ResultsCount => Get(nameof(Services_ResultsCount));
+
     public static string Bookings_Title => Get(nameof(Bookings_Title));
 
     public static string Bookings_Subtitle => Get(nameof(Bookings_Subtitle));
