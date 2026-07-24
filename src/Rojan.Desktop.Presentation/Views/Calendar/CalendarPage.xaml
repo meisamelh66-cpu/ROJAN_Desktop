@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
              xmlns:appCalendar="clr-namespace:Rojan.Desktop.Application.Calendar;assembly=Rojan.Desktop.Application"
              xmlns:calendarVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Calendar"
@@ -12,26 +13,37 @@
         Phase 14: Calendar & Availability Engine Foundation. Unlike every
         other module, this page is not a list-plus-detail split - a day's
         availability grid *is* the page. Top: specialist + date picker and
-        the resolved working-hours caption. Below: the generated slot grid,
-        each slot a single ButtonPrimary-based tile (reusing the shared
-        ButtonPrimary visual template via BasedOn, with a DataTrigger
-        overriding only Background per Status - no new Design System
-        component) that reserves an Available slot or releases a Booked one
-        on click, bound to the one ToggleSlotCommand.
+        the resolved working-hours caption.
 
         Sprint 2 Commit 4: added a Day/Week view-mode toggle (two
         RadioButtons reusing Rojan.Style.TimeRangeOption, the same
         segmented-pill style RangeSelector already uses - no new Design
-        System style). Week view is a per-day summary grid (DashboardCard
-        per day, reusing that existing component) showing only a slot
-        count - deliberately not the redesigned appointment-card layout,
-        that is a later commit's scope. IsDayView/IsWeekView pick which of
-        the two ItemsControls below is visible via the existing
+        System style). IsDayView/IsWeekView pick which of the two
+        ItemsControls below is visible via the existing
         BoolToVisibilityConverter (declared locally, same as every other
         page that uses it).
+
+        Sprint 2 Commit 5 (Premium Calendar visual pass): the Day-view slot
+        tile changed from a solid-status-color ButtonPrimary to a neutral
+        ButtonSecondary tile with a Shared StatusPill carrying the status
+        color instead - avoids double-encoding color (a colored pill on an
+        already-colored button reads poorly), and disables the button for
+        Unavailable slots (same no-op ToggleSlotAsync behavior as before,
+        now visually reflected via IsEnabled rather than only a muted
+        color). The specialist ComboBox gained a per-item EntityAvatar.
+        WorkingHoursText is now a StatusPill instead of plain caption text.
+        Week view's per-day tile dropped DashboardCard for a plain
+        Rojan.Style.Card Border plus an explicit PremiumCardHeader (lighter
+        chrome, more fitting for seven small tiles in a row) and three
+        status-count StatusPills (via the new local
+        AvailabilitySlotStatusCountConverter). Still no drag-and-drop, no
+        Booking integration, no Month view, no appointment-card redesign
+        beyond what is described here - Day/Week load/toggle behavior is
+        unchanged, only the visuals are.
     -->
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:AvailabilitySlotStatusCountConverter x:Key="AvailabilitySlotStatusCountConverter" />
     </UserControl.Resources>
 
     <Grid Margin="32">
@@ -56,9 +68,20 @@
                         <TextBlock Text="{x:Static loc:Strings.Common_Specialist}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <ComboBox ItemsSource="{Binding Specialists}"
                                   SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"
-                                  Width="200"
-                                  Margin="0,4,0,0" />
+                                  Width="220"
+                                  Margin="0,4,0,0">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type appCalendar:ScheduledSpecialistDto}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <shared:EntityAvatar EntityName="{Binding Name}" Size="24" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding Name}"
+                                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
                         <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -83,11 +106,11 @@
                         </WrapPanel>
                     </StackPanel>
                 </StackPanel>
-                <TextBlock Text="{Binding WorkingHoursText}"
-                           Style="{StaticResource Rojan.TextStyle.Body}"
-                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           Margin="0,16,0,0"
-                           Visibility="{Binding IsDayView, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <shared:StatusPill Text="{Binding WorkingHoursText}"
+                                    Severity="Info"
+                                    Margin="0,16,0,0"
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding IsDayView, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
         </dashboardControls:DashboardCard>
 
@@ -112,30 +135,40 @@
                             <DataTemplate DataType="{x:Type appCalendar:AvailabilitySlotDto}">
                                 <Button Command="{Binding DataContext.ToggleSlotCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
-                                        MinWidth="110"
+                                        MinWidth="120"
                                         Margin="0,0,10,10">
                                     <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
-                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Success}" />
+                                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Status}" Value="Booked">
-                                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.MutedText}" />
-                                                </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Unavailable">
-                                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Disabled}" />
+                                                    <Setter Property="IsEnabled" Value="False" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="{Binding Start, StringFormat={}{0:h:mm tt}}"
-                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
-                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                                   Style="{StaticResource Rojan.TextStyle.Body}"
+                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                                   FontWeight="SemiBold"
                                                    HorizontalAlignment="Center" />
-                                        <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
-                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
-                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                                                   HorizontalAlignment="Center" />
+                                        <shared:StatusPill Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                            HorizontalAlignment="Center"
+                                                            Margin="0,4,0,0">
+                                            <shared:StatusPill.Style>
+                                                <Style TargetType="shared:StatusPill">
+                                                    <Setter Property="Severity" Value="Success" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Booked">
+                                                            <Setter Property="Severity" Value="Info" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Unavailable">
+                                                            <Setter Property="Severity" Value="Neutral" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </shared:StatusPill.Style>
+                                        </shared:StatusPill>
                                     </StackPanel>
                                 </Button>
                             </DataTemplate>
@@ -143,13 +176,15 @@
                     </ItemsControl>
 
                     <!--
-                        Week view: a per-day summary grid, one DashboardCard
-                        per day (reusing that existing component - no new
-                        Design System control) showing only a generated-slot
-                        count. Deliberately not the redesigned appointment-
-                        card layout - that is a later commit's scope, per
-                        this commit's "do not redesign appointment cards
-                        yet" boundary.
+                        Week view: a per-day summary grid. Each tile is a
+                        plain Rojan.Style.Card Border (lighter than
+                        DashboardCard's gradient/hover chrome, a better fit
+                        for seven small tiles in a row) with an explicit
+                        PremiumCardHeader for the date and three status-
+                        count StatusPills. Still a summary, not the
+                        redesigned appointment-card layout with real
+                        per-slot detail - that stays out of this commit's
+                        scope (no Booking integration, no drag-and-drop).
                     -->
                     <ItemsControl ItemsSource="{Binding WeekDays}"
                                   Visibility="{Binding IsWeekView, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -160,11 +195,19 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type appCalendar:DailyAvailabilityDto}">
-                                <dashboardControls:DashboardCard Title="{Binding Date, StringFormat={}{0:ddd, MMM d}}" Margin="0,0,8,8">
-                                    <TextBlock Text="{Binding Slots.Count, StringFormat={}{0} slots}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                </dashboardControls:DashboardCard>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Padding="12" Margin="0,0,8,8">
+                                    <StackPanel>
+                                        <shared:PremiumCardHeader Title="{Binding Date, StringFormat={}{0:ddd, MMM d}}" Margin="0,0,0,8" />
+                                        <shared:StatusPill Text="{Binding Slots, Converter={StaticResource AvailabilitySlotStatusCountConverter}, ConverterParameter=Available, StringFormat={}{0} available}"
+                                                            Severity="Success"
+                                                            Margin="0,0,0,4" />
+                                        <shared:StatusPill Text="{Binding Slots, Converter={StaticResource AvailabilitySlotStatusCountConverter}, ConverterParameter=Booked, StringFormat={}{0} booked}"
+                                                            Severity="Info"
+                                                            Margin="0,0,0,4" />
+                                        <shared:StatusPill Text="{Binding Slots, Converter={StaticResource AvailabilitySlotStatusCountConverter}, ConverterParameter=Unavailable, StringFormat={}{0} blocked}"
+                                                            Severity="Neutral" />
+                                    </StackPanel>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
