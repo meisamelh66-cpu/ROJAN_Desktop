@@ -25,6 +25,15 @@
       toolkit choices are deferred to the phase that actually implements them.
     -->
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <!-- Sprint 6 Commit 1: EF Core persistence foundation. SQLite provider
+         for the desktop app's local database file; Design is a build-time-
+         only dependency (dotnet ef migrations tooling), never shipped at
+         runtime - see Infrastructure's own csproj for the PrivateAssets
+         setting that enforces that. Pinned to the latest 8.0.x patch to
+         match this solution's net8.0-windows TargetFramework exactly. -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.29" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.29" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.29" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Automation;
@@ -38,6 +39,7 @@ using Rojan.Desktop.Infrastructure.Identity;
 using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
+using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
@@ -73,6 +75,22 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IReportingRepository, FakeReportingRepository>();
         services.AddSingleton<IAIRepository, FakeAIRepository>();
         services.AddSingleton<IOrganizationRepository, FakeOrganizationRepository>();
+
+        // Sprint 6 Commit 1: EF Core persistence foundation - registered
+        // but not yet consumed by any repository (every module above still
+        // resolves its Fake*Repository implementation unchanged; see
+        // RojanDbContext's own doc comment for the Commit 2+ plan).
+        // AddDbContextFactory (not AddDbContext) matches this container's
+        // shape: every registration in this method is a long-lived
+        // singleton, never a per-request scope (this is a desktop app, not
+        // ASP.NET) - the factory itself is registered as a singleton and
+        // hands out a short-lived RojanDbContext per call, avoiding both
+        // the "scoped service in an all-singleton container" mismatch and
+        // DbContext's own not-thread-safe constraint if two singleton
+        // repositories ever needed a context concurrently.
+        services.AddSingleton(SqlitePersistenceOptions.Default);
+        services.AddDbContextFactory<RojanDbContext>(options =>
+            options.UseSqlite(SqlitePersistenceOptions.Default.ConnectionString));
 
         // Phase 25: Enterprise Identity & Secure Client Platform.
         // Registration order mirrors the dependency chain: Identity ->

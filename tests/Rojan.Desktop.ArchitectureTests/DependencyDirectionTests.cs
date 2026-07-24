@@ -10,6 +10,17 @@ namespace Rojan.Desktop.ArchitectureTests;
 /// directly - both explicitly called out as intentional in the Dashboard/
 /// Customer query service doc comments ("nothing Domain-shaped ever
 /// crosses into Presentation").
+///
+/// Sprint 6 Commit 1: each of the three checks below also forbids
+/// <c>Microsoft.EntityFrameworkCore</c> directly, not just the
+/// "Rojan.Desktop.Infrastructure" assembly name. The Infrastructure-name
+/// check alone would already catch EF Core reached indirectly (through
+/// <c>RojanDbContext</c> or any repository); this catches the separate,
+/// real possibility of a project adding a stray direct
+/// <c>PackageReference</c> to an EF Core package and using its types
+/// without ever going through Infrastructure at all - see
+/// <c>RojanDbContext</c>'s own doc comment for why EF Core must stay
+/// confined to Infrastructure.
 /// </summary>
 public sealed class DependencyDirectionTests
 {
@@ -22,7 +33,8 @@ public sealed class DependencyDirectionTests
                 "Rojan.Desktop.Application",
                 "Rojan.Desktop.Infrastructure",
                 "Rojan.Desktop.Presentation",
-                "Rojan.Desktop.Shell")
+                "Rojan.Desktop.Shell",
+                "Microsoft.EntityFrameworkCore")
             .GetResult();
 
         Assert.True(result.IsSuccessful, FailureMessage(result));
@@ -36,7 +48,8 @@ public sealed class DependencyDirectionTests
             .HaveDependencyOnAny(
                 "Rojan.Desktop.Infrastructure",
                 "Rojan.Desktop.Presentation",
-                "Rojan.Desktop.Shell")
+                "Rojan.Desktop.Shell",
+                "Microsoft.EntityFrameworkCore")
             .GetResult();
 
         Assert.True(result.IsSuccessful, FailureMessage(result));
@@ -50,7 +63,8 @@ public sealed class DependencyDirectionTests
             .HaveDependencyOnAny(
                 "Rojan.Desktop.Domain",
                 "Rojan.Desktop.Infrastructure",
-                "Rojan.Desktop.Shell")
+                "Rojan.Desktop.Shell",
+                "Microsoft.EntityFrameworkCore")
             .GetResult();
 
         Assert.True(result.IsSuccessful, FailureMessage(result));

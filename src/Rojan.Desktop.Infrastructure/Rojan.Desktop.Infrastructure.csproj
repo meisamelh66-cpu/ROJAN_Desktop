@@ -18,6 +18,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Sprint 6 Commit 1: EF Core persistence foundation - see
+         Persistence/RojanDbContext.cs's own doc comment. EF Core types
+         must exist only inside this project (enforced by
+         ArchitectureTests.DependencyDirectionTests), never in
+         Domain/Application/Presentation. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <!-- Design-time only (dotnet ef migrations/database update tooling) -
+         never needed at runtime, so it must not flow to anything that
+         references this project. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Lets Rojan.Desktop.Infrastructure.Tests exercise internal path-
          overriding constructors directly (temp-file-backed test doubles
          for file-persisted services), same reasoning as Shell's
