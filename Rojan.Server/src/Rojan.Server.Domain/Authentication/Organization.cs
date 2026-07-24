@@ -10,5 +10,14 @@ namespace Rojan.Server.Domain.Authentication;
 /// organization owner" flow - there is no separate "create organization"
 /// operation in this commit, since standalone tenant management is out of
 /// scope (see the solution's own README).
+///
+/// Sprint 8 Commit 3: Multi-Tenant Organization Foundation.
+/// <see cref="Status"/> added - see <see cref="OrganizationStatus"/>'s own
+/// doc comment and <see cref="OrganizationRules"/> for valid transitions.
+/// <see cref="IsActive"/> is what <c>Application.Tenancy.ITenantService</c>
+/// checks before trusting a request's tenant context.
 /// </summary>
-public sealed record Organization(string Id, string Name, DateTimeOffset CreatedAt);
+public sealed record Organization(string Id, string Name, OrganizationStatus Status, DateTimeOffset CreatedAt)
+{
+    public bool IsActive => Status == OrganizationStatus.Active;
+}

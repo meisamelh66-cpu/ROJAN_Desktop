@@ -15,6 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Sprint 8 Commit 3: Multi-Tenant Organization Foundation. Required for
+// Infrastructure.Security.ClaimsTenantContext to reach the current
+// request's ClaimsPrincipal - see its own doc comment for why this
+// specific call lives here rather than inside AddInfrastructure.
+builder.Services.AddHttpContextAccessor();
+
 // Sprint 8 Commit 2: Tenant-Aware Authentication Foundation. JWT bearer
 // authentication - registered so a future commit's [Authorize]-protected
 // endpoint can use it, but nothing in this commit requires it (the three
@@ -37,6 +43,15 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Sprint 8 Commit 3: without this, the JWT bearer handler silently
+        // rewrites short claim names ("sub") to long legacy ClaimTypes
+        // URIs on every real incoming request - the same gotcha
+        // JwtTokenService.ValidateAccessToken already works around for its
+        // own (test-only) validation path. Infrastructure.Security.ClaimsTenantContext
+        // reads the exact claim names GenerateAccessToken writes
+        // (JwtRegisteredClaimNames.Sub, "org_id", "branch_id"), so the two
+        // paths must agree.
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,

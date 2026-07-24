@@ -34,7 +34,7 @@ public sealed class UserRulesTests
     [Fact]
     public void IsValidBranchAssignment_BranchBelongsToSameOrganization_ReturnsTrue()
     {
-        var branch = new Branch("branch-1", "org-1", "Downtown", DateTimeOffset.UtcNow);
+        var branch = new Branch("branch-1", "org-1", "Downtown", BranchStatus.Active, DateTimeOffset.UtcNow);
 
         Assert.True(UserRules.IsValidBranchAssignment("org-1", branch));
     }
@@ -43,8 +43,27 @@ public sealed class UserRulesTests
     public void IsValidBranchAssignment_BranchBelongsToDifferentOrganization_ReturnsFalse()
     {
         // The core tenant-isolation rule: a branch from another organization must never be assignable.
-        var branch = new Branch("branch-1", "org-2", "Downtown", DateTimeOffset.UtcNow);
+        var branch = new Branch("branch-1", "org-2", "Downtown", BranchStatus.Active, DateTimeOffset.UtcNow);
 
         Assert.False(UserRules.IsValidBranchAssignment("org-1", branch));
+    }
+
+    private static User MakeUser(string organizationId, string id = "user-1") =>
+        new(id, organizationId, BranchId: null, "owner@rojan.example", "hash", "Noah Bennett", UserRoles.Owner, DateTimeOffset.UtcNow);
+
+    [Fact]
+    public void BelongsToOrganization_UserOrganizationIdMatches_ReturnsTrue()
+    {
+        var user = MakeUser("org-1");
+
+        Assert.True(UserRules.BelongsToOrganization(user, "org-1"));
+    }
+
+    [Fact]
+    public void BelongsToOrganization_UserOrganizationIdDoesNotMatch_ReturnsFalse()
+    {
+        var user = MakeUser("org-1");
+
+        Assert.False(UserRules.BelongsToOrganization(user, "org-2"));
     }
 }

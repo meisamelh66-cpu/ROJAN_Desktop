@@ -24,6 +24,11 @@ public sealed class BranchConfiguration : IEntityTypeConfiguration<Branch>
             .IsRequired()
             .HasMaxLength(256);
 
+        builder.Property(branch => branch.Status)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(32);
+
         builder.Property(branch => branch.CreatedAt)
             .IsRequired();
 

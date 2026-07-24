@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Server.Application.Authentication;
+using Rojan.Server.Application.Tenancy;
 
 namespace Rojan.Server.Application.DependencyInjection;
 
@@ -17,12 +18,19 @@ namespace Rojan.Server.Application.DependencyInjection;
 /// instead, the same "interface here, concrete implementation resolved
 /// from the outer layer at composition time" split every other module in
 /// this codebase already uses.
+///
+/// Sprint 8 Commit 3: Multi-Tenant Organization Foundation. Adds
+/// <see cref="ITenantService"/> - scoped, since it depends on
+/// <see cref="ITenantContext"/>, which is itself scoped to one HTTP
+/// request (see <c>Infrastructure.Security.ClaimsTenantContext</c>'s own
+/// doc comment).
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<ITenantService, TenantService>();
 
         return services;
     }

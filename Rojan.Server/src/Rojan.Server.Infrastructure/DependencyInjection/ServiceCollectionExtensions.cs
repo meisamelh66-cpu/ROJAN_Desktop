@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Server.Application.Authentication;
+using Rojan.Server.Application.Tenancy;
 using Rojan.Server.Domain.Authentication;
 using Rojan.Server.Infrastructure.Persistence;
 using Rojan.Server.Infrastructure.Persistence.Repositories;
@@ -31,6 +32,16 @@ namespace Rojan.Server.Infrastructure.DependencyInjection;
 /// <c>Application.Authentication.AuthenticationService</c>. Still no
 /// business repositories - there are still no business entities (see
 /// <see cref="RojanServerDbContext"/>'s own doc comment).
+///
+/// Sprint 8 Commit 3: Multi-Tenant Organization Foundation. Adds
+/// <see cref="ITenantContext"/> (scoped - see <see cref="ClaimsTenantContext"/>'s
+/// own doc comment). <c>services.AddHttpContextAccessor()</c> itself is
+/// called from <c>Api.Program</c>, not here - it is available for free on
+/// a <c>Microsoft.NET.Sdk.Web</c> project with zero extra package, while
+/// this class library needed an explicit
+/// <c>Microsoft.AspNetCore.Http.Abstractions</c> reference just for the
+/// <see cref="Microsoft.AspNetCore.Http.IHttpContextAccessor"/> type
+/// itself - no reason to duplicate the registration call in two places.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -50,6 +61,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<ITokenService, JwtTokenService>();
+
+        services.AddScoped<ITenantContext, ClaimsTenantContext>();
 
         return services;
     }

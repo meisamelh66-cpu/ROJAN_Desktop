@@ -53,7 +53,7 @@ public sealed class AuthenticationService : IAuthenticationService
 
         var now = DateTimeOffset.UtcNow;
 
-        var organization = new Organization(Guid.NewGuid().ToString(), request.OrganizationName, now);
+        var organization = new Organization(Guid.NewGuid().ToString(), request.OrganizationName, OrganizationStatus.Active, now);
         await _organizationRepository.CreateAsync(organization, cancellationToken).ConfigureAwait(true);
 
         var user = new User(

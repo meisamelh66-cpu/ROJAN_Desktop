@@ -27,4 +27,19 @@ public static class UserRules
     /// </summary>
     public static bool IsValidBranchAssignment(string userOrganizationId, Branch? branch) =>
         branch is null || branch.OrganizationId == userOrganizationId;
+
+    /// <summary>
+    /// Sprint 8 Commit 3: Multi-Tenant Organization Foundation. A user
+    /// belongs to exactly one organization for its entire lifetime -
+    /// <see cref="User.OrganizationId"/> is already required and set once
+    /// at creation (see <c>Application.Authentication.AuthenticationService.RegisterOrganizationOwnerAsync</c>),
+    /// so this makes that invariant an explicit, checkable rule rather
+    /// than leaving it implicit. This is the core "cross-organization
+    /// relationships are prevented" guarantee
+    /// <c>Application.Tenancy.ITenantService</c> relies on: a user's
+    /// membership can be checked against a claimed tenant without a
+    /// database round-trip.
+    /// </summary>
+    public static bool BelongsToOrganization(User user, string organizationId) =>
+        user.OrganizationId == organizationId;
 }
