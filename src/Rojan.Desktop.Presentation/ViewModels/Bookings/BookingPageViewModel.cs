@@ -67,7 +67,7 @@ public sealed class BookingPageViewModel : ViewModelBase
             _ => ChangeStatusAsync(BookingStatus.Completed),
             _ => SelectedBooking?.Status == BookingStatus.Confirmed);
         CancelBookingCommand = new AsyncRelayCommand(
-            _ => ChangeStatusAsync(BookingStatus.Cancelled),
+            _ => CancelSelectedBookingAsync(),
             _ => SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
@@ -218,6 +218,28 @@ public sealed class BookingPageViewModel : ViewModelBase
 
         var bookingId = SelectedBooking.Id;
         await _commandService.UpdateBookingStatusAsync(bookingId, status).ConfigureAwait(true);
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+    }
+
+    /// <summary>
+    /// Cancel goes through <see cref="IBookingWorkflowService.CancelBookingAsync"/>
+    /// rather than <see cref="ChangeStatusAsync"/>/<see cref="IBookingCommandService.UpdateBookingStatusAsync"/>
+    /// directly - the workflow service also releases the booking's reserved
+    /// Calendar slot (when it has a real specialist id; free-text quick-add
+    /// bookings never reserved one, so there is nothing to release). Using
+    /// the plain status-only path here would leave a Wizard-created
+    /// booking's slot stuck as Booked with no booking left to show for it.
+    /// </summary>
+    private async Task CancelSelectedBookingAsync()
+    {
+        if (SelectedBooking is null)
+        {
+            return;
+        }
+
+        var bookingId = SelectedBooking.Id;
+        await _workflowService.CancelBookingAsync(bookingId).ConfigureAwait(true);
         await LoadAsync().ConfigureAwait(true);
         SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
     }

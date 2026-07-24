@@ -191,6 +191,58 @@ public sealed class BookingPageViewModelTests
     }
 
     [Fact]
+    public void CancelBookingCommand_Executed_CallsWorkflowServiceCancelBookingAsyncWithSelectedBookingId()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, commandService, workflowService);
+
+        sut.CancelBookingCommand.Execute(null);
+
+        var cancelledId = Assert.Single(workflowService.CancelledBookingIds);
+        Assert.Equal("booking-1", cancelledId);
+    }
+
+    [Fact]
+    public void CancelBookingCommand_Executed_DoesNotCallCommandServiceUpdateBookingStatusAsyncDirectly()
+    {
+        // The workflow service internally calls IBookingCommandService.UpdateBookingStatusAsync as
+        // part of cancel-and-release-calendar-slot, but that must happen inside
+        // IBookingWorkflowService.CancelBookingAsync - never as a separate direct call from
+        // BookingPageViewModel, or the Calendar release would be skipped (Sprint 3 Commit 1 fix).
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Pending) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, commandService, workflowService);
+
+        sut.CancelBookingCommand.Execute(null);
+
+        Assert.Empty(commandService.UpdateStatusCalls);
+    }
+
+    [Fact]
+    public void ConfirmBookingCommand_Executed_StillCallsCommandServiceDirectly_NotWorkflowService()
+    {
+        // Confirm/Complete are unaffected by the Cancel fix - they never reserved or release a
+        // Calendar slot, so they should keep going through IBookingCommandService directly.
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Pending) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, commandService, workflowService);
+
+        sut.ConfirmBookingCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateStatusCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(BookingStatus.Confirmed, call.Status);
+        Assert.Empty(workflowService.CancelledBookingIds);
+    }
+
+    [Fact]
     public void OpenWizardCommand_Executed_ShowsBookingWizardViewModelViaDialogService()
     {
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
