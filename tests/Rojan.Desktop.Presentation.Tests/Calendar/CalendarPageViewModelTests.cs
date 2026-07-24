@@ -213,4 +213,64 @@ public sealed class CalendarPageViewModelTests
 
         Assert.Equal(DashboardState.Empty, sut.State);
     }
+
+    [Fact]
+    public void SetViewModeCommand_ToggledRepeatedly_EndsInConsistentState()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
+
+        Assert.Equal(CalendarViewMode.Day, sut.ViewMode);
+        Assert.True(sut.IsDayView);
+        Assert.False(sut.IsWeekView);
+        Assert.Single(sut.Slots);
+        Assert.Empty(sut.WeekDays);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    [Fact]
+    public void SetViewModeCommand_SameModeExecutedTwice_DoesNotReload()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var callCount = 0;
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) =>
+            {
+                callCount++;
+                return Task.FromResult(MakeAvailability(specialistId, "Jordan Lee"));
+            });
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var countAfterConstruction = callCount;
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
+
+        Assert.Equal(countAfterConstruction, callCount);
+    }
+
+    [Fact]
+    public void ToggleSlotCommand_UnavailableSlot_DoesNotCallReserveOrRelease()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+        var commandService = new StubCalendarCommandService();
+        var sut = new CalendarPageViewModel(queryService, commandService);
+        var slot = MakeSlot("specialist-1", AvailabilityStatus.Unavailable);
+
+        sut.ToggleSlotCommand.Execute(slot);
+
+        Assert.Empty(commandService.ReserveCalls);
+        Assert.Empty(commandService.ReleaseCalls);
+    }
 }

@@ -123,7 +123,7 @@
                                             Margin="0,24,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
                 <Grid>
-                    <!-- Day view: existing per-slot grid, unchanged. -->
+                    <!-- Day view: per-slot grid, restyled in Sprint 2 Commit 5 (see file header). -->
                     <ItemsControl ItemsSource="{Binding Slots}"
                                   Visibility="{Binding IsDayView, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ItemsControl.ItemsPanel>
