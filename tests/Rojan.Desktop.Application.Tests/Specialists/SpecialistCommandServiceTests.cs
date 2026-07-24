@@ -61,4 +61,68 @@ public sealed class SpecialistCommandServiceTests
 
         Assert.Empty(repository.Skills);
     }
+
+    // Sprint 5 Commit 3: specialist lifecycle rules.
+
+    private static DomainSpecialists.Specialist MakeSpecialistWithStatus(DomainSpecialists.SpecialistStatus status, string id = "specialist-1") =>
+        new(id, "Jordan Lee", "Senior Colour Specialist", "jordan.lee@rojan.example", "+1 555 020 1001",
+            status, "Specializes in balayage.");
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_ValidStatusTransition_UpdatesStatus()
+    {
+        var repository = new StubSpecialistRepository([MakeSpecialistWithStatus(DomainSpecialists.SpecialistStatus.Active)]);
+        var sut = new SpecialistCommandService(repository);
+        var request = new UpdateSpecialistRequest("specialist-1", "Jordan Lee", "Senior Colour Specialist",
+            "jordan.lee@rojan.example", "+1 555 020 1001", SpecialistStatus.OnLeave, "Specializes in balayage.");
+
+        var updated = await sut.UpdateSpecialistAsync(request);
+
+        Assert.Equal(SpecialistStatus.OnLeave, updated.Status);
+        Assert.Equal(DomainSpecialists.SpecialistStatus.OnLeave, Assert.Single(repository.Specialists).Status);
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_InvalidStatusTransition_ThrowsInvalidOperationException()
+    {
+        // OnLeave -> Inactive is legal, but Inactive -> OnLeave is not (an archived specialist must
+        // be reactivated first, not moved straight to a temporary-pause status).
+        var repository = new StubSpecialistRepository([MakeSpecialistWithStatus(DomainSpecialists.SpecialistStatus.Inactive)]);
+        var sut = new SpecialistCommandService(repository);
+        var request = new UpdateSpecialistRequest("specialist-1", "Jordan Lee", "Senior Colour Specialist",
+            "jordan.lee@rojan.example", "+1 555 020 1001", SpecialistStatus.OnLeave, "Specializes in balayage.");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateSpecialistAsync(request));
+
+        // "Failed update keeps original specialist intact" - status must not have changed.
+        Assert.Equal(DomainSpecialists.SpecialistStatus.Inactive, Assert.Single(repository.Specialists).Status);
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_SameStatus_DoesNotThrowAndUpdatesOtherFields()
+    {
+        // The common case: editing name/title/email/phone/bio without touching status at all must
+        // keep working exactly as before - this is not a "transition".
+        var repository = new StubSpecialistRepository([MakeSpecialistWithStatus(DomainSpecialists.SpecialistStatus.Active)]);
+        var sut = new SpecialistCommandService(repository);
+        var request = new UpdateSpecialistRequest("specialist-1", "Jordan Lee-Chen", "Senior Colour Specialist",
+            "jordan.lee@rojan.example", "+1 555 020 1001", SpecialistStatus.Active, "Updated bio.");
+
+        var updated = await sut.UpdateSpecialistAsync(request);
+
+        Assert.Equal("Jordan Lee-Chen", updated.FullName);
+        Assert.Equal("Updated bio.", updated.Bio);
+        Assert.Equal(SpecialistStatus.Active, updated.Status);
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_SpecialistDoesNotExist_ThrowsInvalidOperationException()
+    {
+        var repository = new StubSpecialistRepository([]);
+        var sut = new SpecialistCommandService(repository);
+        var request = new UpdateSpecialistRequest("missing-specialist", "Jordan Lee", "Senior Colour Specialist",
+            "jordan.lee@rojan.example", "+1 555 020 1001", SpecialistStatus.Active, "Specializes in balayage.");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateSpecialistAsync(request));
+    }
 }

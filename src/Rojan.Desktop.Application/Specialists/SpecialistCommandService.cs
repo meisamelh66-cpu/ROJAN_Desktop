@@ -2,7 +2,20 @@ using DomainSpecialists = Rojan.Desktop.Domain.Specialists;
 
 namespace Rojan.Desktop.Application.Specialists;
 
-/// <summary>Default <see cref="ISpecialistCommandService"/> implementation.</summary>
+/// <summary>
+/// Default <see cref="ISpecialistCommandService"/> implementation.
+///
+/// Sprint 5 Commit 3: <see cref="UpdateSpecialistAsync"/> enforces
+/// <see cref="DomainSpecialists.SpecialistRules"/> only when the request
+/// actually changes status - <c>UpdateSpecialistAsync</c> is a full-field
+/// replacement (name/title/email/phone/status/bio all in one call, unlike
+/// Bookings' dedicated status-only command), so most calls carry the
+/// specialist's current, unchanged status through unexamined; only a real
+/// status change is validated as a transition - the same reasoning
+/// <c>Customers.CustomerCommandService.UpdateCustomerAsync</c> already
+/// established for its own identically-shaped update command in Sprint 4
+/// Commit 1.
+/// </summary>
 public sealed class SpecialistCommandService : ISpecialistCommandService
 {
     private readonly DomainSpecialists.ISpecialistRepository _repository;
@@ -29,13 +42,22 @@ public sealed class SpecialistCommandService : ISpecialistCommandService
 
     public async Task<SpecialistDto> UpdateSpecialistAsync(UpdateSpecialistRequest request, CancellationToken cancellationToken = default)
     {
+        var existing = await _repository.GetSpecialistByIdAsync(request.Id, cancellationToken).ConfigureAwait(true)
+            ?? throw new InvalidOperationException($"Specialist '{request.Id}' was not found.");
+
+        var newStatus = SpecialistMapper.MapStatusToDomain(request.Status);
+        if (newStatus != existing.Status && !DomainSpecialists.SpecialistRules.IsValidTransition(existing.Status, newStatus))
+        {
+            throw new InvalidOperationException($"Cannot transition specialist from {existing.Status} to {newStatus}.");
+        }
+
         var specialist = new DomainSpecialists.Specialist(
             request.Id,
             request.FullName,
             request.Title,
             request.Email,
             request.Phone,
-            SpecialistMapper.MapStatusToDomain(request.Status),
+            newStatus,
             request.Bio);
 
         var updated = await _repository.UpdateSpecialistAsync(specialist, cancellationToken).ConfigureAwait(true);
