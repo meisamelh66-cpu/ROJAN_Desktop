@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:workflow="clr-namespace:Rojan.Desktop.Application.BookingWorkflow;assembly=Rojan.Desktop.Application"
              xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
@@ -27,6 +28,16 @@
 
         No longer self-merges its own RojanTheme.xaml copy - see
         Shell/App.xaml.cs's ThemeResources.Apply.
+
+        Sprint 3 Commit 4 (Premium Booking UI): Customer/Specialist step
+        picker rows gained an EntityAvatar (same Shared control BookingPage
+        now uses) instead of plain DisplayMemberPath text - "selection
+        cards" per this commit's scope. The TimeSlot step's empty state
+        (previously a plain TextBlock behind a State==Empty DataTrigger)
+        now uses the Shared EmptyStateCard for the same message, matching
+        the standardized empty-state shape Sprint 1 introduced. The 7-step
+        workflow itself, its CanExecute rules, and every ViewModel command
+        are unchanged - visuals only.
     -->
     <UserControl.Resources>
         <ResourceDictionary>
@@ -206,11 +217,19 @@
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepWhoFor}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <ListBox ItemsSource="{Binding Customers}"
                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
-                                 DisplayMemberPath="FullName"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  MaxHeight="320"
-                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}" />
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type workflow:WorkflowCustomerOptionDto}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <shared:EntityAvatar EntityName="{Binding FullName}" Size="28" Margin="0,0,10,0" />
+                                        <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
 
                     <!-- Step: Service -->
@@ -269,11 +288,19 @@
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepChooseSpecialist}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
                         <ListBox ItemsSource="{Binding Specialists}"
                                  SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
-                                 DisplayMemberPath="FullName"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  MaxHeight="320"
-                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}" />
+                                 ItemContainerStyle="{StaticResource Rojan.Style.NavigationItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type workflow:WorkflowSpecialistOptionDto}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <shared:EntityAvatar EntityName="{Binding FullName}" Size="28" Margin="0,0,10,0" />
+                                        <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
 
                     <!-- Step: Date -->
@@ -305,11 +332,11 @@
                             </Style>
                         </StackPanel.Style>
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepChooseTime}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
-                        <TextBlock Text="{x:Static loc:Strings.BookingWizard_NoSlots}"
-                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                   Margin="0,0,0,8">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                        <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Calendar}"
+                                                Message="{x:Static loc:Strings.BookingWizard_NoSlots}"
+                                                Margin="0,0,0,8">
+                            <shared:EmptyStateCard.Style>
+                                <Style TargetType="{x:Type shared:EmptyStateCard}">
                                     <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding State}" Value="Empty">
@@ -317,8 +344,8 @@
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </shared:EmptyStateCard.Style>
+                        </shared:EmptyStateCard>
                         <ListBox ItemsSource="{Binding AvailableSlots}"
                                  SelectedItem="{Binding SelectedSlot, Mode=TwoWay}"
                                  Background="Transparent"

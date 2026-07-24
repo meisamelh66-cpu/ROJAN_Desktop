@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appBookings="clr-namespace:Rojan.Desktop.Application.Bookings;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -10,9 +11,10 @@
         Phase 11: Booking Module Foundation. Same master-detail shape as
         CustomerPage/DashboardPage: a new-booking form plus a booking list
         on the left, and the selected booking's details plus
-        status-transition actions (Confirm/Complete/Cancel) on the right.
-        Every card/widget here is DashboardCard/DashboardWidget, the same
-        Design System components every other module reuses unchanged.
+        status-transition actions (Confirm/Complete/Cancel/Start/No Show) on
+        the right. Every card/widget here is DashboardCard/DashboardWidget,
+        the same Design System components every other module reuses
+        unchanged.
 
         Sprint 3 Commit 2: added a Search &amp; Filter card between the
         new-booking form and the list - free-text search plus
@@ -20,10 +22,38 @@
         BookingSearchFilter and run through
         IBookingQueryService.SearchBookingsAsync (BookingPageViewModel owns
         the filter-combination logic; this page only binds to it, no
-        filtering logic lives here). Minimal controls only - same
-        TextBox/ComboBox/DatePicker components the New Booking form above
-        already uses, no new Design System component, no visual redesign.
+        filtering logic lives here).
+
+        Sprint 3 Commit 4 (Premium Booking UI): adopted the Sprint 1/2
+        Shared Premium controls - EntityAvatar (customer avatar in the list
+        and detail header, specialist avatar in the detail panel) and
+        StatusPill (replacing plain status text everywhere it appeared,
+        one shared local BookingStatusPillStyle mapping each of the 6
+        BookingStatus values to a severity, rather than duplicating the
+        DataTrigger chain per usage). No new custom control was written -
+        every visual here is an existing Shared control or existing Theme
+        resource, same reasoning as Calendar's Sprint 2 Commit 5 pass. No
+        ViewModel or command behavior changed.
     -->
+    <UserControl.Resources>
+        <Style x:Key="BookingStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Confirmed">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Completed">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="NoShow">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -180,10 +210,12 @@
                             <DataTemplate DataType="{x:Type appBookings:BookingDto}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
+                                    <shared:EntityAvatar Grid.Column="0" EntityName="{Binding CustomerName}" Size="32" Margin="0,0,10,0" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                             <Run Text="{Binding ServiceName, Mode=OneWay}" />
@@ -191,11 +223,10 @@
                                             <Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, t}, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                               VerticalAlignment="Center" />
+                                    <shared:StatusPill Grid.Column="2"
+                                                        Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource BookingStatusPillStyle}"
+                                                        VerticalAlignment="Center" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -234,19 +265,36 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" />
-                    <TextBlock Text="{Binding ServiceName}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                               Margin="0,2,0,0" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <shared:EntityAvatar Grid.Column="0" EntityName="{Binding CustomerName}" Size="48" Margin="0,0,12,0" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" />
+                            <TextBlock Text="{Binding ServiceName}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <shared:StatusPill Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                        Style="{StaticResource BookingStatusPillStyle}"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,12,0,0" />
 
                     <StackPanel Margin="0,20,0,0">
-                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}">
-                            <Run Text="{x:Static loc:Strings.Common_Specialist}" />
-                            <Run Text=": " />
-                            <Run Text="{Binding SpecialistName, Mode=OneWay}" />
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <shared:EntityAvatar EntityName="{Binding SpecialistName}" Size="20" Margin="0,0,8,0" />
+                            <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center">
+                                <Run Text="{x:Static loc:Strings.Common_Specialist}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding SpecialistName, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,8,0,0">
                             <Run Text="{x:Static loc:Strings.Bookings_When}" />
                             <Run Text=": " />
                             <Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}, Mode=OneWay}" />
@@ -257,13 +305,6 @@
                             <Run Text="{Binding DurationMinutes, Mode=OneWay}" />
                             <Run Text=" " />
                             <Run Text="{x:Static loc:Strings.Common_MinutesShort}" />
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}"
-                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                   Margin="0,4,0,0">
-                            <Run Text="{x:Static loc:Strings.Common_Status}" />
-                            <Run Text=": " />
-                            <Run Text="{Binding Status, Mode=OneWay, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
                         </TextBlock>
                     </StackPanel>
 
