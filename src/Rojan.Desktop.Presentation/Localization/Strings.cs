@@ -494,6 +494,14 @@ public static class Strings
 
     public static string Specialists_AddSkill => Get(nameof(Specialists_AddSkill));
 
+    public static string Specialists_SearchAndFilter => Get(nameof(Specialists_SearchAndFilter));
+
+    public static string Specialists_AllStatuses => Get(nameof(Specialists_AllStatuses));
+
+    public static string Specialists_Skill => Get(nameof(Specialists_Skill));
+
+    public static string Specialists_ClearFilters => Get(nameof(Specialists_ClearFilters));
+
     public static string Services_Title => Get(nameof(Services_Title));
 
     public static string Services_Subtitle => Get(nameof(Services_Subtitle));

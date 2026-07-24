@@ -672,6 +672,18 @@
   <data name="Specialists_AddSkill" xml:space="preserve">
     <value>افزودن مهارت</value>
   </data>
+  <data name="Specialists_SearchAndFilter" xml:space="preserve">
+    <value>جستجو و فیلتر</value>
+  </data>
+  <data name="Specialists_AllStatuses" xml:space="preserve">
+    <value>همه وضعیت‌ها</value>
+  </data>
+  <data name="Specialists_Skill" xml:space="preserve">
+    <value>مهارت</value>
+  </data>
+  <data name="Specialists_ClearFilters" xml:space="preserve">
+    <value>پاک کردن فیلترها</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>خدمات</value>
   </data>

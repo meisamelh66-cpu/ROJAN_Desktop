@@ -2,7 +2,7 @@ using Rojan.Desktop.Application.Specialists;
 
 namespace Rojan.Desktop.Application.Tests.BookingWorkflow;
 
-/// <summary>Minimal <see cref="ISpecialistQueryService"/> test double - only <see cref="GetSpecialistsAsync"/> is exercised by <see cref="BookingWorkflowServiceTests"/>, so <see cref="SearchSpecialistsAsync"/> just delegates to it.</summary>
+/// <summary>Minimal <see cref="ISpecialistQueryService"/> test double - only <see cref="GetSpecialistsAsync"/> is exercised by <see cref="BookingWorkflowServiceTests"/>, so <see cref="SearchSpecialistsAsync(string, CancellationToken)"/> just delegates to it.</summary>
 internal sealed class StubSpecialistQueryService : ISpecialistQueryService
 {
     private readonly IReadOnlyList<SpecialistDto> _specialists;
@@ -16,5 +16,8 @@ internal sealed class StubSpecialistQueryService : ISpecialistQueryService
         Task.FromResult(_specialists);
 
     public Task<IReadOnlyList<SpecialistDto>> SearchSpecialistsAsync(string searchText, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_specialists);
+
+    public Task<IReadOnlyList<SpecialistDto>> SearchSpecialistsAsync(SpecialistSearchFilter filter, CancellationToken cancellationToken = default) =>
         Task.FromResult(_specialists);
 }

@@ -63,21 +63,61 @@ public sealed class SpecialistPageViewModelTests
         Assert.Equal("boom", sut.ErrorMessage);
     }
 
+    // Sprint 5 Commit 4: premium specialist search and profile foundation. Text/field-matching
+    // behavior now lives in SpecialistQueryService (see SpecialistQueryServiceTests), so these
+    // ViewModel tests assert on filter composition (what got asked for) - same split
+    // Customers/Bookings/Services' own search commits established.
+
     [Fact]
-    public void SearchText_MatchesNameTitleOrEmail_FiltersToMatchingSpecialistsOnly()
+    public void Constructor_NoFilterApplied_SearchesWithAnAllDefaultFilter()
     {
-        var specialists = new List<SpecialistDto>
-        {
-            MakeSpecialist("specialist-1", "Jordan Lee", title: "Senior Colour Specialist"),
-            MakeSpecialist("specialist-2", "Priya Nair", email: "priya.nair@rojan.example"),
-            MakeSpecialist("specialist-3", "Casey Morgan", title: "Spa Therapist"),
-        };
+        // "Keep existing specialist list behavior unchanged when no filter is applied" - an
+        // all-default SpecialistSearchFilter is documented to behave identically to the old
+        // unfiltered GetSpecialistsAsync call (see SpecialistSearchFilter's own doc comment).
+        var specialists = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
+
         var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService());
 
-        sut.SearchText = "therapist";
+        var filter = Assert.Single(queryService.SearchCalls);
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.Skill);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(specialists, sut.Specialists);
+    }
 
-        Assert.Equal(["specialist-3"], sut.Specialists.Select(s => s.Id));
+    [Fact]
+    public void SearchText_Changed_SearchesWithSearchTextInFilter()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService());
+
+        sut.SearchText = "priya";
+
+        Assert.Equal("priya", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void StatusFilter_Changed_SearchesWithStatusInFilter()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService());
+
+        sut.StatusFilter = SpecialistStatus.OnLeave;
+
+        Assert.Equal(SpecialistStatus.OnLeave, queryService.SearchCalls[^1].Status);
+    }
+
+    [Fact]
+    public void SelectedSkill_Changed_SearchesWithSkillInFilter()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService());
+
+        sut.SelectedSkill = "Balayage";
+
+        Assert.Equal("Balayage", queryService.SearchCalls[^1].Skill);
     }
 
     [Fact]
@@ -88,13 +128,57 @@ public sealed class SpecialistPageViewModelTests
             MakeSpecialist("specialist-1", "Jordan Lee"),
             MakeSpecialist("specialist-2", "Priya Nair"),
         };
-        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
+        var queryService = new StubSpecialistQueryService(
+            _ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists),
+            searchSpecialistsByFilter: (filter, _) => Task.FromResult<IReadOnlyList<SpecialistDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? specialists
+                    : specialists.Where(specialist => specialist.FullName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
         var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService());
         sut.SelectedSpecialist = specialists[0];
 
         sut.SearchText = "Priya";
 
         Assert.Equal(specialists[1], sut.SelectedSpecialist);
+    }
+
+    [Fact]
+    public void SearchCommand_Executed_ReRunsSearchWithCurrentFilter()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService())
+        {
+            SearchText = "priya",
+        };
+        var callsBeforeExplicitSearch = queryService.SearchCalls.Count;
+
+        sut.SearchCommand.Execute(null);
+
+        Assert.True(queryService.SearchCalls.Count > callsBeforeExplicitSearch);
+        Assert.Equal("priya", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void ClearFiltersCommand_Executed_ResetsEveryFilterAndReloadsWithDefaultFilter()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService())
+        {
+            SearchText = "priya",
+            StatusFilter = SpecialistStatus.OnLeave,
+            SelectedSkill = "Balayage",
+        };
+
+        sut.ClearFiltersCommand.Execute(null);
+
+        Assert.Equal(string.Empty, sut.SearchText);
+        Assert.Null(sut.StatusFilter);
+        Assert.Equal(string.Empty, sut.SelectedSkill);
+
+        var filter = queryService.SearchCalls[^1];
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.Skill);
     }
 
     [Fact]

@@ -18,6 +18,15 @@
         Every card/widget here is DashboardCard/DashboardWidget/KPIValue -
         no new Design System components needed, same as every other module.
 
+        Sprint 5 Commit 4 (Premium Specialist Search &amp; Profile
+        foundation): the plain search box became a Search &amp; Filter
+        DashboardCard - free text plus status/skill, combined by the
+        ViewModel into one SpecialistSearchFilter, same minimal-functional-
+        controls-only shape Customers'/Bookings'/Services' own search
+        commits already established (plain TextBox/ComboBox rows, no
+        Premium controls, no visual redesign - that belongs to a later
+        pass). The list/detail layout and the skills card on the right are
+        otherwise unchanged.
     -->
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
@@ -25,7 +34,7 @@
             <ColumnDefinition Width="380" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: header, add-specialist form, search box, specialist list -->
+        <!-- Left: header, add-specialist form, search & filter, specialist list -->
         <Grid Grid.Column="0" Margin="0,0,24,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -82,36 +91,53 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
-            <Border Grid.Row="2"
-                    Style="{StaticResource Rojan.Style.Panel}"
-                    Padding="16,10"
-                    Margin="0,24,0,0">
-                <Grid>
-                    <TextBlock Text="{x:Static loc:Strings.Specialists_SearchPlaceholder}"
-                               Foreground="{StaticResource Rojan.Brush.HintText}"
-                               FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                               FontSize="15"
-                               IsHitTestVisible="False">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SearchText}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                             CaretBrush="{StaticResource Rojan.Brush.Accent}"
-                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                             FontSize="15" />
-                </Grid>
-            </Border>
+            <!-- Search & Filter: free text plus status/skill, combined by the ViewModel into one SpecialistSearchFilter -->
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Specialists_SearchAndFilter}" Margin="0,24,0,0">
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ComboBox ItemsSource="{Binding AvailableStatusOptions}" SelectedItem="{Binding StatusFilter, Mode=TwoWay}" Margin="0,4,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="{x:Static loc:Strings.Specialists_AllStatuses}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Skill}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding SelectedSkill, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="{x:Static loc:Strings.Specialists_ClearFilters}"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                            HorizontalAlignment="Right"
+                            Margin="0,16,0,0" />
+                </StackPanel>
+            </dashboardControls:DashboardCard>
 
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Specialists_AllSpecialists}"

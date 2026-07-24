@@ -15,6 +15,19 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// never reaching past Application into Domain/Infrastructure. Reuses
 /// <see cref="DashboardState"/> rather than a duplicate enum, same
 /// reasoning as every other page ViewModel in this app.
+///
+/// Sprint 5 Commit 4 (Premium Specialist Search &amp; Profile foundation):
+/// <see cref="SearchText"/>/<see cref="StatusFilter"/>/<see cref="SelectedSkill"/>
+/// are combined into one <see cref="SpecialistSearchFilter"/> and run
+/// through <see cref="ISpecialistQueryService.SearchSpecialistsAsync(SpecialistSearchFilter, CancellationToken)"/> -
+/// every load (including the initial one) goes through this same method
+/// now, not a separate <c>GetSpecialistsAsync</c>/<c>SearchSpecialistsAsync(string)</c>
+/// path, the same unification Customers'/Bookings'/Services' own search
+/// commits already established. An all-default filter is equivalent to
+/// the old unfiltered <c>GetSpecialistsAsync</c> call - see
+/// <see cref="SpecialistSearchFilter"/>'s own doc comment. Same
+/// <c>_filterVersion</c> staleness-guard pattern as every other page
+/// ViewModel with combinable filters.
 /// </summary>
 public sealed class SpecialistPageViewModel : ViewModelBase
 {
@@ -25,12 +38,17 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private string _searchText = string.Empty;
+    private SpecialistStatus? _statusFilter;
+    private string _selectedSkill = string.Empty;
     private SpecialistDto? _selectedSpecialist;
     private SpecialistProfileViewModel? _profile;
     private string _newSpecialistFullName = string.Empty;
     private string _newSpecialistTitle = string.Empty;
     private string _newSpecialistEmail = string.Empty;
     private string _newSpecialistPhone = string.Empty;
+
+    /// <summary>Incremented on every filter/load-triggering change - see <c>Bookings.BookingPageViewModel</c>'s field of the same name for the full reasoning.</summary>
+    private int _filterVersion;
 
     public SpecialistPageViewModel(
         ISpecialistQueryService queryService,
@@ -44,6 +62,8 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         Specialists = new ObservableCollection<SpecialistDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
+        SearchCommand = new AsyncRelayCommand(_ => LoadAsync());
+        ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
         CreateSpecialistCommand = new AsyncRelayCommand(
             _ => CreateSpecialistAsync(),
             _ => !string.IsNullOrWhiteSpace(NewSpecialistFullName));
@@ -58,6 +78,12 @@ public sealed class SpecialistPageViewModel : ViewModelBase
 
     /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
     public ICommand LoadCommand { get; }
+
+    /// <summary>Explicit re-run of the current filter combination - the reactive filter-property setters already trigger a load on every change, so this exists for an explicit Search action (button/Enter key) a future UI pass may wire up.</summary>
+    public ICommand SearchCommand { get; }
+
+    /// <summary>Resets every filter property to its default (empty/null) and reloads - equivalent to a freshly-opened, unfiltered directory view.</summary>
+    public ICommand ClearFiltersCommand { get; }
 
     public ICommand CreateSpecialistCommand { get; }
 
@@ -80,10 +106,40 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _searchText, value))
             {
-                _ = SearchAsync(value);
+                _ = LoadAsync();
             }
         }
     }
+
+    /// <summary>Null means "every status" - the first entry of <see cref="AvailableStatusOptions"/>.</summary>
+    public SpecialistStatus? StatusFilter
+    {
+        get => _statusFilter;
+        set
+        {
+            if (SetProperty(ref _statusFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Filters to specialists with a matching skill name - see <see cref="SpecialistSearchFilter"/>'s own doc comment for why this stands in for a "service filter" no existing query can answer.</summary>
+    public string SelectedSkill
+    {
+        get => _selectedSkill;
+        set
+        {
+            if (SetProperty(ref _selectedSkill, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Bindable options for the status filter ComboBox - leads with <c>null</c> ("every status") followed by every real <see cref="SpecialistStatus"/> value.</summary>
+    public IReadOnlyList<SpecialistStatus?> AvailableStatusOptions { get; } =
+        new SpecialistStatus?[] { null }.Concat(Enum.GetValues<SpecialistStatus>().Cast<SpecialistStatus?>()).ToList();
 
     public SpecialistDto? SelectedSpecialist
     {
@@ -135,9 +191,20 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         State = DashboardState.Loading;
         ErrorMessage = null;
 
+        var requestVersion = ++_filterVersion;
+
         try
         {
-            var specialists = await _queryService.GetSpecialistsAsync().ConfigureAwait(true);
+            var specialists = await _queryService.SearchSpecialistsAsync(BuildFilter()).ConfigureAwait(true);
+
+            if (requestVersion != _filterVersion)
+            {
+                // A newer filter change (or another reload) started after
+                // this one - its result will win instead, so applying this
+                // now-stale response would flash outdated data.
+                return;
+            }
+
             ReplaceAll(specialists);
 
             State = specialists.Count == 0
@@ -148,42 +215,32 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
-            State = DashboardState.Error;
-        }
-    }
-
-    /// <summary>
-    /// Runs the search through <see cref="ISpecialistQueryService.SearchSpecialistsAsync"/>
-    /// rather than filtering a client-side cache - same reasoning as
-    /// <c>Customers.CustomerPageViewModel.SearchAsync</c>. Guards against
-    /// out-of-order completions: if the user kept typing after this call
-    /// started, <paramref name="searchText"/> no longer matches
-    /// <see cref="SearchText"/> by the time the result arrives, and the
-    /// stale result is discarded.
-    /// </summary>
-    private async Task SearchAsync(string searchText)
-    {
-        try
-        {
-            var results = await _queryService.SearchSpecialistsAsync(searchText).ConfigureAwait(true);
-            if (!string.Equals(searchText, SearchText, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            ReplaceAll(results);
-        }
-#pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must surface as the Error state, not crash the page.
-        catch (Exception exception)
-#pragma warning restore CA1031
-        {
-            if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
+            if (requestVersion == _filterVersion)
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
             }
         }
+    }
+
+    private SpecialistSearchFilter BuildFilter() => new(
+        SearchText: string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
+        Status: StatusFilter,
+        Skill: string.IsNullOrWhiteSpace(SelectedSkill) ? null : SelectedSkill);
+
+    private void ClearFilters()
+    {
+        _searchText = string.Empty;
+        _statusFilter = null;
+        _selectedSkill = string.Empty;
+
+        // Raise every property-changed notification once, then reload once - setting each property
+        // individually would fire LoadAsync repeatedly (once per property) for a single user action.
+        OnPropertyChanged(nameof(SearchText));
+        OnPropertyChanged(nameof(StatusFilter));
+        OnPropertyChanged(nameof(SelectedSkill));
+
+        _ = LoadAsync();
     }
 
     private async Task CreateSpecialistAsync()
