@@ -58,9 +58,15 @@ public sealed class CalendarQueryService : ICalendarQueryService
         {
             var start = ToDateTimeOffset(scheduleDate, slotStart);
             var end = start + SlotDuration;
-            var status = bookedSlots.Any(booked => Overlaps(start, end, booked))
-                ? DomainCalendar.AvailabilityStatus.Booked
-                : DomainCalendar.AvailabilityStatus.Available;
+
+            // A break takes precedence over an overlapping booked range - see
+            // AvailabilityStatus's own doc comment for why (a break is
+            // blocked-by-policy time, not a real reservation).
+            var status = todaySchedule.Breaks.Any(brk => Overlaps(start, end, brk))
+                ? DomainCalendar.AvailabilityStatus.Unavailable
+                : bookedSlots.Any(booked => Overlaps(start, end, booked))
+                    ? DomainCalendar.AvailabilityStatus.Booked
+                    : DomainCalendar.AvailabilityStatus.Available;
 
             slots.Add(CalendarMapper.MapSlot(new DomainCalendar.AvailabilitySlot(specialistId, specialistName, start, end, status)));
         }

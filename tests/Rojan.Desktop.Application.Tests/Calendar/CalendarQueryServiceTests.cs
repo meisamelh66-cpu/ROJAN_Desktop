@@ -86,4 +86,44 @@ public sealed class CalendarQueryServiceTests
         Assert.Equal(30, bookedSlot.Start.Minute);
         Assert.Equal(3, result.Slots.Count(slot => slot.Status == AvailabilityStatus.Available));
     }
+
+    [Fact]
+    public async Task GetDailyAvailabilityAsync_SlotOverlapsBreak_MarksOnlyThatSlotAsUnavailable()
+    {
+        var repository = new StubCalendarRepository();
+        var breakStart = new TimeSpan(9, 30, 0);
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0),
+            [new DomainCalendar.TimeSlot(
+                new DateTimeOffset(TestDate.Year, TestDate.Month, TestDate.Day, breakStart.Hours, breakStart.Minutes, 0, DateTimeOffset.Now.Offset),
+                new DateTimeOffset(TestDate.Year, TestDate.Month, TestDate.Day, breakStart.Hours, breakStart.Minutes, 0, DateTimeOffset.Now.Offset).AddMinutes(30))]));
+        var sut = new CalendarQueryService(repository);
+
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+
+        var unavailableSlot = Assert.Single(result.Slots, slot => slot.Status == AvailabilityStatus.Unavailable);
+        Assert.Equal(9, unavailableSlot.Start.Hour);
+        Assert.Equal(30, unavailableSlot.Start.Minute);
+        Assert.Equal(3, result.Slots.Count(slot => slot.Status == AvailabilityStatus.Available));
+    }
+
+    [Fact]
+    public async Task GetDailyAvailabilityAsync_BreakOverlapsBookedSlot_MarksUnavailableNotBooked()
+    {
+        var repository = new StubCalendarRepository();
+        var overlapStart = new DateTimeOffset(TestDate.Year, TestDate.Month, TestDate.Day, 9, 30, 0, DateTimeOffset.Now.Offset);
+        repository.Schedules.Add(new DomainCalendar.WorkingSchedule(
+            "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0),
+            [new DomainCalendar.TimeSlot(overlapStart, overlapStart.AddMinutes(30))]));
+        repository.BookedSlotsBySpecialist["specialist-1"] =
+        [
+            new DomainCalendar.TimeSlot(overlapStart, overlapStart.AddMinutes(30)),
+        ];
+        var sut = new CalendarQueryService(repository);
+
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+
+        var overlapSlot = Assert.Single(result.Slots, slot => slot.Start == overlapStart);
+        Assert.Equal(AvailabilityStatus.Unavailable, overlapSlot.Status);
+    }
 }

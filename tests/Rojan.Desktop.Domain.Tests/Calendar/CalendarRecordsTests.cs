@@ -15,6 +15,26 @@ public sealed class CalendarRecordsTests
     }
 
     [Fact]
+    public void WorkingSchedule_NoBreaksSpecified_DefaultsToEmpty()
+    {
+        var schedule = new WorkingSchedule("schedule-1", "specialist-1", "Jordan Lee", DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0));
+
+        Assert.Empty(schedule.Breaks);
+    }
+
+    [Fact]
+    public void WorkingSchedule_DifferentBreaks_AreNotEqual()
+    {
+        var breakStart = DateTimeOffset.UnixEpoch;
+        var withBreak = new WorkingSchedule(
+            "schedule-1", "specialist-1", "Jordan Lee", DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0),
+            [new TimeSlot(breakStart, breakStart.AddMinutes(30))]);
+        var withoutBreak = new WorkingSchedule("schedule-1", "specialist-1", "Jordan Lee", DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0));
+
+        Assert.NotEqual(withBreak, withoutBreak);
+    }
+
+    [Fact]
     public void TimeSlot_DifferentEnd_AreNotEqual()
     {
         var start = DateTimeOffset.UnixEpoch;
