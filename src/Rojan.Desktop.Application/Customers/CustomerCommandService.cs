@@ -19,6 +19,13 @@ namespace Rojan.Desktop.Application.Customers;
 /// session - editing a customer must never silently move it to whichever
 /// branch happens to be active, that would need its own explicit
 /// "transfer" operation, out of scope here.
+/// Sprint 4 Commit 1: <see cref="UpdateCustomerAsync"/> enforces
+/// <see cref="DomainCustomers.CustomerRules"/> only when the request
+/// actually changes status - <c>UpdateCustomerAsync</c> is a full-field
+/// replacement (name/company/email/phone/status/lifetime value/notes all
+/// in one call, unlike Bookings' dedicated status-only command), so most
+/// calls carry the customer's current, unchanged status through
+/// unexamined; only a real status change is validated as a transition.
 /// </summary>
 public sealed class CustomerCommandService : ICustomerCommandService
 {
@@ -57,13 +64,19 @@ public sealed class CustomerCommandService : ICustomerCommandService
         var existing = await _repository.GetCustomerByIdAsync(request.Id, cancellationToken).ConfigureAwait(true)
             ?? throw new InvalidOperationException($"Customer '{request.Id}' was not found.");
 
+        var newStatus = CustomerMapper.MapStatusToDomain(request.Status);
+        if (newStatus != existing.Status && !DomainCustomers.CustomerRules.IsValidTransition(existing.Status, newStatus))
+        {
+            throw new InvalidOperationException($"Cannot transition customer from {existing.Status} to {newStatus}.");
+        }
+
         var customer = new DomainCustomers.Customer(
             request.Id,
             request.FullName,
             request.Company,
             request.Email,
             request.Phone,
-            CustomerMapper.MapStatusToDomain(request.Status),
+            newStatus,
             request.LifetimeValue,
             DateTimeOffset.Now,
             request.Notes,
