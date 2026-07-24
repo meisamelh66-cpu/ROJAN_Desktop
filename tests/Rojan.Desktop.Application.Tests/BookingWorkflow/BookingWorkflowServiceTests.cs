@@ -268,4 +268,52 @@ public sealed class BookingWorkflowServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("no-such-booking", SlotStart));
     }
+
+    [Fact]
+    public async Task FullLifecycle_CreateRescheduleThenCancel_CalendarStaysInSyncThroughout()
+    {
+        // Sprint 3 Commit 7 regression: Create -> Reschedule -> Cancel against one shared
+        // Calendar/booking command stub pair, verifying the reserve/release calls stay
+        // consistent across the whole lifecycle - not just each operation in isolation. In
+        // particular, Cancel must release the slot at the booking's RESCHEDULED time, not its
+        // original one.
+        var calendarCommandService = new StubCalendarCommandService();
+        var bookingCommandService = new StubBookingCommandService();
+        var createSut = MakeSut(calendarCommandService: calendarCommandService, bookingCommandService: bookingCommandService);
+        var createRequest = new CreateBookingWorkflowRequest(
+            "customer-1", "Amelia Hart", "service-1", "Haircut & Style", 60, "$65",
+            "specialist-1", "Jordan Lee", SlotStart, string.Empty);
+
+        var confirmation = await createSut.CreateBookingAsync(createRequest);
+        Assert.Single(calendarCommandService.ReserveCalls);
+
+        // Reschedule needs to read the booking back at its post-create state.
+        var bookingAfterCreate = new AppBookings.BookingDto(
+            confirmation.BookingId, "customer-1", "Amelia Hart", "service-1", "Haircut & Style", "specialist-1", "Jordan Lee",
+            SlotStart, 60, "$65", AppBookings.BookingStatus.Pending, string.Empty, "org-1", "branch-1");
+        var newStart = SlotStart.AddDays(1);
+        var rescheduleSut = MakeSut(
+            bookingQueryService: new StubBookingQueryService([bookingAfterCreate]),
+            bookingCommandService: bookingCommandService,
+            calendarCommandService: calendarCommandService);
+
+        await rescheduleSut.RescheduleBookingAsync(confirmation.BookingId, newStart);
+
+        Assert.Equal(2, calendarCommandService.ReserveCalls.Count); // create's slot + reschedule's new slot
+        var releaseAfterReschedule = Assert.Single(calendarCommandService.ReleaseCalls);
+        Assert.Equal(SlotStart, releaseAfterReschedule.Start); // reschedule released the ORIGINAL slot
+
+        // Cancel needs to read the booking back at its post-reschedule state.
+        var bookingAfterReschedule = bookingAfterCreate with { ScheduledAt = newStart };
+        var cancelSut = MakeSut(
+            bookingQueryService: new StubBookingQueryService([bookingAfterReschedule]),
+            bookingCommandService: bookingCommandService,
+            calendarCommandService: calendarCommandService);
+
+        await cancelSut.CancelBookingAsync(confirmation.BookingId);
+
+        Assert.Equal(2, calendarCommandService.ReleaseCalls.Count);
+        var releaseAfterCancel = calendarCommandService.ReleaseCalls[^1];
+        Assert.Equal(newStart, releaseAfterCancel.Start); // cancel released the RESCHEDULED slot, not the original
+    }
 }

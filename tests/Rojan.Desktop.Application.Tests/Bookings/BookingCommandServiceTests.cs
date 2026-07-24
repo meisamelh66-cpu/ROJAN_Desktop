@@ -332,4 +332,60 @@ public sealed class BookingCommandServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("no-such-booking", DateTimeOffset.UnixEpoch));
     }
+
+    // Sprint 3 Commit 7 regression: full lifecycle walks on one booking, not just each transition
+    // tested in isolation - proves the whole chain of Sprint 3's changes (InProgress/NoShow states,
+    // the CompleteBookingCommand CanExecute fix, reschedule eligibility) hold together end-to-end.
+
+    [Fact]
+    public async Task BookingLifecycle_PendingThroughCompleted_AllTransitionsSucceedInOrder()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Pending)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var confirmed = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Confirmed);
+        Assert.Equal(BookingStatus.Confirmed, confirmed.Status);
+
+        var inProgress = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.InProgress);
+        Assert.Equal(BookingStatus.InProgress, inProgress.Status);
+
+        var completed = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Completed);
+        Assert.Equal(BookingStatus.Completed, completed.Status);
+
+        Assert.Equal(DomainBookings.BookingStatus.Completed, Assert.Single(repository.Bookings).Status);
+    }
+
+    [Fact]
+    public async Task BookingLifecycle_PendingToCancelled_Succeeds()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Pending)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var cancelled = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Cancelled);
+
+        Assert.Equal(BookingStatus.Cancelled, cancelled.Status);
+    }
+
+    [Fact]
+    public async Task BookingLifecycle_ConfirmedToNoShow_Succeeds()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Confirmed)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var noShow = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.NoShow);
+
+        Assert.Equal(BookingStatus.NoShow, noShow.Status);
+    }
+
+    [Fact]
+    public async Task BookingLifecycle_ReachedTerminalStatus_RejectsBothFurtherTransitionAndReschedule()
+    {
+        // Once a booking reaches a terminal status, both write paths (status transition and
+        // reschedule) must reject it consistently.
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Completed)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Confirmed));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("booking-1", DateTimeOffset.UnixEpoch.AddDays(1)));
+    }
 }

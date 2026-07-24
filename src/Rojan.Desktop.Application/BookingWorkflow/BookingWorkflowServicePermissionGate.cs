@@ -2,7 +2,7 @@ using Rojan.Desktop.Application.Organizations;
 
 namespace Rojan.Desktop.Application.BookingWorkflow;
 
-/// <summary>Phase 22A: Enterprise Context Migration - same "wrap the real service with permission enforcement" pattern as <c>Customers.CustomerCommandServicePermissionGate</c>. Only the two write use cases are gated (<see cref="Permission.BookingCreate"/>) - the wizard's own picker reads stay open to anyone who can reach the Bookings module.</summary>
+/// <summary>Phase 22A: Enterprise Context Migration - same "wrap the real service with permission enforcement" pattern as <c>Customers.CustomerCommandServicePermissionGate</c>. Only the write use cases (Create/Cancel/Reschedule, all gated on <see cref="Permission.BookingCreate"/> - Sprint 3 Commit 6 added Reschedule alongside the original two) are gated - the wizard's own picker reads stay open to anyone who can reach the Bookings module.</summary>
 public sealed class BookingWorkflowServicePermissionGate : IBookingWorkflowService
 {
     private readonly IBookingWorkflowService _inner;

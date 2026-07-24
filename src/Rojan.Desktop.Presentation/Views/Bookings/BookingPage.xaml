@@ -11,10 +11,10 @@
         Phase 11: Booking Module Foundation. Same master-detail shape as
         CustomerPage/DashboardPage: a new-booking form plus a booking list
         on the left, and the selected booking's details plus
-        status-transition actions (Confirm/Complete/Cancel/Start/No Show) on
-        the right. Every card/widget here is DashboardCard/DashboardWidget,
-        the same Design System components every other module reuses
-        unchanged.
+        status-transition actions (Confirm/Start/Complete/No Show/Cancel)
+        and a reschedule action on the right. Every card/widget here is
+        DashboardCard/DashboardWidget, the same Design System components
+        every other module reuses unchanged.
 
         Sprint 3 Commit 2: added a Search &amp; Filter card between the
         new-booking form and the list - free-text search plus
@@ -34,6 +34,10 @@
         every visual here is an existing Shared control or existing Theme
         resource, same reasoning as Calendar's Sprint 2 Commit 5 pass. No
         ViewModel or command behavior changed.
+
+        Sprint 3 Commit 6: added the reschedule date picker + button below
+        the status-action row - reuses the same DatePicker/ButtonSecondary
+        components already used elsewhere on this page, no new control.
     -->
     <UserControl.Resources>
         <Style x:Key="BookingStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
