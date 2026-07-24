@@ -1,0 +1,32 @@
+# Sprint 8 Commit 1: Backend Foundation. Lightweight local development
+# stack only (Phase 5: "No production deployment") - a PostgreSQL
+# instance matching appsettings.Development.json's own default connection
+# string, plus the API itself. Run with `docker compose up` from this
+# directory.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rojan_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - rojan-server-postgres-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Rojan.Server.Api/Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=rojan_dev;Username=postgres;Password=postgres"
+    ports:
+      - "8080:8080"
+
+volumes:
+  rojan-server-postgres-data:

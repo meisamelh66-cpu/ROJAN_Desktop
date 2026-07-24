@@ -1,0 +1,6 @@
+@Rojan.Server.Api_HostAddress = http://localhost:5213
+
+GET {{Rojan.Server.Api_HostAddress}}/health
+Accept: application/json
+
+###

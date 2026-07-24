@@ -1,0 +1,31 @@
+<Project>
+  <!--
+    Central Package Management (CPM) for Rojan.Server only. Deliberately
+    independent from the repo-root Directory.Packages.props (which governs
+    the desktop solution) - MSBuild/NuGet stop at the first
+    Directory.Packages.props found walking up from a project's own
+    directory, so this file fully shadows the desktop one for everything
+    under Rojan.Server/. Without this file, `dotnet add package` here would
+    silently write into the desktop's central file instead (confirmed while
+    setting this project up - the desktop's Microsoft.EntityFrameworkCore.Design
+    pin got downgraded from 8.0.29 to 8.0.10 before this file existed, then
+    reverted).
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+    <PackageVersion Include="xunit" Version="2.5.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+</Project>
