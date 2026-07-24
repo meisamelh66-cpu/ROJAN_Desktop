@@ -1,15 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
+using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 
 namespace Rojan.Desktop.Infrastructure.Persistence;
 
 /// <summary>
 /// Sprint 6 Commit 1 established this as infrastructure plumbing with no
-/// <see cref="DbSet{TEntity}"/> at all. Sprint 6 Commit 2 adds the first
-/// one: Customers. Every other Domain module
-/// (Specialists/Services/Bookings/Calendar) still resolves its existing
+/// <see cref="DbSet{TEntity}"/> at all. Sprint 6 Commit 2 added the first
+/// one (Customers); Commit 3 adds Specialists. Every other Domain module
+/// (Services/Bookings/Calendar) still resolves its existing
 /// <c>Fake*Repository</c> unchanged - this context only knows about the
-/// one module that has actually moved to EF Core so far, added one module
+/// modules that have actually moved to EF Core so far, added one module
 /// at a time, the same cadence Sprint 3/4/5's Rules -&gt; Search/Filter -&gt;
 /// Intelligence commits already established.
 ///
@@ -39,11 +40,17 @@ public sealed class RojanDbContext : DbContext
 
     public DbSet<CustomerActivityEntity> CustomerActivities => Set<CustomerActivityEntity>();
 
+    public DbSet<SpecialistEntity> Specialists => Set<SpecialistEntity>();
+
+    public DbSet<SpecialistSkillEntity> SpecialistSkills => Set<SpecialistSkillEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CustomerEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerNoteEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerTagEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerActivityEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpecialistEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpecialistSkillEntityConfiguration());
     }
 }

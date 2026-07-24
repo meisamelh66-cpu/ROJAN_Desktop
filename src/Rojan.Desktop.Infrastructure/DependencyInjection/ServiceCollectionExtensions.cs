@@ -40,10 +40,10 @@ using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
+using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
-using Rojan.Desktop.Infrastructure.Specialists;
 using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
@@ -78,7 +78,16 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICustomerRepository, EfCustomerRepository>();
 
         services.AddSingleton<IBookingRepository, FakeBookingRepository>();
-        services.AddSingleton<ISpecialistRepository, FakeSpecialistRepository>();
+
+        // Sprint 6 Commit 3: Specialists is the second Domain module moved
+        // off its Fake*Repository onto EF Core - same reasoning as
+        // Customers in Commit 2 (see EfCustomerRepository's own DI comment
+        // above). FakeSpecialistRepository stays in the codebase,
+        // unreferenced. Behavior change: the Specialist directory now
+        // starts empty on a fresh SQLite database instead of showing the
+        // fake's 5 seeded demo specialists.
+        services.AddSingleton<ISpecialistRepository, EfSpecialistRepository>();
+
         services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
         services.AddSingleton<ICalendarRepository, FakeCalendarRepository>();
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
