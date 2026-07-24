@@ -48,7 +48,7 @@ using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
 using DomainServices = Rojan.Desktop.Domain.Services;
-using InfraServices = Rojan.Desktop.Infrastructure.Services;
+using InfraPersistenceServices = Rojan.Desktop.Infrastructure.Persistence.Services;
 
 namespace Rojan.Desktop.Infrastructure.DependencyInjection;
 
@@ -88,7 +88,19 @@ public static class ServiceCollectionExtensions
         // fake's 5 seeded demo specialists.
         services.AddSingleton<ISpecialistRepository, EfSpecialistRepository>();
 
-        services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
+        // Sprint 6 Commit 4: Services is the third Domain module moved off
+        // its Fake*Repository onto EF Core - same reasoning as Customers/
+        // Specialists in Commits 2/3 (see EfCustomerRepository's own DI
+        // comment above). FakeServiceRepository stays in the codebase,
+        // unreferenced. Unlike Customers/Specialists, IServiceRepository
+        // has no create/update-service method at all (see
+        // EfServiceRepository's own doc comment), so the empty catalog on
+        // a fresh database cannot self-heal through the running app the
+        // way Customers/Specialists can - a real, known, pre-existing gap
+        // (catalog authoring was never in scope for this vertical slice),
+        // not something introduced or fixable here.
+        services.AddSingleton<DomainServices.IServiceRepository, InfraPersistenceServices.EfServiceRepository>();
+
         services.AddSingleton<ICalendarRepository, FakeCalendarRepository>();
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
         services.AddSingleton<IAccountingRepository, FakeAccountingRepository>();
