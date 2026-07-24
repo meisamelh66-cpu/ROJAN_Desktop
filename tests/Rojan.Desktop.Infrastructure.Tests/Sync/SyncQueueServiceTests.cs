@@ -24,8 +24,8 @@ public sealed class SyncQueueServiceTests : IDisposable
         }
     }
 
-    private static PendingSyncOperation NewOperation() =>
-        new(Guid.NewGuid().ToString("N"), "Customer", "customer-1", "Create", "{}", DateTimeOffset.UtcNow);
+    private static PendingSyncOperation NewOperation(string entityId = "customer-1") =>
+        new(Guid.NewGuid().ToString("N"), "Customer", entityId, "Create", "{}", DateTimeOffset.UtcNow);
 
     [Fact]
     public async Task InitializeAsync_NoPersistedQueue_StaysIdle()
@@ -106,7 +106,45 @@ public sealed class SyncQueueServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ProcessQueueAsync_ConflictResponse_RecordsAConflictAndDropsTheOperation()
+    public async Task ProcessQueueAsync_ConflictResponse_RecordsAConflictWithCorrectEntityInformation()
+    {
+        var connectivity = new StubConnectivityService { CurrentState = ConnectionState.Online };
+        var apiClient = new StubApiClient { ConflictStatusCode = 409 };
+        var service = new SyncQueueService(connectivity, new PassThroughRetryPolicy(), apiClient, _filePath);
+        var operation = NewOperation();
+        await service.EnqueueAsync(operation);
+
+        await service.ProcessQueueAsync();
+
+        var conflict = Assert.Single(service.Conflicts);
+        Assert.Equal(operation.Id, conflict.OperationId);
+        Assert.Equal(operation.EntityType, conflict.EntityType);
+        Assert.Equal(operation.EntityId, conflict.EntityId);
+        Assert.Equal(operation.Payload, conflict.LocalPayload);
+        Assert.Equal("conflict", conflict.RemotePayload);
+        Assert.False(string.IsNullOrWhiteSpace(conflict.Reason));
+        Assert.Equal(SyncConflictResolutionStatus.Unresolved, conflict.ResolutionStatus);
+        Assert.Equal(SyncState.ConflictDetected, service.CurrentState);
+    }
+
+    [Fact]
+    public async Task ProcessQueueAsync_ConflictResponse_KeepsTheOriginalOperationRatherThanDeletingIt()
+    {
+        var connectivity = new StubConnectivityService { CurrentState = ConnectionState.Online };
+        var apiClient = new StubApiClient { ConflictStatusCode = 409 };
+        var service = new SyncQueueService(connectivity, new PassThroughRetryPolicy(), apiClient, _filePath);
+        var operation = NewOperation();
+        await service.EnqueueAsync(operation);
+
+        await service.ProcessQueueAsync();
+
+        var pending = Assert.Single(await service.GetPendingAsync());
+        Assert.Equal(operation.Id, pending.Id);
+        Assert.Equal(operation.RetryCount, pending.RetryCount);
+    }
+
+    [Fact]
+    public async Task ProcessQueueAsync_ConflictedOperation_IsNeverResentOnASubsequentPass()
     {
         var connectivity = new StubConnectivityService { CurrentState = ConnectionState.Online };
         var apiClient = new StubApiClient { ConflictStatusCode = 409 };
@@ -114,9 +152,46 @@ public sealed class SyncQueueServiceTests : IDisposable
         await service.EnqueueAsync(NewOperation());
 
         await service.ProcessQueueAsync();
+        await service.ProcessQueueAsync();
 
-        Assert.Empty(await service.GetPendingAsync());
+        Assert.Equal(1, apiClient.PostCallCount);
         Assert.Single(service.Conflicts);
+        Assert.Single(await service.GetPendingAsync());
+    }
+
+    [Fact]
+    public async Task ProcessQueueAsync_MultipleOperationsAllConflict_RecordsOneConflictPerOperation()
+    {
+        var connectivity = new StubConnectivityService { CurrentState = ConnectionState.Online };
+        var apiClient = new StubApiClient { ConflictStatusCode = 409 };
+        var service = new SyncQueueService(connectivity, new PassThroughRetryPolicy(), apiClient, _filePath);
+        var first = NewOperation("customer-1");
+        var second = NewOperation("customer-2");
+        await service.EnqueueAsync(first);
+        await service.EnqueueAsync(second);
+
+        await service.ProcessQueueAsync();
+
+        Assert.Equal(2, service.Conflicts.Count);
+        Assert.Contains(service.Conflicts, conflict => conflict.OperationId == first.Id);
+        Assert.Contains(service.Conflicts, conflict => conflict.OperationId == second.Id);
+        Assert.Equal(2, (await service.GetPendingAsync()).Count);
+    }
+
+    [Fact]
+    public async Task Conflicts_PersistAcrossInstances()
+    {
+        var connectivity = new StubConnectivityService { CurrentState = ConnectionState.Online };
+        var apiClient = new StubApiClient { ConflictStatusCode = 409 };
+        var first = new SyncQueueService(connectivity, new PassThroughRetryPolicy(), apiClient, _filePath);
+        await first.EnqueueAsync(NewOperation());
+        await first.ProcessQueueAsync();
+
+        var second = new SyncQueueService(connectivity, new PassThroughRetryPolicy(), apiClient, _filePath);
+        await second.InitializeAsync();
+
+        Assert.Single(second.Conflicts);
+        Assert.Equal(SyncState.ConflictDetected, second.CurrentState);
     }
 
     private sealed class StubConnectivityService : IConnectivityService
@@ -144,11 +219,15 @@ public sealed class SyncQueueServiceTests : IDisposable
 
         public int? ConflictStatusCode { get; set; }
 
+        public int PostCallCount { get; private set; }
+
         public Task<ApiResponse<TResponse>> GetAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("Not used by these tests.");
 
         public Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
         {
+            PostCallCount++;
+
             if (ThrowOnPost is not null)
             {
                 throw ThrowOnPost;
