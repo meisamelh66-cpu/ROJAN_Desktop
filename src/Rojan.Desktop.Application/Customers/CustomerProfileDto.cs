@@ -1,9 +1,17 @@
 namespace Rojan.Desktop.Application.Customers;
 
-/// <summary>Everything the Customer 360 profile screen needs for one customer - the full aggregate fetched together as a single unit of work, same reasoning as Dashboard.DashboardOverviewDto.</summary>
+/// <summary>
+/// Everything the Customer 360 profile screen needs for one customer - the
+/// full aggregate fetched together as a single unit of work, same reasoning
+/// as Dashboard.DashboardOverviewDto. <see cref="BookingSummary"/> (Sprint 4
+/// Commit 3) is composed from <c>AppBookings.IBookingQueryService</c> rather
+/// than duplicated here - see <see cref="CustomerBookingSummaryDto"/>'s own
+/// doc comment.
+/// </summary>
 public sealed record CustomerProfileDto(
     CustomerDto Customer,
     IReadOnlyList<CustomerNoteDto> Notes,
     IReadOnlyList<CustomerTagDto> Tags,
     IReadOnlyList<CustomerActivityDto> Activity,
-    IReadOnlyList<CustomerStatDto> Statistics);
+    IReadOnlyList<CustomerStatDto> Statistics,
+    CustomerBookingSummaryDto BookingSummary);

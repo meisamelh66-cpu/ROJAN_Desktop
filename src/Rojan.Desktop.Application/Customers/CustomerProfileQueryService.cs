@@ -1,5 +1,6 @@
 using System.Globalization;
 using Rojan.Desktop.Application.Organizations;
+using AppBookings = Rojan.Desktop.Application.Bookings;
 using DomainCustomers = Rojan.Desktop.Domain.Customers;
 
 namespace Rojan.Desktop.Application.Customers;
@@ -18,15 +19,30 @@ namespace Rojan.Desktop.Application.Customers;
 /// <see cref="InvalidOperationException"/>, not a distinct "forbidden"
 /// error) - Organization/Branch Scoping must not even confirm that a
 /// given id exists elsewhere.
+///
+/// Sprint 4 Commit 3: <see cref="CustomerProfileDto.BookingSummary"/> is
+/// composed over <see cref="AppBookings.IBookingQueryService.GetBookingsAsync"/>
+/// (already Organization/Branch-scoped by <c>Bookings.BookingQueryService</c>
+/// itself, so no extra scoping is needed here) - the Customer module
+/// consumes Booking's existing Application-layer query surface rather than
+/// duplicating any <c>Domain.Bookings</c> logic, same "Application composes
+/// over a sibling module" shape <c>Reporting.KpiEngineQueryService</c>
+/// already establishes. Both layers stay same-layer siblings (Application
+/// depending on Application), never a Domain-level or circular reference.
 /// </summary>
 public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
 {
     private readonly DomainCustomers.ICustomerRepository _repository;
+    private readonly AppBookings.IBookingQueryService _bookingQueryService;
     private readonly IEnterpriseContext _enterpriseContext;
 
-    public CustomerProfileQueryService(DomainCustomers.ICustomerRepository repository, IEnterpriseContext enterpriseContext)
+    public CustomerProfileQueryService(
+        DomainCustomers.ICustomerRepository repository,
+        AppBookings.IBookingQueryService bookingQueryService,
+        IEnterpriseContext enterpriseContext)
     {
         _repository = repository;
+        _bookingQueryService = bookingQueryService;
         _enterpriseContext = enterpriseContext;
     }
 
@@ -42,6 +58,7 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
         var notes = await _repository.GetNotesAsync(customerId, cancellationToken).ConfigureAwait(true);
         var tags = await _repository.GetTagsAsync(customerId, cancellationToken).ConfigureAwait(true);
         var activity = await _repository.GetActivityAsync(customerId, cancellationToken).ConfigureAwait(true);
+        var bookingSummary = await BuildBookingSummaryAsync(customerId, cancellationToken).ConfigureAwait(true);
 
         var customerDto = CustomerMapper.MapCustomer(customer);
 
@@ -50,7 +67,28 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
             notes.Select(CustomerMapper.MapNote).ToList(),
             tags.Select(CustomerMapper.MapTag).ToList(),
             activity.Select(CustomerMapper.MapActivity).ToList(),
-            BuildStatistics(customerDto, notes.Count, tags.Count));
+            BuildStatistics(customerDto, notes.Count, tags.Count),
+            bookingSummary);
+    }
+
+    /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to now. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure.</summary>
+    private async Task<CustomerBookingSummaryDto> BuildBookingSummaryAsync(string customerId, CancellationToken cancellationToken)
+    {
+        var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(true);
+        var customerBookings = bookings.Where(booking => booking.CustomerId == customerId).ToList();
+
+        if (customerBookings.Count == 0)
+        {
+            return CustomerBookingSummaryDto.Empty;
+        }
+
+        var now = DateTimeOffset.Now;
+        var upcoming = customerBookings.Where(booking => booking.ScheduledAt >= now).OrderBy(booking => booking.ScheduledAt).ToList();
+        var past = customerBookings.Where(booking => booking.ScheduledAt < now).OrderByDescending(booking => booking.ScheduledAt).ToList();
+        var completedCount = customerBookings.Count(booking => booking.Status == AppBookings.BookingStatus.Completed);
+        var lastAppointmentDate = past.Count > 0 ? past[0].ScheduledAt : (DateTimeOffset?)null;
+
+        return new CustomerBookingSummaryDto(upcoming, past, customerBookings.Count, completedCount, lastAppointmentDate);
     }
 
     private static IReadOnlyList<CustomerStatDto> BuildStatistics(CustomerDto customer, int noteCount, int tagCount) =>

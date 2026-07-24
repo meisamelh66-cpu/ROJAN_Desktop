@@ -3,17 +3,23 @@ using System.Windows.Input;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
+using AppBookings = Rojan.Desktop.Application.Bookings;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 
 /// <summary>
 /// Drives the Customer 360 profile panel for one selected customer -
-/// statistics cards, tags, notes, and the activity timeline. Owned by
-/// <see cref="CustomerPageViewModel"/>, constructed fresh whenever the
-/// selected customer changes (never resolved from DI directly, since it
-/// needs a customerId only known at selection time - same reasoning
-/// <c>ModuleDescriptor</c> uses a factory rather than a static DI
-/// registration for per-instance construction).
+/// statistics cards, tags, notes, the activity timeline, and (Sprint 4
+/// Commit 3) booking history. Owned by <see cref="CustomerPageViewModel"/>,
+/// constructed fresh whenever the selected customer changes (never resolved
+/// from DI directly, since it needs a customerId only known at selection
+/// time - same reasoning <c>ModuleDescriptor</c> uses a factory rather than
+/// a static DI registration for per-instance construction).
+/// <see cref="UpcomingAppointments"/>/<see cref="PastAppointments"/> bind
+/// <see cref="AppBookings.BookingDto"/> directly - the same DTO
+/// <c>Bookings.BookingPageViewModel</c> exposes - rather than a
+/// Customer-owned copy, consistent with <see cref="CustomerBookingSummaryDto"/>
+/// reusing it instead of duplicating any booking mapping/logic.
 /// </summary>
 public sealed class CustomerProfileViewModel : ViewModelBase
 {
@@ -27,6 +33,9 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     private string _newNoteText = string.Empty;
     private string _newTagText = string.Empty;
     private CustomerStatus _editableStatus;
+    private int _totalBookingCount;
+    private int _completedBookingCount;
+    private DateTimeOffset? _lastAppointmentDate;
 
     public CustomerProfileViewModel(
         string customerId,
@@ -41,6 +50,8 @@ public sealed class CustomerProfileViewModel : ViewModelBase
         Tags = new ObservableCollection<CustomerTagDto>();
         Activity = new ObservableCollection<CustomerActivityDto>();
         Statistics = new ObservableCollection<CustomerStatDto>();
+        UpcomingAppointments = new ObservableCollection<AppBookings.BookingDto>();
+        PastAppointments = new ObservableCollection<AppBookings.BookingDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AddNoteCommand = new AsyncRelayCommand(_ => AddNoteAsync(), _ => !string.IsNullOrWhiteSpace(NewNoteText));
@@ -61,6 +72,12 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     public ObservableCollection<CustomerActivityDto> Activity { get; }
 
     public ObservableCollection<CustomerStatDto> Statistics { get; }
+
+    /// <summary>Future-dated bookings for this customer, soonest first - empty when the customer has none.</summary>
+    public ObservableCollection<AppBookings.BookingDto> UpcomingAppointments { get; }
+
+    /// <summary>Past bookings for this customer, most recent first - empty when the customer has none.</summary>
+    public ObservableCollection<AppBookings.BookingDto> PastAppointments { get; }
 
     public IReadOnlyList<CustomerStatus> AvailableStatuses { get; } = Enum.GetValues<CustomerStatus>();
 
@@ -111,6 +128,25 @@ public sealed class CustomerProfileViewModel : ViewModelBase
         set => SetProperty(ref _editableStatus, value);
     }
 
+    public int TotalBookingCount
+    {
+        get => _totalBookingCount;
+        private set => SetProperty(ref _totalBookingCount, value);
+    }
+
+    public int CompletedBookingCount
+    {
+        get => _completedBookingCount;
+        private set => SetProperty(ref _completedBookingCount, value);
+    }
+
+    /// <summary>The most recent past appointment's date - null when the customer has no past bookings.</summary>
+    public DateTimeOffset? LastAppointmentDate
+    {
+        get => _lastAppointmentDate;
+        private set => SetProperty(ref _lastAppointmentDate, value);
+    }
+
     private async Task LoadAsync()
     {
         State = DashboardState.Loading;
@@ -126,6 +162,11 @@ public sealed class CustomerProfileViewModel : ViewModelBase
             ReplaceAll(Tags, profile.Tags);
             ReplaceAll(Activity, profile.Activity);
             ReplaceAll(Statistics, profile.Statistics);
+            ReplaceAll(UpcomingAppointments, profile.BookingSummary.UpcomingAppointments);
+            ReplaceAll(PastAppointments, profile.BookingSummary.PastAppointments);
+            TotalBookingCount = profile.BookingSummary.TotalBookingCount;
+            CompletedBookingCount = profile.BookingSummary.CompletedBookingCount;
+            LastAppointmentDate = profile.BookingSummary.LastAppointmentDate;
 
             State = DashboardState.Loaded;
         }

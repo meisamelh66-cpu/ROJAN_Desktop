@@ -1,18 +1,24 @@
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
+using AppBookings = Rojan.Desktop.Application.Bookings;
 
 namespace Rojan.Desktop.Presentation.Tests.Customers;
 
 public sealed class CustomerProfileViewModelTests
 {
-    private static CustomerProfileDto MakeProfile(string customerId = "customer-1") =>
+    private static CustomerProfileDto MakeProfile(string customerId = "customer-1", CustomerBookingSummaryDto? bookingSummary = null) =>
         new(
             new CustomerDto(customerId, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "555-0100", CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes", "org-1", "branch-1"),
             [new CustomerNoteDto("note-1", customerId, "Prefers evenings.", DateTimeOffset.UnixEpoch)],
             [new CustomerTagDto("tag-1", customerId, "Regular", DateTimeOffset.UnixEpoch)],
             [new CustomerActivityDto("activity-1", customerId, "Customer created", DateTimeOffset.UnixEpoch)],
-            [new CustomerStatDto("Lifetime Value", "$4,820")]);
+            [new CustomerStatDto("Lifetime Value", "$4,820")],
+            bookingSummary ?? CustomerBookingSummaryDto.Empty);
+
+    private static AppBookings.BookingDto MakeBooking(string id, string customerId, DateTimeOffset scheduledAt, AppBookings.BookingStatus status = AppBookings.BookingStatus.Confirmed) =>
+        new(id, customerId, "Amelia Hart", "service-1", "Haircut", "specialist-1", "Alex Stylist",
+            scheduledAt, 60, "80", status, string.Empty, "org-1", "branch-1");
 
     [Fact]
     public void Constructor_ProfileQueryStillLoading_StateIsLoading()
@@ -134,5 +140,42 @@ public sealed class CustomerProfileViewModelTests
         var request = Assert.Single(commandService.UpdateRequests);
         Assert.Equal("customer-1", request.Id);
         Assert.Equal(CustomerStatus.Churned, request.Status);
+    }
+
+    // Sprint 4 Commit 3: customer 360 booking integration.
+
+    [Fact]
+    public void Constructor_ProfileHasBookingSummary_PopulatesAppointmentsAndBookingStatistics()
+    {
+        var now = DateTimeOffset.Now;
+        var upcoming = MakeBooking("booking-upcoming", "customer-1", now.AddDays(5));
+        var past = MakeBooking("booking-past", "customer-1", now.AddDays(-5), AppBookings.BookingStatus.Completed);
+        var bookingSummary = new CustomerBookingSummaryDto([upcoming], [past], TotalBookingCount: 2, CompletedBookingCount: 1, LastAppointmentDate: past.ScheduledAt);
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile(bookingSummary: bookingSummary)));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        Assert.Equal([upcoming], sut.UpcomingAppointments);
+        Assert.Equal([past], sut.PastAppointments);
+        Assert.Equal(2, sut.TotalBookingCount);
+        Assert.Equal(1, sut.CompletedBookingCount);
+        Assert.Equal(past.ScheduledAt, sut.LastAppointmentDate);
+    }
+
+    [Fact]
+    public void Constructor_ProfileHasNoBookings_UpcomingAndPastAppointmentsAreEmpty()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Empty(sut.UpcomingAppointments);
+        Assert.Empty(sut.PastAppointments);
+        Assert.Equal(0, sut.TotalBookingCount);
+        Assert.Equal(0, sut.CompletedBookingCount);
+        Assert.Null(sut.LastAppointmentDate);
     }
 }

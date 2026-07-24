@@ -5,6 +5,7 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appCustomers="clr-namespace:Rojan.Desktop.Application.Customers;assembly=Rojan.Desktop.Application"
+             xmlns:appBookings="clr-namespace:Rojan.Desktop.Application.Bookings;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
@@ -243,6 +244,103 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Customer Appointments (Sprint 4 Commit 3): upcoming bookings, composed from Bookings' own query service via CustomerBookingSummaryDto - no Premium redesign yet, that belongs to Commit 4 -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_UpcomingAppointments}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding UpcomingAppointments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appBookings:BookingDto}">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding ServiceName}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                                <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}}"
+                                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static loc:Strings.Customers_NoAppointments}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Booking History: recent past appointments -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_BookingHistory}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding PastAppointments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appBookings:BookingDto}">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding ServiceName}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                                <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy}}"
+                                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                           HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                           HorizontalAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static loc:Strings.Customers_NoAppointments}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PastAppointments.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
                     </dashboardControls:DashboardWidget>
 
                     <!-- Tags -->
