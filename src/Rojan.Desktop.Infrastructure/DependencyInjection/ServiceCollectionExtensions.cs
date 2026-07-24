@@ -31,7 +31,6 @@ using Rojan.Desktop.Infrastructure.Api;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
-using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
@@ -40,6 +39,7 @@ using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
+using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
@@ -64,7 +64,19 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddSingleton<IDashboardRepository, FakeDashboardRepository>();
-        services.AddSingleton<ICustomerRepository, FakeCustomerRepository>();
+
+        // Sprint 6 Commit 2: Customers is the first Domain module moved
+        // off its Fake*Repository onto EF Core (see RojanDbContext's own
+        // doc comment). FakeCustomerRepository itself is intentionally
+        // left in the codebase, unreferenced - not deleted - so the
+        // previous behavior stays one line away if ever needed again. This
+        // is a real, user-visible behavior change: the Customer list now
+        // starts empty on a fresh SQLite database instead of showing the
+        // fake's 7 seeded demo customers - that is the actual point of
+        // "real persistence" (data now genuinely survives a restart,
+        // accumulated from real use, not replayed from a hardcoded seed).
+        services.AddSingleton<ICustomerRepository, EfCustomerRepository>();
+
         services.AddSingleton<IBookingRepository, FakeBookingRepository>();
         services.AddSingleton<ISpecialistRepository, FakeSpecialistRepository>();
         services.AddSingleton<DomainServices.IServiceRepository, InfraServices.FakeServiceRepository>();
