@@ -7,8 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -19,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rojan.Server.Api\Rojan.Server.Api.csproj" />
+    <ProjectReference Include="..\..\src\Rojan.Server.Domain\Rojan.Server.Domain.csproj" />
   </ItemGroup>
 
 </Project>

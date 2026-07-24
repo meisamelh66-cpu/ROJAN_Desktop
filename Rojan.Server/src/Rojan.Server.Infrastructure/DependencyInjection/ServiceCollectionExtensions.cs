@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Server.Application.Authentication;
+using Rojan.Server.Domain.Authentication;
 using Rojan.Server.Infrastructure.Persistence;
+using Rojan.Server.Infrastructure.Persistence.Repositories;
+using Rojan.Server.Infrastructure.Security;
 
 namespace Rojan.Server.Infrastructure.DependencyInjection;
 
@@ -16,11 +20,17 @@ namespace Rojan.Server.Infrastructure.DependencyInjection;
 /// key (populated from <c>appsettings.json</c>/<c>appsettings.Development.json</c>/
 /// User Secrets/environment variables - ASP.NET Core's normal
 /// configuration precedence, nothing custom here) using the
-/// <c>Npgsql.EntityFrameworkCore.PostgreSQL</c> provider. No other
-/// infrastructure exists yet - this commit is EF Core/PostgreSQL wiring
-/// only, no business repositories (there are no business entities to
-/// have a repository for - see <see cref="RojanServerDbContext"/>'s own
-/// doc comment).
+/// <c>Npgsql.EntityFrameworkCore.PostgreSQL</c> provider.
+///
+/// Sprint 8 Commit 2: Tenant-Aware Authentication Foundation. Adds the
+/// authentication repositories (scoped - see <see cref="EfOrganizationRepository"/>'s
+/// own doc comment for why scoped rather than the desktop's
+/// singleton-plus-factory pattern), <see cref="JwtOptions"/> bound from
+/// the <c>Jwt</c> configuration section, and the two security services
+/// (<see cref="IPasswordHasher"/>/<see cref="ITokenService"/>) that back
+/// <c>Application.Authentication.AuthenticationService</c>. Still no
+/// business repositories - there are still no business entities (see
+/// <see cref="RojanServerDbContext"/>'s own doc comment).
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -30,6 +40,16 @@ public static class ServiceCollectionExtensions
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
         services.AddDbContext<RojanServerDbContext>(options => options.UseNpgsql(connectionString));
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        services.AddScoped<IOrganizationRepository, EfOrganizationRepository>();
+        services.AddScoped<IBranchRepository, EfBranchRepository>();
+        services.AddScoped<IUserRepository, EfUserRepository>();
+        services.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
+
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
 
         return services;
     }

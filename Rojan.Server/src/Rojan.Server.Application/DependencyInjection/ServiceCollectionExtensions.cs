@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Server.Application.Authentication;
 
 namespace Rojan.Server.Application.DependencyInjection;
 
@@ -8,13 +9,21 @@ namespace Rojan.Server.Application.DependencyInjection;
 /// <c>Rojan.Server.Api</c>'s composition root calls this without knowing
 /// what, if anything, it registers.
 ///
-/// Sprint 8 Commit 1: Backend Foundation. Empty today - no business
-/// orchestration exists yet (explicitly out of scope for this commit).
-/// Exists now so a future commit that adds the first real use
-/// case/handler only has to add a registration line here, not invent this
-/// seam.
+/// Sprint 8 Commit 2: Tenant-Aware Authentication Foundation.
+/// <see cref="IAuthenticationService"/> is the first real registration
+/// here - its own dependencies (<see cref="IPasswordHasher"/>/
+/// <see cref="ITokenService"/>/the repositories) are Infrastructure
+/// concerns registered by <c>Infrastructure.DependencyInjection.ServiceCollectionExtensions.AddInfrastructure</c>
+/// instead, the same "interface here, concrete implementation resolved
+/// from the outer layer at composition time" split every other module in
+/// this codebase already uses.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services) => services;
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        return services;
+    }
 }
