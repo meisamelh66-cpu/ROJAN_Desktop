@@ -30,7 +30,55 @@
         controls, no visual redesign). A ResultCount caption was added
         below the panel; the list/detail layout and the specialist-
         assignment card on the right are otherwise unchanged.
+
+        Sprint 5 Commit 5C: added an Intelligence section below Assigned
+        Specialists - Popularity Score/Completed/Upcoming as StatTiles,
+        Popularity Level/Recommendation as StatusPills (two local
+        *PillStyle resources below, same one-shared-style-per-enum
+        reasoning CustomerPage's LoyaltyLevel/EngagementStatus pills
+        established), reusing the shared:StatTile/shared:StatusPill
+        controls already imported by this file (see the Duration/Price
+        KPIValue tiles above). Every value is
+        ServiceProfileViewModel.PopularityScore/PopularityLevel/
+        RecommendationSignal/CompletedBookingCount/UpcomingBookingCount,
+        requested from Application's IIntelligenceEngine and bound as-is -
+        no calculation happens in this view or its ViewModel.
     -->
+    <UserControl.Resources>
+        <!-- Sprint 5 Commit 5C: ServicePopularityLevel/ServiceRecommendationSignal severity mapping - a display-only color choice, not a recalculation of the level/signal itself. -->
+        <Style x:Key="ServicePopularityLevelPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding PopularityLevel}" Value="Standard">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PopularityLevel}" Value="Trending">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PopularityLevel}" Value="Popular">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ServiceRecommendationSignalPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Feature">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Maintain">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Monitor">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Reconsider">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -303,6 +351,53 @@
                             </StackPanel>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
+
+                    <!-- Intelligence (Sprint 5 Commit 5C): calculated popularity score/level/recommendation, composed by Application's IntelligenceEngine from booking data already queried elsewhere in the app - no new query added here, only display. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Services_Intelligence}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <WrapPanel>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Sparkle}"
+                                                      Label="{x:Static loc:Strings.Services_PopularityScore}"
+                                                      Value="{Binding PopularityScore}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.CheckCircle}"
+                                                      Label="{x:Static loc:Strings.Services_CompletedBookings}"
+                                                      Value="{Binding CompletedBookingCount}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.TrendUp}"
+                                                      Label="{x:Static loc:Strings.Services_UpcomingBookings}"
+                                                      Value="{Binding UpcomingBookingCount}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Services_PopularityLevel}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding PopularityLevel, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource ServicePopularityLevelPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Services_RecommendationSignal}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding RecommendationSignal, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource ServiceRecommendationSignalPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
 
                 </StackPanel>
             </Grid>

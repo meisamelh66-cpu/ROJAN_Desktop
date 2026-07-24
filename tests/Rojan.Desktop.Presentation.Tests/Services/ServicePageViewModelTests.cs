@@ -20,7 +20,7 @@ public sealed class ServicePageViewModelTests
         var tcs = new TaskCompletionSource<IReadOnlyList<ServiceDto>>();
         var queryService = new StubServiceQueryService(_ => tcs.Task);
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -31,7 +31,7 @@ public sealed class ServicePageViewModelTests
         var services = new List<ServiceDto> { MakeService("service-1", "Haircut & Style") };
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal(services, sut.Services);
@@ -44,7 +44,7 @@ public sealed class ServicePageViewModelTests
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Empty, sut.State);
         Assert.Null(sut.SelectedService);
@@ -57,7 +57,7 @@ public sealed class ServicePageViewModelTests
         var queryService = new StubServiceQueryService(
             _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom")));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -77,7 +77,7 @@ public sealed class ServicePageViewModelTests
         var services = new List<ServiceDto> { MakeService("service-1", "Haircut & Style") };
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         var filter = Assert.Single(queryService.SearchCalls);
         Assert.Null(filter.SearchText);
@@ -95,7 +95,7 @@ public sealed class ServicePageViewModelTests
     public void SearchText_Changed_SearchesWithSearchTextInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.SearchText = "manicure";
 
@@ -106,7 +106,7 @@ public sealed class ServicePageViewModelTests
     public void SelectedCategory_Changed_SearchesWithCategoryInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.SelectedCategory = ServiceCategory.Nails;
 
@@ -117,7 +117,7 @@ public sealed class ServicePageViewModelTests
     public void SelectedStatus_Changed_SearchesWithStatusInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.SelectedStatus = ServiceStatus.Seasonal;
 
@@ -128,7 +128,7 @@ public sealed class ServicePageViewModelTests
     public void MinDuration_Changed_SearchesWithMinDurationInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.MinDuration = 30;
 
@@ -139,7 +139,7 @@ public sealed class ServicePageViewModelTests
     public void MaxDuration_Changed_SearchesWithMaxDurationInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.MaxDuration = 90;
 
@@ -150,7 +150,7 @@ public sealed class ServicePageViewModelTests
     public void MinPrice_Changed_SearchesWithMinPriceInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.MinPrice = 25m;
 
@@ -161,7 +161,7 @@ public sealed class ServicePageViewModelTests
     public void MaxPrice_Changed_SearchesWithMaxPriceInFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         sut.MaxPrice = 100m;
 
@@ -182,7 +182,7 @@ public sealed class ServicePageViewModelTests
                 string.IsNullOrEmpty(filter.SearchText)
                     ? services
                     : services.Where(service => service.Name.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
         sut.SelectedService = services[0];
 
         sut.SearchText = "Manicure";
@@ -194,7 +194,7 @@ public sealed class ServicePageViewModelTests
     public void SearchCommand_Executed_ReRunsSearchWithCurrentFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService())
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine())
         {
             SearchText = "manicure",
         };
@@ -210,7 +210,7 @@ public sealed class ServicePageViewModelTests
     public void ClearFiltersCommand_Executed_ResetsEveryFilterAndReloadsWithDefaultFilter()
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService())
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine())
         {
             SearchText = "manicure",
             SelectedCategory = ServiceCategory.Nails,
@@ -251,7 +251,7 @@ public sealed class ServicePageViewModelTests
         };
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(2, sut.ResultCount);
         Assert.Equal(sut.Services.Count, sut.ResultCount);
@@ -262,7 +262,7 @@ public sealed class ServicePageViewModelTests
     {
         var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
 
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(0, sut.ResultCount);
     }
@@ -275,7 +275,7 @@ public sealed class ServicePageViewModelTests
         var queryService = new StubServiceQueryService(_ => shouldFail
             ? Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom"))
             : Task.FromResult<IReadOnlyList<ServiceDto>>(services));
-        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService());
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;

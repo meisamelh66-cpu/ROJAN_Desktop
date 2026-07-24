@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -9,10 +10,11 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// <summary>
 /// Drives SpecialistPage - the specialist directory/search on the left,
 /// and the selected specialist's <see cref="SpecialistProfileViewModel"/>
-/// (status + skills) on the right. Depends only on Application services
-/// (<see cref="ISpecialistQueryService"/>, <see cref="ISpecialistProfileQueryService"/>,
-/// <see cref="ISpecialistCommandService"/>), consistent with Presentation
-/// never reaching past Application into Domain/Infrastructure. Reuses
+/// (status + skills + Sprint 5 Commit 5C's performance intelligence) on
+/// the right. Depends only on Application services (<see cref="ISpecialistQueryService"/>,
+/// <see cref="ISpecialistProfileQueryService"/>, <see cref="ISpecialistCommandService"/>,
+/// <see cref="IIntelligenceEngine"/>), consistent with Presentation never
+/// reaching past Application into Domain/Infrastructure. Reuses
 /// <see cref="DashboardState"/> rather than a duplicate enum, same
 /// reasoning as every other page ViewModel in this app.
 ///
@@ -34,6 +36,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private readonly ISpecialistQueryService _queryService;
     private readonly ISpecialistProfileQueryService _profileQueryService;
     private readonly ISpecialistCommandService _commandService;
+    private readonly IIntelligenceEngine _intelligenceEngine;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -53,11 +56,13 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     public SpecialistPageViewModel(
         ISpecialistQueryService queryService,
         ISpecialistProfileQueryService profileQueryService,
-        ISpecialistCommandService commandService)
+        ISpecialistCommandService commandService,
+        IIntelligenceEngine intelligenceEngine)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
+        _intelligenceEngine = intelligenceEngine;
 
         Specialists = new ObservableCollection<SpecialistDto>();
 
@@ -150,7 +155,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService);
+                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine);
             }
         }
     }

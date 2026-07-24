@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -9,15 +10,17 @@ namespace Rojan.Desktop.Presentation.ViewModels.Services;
 /// <summary>
 /// Drives ServicePage - the service catalog/search on the left, and the
 /// selected service's <see cref="ServiceProfileViewModel"/> (category,
-/// duration, price, description, assigned specialists) on the right.
-/// Depends only on Application services (<see cref="IServiceQueryService"/>,
-/// <see cref="IServiceProfileQueryService"/>, <see cref="IServiceCommandService"/>),
-/// consistent with Presentation never reaching past Application into
-/// Domain/Infrastructure. Reuses <see cref="DashboardState"/> rather than
-/// a duplicate enum, same reasoning as every other page ViewModel in this
-/// app. No "New Service" form (unlike Customers/Bookings/Specialists) -
-/// catalog authoring wasn't requested for this phase, only browse/search
-/// plus specialist assignment.
+/// duration, price, description, assigned specialists, and Sprint 5
+/// Commit 5C's popularity intelligence) on the right. Depends only on
+/// Application services (<see cref="IServiceQueryService"/>,
+/// <see cref="IServiceProfileQueryService"/>, <see cref="IServiceCommandService"/>,
+/// <see cref="IIntelligenceEngine"/>), consistent with Presentation never
+/// reaching past Application into Domain/Infrastructure. Reuses
+/// <see cref="DashboardState"/> rather than a duplicate enum, same
+/// reasoning as every other page ViewModel in this app. No "New Service"
+/// form (unlike Customers/Bookings/Specialists) - catalog authoring
+/// wasn't requested for this phase, only browse/search plus specialist
+/// assignment.
 ///
 /// Sprint 5 Commit 2 (Premium Service Search &amp; Filters): <see cref="SearchText"/>/
 /// <see cref="SelectedCategory"/>/<see cref="SelectedStatus"/>/
@@ -38,6 +41,7 @@ public sealed class ServicePageViewModel : ViewModelBase
     private readonly IServiceQueryService _queryService;
     private readonly IServiceProfileQueryService _profileQueryService;
     private readonly IServiceCommandService _commandService;
+    private readonly IIntelligenceEngine _intelligenceEngine;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -58,11 +62,13 @@ public sealed class ServicePageViewModel : ViewModelBase
     public ServicePageViewModel(
         IServiceQueryService queryService,
         IServiceProfileQueryService profileQueryService,
-        IServiceCommandService commandService)
+        IServiceCommandService commandService,
+        IIntelligenceEngine intelligenceEngine)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
+        _intelligenceEngine = intelligenceEngine;
 
         Services = new ObservableCollection<ServiceDto>();
 
@@ -209,7 +215,7 @@ public sealed class ServicePageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new ServiceProfileViewModel(value.Id, _profileQueryService, _commandService);
+                    : new ServiceProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine);
             }
         }
     }

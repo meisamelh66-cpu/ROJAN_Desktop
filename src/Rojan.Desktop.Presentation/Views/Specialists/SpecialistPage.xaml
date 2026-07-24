@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appSpecialists="clr-namespace:Rojan.Desktop.Application.Specialists;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
@@ -27,7 +28,59 @@
         Premium controls, no visual redesign - that belongs to a later
         pass). The list/detail layout and the skills card on the right are
         otherwise unchanged.
+
+        Sprint 5 Commit 5C: added an Intelligence section below Skills -
+        Performance Score/Completed/Cancelled/No-Show as StatTiles,
+        Performance Level/Recommendation as StatusPills (two local
+        *PillStyle resources below, same one-shared-style-per-enum
+        reasoning CustomerPage's LoyaltyLevel/EngagementStatus pills
+        established), reusing the Sprint 1 Shared Premium controls
+        (shared:StatTile/shared:StatusPill) the same way CustomerPage's own
+        Insights section does. Every value is
+        SpecialistProfileViewModel.PerformanceScore/PerformanceLevel/
+        RecommendationSignal/CompletedBookingCount/CancelledBookingCount/
+        NoShowBookingCount, requested from Application's IIntelligenceEngine
+        and bound as-is - no calculation happens in this view or its
+        ViewModel.
     -->
+    <UserControl.Resources>
+        <!-- Sprint 5 Commit 5C: SpecialistPerformanceLevel/SpecialistRecommendationSignal severity mapping - a display-only color choice, not a recalculation of the level/signal itself. -->
+        <Style x:Key="SpecialistPerformanceLevelPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding PerformanceLevel}" Value="Good">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PerformanceLevel}" Value="Excellent">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PerformanceLevel}" Value="NeedsImprovement">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PerformanceLevel}" Value="Underperforming">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SpecialistRecommendationSignalPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Promote">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Maintain">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Monitor">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RecommendationSignal}" Value="Attention">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -278,6 +331,58 @@
                             </StackPanel>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
+
+                    <!-- Intelligence (Sprint 5 Commit 5C): calculated performance score/level/recommendation, composed by Application's IntelligenceEngine from booking data already queried elsewhere in the app - no new query added here, only display. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Intelligence}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <WrapPanel>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Sparkle}"
+                                                      Label="{x:Static loc:Strings.Specialists_PerformanceScore}"
+                                                      Value="{Binding PerformanceScore}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.CheckCircle}"
+                                                      Label="{x:Static loc:Strings.Specialists_CompletedBookings}"
+                                                      Value="{Binding CompletedBookingCount}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Warning}"
+                                                      Label="{x:Static loc:Strings.Specialists_CancelledBookings}"
+                                                      Value="{Binding CancelledBookingCount}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="150" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Warning}"
+                                                      Label="{x:Static loc:Strings.Specialists_NoShowBookings}"
+                                                      Value="{Binding NoShowBookingCount}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Specialists_PerformanceLevel}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding PerformanceLevel, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource SpecialistPerformanceLevelPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Specialists_RecommendationSignal}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding RecommendationSignal, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource SpecialistRecommendationSignalPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
 
                 </StackPanel>
             </Grid>

@@ -502,6 +502,20 @@ public static class Strings
 
     public static string Specialists_ClearFilters => Get(nameof(Specialists_ClearFilters));
 
+    public static string Specialists_Intelligence => Get(nameof(Specialists_Intelligence));
+
+    public static string Specialists_PerformanceScore => Get(nameof(Specialists_PerformanceScore));
+
+    public static string Specialists_CompletedBookings => Get(nameof(Specialists_CompletedBookings));
+
+    public static string Specialists_CancelledBookings => Get(nameof(Specialists_CancelledBookings));
+
+    public static string Specialists_NoShowBookings => Get(nameof(Specialists_NoShowBookings));
+
+    public static string Specialists_PerformanceLevel => Get(nameof(Specialists_PerformanceLevel));
+
+    public static string Specialists_RecommendationSignal => Get(nameof(Specialists_RecommendationSignal));
+
     public static string Services_Title => Get(nameof(Services_Title));
 
     public static string Services_Subtitle => Get(nameof(Services_Subtitle));
@@ -535,6 +549,18 @@ public static class Strings
     public static string Services_ClearFilters => Get(nameof(Services_ClearFilters));
 
     public static string Services_ResultsCount => Get(nameof(Services_ResultsCount));
+
+    public static string Services_Intelligence => Get(nameof(Services_Intelligence));
+
+    public static string Services_PopularityScore => Get(nameof(Services_PopularityScore));
+
+    public static string Services_CompletedBookings => Get(nameof(Services_CompletedBookings));
+
+    public static string Services_UpcomingBookings => Get(nameof(Services_UpcomingBookings));
+
+    public static string Services_PopularityLevel => Get(nameof(Services_PopularityLevel));
+
+    public static string Services_RecommendationSignal => Get(nameof(Services_RecommendationSignal));
 
     public static string Bookings_Title => Get(nameof(Bookings_Title));
 

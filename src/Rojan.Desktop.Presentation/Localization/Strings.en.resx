@@ -672,6 +672,27 @@
   <data name="Specialists_ClearFilters" xml:space="preserve">
     <value>Clear Filters</value>
   </data>
+  <data name="Specialists_Intelligence" xml:space="preserve">
+    <value>Specialist Intelligence</value>
+  </data>
+  <data name="Specialists_PerformanceScore" xml:space="preserve">
+    <value>Performance Score</value>
+  </data>
+  <data name="Specialists_CompletedBookings" xml:space="preserve">
+    <value>Completed Bookings</value>
+  </data>
+  <data name="Specialists_CancelledBookings" xml:space="preserve">
+    <value>Cancelled Bookings</value>
+  </data>
+  <data name="Specialists_NoShowBookings" xml:space="preserve">
+    <value>No-Show Bookings</value>
+  </data>
+  <data name="Specialists_PerformanceLevel" xml:space="preserve">
+    <value>Performance Level</value>
+  </data>
+  <data name="Specialists_RecommendationSignal" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>Services</value>
   </data>
@@ -722,6 +743,24 @@
   </data>
   <data name="Services_ResultsCount" xml:space="preserve">
     <value>Results</value>
+  </data>
+  <data name="Services_Intelligence" xml:space="preserve">
+    <value>Service Intelligence</value>
+  </data>
+  <data name="Services_PopularityScore" xml:space="preserve">
+    <value>Popularity Score</value>
+  </data>
+  <data name="Services_CompletedBookings" xml:space="preserve">
+    <value>Completed Bookings</value>
+  </data>
+  <data name="Services_UpcomingBookings" xml:space="preserve">
+    <value>Upcoming Bookings</value>
+  </data>
+  <data name="Services_PopularityLevel" xml:space="preserve">
+    <value>Popularity Level</value>
+  </data>
+  <data name="Services_RecommendationSignal" xml:space="preserve">
+    <value>Recommendation</value>
   </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>Bookings</value>

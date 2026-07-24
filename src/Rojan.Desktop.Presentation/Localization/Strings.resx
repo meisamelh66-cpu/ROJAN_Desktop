@@ -684,6 +684,27 @@
   <data name="Specialists_ClearFilters" xml:space="preserve">
     <value>پاک کردن فیلترها</value>
   </data>
+  <data name="Specialists_Intelligence" xml:space="preserve">
+    <value>تحلیل هوشمند متخصص</value>
+  </data>
+  <data name="Specialists_PerformanceScore" xml:space="preserve">
+    <value>امتیاز عملکرد</value>
+  </data>
+  <data name="Specialists_CompletedBookings" xml:space="preserve">
+    <value>نوبت‌های تکمیل‌شده</value>
+  </data>
+  <data name="Specialists_CancelledBookings" xml:space="preserve">
+    <value>نوبت‌های لغوشده</value>
+  </data>
+  <data name="Specialists_NoShowBookings" xml:space="preserve">
+    <value>عدم حضورها</value>
+  </data>
+  <data name="Specialists_PerformanceLevel" xml:space="preserve">
+    <value>سطح عملکرد</value>
+  </data>
+  <data name="Specialists_RecommendationSignal" xml:space="preserve">
+    <value>توصیه</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>خدمات</value>
   </data>
@@ -734,6 +755,24 @@
   </data>
   <data name="Services_ResultsCount" xml:space="preserve">
     <value>تعداد نتایج</value>
+  </data>
+  <data name="Services_Intelligence" xml:space="preserve">
+    <value>تحلیل هوشمند خدمت</value>
+  </data>
+  <data name="Services_PopularityScore" xml:space="preserve">
+    <value>امتیاز محبوبیت</value>
+  </data>
+  <data name="Services_CompletedBookings" xml:space="preserve">
+    <value>نوبت‌های تکمیل‌شده</value>
+  </data>
+  <data name="Services_UpcomingBookings" xml:space="preserve">
+    <value>نوبت‌های آینده</value>
+  </data>
+  <data name="Services_PopularityLevel" xml:space="preserve">
+    <value>سطح محبوبیت</value>
+  </data>
+  <data name="Services_RecommendationSignal" xml:space="preserve">
+    <value>توصیه</value>
   </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>رزروها</value>

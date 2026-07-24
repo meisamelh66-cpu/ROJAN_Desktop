@@ -672,6 +672,27 @@
   <data name="Specialists_ClearFilters" xml:space="preserve">
     <value>مسح الفلاتر</value>
   </data>
+  <data name="Specialists_Intelligence" xml:space="preserve">
+    <value>ذكاء الأخصائي</value>
+  </data>
+  <data name="Specialists_PerformanceScore" xml:space="preserve">
+    <value>نقاط الأداء</value>
+  </data>
+  <data name="Specialists_CompletedBookings" xml:space="preserve">
+    <value>الحجوزات المكتملة</value>
+  </data>
+  <data name="Specialists_CancelledBookings" xml:space="preserve">
+    <value>الحجوزات الملغاة</value>
+  </data>
+  <data name="Specialists_NoShowBookings" xml:space="preserve">
+    <value>حالات عدم الحضور</value>
+  </data>
+  <data name="Specialists_PerformanceLevel" xml:space="preserve">
+    <value>مستوى الأداء</value>
+  </data>
+  <data name="Specialists_RecommendationSignal" xml:space="preserve">
+    <value>التوصية</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>الخدمات</value>
   </data>
@@ -722,6 +743,24 @@
   </data>
   <data name="Services_ResultsCount" xml:space="preserve">
     <value>النتائج</value>
+  </data>
+  <data name="Services_Intelligence" xml:space="preserve">
+    <value>ذكاء الخدمة</value>
+  </data>
+  <data name="Services_PopularityScore" xml:space="preserve">
+    <value>نقاط الشعبية</value>
+  </data>
+  <data name="Services_CompletedBookings" xml:space="preserve">
+    <value>الحجوزات المكتملة</value>
+  </data>
+  <data name="Services_UpcomingBookings" xml:space="preserve">
+    <value>الحجوزات القادمة</value>
+  </data>
+  <data name="Services_PopularityLevel" xml:space="preserve">
+    <value>مستوى الشعبية</value>
+  </data>
+  <data name="Services_RecommendationSignal" xml:space="preserve">
+    <value>التوصية</value>
   </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>الحجوزات</value>
