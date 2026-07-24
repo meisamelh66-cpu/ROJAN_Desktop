@@ -28,7 +28,6 @@ using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
-using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Dashboard;
@@ -39,6 +38,7 @@ using Rojan.Desktop.Infrastructure.Inventory;
 using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
+using Rojan.Desktop.Infrastructure.Persistence.Bookings;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
@@ -77,7 +77,18 @@ public static class ServiceCollectionExtensions
         // accumulated from real use, not replayed from a hardcoded seed).
         services.AddSingleton<ICustomerRepository, EfCustomerRepository>();
 
-        services.AddSingleton<IBookingRepository, FakeBookingRepository>();
+        // Sprint 6 Commit 5: Bookings is the fourth Domain module moved off
+        // its Fake*Repository onto EF Core - same reasoning as Customers/
+        // Specialists/Services in Commits 2/3/4 (see EfCustomerRepository's
+        // own DI comment above). FakeBookingRepository stays in the
+        // codebase, unreferenced. No foreign keys to Customers/Specialists/
+        // Services (see BookingEntity's own doc comment) - CustomerId/
+        // SpecialistId/ServiceId round-trip as plain text, exactly matching
+        // Domain.Bookings.Booking's own "free-form, unvalidated references"
+        // contract. Behavior change: the Booking list now starts empty on
+        // a fresh SQLite database instead of showing the fake's 8 seeded
+        // demo bookings.
+        services.AddSingleton<IBookingRepository, EfBookingRepository>();
 
         // Sprint 6 Commit 3: Specialists is the second Domain module moved
         // off its Fake*Repository onto EF Core - same reasoning as
