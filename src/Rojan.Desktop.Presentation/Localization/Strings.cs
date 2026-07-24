@@ -444,6 +444,8 @@ public static class Strings
 
     public static string Calendar_Availability => Get(nameof(Calendar_Availability));
 
+    public static string Calendar_ViewMode => Get(nameof(Calendar_ViewMode));
+
     public static string Analytics_Title => Get(nameof(Analytics_Title));
 
     public static string Analytics_Subtitle => Get(nameof(Analytics_Subtitle));

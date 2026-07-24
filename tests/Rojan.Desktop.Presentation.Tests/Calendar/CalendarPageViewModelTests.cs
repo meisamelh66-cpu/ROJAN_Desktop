@@ -146,4 +146,71 @@ public sealed class CalendarPageViewModelTests
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Null(sut.ErrorMessage);
     }
+
+    [Fact]
+    public void Constructor_DefaultViewMode_IsDay()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+
+        Assert.Equal(CalendarViewMode.Day, sut.ViewMode);
+        Assert.True(sut.IsDayView);
+        Assert.False(sut.IsWeekView);
+    }
+
+    [Fact]
+    public void SetViewModeCommand_Week_SwitchesViewModeAndLoadsWeekDays()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+
+        Assert.Equal(CalendarViewMode.Week, sut.ViewMode);
+        Assert.True(sut.IsWeekView);
+        Assert.False(sut.IsDayView);
+        Assert.Equal(7, sut.WeekDays.Count);
+        Assert.Empty(sut.Slots);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    [Fact]
+    public void SetViewModeCommand_BackToDay_RepopulatesSlotsAndClearsWeekDays()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
+
+        Assert.Equal(CalendarViewMode.Day, sut.ViewMode);
+        Assert.Empty(sut.WeekDays);
+        Assert.Single(sut.Slots);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    [Fact]
+    public void SetViewModeCommand_NoScheduledSpecialists_Week_StateIsEmpty()
+    {
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>([]),
+            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+
+        Assert.Equal(DashboardState.Empty, sut.State);
+    }
 }

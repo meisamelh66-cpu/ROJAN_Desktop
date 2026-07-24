@@ -597,6 +597,9 @@
   <data name="Calendar_Availability" xml:space="preserve">
     <value>بازه‌های در دسترس</value>
   </data>
+  <data name="Calendar_ViewMode" xml:space="preserve">
+    <value>نمای تقویم</value>
+  </data>
   <data name="Analytics_Title" xml:space="preserve">
     <value>تحلیل‌ها</value>
   </data>

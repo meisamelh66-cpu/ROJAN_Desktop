@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
              xmlns:appCalendar="clr-namespace:Rojan.Desktop.Application.Calendar;assembly=Rojan.Desktop.Application"
+             xmlns:calendarVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Calendar"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
@@ -17,7 +19,21 @@
         component) that reserves an Available slot or releases a Booked one
         on click, bound to the one ToggleSlotCommand.
 
+        Sprint 2 Commit 4: added a Day/Week view-mode toggle (two
+        RadioButtons reusing Rojan.Style.TimeRangeOption, the same
+        segmented-pill style RangeSelector already uses - no new Design
+        System style). Week view is a per-day summary grid (DashboardCard
+        per day, reusing that existing component) showing only a slot
+        count - deliberately not the redesigned appointment-card layout,
+        that is a later commit's scope. IsDayView/IsWeekView pick which of
+        the two ItemsControls below is visible via the existing
+        BoolToVisibilityConverter (declared locally, same as every other
+        page that uses it).
     -->
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
     <Grid Margin="32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -44,15 +60,34 @@
                                   Width="200"
                                   Margin="0,4,0,0" />
                     </StackPanel>
-                    <StackPanel>
+                    <StackPanel Margin="0,0,24,0">
                         <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                         <DatePicker SelectedDate="{Binding SelectedDate, Mode=TwoWay}" Width="160" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Calendar_ViewMode}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <RadioButton Style="{StaticResource Rojan.Style.TimeRangeOption}"
+                                         GroupName="CalendarViewMode"
+                                         Content="{x:Static loc:Strings.Dashboard_TimeRange_Day}"
+                                         IsChecked="{Binding IsDayView, Mode=OneWay}"
+                                         Command="{Binding SetViewModeCommand}"
+                                         CommandParameter="{x:Static calendarVm:CalendarViewMode.Day}" />
+                            <RadioButton Style="{StaticResource Rojan.Style.TimeRangeOption}"
+                                         GroupName="CalendarViewMode"
+                                         Content="{x:Static loc:Strings.Dashboard_TimeRange_Week}"
+                                         IsChecked="{Binding IsWeekView, Mode=OneWay}"
+                                         Command="{Binding SetViewModeCommand}"
+                                         CommandParameter="{x:Static calendarVm:CalendarViewMode.Week}"
+                                         Margin="4,0,0,0" />
+                        </WrapPanel>
                     </StackPanel>
                 </StackPanel>
                 <TextBlock Text="{Binding WorkingHoursText}"
                            Style="{StaticResource Rojan.TextStyle.Body}"
                            Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           Margin="0,16,0,0" />
+                           Margin="0,16,0,0"
+                           Visibility="{Binding IsDayView, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
         </dashboardControls:DashboardCard>
 
@@ -64,45 +99,76 @@
                                             RetryCommand="{Binding LoadCommand}"
                                             Margin="0,24,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
-                <ItemsControl ItemsSource="{Binding Slots}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type appCalendar:AvailabilitySlotDto}">
-                            <Button Command="{Binding DataContext.ToggleSlotCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                    CommandParameter="{Binding}"
-                                    MinWidth="110"
-                                    Margin="0,0,10,10">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
-                                        <Setter Property="Background" Value="{StaticResource Rojan.Brush.Success}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Status}" Value="Booked">
-                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.MutedText}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Unavailable">
-                                                <Setter Property="Background" Value="{StaticResource Rojan.Brush.Disabled}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Start, StringFormat={}{0:h:mm tt}}"
+                <Grid>
+                    <!-- Day view: existing per-slot grid, unchanged. -->
+                    <ItemsControl ItemsSource="{Binding Slots}"
+                                  Visibility="{Binding IsDayView, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type appCalendar:AvailabilitySlotDto}">
+                                <Button Command="{Binding DataContext.ToggleSlotCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        MinWidth="110"
+                                        Margin="0,0,10,10">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonPrimary}">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Success}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="Booked">
+                                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.MutedText}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Unavailable">
+                                                    <Setter Property="Background" Value="{StaticResource Rojan.Brush.Disabled}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Start, StringFormat={}{0:h:mm tt}}"
+                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                   Foreground="{StaticResource Rojan.Brush.ButtonText}"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!--
+                        Week view: a per-day summary grid, one DashboardCard
+                        per day (reusing that existing component - no new
+                        Design System control) showing only a generated-slot
+                        count. Deliberately not the redesigned appointment-
+                        card layout - that is a later commit's scope, per
+                        this commit's "do not redesign appointment cards
+                        yet" boundary.
+                    -->
+                    <ItemsControl ItemsSource="{Binding WeekDays}"
+                                  Visibility="{Binding IsWeekView, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="7" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type appCalendar:DailyAvailabilityDto}">
+                                <dashboardControls:DashboardCard Title="{Binding Date, StringFormat={}{0:ddd, MMM d}}" Margin="0,0,8,8">
+                                    <TextBlock Text="{Binding Slots.Count, StringFormat={}{0} slots}"
                                                Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                                               HorizontalAlignment="Center" />
-                                    <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.ButtonText}"
-                                               HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                               Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                </dashboardControls:DashboardCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </ScrollViewer>
         </dashboardControls:DashboardWidget>
 
