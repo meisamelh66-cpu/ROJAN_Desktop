@@ -17,6 +17,17 @@ namespace Rojan.Desktop.Application.Api;
 /// <see cref="PostAsync{TRequest, TResponse}"/> pair - same request/
 /// response shape, no new abstraction, since every future backend
 /// resource will need update/remove operations, not just read/create.
+///
+/// Sprint 7 Commit 5: <c>path</c> on every method here stays a plain,
+/// caller-supplied literal string - no behavior change in this commit.
+/// <see cref="Contracts.ApiVersion"/> is the version token a future
+/// caller would compose that path with once real endpoints exist (e.g.
+/// <c>$"{ApiVersion.BasePath()}/customers"</c>); see its own doc comment
+/// for the full set of request/response contracts this commit prepares
+/// (<c>Contracts.ApiErrorResponse</c>, <c>Contracts.AuthRefreshRequest</c>/
+/// <c>Contracts.AuthRefreshResponse</c>) and for why most modules reuse
+/// their existing Application-layer DTOs as the request/response type
+/// arguments here rather than getting new duplicate contract types.
 /// </summary>
 public interface IApiClient
 {

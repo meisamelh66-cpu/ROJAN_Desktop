@@ -28,7 +28,21 @@ public interface ISessionService
     /// <summary>Issues and persists a new session for <paramref name="user"/> on <paramref name="device"/>, replacing any current session.</summary>
     public Task<SessionIdentity> CreateSessionAsync(UserIdentity user, DeviceIdentity device, CancellationToken cancellationToken = default);
 
-    /// <summary>Issues a new <see cref="AuthToken"/>/<see cref="RefreshToken"/> pair for <see cref="CurrentSession"/>, extending its <see cref="SessionIdentity.ExpiresAt"/>. Throws <see cref="InvalidOperationException"/> if there is no current session.</summary>
+    /// <summary>
+    /// Issues a new <see cref="AuthToken"/>/<see cref="RefreshToken"/> pair
+    /// for <see cref="CurrentSession"/>, extending its
+    /// <see cref="SessionIdentity.ExpiresAt"/>. Throws
+    /// <see cref="InvalidOperationException"/> if there is no current
+    /// session.
+    ///
+    /// Sprint 7 Commit 5: today this rotation happens entirely locally
+    /// (no backend call - see the concrete implementation's own doc
+    /// comment). <see cref="Api.Contracts.AuthRefreshRequest"/>/
+    /// <see cref="Api.Contracts.AuthRefreshResponse"/> define the wire
+    /// shape a future backend-backed implementation of this same method
+    /// would send/receive - this signature does not change to accommodate
+    /// that; only what happens inside a future implementation would.
+    /// </summary>
     public Task<SessionIdentity> RefreshAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Clears the current session and its persisted state.</summary>
