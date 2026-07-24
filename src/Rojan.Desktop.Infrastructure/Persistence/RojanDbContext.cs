@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
+using Rojan.Desktop.Infrastructure.Persistence.Calendar;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Persistence.Services;
 using Rojan.Desktop.Infrastructure.Persistence.Specialists;
@@ -9,12 +10,11 @@ namespace Rojan.Desktop.Infrastructure.Persistence;
 /// <summary>
 /// Sprint 6 Commit 1 established this as infrastructure plumbing with no
 /// <see cref="DbSet{TEntity}"/> at all. Commit 2 added Customers, Commit 3
-/// added Specialists, Commit 4 added Services, Commit 5 adds Bookings.
-/// Calendar still resolves its existing <c>Fake*Repository</c> unchanged -
-/// this context only knows about the modules that have actually moved to
-/// EF Core so far, added one module at a time, the same cadence
-/// Sprint 3/4/5's Rules -&gt; Search/Filter -&gt; Intelligence commits already
-/// established.
+/// added Specialists, Commit 4 added Services, Commit 5 added Bookings,
+/// Commit 6 adds Calendar - every Domain module with real persistence now.
+/// This context only knows about the modules that have actually moved to
+/// EF Core, added one module at a time, the same cadence Sprint 3/4/5's
+/// Rules -&gt; Search/Filter -&gt; Intelligence commits already established.
 ///
 /// EF Core types exist only inside this Infrastructure project -
 /// Domain/Application/Presentation never reference
@@ -52,6 +52,12 @@ public sealed class RojanDbContext : DbContext
 
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
 
+    public DbSet<WorkingScheduleEntity> WorkingSchedules => Set<WorkingScheduleEntity>();
+
+    public DbSet<WorkingScheduleBreakEntity> WorkingScheduleBreaks => Set<WorkingScheduleBreakEntity>();
+
+    public DbSet<ReservedSlotEntity> ReservedSlots => Set<ReservedSlotEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CustomerEntityConfiguration());
@@ -63,5 +69,8 @@ public sealed class RojanDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ServiceEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SpecialistServiceEntityConfiguration());
         modelBuilder.ApplyConfiguration(new BookingEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkingScheduleEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkingScheduleBreakEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ReservedSlotEntityConfiguration());
     }
 }

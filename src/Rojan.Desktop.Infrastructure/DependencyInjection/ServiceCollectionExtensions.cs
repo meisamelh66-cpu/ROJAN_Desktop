@@ -28,7 +28,6 @@ using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
-using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Help;
@@ -39,6 +38,7 @@ using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
+using Rojan.Desktop.Infrastructure.Persistence.Calendar;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
@@ -112,7 +112,21 @@ public static class ServiceCollectionExtensions
         // not something introduced or fixable here.
         services.AddSingleton<DomainServices.IServiceRepository, InfraPersistenceServices.EfServiceRepository>();
 
-        services.AddSingleton<ICalendarRepository, FakeCalendarRepository>();
+        // Sprint 6 Commit 6: Calendar is the fifth Domain module moved off
+        // its Fake*Repository onto EF Core - same reasoning as Customers/
+        // Specialists/Services/Bookings in Commits 2/3/4/5 (see
+        // EfCustomerRepository's own DI comment above). FakeCalendarRepository
+        // stays in the codebase, unreferenced. Like Services (Commit 4),
+        // ICalendarRepository has no create/update-schedule method at all
+        // (see EfCalendarRepository's own doc comment) - a fresh database
+        // starts with zero WorkingSchedule rows, and unlike the Services
+        // gap, Application.Calendar.CalendarQueryService's daily/weekly
+        // availability reads actively throw for a specialist with none,
+        // not merely return empty. A real, known, pre-existing gap
+        // (schedule authoring was never in scope for this vertical
+        // slice), not something introduced or fixable here.
+        services.AddSingleton<ICalendarRepository, EfCalendarRepository>();
+
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
         services.AddSingleton<IAccountingRepository, FakeAccountingRepository>();
         services.AddSingleton<IHrRepository, FakeHrRepository>();
