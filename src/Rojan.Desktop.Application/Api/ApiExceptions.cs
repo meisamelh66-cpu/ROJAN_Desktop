@@ -44,4 +44,10 @@ public sealed class ApiAuthenticationException : ApiException
         : base(message)
     {
     }
+
+    /// <summary>Sprint 7 Commit 2: used when a 401's refresh-and-retry attempt fails because <c>ISessionService.RefreshAsync</c> itself threw (e.g. an expired refresh token) - the original exception is preserved as <see cref="Exception.InnerException"/> rather than discarded.</summary>
+    public ApiAuthenticationException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 }

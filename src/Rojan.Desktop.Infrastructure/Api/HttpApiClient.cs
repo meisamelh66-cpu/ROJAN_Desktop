@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -33,12 +34,22 @@ namespace Rojan.Desktop.Infrastructure.Api;
 /// existing <see cref="SendAsync{TResponse}"/> pipeline unchanged - every
 /// pipeline concern listed above still applies to them exactly as it
 /// already does to <see cref="GetAsync{TResponse}"/>/<see cref="PostAsync{TRequest, TResponse}"/>.
-/// <see cref="EnsureNotAuthenticationFailure"/> was pulled out of
-/// <see cref="SendOnceAsync{TResponse}"/> as its own named guard (same
-/// shape as <see cref="EnsureConnectivity"/>/<see cref="EnsureBaseAddressConfigured"/>)
-/// purely so a future commit that adds a refresh-and-retry-once flow on
-/// 401 has one obvious, already-isolated method to extend - no behavior
-/// changed here, refresh-on-401 is explicitly out of this commit's scope.
+///
+/// Sprint 7 Commit 2: a 401 no longer throws immediately from inside
+/// <see cref="SendOnceAsync{TResponse}"/> (superseding Commit 1's
+/// <c>EnsureNotAuthenticationFailure</c> guard, which existed only to mark
+/// this exact seam) - it now flows through as an ordinary
+/// <see cref="ApiResponse{T}"/> failure so <see cref="EnsureAuthenticatedAsync{TResponse}"/>
+/// can react to it *outside* <see cref="IRetryPolicy"/>'s wrapping. That
+/// separation matters: <see cref="RetryPolicy"/> retries on any exception,
+/// so if a 401 still threw from inside the retried delegate, the generic
+/// policy would burn up to 5 backoff-delayed attempts on a failure a token
+/// refresh could have fixed on the first try, before a refresh was even
+/// attempted. A 403 is never retried at all (a fresh access token cannot
+/// fix an authorization failure, only an authentication one) and still
+/// throws immediately, same as before. See
+/// <see cref="EnsureAuthenticatedAsync{TResponse}"/>'s own doc comment for
+/// the full refresh-and-retry-once flow.
 /// </summary>
 public sealed class HttpApiClient : IApiClient, IDisposable
 {
@@ -117,13 +128,74 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
         try
         {
-            return await _retryPolicy
+            var response = await _retryPolicy
                 .ExecuteAsync(ct => SendOnceAsync<TResponse>(requestFactory, ct), cancellationToken)
                 .ConfigureAwait(false);
+
+            return await EnsureAuthenticatedAsync(response, requestFactory, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException and not ApiException)
         {
             throw MapException(exception);
+        }
+    }
+
+    /// <summary>
+    /// Sprint 7 Commit 2: reacts to a 401/403 that has already flowed
+    /// through <see cref="_retryPolicy"/> as an ordinary
+    /// <see cref="ApiResponse{T}"/> failure (see this class's own doc
+    /// comment for why it must be data, not an exception, at this point).
+    /// A 403 can never be fixed by refreshing the access token - only a
+    /// fresh sign-in can - so it throws immediately without attempting a
+    /// refresh. A 401 gets exactly one refresh-and-retry: <see cref="RefreshSessionOrThrowAsync"/>
+    /// rotates the session's tokens via <see cref="ISessionService.RefreshAsync"/>
+    /// (or throws <see cref="ApiAuthenticationException"/> if that fails),
+    /// then the request is sent exactly one more time through the same
+    /// <see cref="_retryPolicy"/>-wrapped path - <see cref="AttachAuthenticationHeader"/>
+    /// picks up the newly-refreshed token automatically since it reads
+    /// <see cref="ISessionService.CurrentAccessToken"/> fresh on every call,
+    /// no extra plumbing needed. If that single retry is still 401/403,
+    /// this method throws rather than recursing, which is what guarantees
+    /// "retry maximum once" and rules out an infinite refresh loop.
+    /// </summary>
+    private async Task<ApiResponse<TResponse>> EnsureAuthenticatedAsync<TResponse>(
+        ApiResponse<TResponse> response,
+        Func<HttpRequestMessage> requestFactory,
+        CancellationToken cancellationToken)
+    {
+        if (response.StatusCode == (int)HttpStatusCode.Forbidden)
+        {
+            throw new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+        }
+
+        if (response.StatusCode != (int)HttpStatusCode.Unauthorized)
+        {
+            return response;
+        }
+
+        await RefreshSessionOrThrowAsync(cancellationToken).ConfigureAwait(false);
+
+        var retried = await _retryPolicy
+            .ExecuteAsync(ct => SendOnceAsync<TResponse>(requestFactory, ct), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (retried.StatusCode is (int)HttpStatusCode.Unauthorized or (int)HttpStatusCode.Forbidden)
+        {
+            throw new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+        }
+
+        return retried;
+    }
+
+    private async Task RefreshSessionOrThrowAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _sessionService.RefreshAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            throw new ApiAuthenticationException("Session refresh failed after an authentication failure - sign in again.", exception);
         }
     }
 
@@ -147,8 +219,6 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
         using (response)
         {
-            EnsureNotAuthenticationFailure(response, request.RequestUri);
-
             var body = await response.Content.ReadAsStringAsync(linkedCts.Token).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -177,23 +247,6 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         if (_httpClient.BaseAddress is null)
         {
             throw new ApiConnectivityException($"No API base address is configured - set the '{BaseAddressEnvironmentVariable}' environment variable.");
-        }
-    }
-
-    /// <summary>
-    /// Sprint 7 Commit 1: extracted from <see cref="SendOnceAsync{TResponse}"/>
-    /// as its own named guard, same shape as <see cref="EnsureConnectivity"/>/
-    /// <see cref="EnsureBaseAddressConfigured"/> - a pure extraction, no
-    /// behavior change (same exception type, same message). Exists as its
-    /// own method purely so a future commit adding a refresh-and-retry-once
-    /// flow on 401 has one obvious, already-isolated place to change -
-    /// that flow itself is explicitly out of this commit's scope.
-    /// </summary>
-    private static void EnsureNotAuthenticationFailure(HttpResponseMessage response, Uri? requestUri)
-    {
-        if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
-        {
-            throw new ApiAuthenticationException($"Request to '{requestUri}' was rejected with status {(int)response.StatusCode}.");
         }
     }
 
