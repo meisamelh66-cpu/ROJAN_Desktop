@@ -40,6 +40,34 @@ public sealed class FakeCalendarRepositoryTests
     }
 
     [Fact]
+    public async Task GetWorkingSchedulesAsync_EveryScheduleRow_HasExactlyOneLunchBreakWithinWorkingHours()
+    {
+        var sut = new FakeCalendarRepository();
+
+        var result = await sut.GetWorkingSchedulesAsync();
+
+        Assert.All(result, schedule =>
+        {
+            var breakSlot = Assert.Single(schedule.Breaks);
+            Assert.True(breakSlot.Start.TimeOfDay >= schedule.StartTime, $"Break start {breakSlot.Start.TimeOfDay} should be within working hours starting {schedule.StartTime}.");
+            Assert.True(breakSlot.End.TimeOfDay <= schedule.EndTime, $"Break end {breakSlot.End.TimeOfDay} should be within working hours ending {schedule.EndTime}.");
+        });
+    }
+
+    [Fact]
+    public async Task GetWorkingSchedulesAsync_BreakWindow_DoesNotOverlapSeededBookedConflict()
+    {
+        var sut = new FakeCalendarRepository();
+
+        var schedules = await sut.GetWorkingSchedulesAsync();
+        var mondaySchedule = schedules.Single(schedule => schedule.SpecialistId == "specialist-1" && schedule.DayOfWeek == DayOfWeek.Monday);
+        var mondayBreak = Assert.Single(mondaySchedule.Breaks);
+        var bookedSlots = await sut.GetBookedSlotsAsync("specialist-1", DateOnly.FromDateTime(mondayBreak.Start.DateTime));
+
+        Assert.DoesNotContain(bookedSlots, booked => mondayBreak.Start < booked.End && booked.Start < mondayBreak.End);
+    }
+
+    [Fact]
     public async Task GetBookedSlotsAsync_SeededSpecialist_HasAtLeastOneConflictWithinTheNextWeek()
     {
         var sut = new FakeCalendarRepository();

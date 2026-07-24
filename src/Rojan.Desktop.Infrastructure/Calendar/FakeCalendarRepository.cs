@@ -15,10 +15,15 @@ namespace Rojan.Desktop.Infrastructure.Calendar;
 /// real cross-slice link, just consistent naming. Seed booked slots are
 /// computed relative to "today" (next occurrence of a given weekday) so
 /// the demo always shows a real conflict on an upcoming working day, no
-/// matter what date the app happens to be run on. The small artificial
-/// delays are deliberate, same reasoning as every other fake repository:
-/// without them, Loading states would never actually be observable when
-/// running the app.
+/// matter what date the app happens to be run on. Each specialist's
+/// <see cref="WorkingSchedule.Breaks"/> (Sprint 2 Commit 1) gets one seeded
+/// lunch window per working day, computed the same "next occurrence"
+/// way and chosen not to overlap the seed booked conflicts above, so the
+/// demo shows a real Unavailable break alongside the real Booked conflict
+/// without one masking the other. The small artificial delays are
+/// deliberate, same reasoning as every other fake repository: without
+/// them, Loading states would never actually be observable when running
+/// the app.
 /// </summary>
 public sealed class FakeCalendarRepository : ICalendarRepository
 {
@@ -31,13 +36,16 @@ public sealed class FakeCalendarRepository : ICalendarRepository
         [
             .. BuildWeekSchedule("specialist-1", "کیانا رادمنش",
                 [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
-                new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0), "schedule-1"),
+                new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0), "schedule-1",
+                new TimeSpan(13, 0, 0), new TimeSpan(13, 30, 0)),
             .. BuildWeekSchedule("specialist-2", "سارا امینی",
                 [DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday],
-                new TimeSpan(10, 0, 0), new TimeSpan(18, 0, 0), "schedule-6"),
+                new TimeSpan(10, 0, 0), new TimeSpan(18, 0, 0), "schedule-6",
+                new TimeSpan(13, 30, 0), new TimeSpan(14, 0, 0)),
             .. BuildWeekSchedule("specialist-3", "مهسا کریمی",
                 [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
-                new TimeSpan(9, 30, 0), new TimeSpan(17, 30, 0), "schedule-11"),
+                new TimeSpan(9, 30, 0), new TimeSpan(17, 30, 0), "schedule-11",
+                new TimeSpan(12, 0, 0), new TimeSpan(12, 30, 0)),
         ];
 
         _bookedSlotsBySpecialist = new Dictionary<string, List<TimeSlot>>
@@ -101,11 +109,16 @@ public sealed class FakeCalendarRepository : ICalendarRepository
     }
 
     private static IEnumerable<WorkingSchedule> BuildWeekSchedule(
-        string specialistId, string specialistName, IReadOnlyList<DayOfWeek> days, TimeSpan startTime, TimeSpan endTime, string idPrefix)
+        string specialistId, string specialistName, IReadOnlyList<DayOfWeek> days, TimeSpan startTime, TimeSpan endTime, string idPrefix,
+        TimeSpan? breakStartTime = null, TimeSpan? breakEndTime = null)
     {
         for (var i = 0; i < days.Count; i++)
         {
-            yield return new WorkingSchedule($"{idPrefix}-{i}", specialistId, specialistName, days[i], startTime, endTime);
+            IReadOnlyList<TimeSlot> breaks = breakStartTime.HasValue && breakEndTime.HasValue
+                ? [MakeSlot(NextOccurrence(days[i]), breakStartTime.Value, breakEndTime.Value)]
+                : [];
+
+            yield return new WorkingSchedule($"{idPrefix}-{i}", specialistId, specialistName, days[i], startTime, endTime, breaks);
         }
     }
 
