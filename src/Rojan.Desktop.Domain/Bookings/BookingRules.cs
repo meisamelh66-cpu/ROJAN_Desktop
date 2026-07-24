@@ -29,4 +29,20 @@ public static class BookingRules
     /// <summary>A booking's duration must be positive and within a single working day (capped at 8 hours) - guards against nonsensical zero/negative durations or a slot-selection bug producing an unbounded duration.</summary>
     public static bool IsValidDuration(int durationMinutes) =>
         durationMinutes is > 0 and <= 480;
+
+    /// <summary>
+    /// Whether two (start, duration) time ranges overlap at all - the pure
+    /// interval-overlap check behind Sprint 3 Commit 5's double-booking
+    /// guard (<c>Application.Bookings.BookingCommandService.CreateBookingAsync</c>
+    /// composes this against every existing active booking for the same
+    /// specialist, the same "Domain owns the predicate, Application
+    /// composes it against repository data" split <see cref="IsValidTransition"/>
+    /// already follows).
+    /// </summary>
+    public static bool TimeRangesOverlap(DateTimeOffset firstStart, int firstDurationMinutes, DateTimeOffset secondStart, int secondDurationMinutes)
+    {
+        var firstEnd = firstStart.AddMinutes(firstDurationMinutes);
+        var secondEnd = secondStart.AddMinutes(secondDurationMinutes);
+        return firstStart < secondEnd && secondStart < firstEnd;
+    }
 }

@@ -37,4 +37,44 @@ public sealed class BookingRulesTests
     {
         Assert.Equal(expected, BookingRules.IsValidDuration(durationMinutes));
     }
+
+    private static readonly DateTimeOffset Anchor = new(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void TimeRangesOverlap_IdenticalStartAndDuration_ReturnsTrue()
+    {
+        Assert.True(BookingRules.TimeRangesOverlap(Anchor, 60, Anchor, 60));
+    }
+
+    [Fact]
+    public void TimeRangesOverlap_SecondStartsInsideFirst_ReturnsTrue()
+    {
+        Assert.True(BookingRules.TimeRangesOverlap(Anchor, 60, Anchor.AddMinutes(30), 60));
+    }
+
+    [Fact]
+    public void TimeRangesOverlap_FirstStartsInsideSecond_ReturnsTrue()
+    {
+        Assert.True(BookingRules.TimeRangesOverlap(Anchor.AddMinutes(30), 60, Anchor, 60));
+    }
+
+    [Fact]
+    public void TimeRangesOverlap_SecondEntirelyWithinFirst_ReturnsTrue()
+    {
+        Assert.True(BookingRules.TimeRangesOverlap(Anchor, 120, Anchor.AddMinutes(30), 30));
+    }
+
+    [Fact]
+    public void TimeRangesOverlap_SecondStartsExactlyWhenFirstEnds_ReturnsFalse()
+    {
+        // Back-to-back, non-overlapping appointments - a 9:00-10:00 slot and a 10:00-11:00 slot
+        // for the same specialist are adjacent, not conflicting.
+        Assert.False(BookingRules.TimeRangesOverlap(Anchor, 60, Anchor.AddMinutes(60), 60));
+    }
+
+    [Fact]
+    public void TimeRangesOverlap_CompletelyDisjointRanges_ReturnsFalse()
+    {
+        Assert.False(BookingRules.TimeRangesOverlap(Anchor, 60, Anchor.AddHours(3), 60));
+    }
 }
