@@ -45,9 +45,18 @@ public static class ServiceCollectionExtensions
         // public interface - see CustomerCommandServicePermissionGate's own
         // doc comment. Every other module's *CommandService below follows
         // this same pair.
+        //
+        // Sprint 7 Commit 3: Customer/Specialist additionally get a sync
+        // producer decorator threaded between the raw service and the
+        // permission gate - see CustomerCommandServiceSyncProducer's own
+        // doc comment for why this ordering (permission check stays
+        // outermost, sync production only ever sees a call that already
+        // passed it).
         services.AddSingleton<CustomerCommandService>();
+        services.AddSingleton<CustomerCommandServiceSyncProducer>(sp =>
+            new CustomerCommandServiceSyncProducer(sp.GetRequiredService<CustomerCommandService>(), sp.GetRequiredService<ISyncQueueService>()));
         services.AddSingleton<ICustomerCommandService>(sp =>
-            new CustomerCommandServicePermissionGate(sp.GetRequiredService<CustomerCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+            new CustomerCommandServicePermissionGate(sp.GetRequiredService<CustomerCommandServiceSyncProducer>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IBookingQueryService, BookingQueryService>();
         services.AddSingleton<BookingCommandService>();
         services.AddSingleton<IBookingCommandService>(sp =>
@@ -55,8 +64,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISpecialistQueryService, SpecialistQueryService>();
         services.AddSingleton<ISpecialistProfileQueryService, SpecialistProfileQueryService>();
         services.AddSingleton<SpecialistCommandService>();
+        services.AddSingleton<SpecialistCommandServiceSyncProducer>(sp =>
+            new SpecialistCommandServiceSyncProducer(sp.GetRequiredService<SpecialistCommandService>(), sp.GetRequiredService<ISyncQueueService>()));
         services.AddSingleton<ISpecialistCommandService>(sp =>
-            new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+            new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandServiceSyncProducer>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<AppServices.IServiceQueryService, AppServices.ServiceQueryService>();
         services.AddSingleton<AppServices.IServiceProfileQueryService, AppServices.ServiceProfileQueryService>();
         services.AddSingleton<AppServices.ServiceCommandService>();
