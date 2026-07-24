@@ -273,19 +273,29 @@
                                TextWrapping="Wrap"
                                Margin="0,20,0,0" />
 
-                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                    <!-- Sprint 3 Commit 3: added Start (Pending/Confirmed -> InProgress) and No Show (Confirmed -> NoShow) - a WrapPanel instead of the prior horizontal StackPanel, since five buttons no longer fit one row in this 380px column; same Button/ButtonPrimary style as every other action here, no visual redesign. -->
+                    <WrapPanel Margin="0,20,0,0">
                         <Button Content="{x:Static loc:Strings.Common_Confirm}"
                                 Command="{Binding DataContext.ConfirmBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                                Margin="0,0,8,0" />
+                                Margin="0,0,8,8" />
+                        <Button Content="{x:Static loc:Strings.Bookings_Start}"
+                                Command="{Binding DataContext.StartBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                Margin="0,0,8,8" />
                         <Button Content="{x:Static loc:Strings.Bookings_Complete}"
                                 Command="{Binding DataContext.CompleteBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                                Margin="0,0,8,0" />
+                                Margin="0,0,8,8" />
+                        <Button Content="{x:Static loc:Strings.Bookings_NoShow}"
+                                Command="{Binding DataContext.NoShowBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                Margin="0,0,8,8" />
                         <Button Content="{x:Static loc:Strings.Common_Cancel}"
                                 Command="{Binding DataContext.CancelBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.ButtonPrimary}" />
-                    </StackPanel>
+                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                Margin="0,0,0,8" />
+                    </WrapPanel>
                 </StackPanel>
             </Grid>
         </dashboardControls:DashboardCard>

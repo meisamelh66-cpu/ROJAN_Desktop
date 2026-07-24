@@ -90,8 +90,17 @@ public sealed class BookingPageViewModel : ViewModelBase
         ConfirmBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.Confirmed),
             _ => SelectedBooking?.Status == BookingStatus.Pending);
+        StartBookingCommand = new AsyncRelayCommand(
+            _ => ChangeStatusAsync(BookingStatus.InProgress),
+            _ => SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
+        // Completed is only reachable via InProgress (see BookingRules) - this CanExecute used to
+        // read Status == Confirmed, which let the button call UpdateBookingStatusAsync with an
+        // illegal Confirmed -> Completed transition and throw at runtime (Sprint 3 Commit 3 fix).
         CompleteBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.Completed),
+            _ => SelectedBooking?.Status == BookingStatus.InProgress);
+        NoShowBookingCommand = new AsyncRelayCommand(
+            _ => ChangeStatusAsync(BookingStatus.NoShow),
             _ => SelectedBooking?.Status == BookingStatus.Confirmed);
         CancelBookingCommand = new AsyncRelayCommand(
             _ => CancelSelectedBookingAsync(),
@@ -117,7 +126,13 @@ public sealed class BookingPageViewModel : ViewModelBase
 
     public ICommand ConfirmBookingCommand { get; }
 
+    /// <summary>Pending or Confirmed -&gt; InProgress, per <see cref="Rojan.Desktop.Domain.Bookings.BookingRules"/>.</summary>
+    public ICommand StartBookingCommand { get; }
+
     public ICommand CompleteBookingCommand { get; }
+
+    /// <summary>Confirmed -&gt; NoShow, per <see cref="Rojan.Desktop.Domain.Bookings.BookingRules"/>.</summary>
+    public ICommand NoShowBookingCommand { get; }
 
     public ICommand CancelBookingCommand { get; }
 

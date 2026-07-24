@@ -534,6 +534,10 @@ public static class Strings
 
     public static string Bookings_Complete => Get(nameof(Bookings_Complete));
 
+    public static string Bookings_Start => Get(nameof(Bookings_Start));
+
+    public static string Bookings_NoShow => Get(nameof(Bookings_NoShow));
+
     public static string Bookings_Details => Get(nameof(Bookings_Details));
 
     public static string Customers_Title => Get(nameof(Customers_Title));

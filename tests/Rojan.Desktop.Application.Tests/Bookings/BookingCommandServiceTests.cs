@@ -83,4 +83,62 @@ public sealed class BookingCommandServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("no-such-booking", BookingStatus.Cancelled));
     }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_PendingToInProgress_UpdatesStatus()
+    {
+        // Sprint 3 Commit 3: a walk-in/early arrival can start service directly from Pending,
+        // without first being explicitly Confirmed.
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Pending)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var updated = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.InProgress);
+
+        Assert.Equal(BookingStatus.InProgress, updated.Status);
+        Assert.Equal(DomainBookings.BookingStatus.InProgress, Assert.Single(repository.Bookings).Status);
+    }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_ConfirmedToNoShow_UpdatesStatus()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Confirmed)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var updated = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.NoShow);
+
+        Assert.Equal(BookingStatus.NoShow, updated.Status);
+        Assert.Equal(DomainBookings.BookingStatus.NoShow, Assert.Single(repository.Bookings).Status);
+    }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_InProgressToCompleted_UpdatesStatus()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.InProgress)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var updated = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Completed);
+
+        Assert.Equal(BookingStatus.Completed, updated.Status);
+    }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_ConfirmedToCompleted_ThrowsInvalidOperationException()
+    {
+        // Completed is only reachable via InProgress - Confirmed -> Completed must stay rejected
+        // (this is the transition BookingPageViewModel's CompleteBookingCommand used to allow
+        // through a stale CanExecute check before Sprint 3 Commit 3 fixed it).
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Confirmed)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Completed));
+    }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_PendingToNoShow_ThrowsInvalidOperationException()
+    {
+        var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Pending)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("booking-1", BookingStatus.NoShow));
+    }
 }

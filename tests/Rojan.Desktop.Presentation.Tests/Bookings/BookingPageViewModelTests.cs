@@ -149,16 +149,53 @@ public sealed class BookingPageViewModelTests
 
     [Theory]
     [InlineData(BookingStatus.Pending, false)]
-    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.Confirmed, false)]
+    [InlineData(BookingStatus.InProgress, true)]
     [InlineData(BookingStatus.Completed, false)]
     [InlineData(BookingStatus.Cancelled, false)]
-    public void CompleteBookingCommand_CanExecute_TrueOnlyWhenSelectedBookingIsConfirmed(BookingStatus status, bool expectedCanExecute)
+    [InlineData(BookingStatus.NoShow, false)]
+    public void CompleteBookingCommand_CanExecute_TrueOnlyWhenSelectedBookingIsInProgress(BookingStatus status, bool expectedCanExecute)
     {
+        // Completed is only reachable via InProgress per BookingRules - Confirmed must NOT allow
+        // Complete (Sprint 3 Commit 3 fix; the old CanExecute incorrectly allowed Confirmed, which
+        // let the button call an illegal Confirmed -> Completed transition and throw at runtime).
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
         var sut = MakeSut(queryService);
 
         Assert.Equal(expectedCanExecute, sut.CompleteBookingCommand.CanExecute(null));
+    }
+
+    [Theory]
+    [InlineData(BookingStatus.Pending, true)]
+    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.InProgress, false)]
+    [InlineData(BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Cancelled, false)]
+    [InlineData(BookingStatus.NoShow, false)]
+    public void StartBookingCommand_CanExecute_TrueWhenPendingOrConfirmed(BookingStatus status, bool expectedCanExecute)
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var sut = MakeSut(queryService);
+
+        Assert.Equal(expectedCanExecute, sut.StartBookingCommand.CanExecute(null));
+    }
+
+    [Theory]
+    [InlineData(BookingStatus.Pending, false)]
+    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.InProgress, false)]
+    [InlineData(BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Cancelled, false)]
+    [InlineData(BookingStatus.NoShow, false)]
+    public void NoShowBookingCommand_CanExecute_TrueOnlyWhenSelectedBookingIsConfirmed(BookingStatus status, bool expectedCanExecute)
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var sut = MakeSut(queryService);
+
+        Assert.Equal(expectedCanExecute, sut.NoShowBookingCommand.CanExecute(null));
     }
 
     [Theory]
@@ -188,6 +225,51 @@ public sealed class BookingPageViewModelTests
         var call = Assert.Single(commandService.UpdateStatusCalls);
         Assert.Equal("booking-1", call.BookingId);
         Assert.Equal(BookingStatus.Confirmed, call.Status);
+    }
+
+    [Fact]
+    public void StartBookingCommand_Executed_CallsCommandServiceWithSelectedBookingIdAndInProgressStatus()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var sut = MakeSut(queryService, commandService);
+
+        sut.StartBookingCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateStatusCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(BookingStatus.InProgress, call.Status);
+    }
+
+    [Fact]
+    public void CompleteBookingCommand_Executed_CallsCommandServiceWithSelectedBookingIdAndCompletedStatus()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.InProgress) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var sut = MakeSut(queryService, commandService);
+
+        sut.CompleteBookingCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateStatusCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(BookingStatus.Completed, call.Status);
+    }
+
+    [Fact]
+    public void NoShowBookingCommand_Executed_CallsCommandServiceWithSelectedBookingIdAndNoShowStatus()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService();
+        var sut = MakeSut(queryService, commandService);
+
+        sut.NoShowBookingCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateStatusCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(BookingStatus.NoShow, call.Status);
     }
 
     [Fact]

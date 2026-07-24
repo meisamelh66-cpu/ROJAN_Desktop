@@ -720,6 +720,12 @@
   <data name="Bookings_Complete" xml:space="preserve">
     <value>إكمال</value>
   </data>
+  <data name="Bookings_Start" xml:space="preserve">
+    <value>بدء</value>
+  </data>
+  <data name="Bookings_NoShow" xml:space="preserve">
+    <value>لم يحضر</value>
+  </data>
   <data name="Bookings_Details" xml:space="preserve">
     <value>تفاصيل الحجز</value>
   </data>

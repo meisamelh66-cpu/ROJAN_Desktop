@@ -6,8 +6,10 @@ public sealed class BookingRulesTests
 {
     [Theory]
     [InlineData(BookingStatus.Pending, BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.Pending, BookingStatus.InProgress, true)]
     [InlineData(BookingStatus.Pending, BookingStatus.Cancelled, true)]
     [InlineData(BookingStatus.Pending, BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Pending, BookingStatus.NoShow, false)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.InProgress, true)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.Cancelled, true)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.NoShow, true)]

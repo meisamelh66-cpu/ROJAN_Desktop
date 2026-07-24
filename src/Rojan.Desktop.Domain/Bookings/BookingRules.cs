@@ -9,9 +9,12 @@ namespace Rojan.Desktop.Domain.Bookings;
 /// </summary>
 public static class BookingRules
 {
+    // Sprint 3 Commit 3: Pending -> InProgress added so a walk-in/early
+    // arrival can start service without first being explicitly Confirmed -
+    // every other transition here is unchanged from Phase 15.
     private static readonly Dictionary<BookingStatus, BookingStatus[]> ValidTransitions = new()
     {
-        [BookingStatus.Pending] = [BookingStatus.Confirmed, BookingStatus.Cancelled],
+        [BookingStatus.Pending] = [BookingStatus.Confirmed, BookingStatus.InProgress, BookingStatus.Cancelled],
         [BookingStatus.Confirmed] = [BookingStatus.InProgress, BookingStatus.Cancelled, BookingStatus.NoShow],
         [BookingStatus.InProgress] = [BookingStatus.Completed, BookingStatus.Cancelled],
         [BookingStatus.Completed] = [],

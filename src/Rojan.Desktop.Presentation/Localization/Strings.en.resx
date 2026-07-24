@@ -720,6 +720,12 @@
   <data name="Bookings_Complete" xml:space="preserve">
     <value>Complete</value>
   </data>
+  <data name="Bookings_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Bookings_NoShow" xml:space="preserve">
+    <value>No Show</value>
+  </data>
   <data name="Bookings_Details" xml:space="preserve">
     <value>Booking Details</value>
   </data>
