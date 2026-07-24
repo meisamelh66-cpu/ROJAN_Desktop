@@ -178,4 +178,37 @@ public sealed class CustomerProfileViewModelTests
         Assert.Equal(0, sut.CompletedBookingCount);
         Assert.Null(sut.LastAppointmentDate);
     }
+
+    // Sprint 4 Commit 4: premium customer 360 UI - ActivityTimeline re-shapes Activity for the
+    // Shared Timeline control (see CustomerProfileViewModel's own doc comment for why this is a
+    // live ViewModel-owned collection rather than an XAML value converter).
+
+    [Fact]
+    public void Constructor_ProfileHasActivity_PopulatesActivityTimelineWithMatchingEntries()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        var entry = Assert.Single(sut.ActivityTimeline);
+        Assert.Equal("Customer created", entry.Title);
+        Assert.False(string.IsNullOrEmpty(entry.Icon));
+    }
+
+    [Fact]
+    public void AddNoteCommand_Executed_ReloadKeepsActivityTimelineInSyncWithActivity()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService();
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService)
+        {
+            NewNoteText = "Prefers evenings.",
+        };
+
+        sut.AddNoteCommand.Execute(null);
+
+        Assert.Equal(sut.Activity.Count, sut.ActivityTimeline.Count);
+        Assert.Equal(sut.Activity.Select(activity => activity.Description), sut.ActivityTimeline.Select(entry => entry.Title));
+    }
 }

@@ -786,6 +786,15 @@
   <data name="Customers_NoAppointments" xml:space="preserve">
     <value>لا توجد مواعيد</value>
   </data>
+  <data name="Customers_LifetimeValue" xml:space="preserve">
+    <value>القيمة الدائمة</value>
+  </data>
+  <data name="Customers_TotalBookings" xml:space="preserve">
+    <value>إجمالي الحجوزات</value>
+  </data>
+  <data name="Customers_CompletedBookings" xml:space="preserve">
+    <value>الحجوزات المكتملة</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>المخزون</value>
   </data>

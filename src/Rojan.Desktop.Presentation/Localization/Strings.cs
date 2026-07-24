@@ -578,6 +578,12 @@ public static class Strings
 
     public static string Customers_NoAppointments => Get(nameof(Customers_NoAppointments));
 
+    public static string Customers_LifetimeValue => Get(nameof(Customers_LifetimeValue));
+
+    public static string Customers_TotalBookings => Get(nameof(Customers_TotalBookings));
+
+    public static string Customers_CompletedBookings => Get(nameof(Customers_CompletedBookings));
+
     public static string Inventory_Title => Get(nameof(Inventory_Title));
 
     public static string Inventory_Subtitle => Get(nameof(Inventory_Subtitle));

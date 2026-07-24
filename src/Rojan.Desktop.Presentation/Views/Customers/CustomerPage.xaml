@@ -10,19 +10,78 @@
 
     <!--
         Phase 09/10: Customer CRM -> Customer 360. Master-detail layout:
-        a searchable customer list plus a "New Customer" form on the left
-        (both wrapped in the existing state-aware DashboardWidget/
-        DashboardCard, reused unchanged from the Dashboard vertical slice),
-        and the selected customer's full 360 profile on the right -
-        statistics cards, an editable status, tags, notes, and the activity
-        timeline - bound to CustomerPageViewModel.Profile
-        (CustomerProfileViewModel), null when nothing is selected.
+        a searchable customer list plus a "New Customer" form on the left,
+        and the selected customer's full 360 profile on the right - bound to
+        CustomerPageViewModel.Profile (CustomerProfileViewModel), null when
+        nothing is selected.
 
-        No new Design System components: every card/widget/value here is
-        DashboardCard/DashboardWidget/KPIValue, the same three components
-        Phase 06B built for Dashboard.
+        Sprint 4 Commit 2: added a Search & Filter card - free text plus
+        company/tag/status, combined by the ViewModel into one
+        CustomerSearchFilter.
 
+        Sprint 4 Commit 3: added Upcoming Appointments/Booking History
+        sections, composed from Bookings' own query service via
+        CustomerBookingSummaryDto.
+
+        Sprint 4 Commit 4 (Premium Customer 360 UI): adopted the Sprint 1
+        Shared Premium controls throughout - EntityAvatar (customer identity
+        in the list and the profile header, specialist identity in
+        appointment rows), StatusPill (customer/booking status everywhere it
+        appears, via the two local *StatusPillStyle resources below, same
+        "one shared style instead of a per-usage DataTrigger chain" reasoning
+        Bookings' Sprint 3 Commit 4 pass already established), EmptyStateCard
+        (appointment sections' empty state), and the Timeline control (the
+        activity feed, fed by CustomerProfileViewModel.ActivityTimeline - see
+        that property's own doc comment for why the DTO-to-TimelineEntry
+        mapping lives on the ViewModel rather than in this XAML). The
+        Statistics section now uses StatTile instead of KPIValue, showing
+        Lifetime Value/Total Bookings/Completed Bookings/Tags/Notes - the
+        booking counts come straight from CustomerProfileViewModel's
+        already-existing TotalBookingCount/CompletedBookingCount properties
+        (Sprint 4 Commit 3), so no Application-layer change was needed for
+        this. DashboardWidget is kept everywhere a section reflects
+        Profile.State (Loading/Error/Empty chrome); the identity header and
+        Tags/Notes cards - which have no load state of their own - moved from
+        DashboardCard to a plain Rojan.Style.Card Border, matching Calendar's
+        Sprint 2 Commit 5 "lighter chrome for a non-stateful card" precedent.
+        No ViewModel command/filtering behavior changed; StatusFilter/
+        CompanyFilter/TagFilter/SearchText bindings and the Add/Search/Load
+        commands are all untouched.
     -->
+    <UserControl.Resources>
+        <Style x:Key="CustomerStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Active">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Vip">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Churned">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="CustomerBookingStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Confirmed">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Completed">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="NoShow">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -149,10 +208,12 @@
                             <DataTemplate DataType="{x:Type appCustomers:CustomerDto}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
+                                    <shared:EntityAvatar Grid.Column="0" EntityName="{Binding FullName}" Size="32" Margin="0,0,10,0" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                             <Run Text="{Binding Company, Mode=OneWay}" />
@@ -160,11 +221,10 @@
                                             <Run Text="{Binding Email, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
-                                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                               VerticalAlignment="Center" />
+                                    <shared:StatusPill Grid.Column="2"
+                                                        Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource CustomerStatusPillStyle}"
+                                                        VerticalAlignment="Center" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -203,13 +263,29 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <!-- Identity + editable status -->
-                    <dashboardControls:DashboardCard Title="{Binding Customer.FullName}">
+                    <!-- Identity header: avatar, name, company, status pill, editable status -->
+                    <Border Style="{StaticResource Rojan.Style.Card}">
                         <StackPanel>
-                            <TextBlock Text="{Binding Customer.Company}"
-                                       Style="{StaticResource Rojan.TextStyle.Caption}"
-                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                            <TextBlock Text="{Binding Customer.Email}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,12,0,0" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <shared:EntityAvatar Grid.Column="0" EntityName="{Binding Customer.FullName}" Size="56" Margin="0,0,14,0" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Customer.FullName}" Style="{StaticResource Rojan.TextStyle.SectionHeader}" />
+                                    <TextBlock Text="{Binding Customer.Company}"
+                                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                               Margin="0,2,0,0" />
+                                    <shared:StatusPill DataContext="{Binding Customer}"
+                                                        Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource CustomerStatusPillStyle}"
+                                                        Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="{Binding Customer.Email}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,16,0,0" />
                             <TextBlock Text="{Binding Customer.Phone}" Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0" />
 
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
@@ -222,31 +298,42 @@
                                         Margin="12,0,0,0" />
                             </StackPanel>
                         </StackPanel>
-                    </dashboardControls:DashboardCard>
+                    </Border>
 
-                    <!-- Statistics cards -->
+                    <!-- Statistics: Lifetime Value, Total/Completed bookings, Tags, Notes - StatTile instead of the old KPIValue-in-DashboardCard grid -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Statistics}"
                                                         State="{Binding State}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
-                        <ItemsControl ItemsSource="{Binding Statistics}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type appCustomers:CustomerStatDto}">
-                                    <dashboardControls:DashboardCard Width="170" Margin="0,0,12,12">
-                                        <shared:KPIValue Label="{Binding Label}" Value="{Binding Value}" />
-                                    </dashboardControls:DashboardCard>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <WrapPanel>
+                            <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                <shared:StatTile Icon="{StaticResource Rojan.Icon.Accounting}"
+                                                  Label="{x:Static loc:Strings.Customers_LifetimeValue}"
+                                                  Value="{Binding Customer.LifetimeValue}" />
+                            </Border>
+                            <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                <shared:StatTile Icon="{StaticResource Rojan.Icon.Bookings}"
+                                                  Label="{x:Static loc:Strings.Customers_TotalBookings}"
+                                                  Value="{Binding TotalBookingCount}" />
+                            </Border>
+                            <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                <shared:StatTile Icon="{StaticResource Rojan.Icon.CheckCircle}"
+                                                  Label="{x:Static loc:Strings.Customers_CompletedBookings}"
+                                                  Value="{Binding CompletedBookingCount}" />
+                            </Border>
+                            <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                <shared:StatTile Label="{x:Static loc:Strings.Customers_Tags}"
+                                                  Value="{Binding Tags.Count}" />
+                            </Border>
+                            <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                <shared:StatTile Label="{x:Static loc:Strings.Common_Notes}"
+                                                  Value="{Binding Notes.Count}" />
+                            </Border>
+                        </WrapPanel>
                     </dashboardControls:DashboardWidget>
 
-                    <!-- Customer Appointments (Sprint 4 Commit 3): upcoming bookings, composed from Bookings' own query service via CustomerBookingSummaryDto - no Premium redesign yet, that belongs to Commit 4 -->
+                    <!-- Upcoming Appointments (Sprint 4 Commit 3, Premium pass Commit 4): composed from Bookings' own query service via CustomerBookingSummaryDto -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_UpcomingAppointments}"
                                                         State="{Binding State}"
                                                         ErrorMessage="{Binding ErrorMessage}"
@@ -258,14 +345,16 @@
                                     <DataTemplate DataType="{x:Type appBookings:BookingDto}">
                                         <Grid Margin="0,0,0,10">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
+                                            <shared:EntityAvatar Grid.Column="0" EntityName="{Binding SpecialistName}" Size="28" Margin="0,0,10,0" />
+                                            <StackPanel Grid.Column="1">
                                                 <TextBlock Text="{Binding ServiceName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1"
+                                            <TextBlock Grid.Column="2"
                                                        Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}}"
                                                        Style="{StaticResource Rojan.TextStyle.Caption}"
                                                        Foreground="{StaticResource Rojan.Brush.MutedText}"
@@ -275,11 +364,10 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock Text="{x:Static loc:Strings.Customers_NoAppointments}"
-                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                       TextWrapping="Wrap">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                            <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Calendar}"
+                                                    Message="{x:Static loc:Strings.Customers_NoAppointments}">
+                                <shared:EmptyStateCard.Style>
+                                    <Style TargetType="{x:Type shared:EmptyStateCard}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0">
@@ -287,8 +375,8 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                </shared:EmptyStateCard.Style>
+                            </shared:EmptyStateCard>
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 
@@ -304,33 +392,34 @@
                                     <DataTemplate DataType="{x:Type appBookings:BookingDto}">
                                         <Grid Margin="0,0,0,10">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
+                                            <shared:EntityAvatar Grid.Column="0" EntityName="{Binding SpecialistName}" Size="28" Margin="0,0,10,0" />
+                                            <StackPanel Grid.Column="1">
                                                 <TextBlock Text="{Binding ServiceName}" Style="{StaticResource Rojan.TextStyle.Body}" />
                                                 <TextBlock Text="{Binding SpecialistName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right">
                                                 <TextBlock Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy}}"
                                                            Style="{StaticResource Rojan.TextStyle.Caption}"
                                                            Foreground="{StaticResource Rojan.Brush.MutedText}"
                                                            HorizontalAlignment="Right" />
-                                                <TextBlock Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
-                                                           Style="{StaticResource Rojan.TextStyle.Caption}"
-                                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                                           HorizontalAlignment="Right" />
+                                                <shared:StatusPill Text="{Binding Status, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                                    Style="{StaticResource CustomerBookingStatusPillStyle}"
+                                                                    HorizontalAlignment="Right"
+                                                                    Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock Text="{x:Static loc:Strings.Customers_NoAppointments}"
-                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                       TextWrapping="Wrap">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                            <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Bookings}"
+                                                    Message="{x:Static loc:Strings.Customers_NoAppointments}">
+                                <shared:EmptyStateCard.Style>
+                                    <Style TargetType="{x:Type shared:EmptyStateCard}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding PastAppointments.Count}" Value="0">
@@ -338,14 +427,16 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                </shared:EmptyStateCard.Style>
+                            </shared:EmptyStateCard>
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 
                     <!-- Tags -->
-                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Customers_Tags}" Margin="0,16,0,0">
+                    <Border Style="{StaticResource Rojan.Style.Card}" Margin="0,16,0,0">
                         <StackPanel>
+                            <shared:PremiumCardHeader Title="{x:Static loc:Strings.Customers_Tags}" Margin="0,0,0,12" />
+
                             <ItemsControl ItemsSource="{Binding Tags}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -354,25 +445,19 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appCustomers:CustomerTagDto}">
-                                        <Border Background="{StaticResource Rojan.Brush.SurfaceHover}"
-                                                BorderBrush="{StaticResource Rojan.Brush.Border}"
-                                                BorderThickness="1"
-                                                CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
-                                                Padding="10,4"
-                                                Margin="0,0,8,8">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding Label}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
-                                                <Button Content="&#10005;"
-                                                        Margin="8,0,0,0"
-                                                        Padding="0"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Cursor="Hand"
-                                                        FontSize="11"
-                                                        Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}" />
-                                            </StackPanel>
-                                        </Border>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,8,8">
+                                            <shared:StatusPill Text="{Binding Label}" Severity="Neutral" />
+                                            <Button Content="&#10005;"
+                                                    Margin="4,0,0,0"
+                                                    Padding="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                    Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -385,11 +470,13 @@
                                         Margin="8,0,0,0" />
                             </StackPanel>
                         </StackPanel>
-                    </dashboardControls:DashboardCard>
+                    </Border>
 
                     <!-- Notes -->
-                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Common_Notes}" Margin="0,16,0,0">
+                    <Border Style="{StaticResource Rojan.Style.Card}" Margin="0,16,0,0">
                         <StackPanel>
+                            <shared:PremiumCardHeader Title="{x:Static loc:Strings.Common_Notes}" Margin="0,0,0,12" />
+
                             <StackPanel Orientation="Horizontal">
                                 <TextBox Text="{Binding NewNoteText, UpdateSourceTrigger=PropertyChanged}" Width="230" />
                                 <Button Content="{x:Static loc:Strings.Customers_AddNote}"
@@ -401,17 +488,23 @@
                             <ItemsControl ItemsSource="{Binding Notes}" Margin="0,12,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type appCustomers:CustomerNoteDto}">
-                                        <StackPanel Margin="0,0,0,10">
-                                            <TextBlock Text="{Binding Text}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" />
-                                            <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:MMM d, yyyy}}"
-                                                       Style="{StaticResource Rojan.TextStyle.Caption}"
-                                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                        </StackPanel>
+                                        <Border BorderBrush="{StaticResource Rojan.Brush.Border}"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="0,0,0,10"
+                                                Margin="0,0,0,10">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Text}" Style="{StaticResource Rojan.TextStyle.Body}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:MMM d, yyyy}}"
+                                                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                                                           Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                                           Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
-                    </dashboardControls:DashboardCard>
+                    </Border>
 
                     <!-- Timeline -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Timeline}"
@@ -419,26 +512,7 @@
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,32">
-                        <ItemsControl ItemsSource="{Binding Activity}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type appCustomers:CustomerActivityDto}">
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Description}"
-                                                   Style="{StaticResource Rojan.TextStyle.Body}"
-                                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding OccurredAt, StringFormat={}{0:MMM d, t}}"
-                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
-                                                   Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <shared:Timeline ItemsSource="{Binding ActivityTimeline}" />
                     </dashboardControls:DashboardWidget>
 
                 </StackPanel>

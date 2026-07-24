@@ -786,6 +786,15 @@
   <data name="Customers_NoAppointments" xml:space="preserve">
     <value>No Appointments</value>
   </data>
+  <data name="Customers_LifetimeValue" xml:space="preserve">
+    <value>Lifetime Value</value>
+  </data>
+  <data name="Customers_TotalBookings" xml:space="preserve">
+    <value>Total Bookings</value>
+  </data>
+  <data name="Customers_CompletedBookings" xml:space="preserve">
+    <value>Completed Bookings</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>Inventory</value>
   </data>

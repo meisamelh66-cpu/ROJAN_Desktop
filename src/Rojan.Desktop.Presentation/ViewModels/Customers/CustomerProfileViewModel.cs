@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Controls.Shared;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using AppBookings = Rojan.Desktop.Application.Bookings;
@@ -20,6 +21,16 @@ namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 /// <c>Bookings.BookingPageViewModel</c> exposes - rather than a
 /// Customer-owned copy, consistent with <see cref="CustomerBookingSummaryDto"/>
 /// reusing it instead of duplicating any booking mapping/logic.
+///
+/// Sprint 4 Commit 4 (Premium Customer 360 UI): <see cref="ActivityTimeline"/>
+/// re-shapes <see cref="Activity"/> into <see cref="TimelineEntry"/> for the
+/// Shared <c>Timeline</c> control - done here (a plain map, populated by
+/// <see cref="ReplaceAll{T}"/> the same way every other collection on this
+/// ViewModel already is) rather than as an XAML value converter, because a
+/// converter only re-runs when the bound *property* changes, not when an
+/// already-bound ObservableCollection mutates in place - it would silently
+/// go stale after every Add Note/Tag reload. <see cref="Activity"/> itself
+/// is left untouched for anything else that still wants the raw DTOs.
 /// </summary>
 public sealed class CustomerProfileViewModel : ViewModelBase
 {
@@ -49,6 +60,7 @@ public sealed class CustomerProfileViewModel : ViewModelBase
         Notes = new ObservableCollection<CustomerNoteDto>();
         Tags = new ObservableCollection<CustomerTagDto>();
         Activity = new ObservableCollection<CustomerActivityDto>();
+        ActivityTimeline = new ObservableCollection<TimelineEntry>();
         Statistics = new ObservableCollection<CustomerStatDto>();
         UpcomingAppointments = new ObservableCollection<AppBookings.BookingDto>();
         PastAppointments = new ObservableCollection<AppBookings.BookingDto>();
@@ -70,6 +82,9 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     public ObservableCollection<CustomerTagDto> Tags { get; }
 
     public ObservableCollection<CustomerActivityDto> Activity { get; }
+
+    /// <summary>Same entries as <see cref="Activity"/>, reshaped to <see cref="TimelineEntry"/> for the Shared Timeline control - see this class's own doc comment for why this is a live ViewModel-owned collection rather than an XAML value converter.</summary>
+    public ObservableCollection<TimelineEntry> ActivityTimeline { get; }
 
     public ObservableCollection<CustomerStatDto> Statistics { get; }
 
@@ -161,6 +176,7 @@ public sealed class CustomerProfileViewModel : ViewModelBase
             ReplaceAll(Notes, profile.Notes);
             ReplaceAll(Tags, profile.Tags);
             ReplaceAll(Activity, profile.Activity);
+            ReplaceAll(ActivityTimeline, profile.Activity.Select(MapToTimelineEntry).ToList());
             ReplaceAll(Statistics, profile.Statistics);
             ReplaceAll(UpcomingAppointments, profile.BookingSummary.UpcomingAppointments);
             ReplaceAll(PastAppointments, profile.BookingSummary.PastAppointments);
@@ -233,4 +249,17 @@ public sealed class CustomerProfileViewModel : ViewModelBase
             collection.Add(item);
         }
     }
+
+    // Rojan.Icon.Information's codepoint (Themes/Icons.xaml) - a converter/ViewModel cannot
+    // resolve a {StaticResource} key at runtime, same reasoning Converters/
+    // NotificationSeverityToIconConverter.cs already documents. Every timeline entry gets this
+    // same generic "activity" glyph since CustomerActivityDto carries no icon of its own.
+    private const char ActivityGlyph = (char)0xE946;
+
+    private static TimelineEntry MapToTimelineEntry(CustomerActivityDto activity) => new()
+    {
+        Icon = ActivityGlyph.ToString(),
+        Title = activity.Description,
+        TimestampText = activity.OccurredAt.ToString("MMM d, t", System.Globalization.CultureInfo.InvariantCulture),
+    };
 }

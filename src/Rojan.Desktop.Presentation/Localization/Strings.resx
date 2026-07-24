@@ -798,6 +798,15 @@
   <data name="Customers_NoAppointments" xml:space="preserve">
     <value>نوبتی ثبت نشده است</value>
   </data>
+  <data name="Customers_LifetimeValue" xml:space="preserve">
+    <value>ارزش کل خرید</value>
+  </data>
+  <data name="Customers_TotalBookings" xml:space="preserve">
+    <value>مجموع نوبت‌ها</value>
+  </data>
+  <data name="Customers_CompletedBookings" xml:space="preserve">
+    <value>نوبت‌های انجام‌شده</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>موجودی</value>
   </data>
