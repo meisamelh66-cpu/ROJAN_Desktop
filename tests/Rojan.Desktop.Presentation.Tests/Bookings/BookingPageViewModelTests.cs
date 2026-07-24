@@ -443,4 +443,100 @@ public sealed class BookingPageViewModelTests
 
         Assert.Equal("Amelia", queryService.SearchCalls[^1].CustomerName);
     }
+
+    // Sprint 3 Commit 6: reschedule workflow wiring.
+
+    [Theory]
+    [InlineData(BookingStatus.Pending, true)]
+    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.InProgress, true)]
+    [InlineData(BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Cancelled, false)]
+    [InlineData(BookingStatus.NoShow, false)]
+    public void RescheduleBookingCommand_CanExecute_TrueOnlyWhenActiveAndDateChosen(BookingStatus status, bool expectedCanExecute)
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var sut = MakeSut(queryService);
+        sut.RescheduleDate = new DateTime(2026, 3, 15);
+
+        Assert.Equal(expectedCanExecute, sut.RescheduleBookingCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_CanExecute_FalseWhenNoDateChosen()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var sut = MakeSut(queryService);
+
+        Assert.Null(sut.RescheduleDate);
+        Assert.False(sut.RescheduleBookingCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_Executed_CallsWorkflowServiceWithSelectedBookingIdAndNewDateTime_PreservingTimeOfDay()
+    {
+        var originalScheduledAt = new DateTimeOffset(2026, 3, 1, 14, 30, 0, TimeSpan.Zero);
+        var bookings = new List<BookingDto>
+        {
+            new("booking-1", string.Empty, "Amelia Hart", string.Empty, "Test Service", "specialist-1", "Jordan Lee",
+                originalScheduledAt, 60, "$0", BookingStatus.Confirmed, string.Empty, "org-1", "branch-1"),
+        };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, workflowService: workflowService);
+        sut.RescheduleDate = new DateTime(2026, 3, 20);
+
+        sut.RescheduleBookingCommand.Execute(null);
+
+        var call = Assert.Single(workflowService.RescheduleCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(new DateTimeOffset(2026, 3, 20, 14, 30, 0, TimeSpan.Zero), call.NewSlotStart);
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_Executed_NeverCallsCommandServiceDirectly()
+    {
+        // Reschedule must go through IBookingWorkflowService only - never IBookingCommandService
+        // directly, or the Calendar release/reserve orchestration would be skipped entirely (same
+        // reasoning as the Sprint 3 Commit 1 Cancel fix). StubBookingCommandService.RescheduleBookingAsync
+        // throws NotSupportedException, so this test would fail loudly if the ViewModel ever called it.
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var sut = MakeSut(queryService);
+        sut.RescheduleDate = new DateTime(2026, 3, 20);
+
+        sut.RescheduleBookingCommand.Execute(null);
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_Executed_ClearsRescheduleDateAndReloads()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, workflowService: workflowService);
+        sut.RescheduleDate = new DateTime(2026, 3, 20);
+
+        sut.RescheduleBookingCommand.Execute(null);
+
+        Assert.Null(sut.RescheduleDate);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_Executed_ReloadPreservesActiveFilter()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var workflowService = new StubBookingWorkflowService();
+        var sut = MakeSut(queryService, workflowService: workflowService);
+        sut.CustomerNameFilter = "Amelia";
+        sut.RescheduleDate = new DateTime(2026, 3, 20);
+
+        sut.RescheduleBookingCommand.Execute(null);
+
+        Assert.Equal("Amelia", queryService.SearchCalls[^1].CustomerName);
+    }
 }

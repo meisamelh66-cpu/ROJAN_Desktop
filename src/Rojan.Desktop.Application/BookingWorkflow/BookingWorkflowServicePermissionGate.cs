@@ -31,4 +31,10 @@ public sealed class BookingWorkflowServicePermissionGate : IBookingWorkflowServi
         _permissionGate.Ensure(Permission.BookingCreate);
         return _inner.CancelBookingAsync(bookingId, cancellationToken);
     }
+
+    public Task<BookingConfirmationDto> RescheduleBookingAsync(string bookingId, DateTimeOffset newSlotStart, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.BookingCreate);
+        return _inner.RescheduleBookingAsync(bookingId, newSlotStart, cancellationToken);
+    }
 }

@@ -174,4 +174,98 @@ public sealed class BookingWorkflowServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.CancelBookingAsync("no-such-booking"));
     }
+
+    // Sprint 3 Commit 6: reschedule workflow. Mirrors CreateBookingAsync's own
+    // reserve-before-write, release-on-failure rollback shape.
+
+    private static AppBookings.BookingDto MakeScheduledBooking(DateTimeOffset scheduledAt, string specialistId = "specialist-1") =>
+        new("booking-1", "customer-1", "Amelia Hart", "service-1", "Haircut & Style", specialistId, "Jordan Lee",
+            scheduledAt, 60, "$65", AppBookings.BookingStatus.Confirmed, string.Empty, "org-1", "branch-1");
+
+    [Fact]
+    public async Task RescheduleBookingAsync_BookingHasSpecialist_ReservesNewSlotThenReleasesOldSlot()
+    {
+        var newStart = SlotStart.AddDays(1);
+        var bookingQueryService = new StubBookingQueryService([MakeScheduledBooking(SlotStart)]);
+        var bookingCommandService = new StubBookingCommandService();
+        var calendarCommandService = new StubCalendarCommandService();
+        var sut = MakeSut(bookingQueryService: bookingQueryService, bookingCommandService: bookingCommandService, calendarCommandService: calendarCommandService);
+
+        var confirmation = await sut.RescheduleBookingAsync("booking-1", newStart);
+
+        Assert.Equal(newStart, confirmation.ScheduledAt);
+        var reserveCall = Assert.Single(calendarCommandService.ReserveCalls);
+        Assert.Equal("specialist-1", reserveCall.SpecialistId);
+        Assert.Equal(newStart, reserveCall.Start);
+        Assert.Equal(newStart.AddMinutes(60), reserveCall.End);
+        var releaseCall = Assert.Single(calendarCommandService.ReleaseCalls);
+        Assert.Equal("specialist-1", releaseCall.SpecialistId);
+        Assert.Equal(SlotStart, releaseCall.Start);
+        var rescheduleCall = Assert.Single(bookingCommandService.RescheduleCalls);
+        Assert.Equal("booking-1", rescheduleCall.BookingId);
+        Assert.Equal(newStart, rescheduleCall.NewScheduledAt);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_NewSlotUnavailable_ThrowsAndNeverTouchesBookingOrOldSlot()
+    {
+        // "Reschedule rejects unavailable target slot" + "do not lose the original reservation".
+        var newStart = SlotStart.AddDays(1);
+        var bookingQueryService = new StubBookingQueryService([MakeScheduledBooking(SlotStart)]);
+        var bookingCommandService = new StubBookingCommandService();
+        var calendarCommandService = new StubCalendarCommandService { ThrowOnReserve = true };
+        var sut = MakeSut(bookingQueryService: bookingQueryService, bookingCommandService: bookingCommandService, calendarCommandService: calendarCommandService);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("booking-1", newStart));
+
+        Assert.Empty(bookingCommandService.RescheduleCalls);
+        Assert.Empty(calendarCommandService.ReleaseCalls);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_BookingUpdateFails_ReleasesNewlyReservedSlotAndRethrows()
+    {
+        // "Failed reschedule keeps original booking intact" from the Calendar side: the new slot
+        // was reserved, then the booking-level move failed (e.g. a same-specialist conflict), so
+        // the new reservation must be released - and since the booking never actually moved, the
+        // *old* slot must never be released either.
+        var newStart = SlotStart.AddDays(1);
+        var bookingQueryService = new StubBookingQueryService([MakeScheduledBooking(SlotStart)]);
+        var bookingCommandService = new StubBookingCommandService { ThrowOnReschedule = true };
+        var calendarCommandService = new StubCalendarCommandService();
+        var sut = MakeSut(bookingQueryService: bookingQueryService, bookingCommandService: bookingCommandService, calendarCommandService: calendarCommandService);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("booking-1", newStart));
+
+        Assert.Single(calendarCommandService.ReserveCalls);
+        var releaseCall = Assert.Single(calendarCommandService.ReleaseCalls);
+        Assert.Equal(newStart, releaseCall.Start);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_BookingHasNoSpecialist_ReschedulesWithoutAnyCalendarCalls()
+    {
+        var newStart = SlotStart.AddDays(1);
+        var booking = new AppBookings.BookingDto(
+            "booking-3", string.Empty, "Olivia Chen", string.Empty, "Corporate Group Styling", string.Empty, "Priya Nair",
+            SlotStart, 240, "$0", AppBookings.BookingStatus.Pending, string.Empty, "org-1", "branch-1");
+        var bookingQueryService = new StubBookingQueryService([booking]);
+        var bookingCommandService = new StubBookingCommandService();
+        var calendarCommandService = new StubCalendarCommandService();
+        var sut = MakeSut(bookingQueryService: bookingQueryService, bookingCommandService: bookingCommandService, calendarCommandService: calendarCommandService);
+
+        await sut.RescheduleBookingAsync("booking-3", newStart);
+
+        Assert.Empty(calendarCommandService.ReserveCalls);
+        Assert.Empty(calendarCommandService.ReleaseCalls);
+        Assert.Single(bookingCommandService.RescheduleCalls);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_UnknownId_ThrowsInvalidOperationException()
+    {
+        var sut = MakeSut(bookingQueryService: new StubBookingQueryService([]));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("no-such-booking", SlotStart));
+    }
 }

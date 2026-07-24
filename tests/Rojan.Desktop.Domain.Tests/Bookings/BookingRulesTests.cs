@@ -77,4 +77,16 @@ public sealed class BookingRulesTests
     {
         Assert.False(BookingRules.TimeRangesOverlap(Anchor, 60, Anchor.AddHours(3), 60));
     }
+
+    [Theory]
+    [InlineData(BookingStatus.Pending, true)]
+    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.InProgress, true)]
+    [InlineData(BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Cancelled, false)]
+    [InlineData(BookingStatus.NoShow, false)]
+    public void IsActive_VariousStatuses_MatchesExpectedLifecycle(BookingStatus status, bool expected)
+    {
+        Assert.Equal(expected, BookingRules.IsActive(status));
+    }
 }

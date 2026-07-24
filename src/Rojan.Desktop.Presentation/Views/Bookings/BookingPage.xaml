@@ -337,6 +337,16 @@
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 Margin="0,0,0,8" />
                     </WrapPanel>
+
+                    <!-- Sprint 3 Commit 6: reschedule - a date picker (same-time-of-day, same specialist) plus one button, reusing the exact DatePicker/ButtonSecondary components already used elsewhere on this page. -->
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <DatePicker SelectedDate="{Binding DataContext.RescheduleDate, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+                                    Width="160"
+                                    Margin="0,0,8,0" />
+                        <Button Content="{x:Static loc:Strings.Bookings_Reschedule}"
+                                Command="{Binding DataContext.RescheduleBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </dashboardControls:DashboardCard>

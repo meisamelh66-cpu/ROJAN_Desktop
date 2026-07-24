@@ -45,4 +45,16 @@ public static class BookingRules
         var secondEnd = secondStart.AddMinutes(secondDurationMinutes);
         return firstStart < secondEnd && secondStart < firstEnd;
     }
+
+    /// <summary>
+    /// Whether a booking in this status still occupies real schedule time.
+    /// Pending/Confirmed/InProgress do; the three terminal statuses
+    /// (Completed/Cancelled/NoShow) don't, so they never conflict with a
+    /// new/rescheduled booking and can never themselves be rescheduled
+    /// (Sprint 3 Commit 6). Promoted here from a private helper duplicated
+    /// between the double-booking conflict check and the new
+    /// reschedule-eligibility check, so both share one definition.
+    /// </summary>
+    public static bool IsActive(BookingStatus status) =>
+        status is BookingStatus.Pending or BookingStatus.Confirmed or BookingStatus.InProgress;
 }

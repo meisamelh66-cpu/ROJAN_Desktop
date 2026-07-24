@@ -79,4 +79,25 @@ public sealed class FakeBookingRepositoryTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("no-such-booking", BookingStatus.Cancelled));
     }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_ExistingBooking_ChangesScheduledAt()
+    {
+        var sut = new FakeBookingRepository();
+        var newScheduledAt = new DateTimeOffset(2026, 5, 1, 9, 0, 0, TimeSpan.Zero);
+
+        var updated = await sut.RescheduleBookingAsync("booking-1", newScheduledAt);
+        var reloaded = await sut.GetBookingByIdAsync("booking-1");
+
+        Assert.Equal(newScheduledAt, updated.ScheduledAt);
+        Assert.Equal(newScheduledAt, reloaded!.ScheduledAt);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_UnknownBooking_ThrowsInvalidOperationException()
+    {
+        var sut = new FakeBookingRepository();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("no-such-booking", DateTimeOffset.UnixEpoch));
+    }
 }

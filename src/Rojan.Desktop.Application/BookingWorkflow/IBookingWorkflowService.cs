@@ -23,4 +23,15 @@ public interface IBookingWorkflowService
 
     /// <summary>Cancels a booking and releases its calendar slot, if it had a real specialist id (bookings created via the Bookings page's free-text quick-add form never reserved a calendar slot, so there is nothing to release).</summary>
     public Task CancelBookingAsync(string bookingId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Moves an existing active booking to <paramref name="newSlotStart"/> for the same
+    /// specialist/duration. If the booking has a real Calendar reservation, the new slot is
+    /// reserved <em>before</em> the old one is released and before the booking record itself is
+    /// updated - if the new slot is unavailable, the original booking and its original
+    /// reservation are left completely untouched; if the booking update fails after the new slot
+    /// was reserved, that new reservation is released so it doesn't stay stuck as Booked (Sprint 3
+    /// Commit 6).
+    /// </summary>
+    public Task<BookingConfirmationDto> RescheduleBookingAsync(string bookingId, DateTimeOffset newSlotStart, CancellationToken cancellationToken = default);
 }

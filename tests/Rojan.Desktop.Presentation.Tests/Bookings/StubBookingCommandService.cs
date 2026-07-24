@@ -30,4 +30,8 @@ internal sealed class StubBookingCommandService : IBookingCommandService
             bookingId, string.Empty, "Test Customer", string.Empty, "Test Service", string.Empty, string.Empty,
             DateTimeOffset.UnixEpoch, 60, "$0", status, string.Empty, "org-1", "branch-1"));
     }
+
+    /// <summary>Not exercised by BookingPageViewModelTests - reschedule goes through IBookingWorkflowService, never this plain command service directly (see StubBookingWorkflowService.RescheduleCalls instead).</summary>
+    public Task<BookingDto> RescheduleBookingAsync(string bookingId, DateTimeOffset newScheduledAt, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by BookingPageViewModelTests - reschedule goes through IBookingWorkflowService.");
 }

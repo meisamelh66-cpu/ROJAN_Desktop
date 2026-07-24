@@ -256,4 +256,80 @@ public sealed class BookingCommandServiceTests
 
         Assert.Equal(BookingStatus.Pending, created.Status);
     }
+
+    // Sprint 3 Commit 6: reschedule support. RescheduleBookingAsync reuses the exact same
+    // conflict-detection (now EnsureNoConflictAsync) Commit 5 introduced, excluding the booking's
+    // own current record from the scan, plus a new eligibility check (only active bookings can be
+    // rescheduled).
+
+    [Fact]
+    public async Task RescheduleBookingAsync_NoConflict_UpdatesScheduledAt()
+    {
+        var originalStart = new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
+        var newStart = new DateTimeOffset(2026, 3, 2, 14, 0, 0, TimeSpan.Zero);
+        var repository = new StubBookingRepository([MakeExistingBooking("booking-1", "specialist-1", "Jordan Lee", originalStart, 60)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        var updated = await sut.RescheduleBookingAsync("booking-1", newStart);
+
+        Assert.Equal(newStart, updated.ScheduledAt);
+        Assert.Equal(newStart, Assert.Single(repository.Bookings).ScheduledAt);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_DoesNotConflictWithItself()
+    {
+        // The booking being rescheduled must be excluded from its own conflict scan - without
+        // that exclusion, every reschedule attempt would "conflict" with its own current record.
+        var originalStart = new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
+        var repository = new StubBookingRepository([MakeExistingBooking("booking-1", "specialist-1", "Jordan Lee", originalStart, 60)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        // Reschedule to a slightly later time that still overlaps the booking's *own* original slot.
+        var updated = await sut.RescheduleBookingAsync("booking-1", originalStart.AddMinutes(15));
+
+        Assert.Equal(originalStart.AddMinutes(15), updated.ScheduledAt);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_ConflictsWithAnotherActiveBooking_ThrowsInvalidOperationException()
+    {
+        var otherStart = new DateTimeOffset(2026, 3, 5, 9, 0, 0, TimeSpan.Zero);
+        var repository = new StubBookingRepository(
+        [
+            MakeExistingBooking("booking-1", "specialist-1", "Jordan Lee", new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero), 60),
+            MakeExistingBooking("booking-2", "specialist-1", "Jordan Lee", otherStart, 60),
+        ]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("booking-1", otherStart));
+
+        // "Failed reschedule keeps original booking intact" - booking-1 must still be at its
+        // original time after the rejected reschedule.
+        var stillOriginal = repository.Bookings.Single(booking => booking.Id == "booking-1");
+        Assert.Equal(new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero), stillOriginal.ScheduledAt);
+    }
+
+    [Theory]
+    [InlineData(DomainBookings.BookingStatus.Completed)]
+    [InlineData(DomainBookings.BookingStatus.Cancelled)]
+    [InlineData(DomainBookings.BookingStatus.NoShow)]
+    public async Task RescheduleBookingAsync_TerminalStatus_ThrowsInvalidOperationException(DomainBookings.BookingStatus status)
+    {
+        var originalStart = new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
+        var repository = new StubBookingRepository([MakeExistingBooking("booking-1", "specialist-1", "Jordan Lee", originalStart, 60, status)]);
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("booking-1", originalStart.AddDays(1)));
+        Assert.Equal(originalStart, repository.Bookings.Single().ScheduledAt);
+    }
+
+    [Fact]
+    public async Task RescheduleBookingAsync_UnknownId_ThrowsInvalidOperationException()
+    {
+        var repository = new StubBookingRepository();
+        var sut = new BookingCommandService(repository, new StubEnterpriseContext());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RescheduleBookingAsync("no-such-booking", DateTimeOffset.UnixEpoch));
+    }
 }

@@ -738,6 +738,9 @@
   <data name="Bookings_NoShow" xml:space="preserve">
     <value>عدم حضور</value>
   </data>
+  <data name="Bookings_Reschedule" xml:space="preserve">
+    <value>زمان‌بندی مجدد</value>
+  </data>
   <data name="Bookings_Details" xml:space="preserve">
     <value>جزئیات رزرو</value>
   </data>

@@ -49,6 +49,7 @@ public sealed class BookingPageViewModel : ViewModelBase
     private string _newBookingSpecialistName = string.Empty;
     private DateTime? _newBookingDate = DateTime.Today.AddDays(1);
     private int _newBookingDurationMinutes = 60;
+    private DateTime? _rescheduleDate;
     private string _searchText = string.Empty;
     private string _customerNameFilter = string.Empty;
     private string _serviceNameFilter = string.Empty;
@@ -105,6 +106,10 @@ public sealed class BookingPageViewModel : ViewModelBase
         CancelBookingCommand = new AsyncRelayCommand(
             _ => CancelSelectedBookingAsync(),
             _ => SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
+        RescheduleBookingCommand = new AsyncRelayCommand(
+            _ => RescheduleSelectedBookingAsync(),
+            _ => RescheduleDate.HasValue
+                && SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed or BookingStatus.InProgress });
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, so there is nothing
@@ -135,6 +140,9 @@ public sealed class BookingPageViewModel : ViewModelBase
     public ICommand NoShowBookingCommand { get; }
 
     public ICommand CancelBookingCommand { get; }
+
+    /// <summary>Moves the selected booking to <see cref="RescheduleDate"/> (same time-of-day, same specialist) via <see cref="IBookingWorkflowService.RescheduleBookingAsync"/> - never the plain command service directly, so the Calendar release/reserve orchestration always runs.</summary>
+    public ICommand RescheduleBookingCommand { get; }
 
     public DashboardState State
     {
@@ -183,6 +191,13 @@ public sealed class BookingPageViewModel : ViewModelBase
     {
         get => _newBookingDurationMinutes;
         set => SetProperty(ref _newBookingDurationMinutes, value);
+    }
+
+    /// <summary>The selected booking's target date for <see cref="RescheduleBookingCommand"/> - date only, same "no time picker yet" simplification <see cref="NewBookingDate"/> already uses; the booking's existing time-of-day is preserved, only the date moves.</summary>
+    public DateTime? RescheduleDate
+    {
+        get => _rescheduleDate;
+        set => SetProperty(ref _rescheduleDate, value);
     }
 
     /// <summary>Free text, matched against customer/service/specialist name and notes - the "search over relevant booking fields" requirement.</summary>
@@ -381,6 +396,31 @@ public sealed class BookingPageViewModel : ViewModelBase
 
         var bookingId = SelectedBooking.Id;
         await _workflowService.CancelBookingAsync(bookingId).ConfigureAwait(true);
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+    }
+
+    /// <summary>
+    /// Goes through <see cref="IBookingWorkflowService.RescheduleBookingAsync"/> - never
+    /// <see cref="IBookingCommandService"/> directly - for the same reason Cancel does: the
+    /// workflow service also releases the old Calendar reservation and reserves the new one (when
+    /// the booking has a real specialist id), which a direct command-service call would skip
+    /// entirely.
+    /// </summary>
+    private async Task RescheduleSelectedBookingAsync()
+    {
+        if (SelectedBooking is null || !RescheduleDate.HasValue)
+        {
+            return;
+        }
+
+        var bookingId = SelectedBooking.Id;
+        var originalTimeOfDay = SelectedBooking.ScheduledAt.TimeOfDay;
+        var newScheduledAt = new DateTimeOffset(RescheduleDate.Value.Date + originalTimeOfDay, SelectedBooking.ScheduledAt.Offset);
+
+        await _workflowService.RescheduleBookingAsync(bookingId, newScheduledAt).ConfigureAwait(true);
+
+        RescheduleDate = null;
         await LoadAsync().ConfigureAwait(true);
         SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
     }

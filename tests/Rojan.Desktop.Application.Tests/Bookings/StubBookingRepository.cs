@@ -40,4 +40,17 @@ internal sealed class StubBookingRepository : IBookingRepository
         Bookings[index] = updated;
         return Task.FromResult(updated);
     }
+
+    public Task<Booking> RescheduleBookingAsync(string bookingId, DateTimeOffset newScheduledAt, CancellationToken cancellationToken = default)
+    {
+        var index = Bookings.FindIndex(booking => booking.Id == bookingId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Booking '{bookingId}' was not found.");
+        }
+
+        var updated = Bookings[index] with { ScheduledAt = newScheduledAt };
+        Bookings[index] = updated;
+        return Task.FromResult(updated);
+    }
 }

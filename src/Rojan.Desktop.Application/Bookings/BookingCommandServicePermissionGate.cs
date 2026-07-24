@@ -25,4 +25,10 @@ public sealed class BookingCommandServicePermissionGate : IBookingCommandService
         _permissionGate.Ensure(Permission.BookingEdit);
         return _inner.UpdateBookingStatusAsync(bookingId, status, cancellationToken);
     }
+
+    public Task<BookingDto> RescheduleBookingAsync(string bookingId, DateTimeOffset newScheduledAt, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.BookingEdit);
+        return _inner.RescheduleBookingAsync(bookingId, newScheduledAt, cancellationToken);
+    }
 }

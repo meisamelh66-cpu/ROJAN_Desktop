@@ -726,6 +726,9 @@
   <data name="Bookings_NoShow" xml:space="preserve">
     <value>No Show</value>
   </data>
+  <data name="Bookings_Reschedule" xml:space="preserve">
+    <value>Reschedule</value>
+  </data>
   <data name="Bookings_Details" xml:space="preserve">
     <value>Booking Details</value>
   </data>

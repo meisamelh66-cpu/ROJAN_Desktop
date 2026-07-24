@@ -538,6 +538,8 @@ public static class Strings
 
     public static string Bookings_NoShow => Get(nameof(Bookings_NoShow));
 
+    public static string Bookings_Reschedule => Get(nameof(Bookings_Reschedule));
+
     public static string Bookings_Details => Get(nameof(Bookings_Details));
 
     public static string Customers_Title => Get(nameof(Customers_Title));

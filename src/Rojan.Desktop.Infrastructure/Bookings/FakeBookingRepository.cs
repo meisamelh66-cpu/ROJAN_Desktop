@@ -86,4 +86,18 @@ public sealed class FakeBookingRepository : IBookingRepository
         _bookings[index] = updated;
         return updated;
     }
+
+    public async Task<Booking> RescheduleBookingAsync(string bookingId, DateTimeOffset newScheduledAt, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var index = _bookings.FindIndex(existing => existing.Id == bookingId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Booking '{bookingId}' was not found.");
+        }
+
+        var updated = _bookings[index] with { ScheduledAt = newScheduledAt };
+        _bookings[index] = updated;
+        return updated;
+    }
 }

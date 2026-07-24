@@ -124,4 +124,52 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
             await _calendarCommandService.ReleaseSlotAsync(booking.SpecialistId, booking.ScheduledAt, slotEnd, cancellationToken).ConfigureAwait(true);
         }
     }
+
+    public async Task<BookingConfirmationDto> RescheduleBookingAsync(string bookingId, DateTimeOffset newSlotStart, CancellationToken cancellationToken = default)
+    {
+        var booking = await _bookingQueryService.GetBookingByIdAsync(bookingId, cancellationToken).ConfigureAwait(true)
+            ?? throw new InvalidOperationException($"Booking '{bookingId}' was not found.");
+
+        if (string.IsNullOrEmpty(booking.SpecialistId))
+        {
+            // Free-text quick-add bookings never reserved a Calendar slot, so there is nothing to
+            // release/reserve - BookingCommandService.RescheduleBookingAsync still enforces
+            // eligibility and the same double-booking conflict check CreateBookingAsync uses.
+            var movedWithoutCalendar = await _bookingCommandService.RescheduleBookingAsync(bookingId, newSlotStart, cancellationToken).ConfigureAwait(true);
+            return ToConfirmation(movedWithoutCalendar);
+        }
+
+        var newSlotEnd = newSlotStart.AddMinutes(booking.DurationMinutes);
+        var oldSlotEnd = booking.ScheduledAt.AddMinutes(booking.DurationMinutes);
+
+        // Reserve the new slot BEFORE releasing the old one or touching the booking record - if
+        // the new slot is unavailable, ReserveSlotAsync throws here and both the booking and its
+        // original reservation are left completely untouched.
+        await _calendarCommandService.ReserveSlotAsync(booking.SpecialistId, newSlotStart, newSlotEnd, cancellationToken).ConfigureAwait(true);
+
+        AppBookings.BookingDto moved;
+        try
+        {
+            moved = await _bookingCommandService.RescheduleBookingAsync(bookingId, newSlotStart, cancellationToken).ConfigureAwait(true);
+        }
+        catch
+        {
+            // The booking itself could not be moved (e.g. a same-specialist conflict against
+            // another booking, or the booking became terminal between the read above and now) -
+            // release the new slot that was just reserved so it doesn't stay stuck as Booked with
+            // nothing booked against it, same rollback reasoning as CreateBookingAsync.
+            await _calendarCommandService.ReleaseSlotAsync(booking.SpecialistId, newSlotStart, newSlotEnd, cancellationToken).ConfigureAwait(true);
+            throw;
+        }
+
+        // Only release the old slot once the booking has actually moved - releasing it first and
+        // then failing to update the booking would leave the old slot open with a booking still
+        // pointing at it.
+        await _calendarCommandService.ReleaseSlotAsync(booking.SpecialistId, booking.ScheduledAt, oldSlotEnd, cancellationToken).ConfigureAwait(true);
+
+        return ToConfirmation(moved);
+    }
+
+    private static BookingConfirmationDto ToConfirmation(AppBookings.BookingDto booking) => new(
+        booking.Id, booking.CustomerName, booking.ServiceName, booking.SpecialistName, booking.ScheduledAt, booking.DurationMinutes, booking.Price);
 }

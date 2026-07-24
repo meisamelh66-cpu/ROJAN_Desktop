@@ -726,6 +726,9 @@
   <data name="Bookings_NoShow" xml:space="preserve">
     <value>لم يحضر</value>
   </data>
+  <data name="Bookings_Reschedule" xml:space="preserve">
+    <value>إعادة الجدولة</value>
+  </data>
   <data name="Bookings_Details" xml:space="preserve">
     <value>تفاصيل الحجز</value>
   </data>
