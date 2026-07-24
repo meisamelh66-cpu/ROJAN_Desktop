@@ -7,14 +7,15 @@ namespace Rojan.Desktop.Presentation.Tests.Customers;
 
 public sealed class CustomerProfileViewModelTests
 {
-    private static CustomerProfileDto MakeProfile(string customerId = "customer-1", CustomerBookingSummaryDto? bookingSummary = null) =>
+    private static CustomerProfileDto MakeProfile(string customerId = "customer-1", CustomerBookingSummaryDto? bookingSummary = null, CustomerInsightsDto? insights = null) =>
         new(
             new CustomerDto(customerId, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "555-0100", CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes", "org-1", "branch-1"),
             [new CustomerNoteDto("note-1", customerId, "Prefers evenings.", DateTimeOffset.UnixEpoch)],
             [new CustomerTagDto("tag-1", customerId, "Regular", DateTimeOffset.UnixEpoch)],
             [new CustomerActivityDto("activity-1", customerId, "Customer created", DateTimeOffset.UnixEpoch)],
             [new CustomerStatDto("Lifetime Value", "$4,820")],
-            bookingSummary ?? CustomerBookingSummaryDto.Empty);
+            bookingSummary ?? CustomerBookingSummaryDto.Empty,
+            insights ?? CustomerInsightsDto.Empty);
 
     private static AppBookings.BookingDto MakeBooking(string id, string customerId, DateTimeOffset scheduledAt, AppBookings.BookingStatus status = AppBookings.BookingStatus.Confirmed) =>
         new(id, customerId, "Amelia Hart", "service-1", "Haircut", "specialist-1", "Alex Stylist",
@@ -210,5 +211,75 @@ public sealed class CustomerProfileViewModelTests
 
         Assert.Equal(sut.Activity.Count, sut.ActivityTimeline.Count);
         Assert.Equal(sut.Activity.Select(activity => activity.Description), sut.ActivityTimeline.Select(entry => entry.Title));
+    }
+
+    // Sprint 4 Commit 5: customer intelligence insights. CustomerInsightsCalculator itself is
+    // tested exhaustively in Application.Tests - these only verify the ViewModel exposes whatever
+    // CustomerProfileDto.Insights it was given, unchanged.
+
+    [Fact]
+    public void Constructor_ProfileHasInsights_ExposesCustomerScoreLoyaltyLevelAndEngagementStatus()
+    {
+        var insights = new CustomerInsightsDto(
+            CustomerScore: 72,
+            LoyaltyLevel: LoyaltyLevel.Loyal,
+            EngagementStatus: EngagementStatus.Active,
+            VisitCount: 5,
+            CompletedVisitCount: 4,
+            LastVisitDate: DateTimeOffset.UnixEpoch,
+            UpcomingVisitCount: 1,
+            DaysSinceLastVisit: 12);
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile(insights: insights)));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(72, sut.CustomerScore);
+        Assert.Equal(LoyaltyLevel.Loyal, sut.LoyaltyLevel);
+        Assert.Equal(EngagementStatus.Active, sut.EngagementStatus);
+        Assert.Equal(12, sut.DaysSinceLastVisit);
+    }
+
+    [Fact]
+    public void Constructor_ProfileHasNoBookingsOrActivityInsights_EmptyInsightStateIsExposedCorrectly()
+    {
+        // CustomerInsightsDto.Empty - the "customer with no bookings" default the Application-layer
+        // calculator itself produces (see CustomerInsightsCalculatorTests) - must render as a
+        // well-defined empty state here too, never a crash or an unset value.
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(0, sut.CustomerScore);
+        Assert.Equal(LoyaltyLevel.New, sut.LoyaltyLevel);
+        Assert.Equal(EngagementStatus.Inactive, sut.EngagementStatus);
+        Assert.Null(sut.DaysSinceLastVisit);
+    }
+
+    [Fact]
+    public void AddNoteCommand_Executed_ReloadKeepsInsightsInSyncWithLatestProfile()
+    {
+        var initialInsights = new CustomerInsightsDto(10, LoyaltyLevel.Regular, EngagementStatus.AtRisk, 1, 1, DateTimeOffset.UnixEpoch, 0, 90);
+        var updatedInsights = new CustomerInsightsDto(30, LoyaltyLevel.Loyal, EngagementStatus.Active, 1, 1, DateTimeOffset.UnixEpoch, 0, 5);
+        var shouldReturnUpdated = false;
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(
+            MakeProfile(insights: shouldReturnUpdated ? updatedInsights : initialInsights)));
+        var commandService = new StubCustomerCommandService();
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService)
+        {
+            NewNoteText = "Prefers evenings.",
+        };
+        Assert.Equal(LoyaltyLevel.Regular, sut.LoyaltyLevel);
+
+        shouldReturnUpdated = true;
+        sut.AddNoteCommand.Execute(null);
+
+        Assert.Equal(30, sut.CustomerScore);
+        Assert.Equal(LoyaltyLevel.Loyal, sut.LoyaltyLevel);
+        Assert.Equal(EngagementStatus.Active, sut.EngagementStatus);
+        Assert.Equal(5, sut.DaysSinceLastVisit);
     }
 }

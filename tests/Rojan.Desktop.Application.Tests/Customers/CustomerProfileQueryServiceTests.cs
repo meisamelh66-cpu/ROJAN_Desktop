@@ -171,4 +171,61 @@ public sealed class CustomerProfileQueryServiceTests
         Assert.Equal(3, profile.BookingSummary.TotalBookingCount);
         Assert.Equal(1, profile.BookingSummary.CompletedBookingCount);
     }
+
+    // Sprint 4 Commit 5: customer intelligence insights.
+
+    [Fact]
+    public async Task GetProfileAsync_CustomerHasNoBookings_ReturnsZeroedInsights()
+    {
+        var repository = new StubCustomerRepository([MakeCustomer()]);
+        var sut = new CustomerProfileQueryService(repository, new StubBookingQueryService([]), new StubEnterpriseContext());
+
+        var profile = await sut.GetProfileAsync("customer-1");
+
+        Assert.Equal(0, profile.Insights.CustomerScore);
+        Assert.Equal(LoyaltyLevel.New, profile.Insights.LoyaltyLevel);
+        Assert.Equal(EngagementStatus.Inactive, profile.Insights.EngagementStatus);
+        Assert.Equal(0, profile.Insights.VisitCount);
+        Assert.Equal(0, profile.Insights.CompletedVisitCount);
+        Assert.Null(profile.Insights.LastVisitDate);
+    }
+
+    [Fact]
+    public async Task GetProfileAsync_CustomerHasCompletedBookings_InsightsReflectSameBookingSummaryData()
+    {
+        var now = DateTimeOffset.Now;
+        var repository = new StubCustomerRepository([MakeCustomer()]);
+        var bookingQueryService = new StubBookingQueryService([
+            MakeBooking("booking-1", "customer-1", now.AddDays(-5), AppBookings.BookingStatus.Completed),
+            MakeBooking("booking-2", "customer-1", now.AddDays(-15), AppBookings.BookingStatus.Completed),
+            MakeBooking("booking-3", "customer-1", now.AddDays(4), AppBookings.BookingStatus.Confirmed),
+        ]);
+        var sut = new CustomerProfileQueryService(repository, bookingQueryService, new StubEnterpriseContext());
+
+        var profile = await sut.GetProfileAsync("customer-1");
+
+        // Insights is derived from the exact same BookingSummary this method already returns -
+        // no independent/duplicated data source.
+        Assert.Equal(profile.BookingSummary.TotalBookingCount, profile.Insights.VisitCount);
+        Assert.Equal(profile.BookingSummary.CompletedBookingCount, profile.Insights.CompletedVisitCount);
+        Assert.Equal(profile.BookingSummary.LastAppointmentDate, profile.Insights.LastVisitDate);
+        Assert.Equal(profile.BookingSummary.UpcomingAppointments.Count, profile.Insights.UpcomingVisitCount);
+        Assert.Equal(LoyaltyLevel.Regular, profile.Insights.LoyaltyLevel);
+        Assert.True(profile.Insights.CustomerScore > 0);
+    }
+
+    [Fact]
+    public async Task GetProfileAsync_CustomerVisitedLongAgoWithNoUpcomingBooking_EngagementStatusIsAtRiskOrInactive()
+    {
+        var now = DateTimeOffset.Now;
+        var repository = new StubCustomerRepository([MakeCustomer()]);
+        var bookingQueryService = new StubBookingQueryService([
+            MakeBooking("booking-1", "customer-1", now.AddDays(-100), AppBookings.BookingStatus.Completed),
+        ]);
+        var sut = new CustomerProfileQueryService(repository, bookingQueryService, new StubEnterpriseContext());
+
+        var profile = await sut.GetProfileAsync("customer-1");
+
+        Assert.Equal(EngagementStatus.AtRisk, profile.Insights.EngagementStatus);
+    }
 }

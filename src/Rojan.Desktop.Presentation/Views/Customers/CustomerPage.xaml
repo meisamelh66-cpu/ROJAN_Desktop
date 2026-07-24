@@ -47,6 +47,15 @@
         No ViewModel command/filtering behavior changed; StatusFilter/
         CompanyFilter/TagFilter/SearchText bindings and the Add/Search/Load
         commands are all untouched.
+
+        Sprint 4 Commit 5 (Customer Intelligence): added an Insights section
+        between Statistics and Upcoming Appointments - Customer Score/Days
+        Since Last Visit as StatTiles, Loyalty Level/Engagement Status as
+        StatusPills (two more local *PillStyle resources below, same
+        reasoning as the Customer/Booking status ones). Every value is
+        calculated by Application's CustomerInsightsCalculator from data
+        already fetched for Statistics/Appointments - no new query, no new
+        storage, no ViewModel command changes.
     -->
     <UserControl.Resources>
         <Style x:Key="CustomerStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
@@ -76,6 +85,32 @@
                     <Setter Property="Severity" Value="Success" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Status}" Value="NoShow">
+                    <Setter Property="Severity" Value="Error" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!-- Sprint 4 Commit 5 (Customer Intelligence): LoyaltyLevel/EngagementStatus severity mapping, same one-shared-style-per-enum reasoning as the two StatusPill styles above. -->
+        <Style x:Key="LoyaltyLevelPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding LoyaltyLevel}" Value="Loyal">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding LoyaltyLevel}" Value="Vip">
+                    <Setter Property="Severity" Value="Info" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="EngagementStatusPillStyle" TargetType="{x:Type shared:StatusPill}">
+            <Setter Property="Severity" Value="Neutral" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding EngagementStatus}" Value="Active">
+                    <Setter Property="Severity" Value="Success" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding EngagementStatus}" Value="AtRisk">
+                    <Setter Property="Severity" Value="Warning" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding EngagementStatus}" Value="Inactive">
                     <Setter Property="Severity" Value="Error" />
                 </DataTrigger>
             </Style.Triggers>
@@ -331,6 +366,48 @@
                                                   Value="{Binding Notes.Count}" />
                             </Border>
                         </WrapPanel>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Customer Intelligence (Sprint 4 Commit 5): calculated score/loyalty/engagement, composed by CustomerInsightsCalculator from the same booking/activity data the Statistics and Appointments sections already use - no new query, no new storage. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Insights}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <WrapPanel>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Sparkle}"
+                                                      Label="{x:Static loc:Strings.Customers_CustomerScore}"
+                                                      Value="{Binding CustomerScore}" />
+                                </Border>
+                                <Border Style="{StaticResource Rojan.Style.Card}" Width="170" Margin="0,0,12,12">
+                                    <shared:StatTile Icon="{StaticResource Rojan.Icon.Calendar}"
+                                                      Label="{x:Static loc:Strings.Customers_DaysSinceLastVisit}"
+                                                      Value="{Binding DaysSinceLastVisit}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Customers_LoyaltyLevel}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding LoyaltyLevel, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource LoyaltyLevelPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Customers_EngagementStatus}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <shared:StatusPill Text="{Binding EngagementStatus, Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                        Style="{StaticResource EngagementStatusPillStyle}"
+                                                        Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
                     </dashboardControls:DashboardWidget>
 
                     <!-- Upcoming Appointments (Sprint 4 Commit 3, Premium pass Commit 4): composed from Bookings' own query service via CustomerBookingSummaryDto -->

@@ -12,7 +12,7 @@ public sealed class CustomerPageViewModelTests
     /// <summary>A profile query stub that never fails, used by tests that don't assert on Profile - Profile is constructed as a side effect of selection, and its own errors are contained internally (CustomerProfileViewModel catches them itself).</summary>
     private static StubCustomerProfileQueryService MakeProfileQueryService() =>
         new((customerId, _) => Task.FromResult(new CustomerProfileDto(
-            MakeCustomer(customerId, "Placeholder"), [], [], [], [], CustomerBookingSummaryDto.Empty)));
+            MakeCustomer(customerId, "Placeholder"), [], [], [], [], CustomerBookingSummaryDto.Empty, CustomerInsightsDto.Empty)));
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()

@@ -29,6 +29,11 @@ namespace Rojan.Desktop.Application.Customers;
 /// over a sibling module" shape <c>Reporting.KpiEngineQueryService</c>
 /// already establishes. Both layers stay same-layer siblings (Application
 /// depending on Application), never a Domain-level or circular reference.
+///
+/// Sprint 4 Commit 5: <see cref="CustomerProfileDto.Insights"/> is computed
+/// by <see cref="CustomerInsightsCalculator"/> from the same
+/// <see cref="CustomerBookingSummaryDto"/> and mapped Activity this method
+/// already builds - no new repository call, no new storage.
 /// </summary>
 public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
 {
@@ -61,14 +66,17 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
         var bookingSummary = await BuildBookingSummaryAsync(customerId, cancellationToken).ConfigureAwait(true);
 
         var customerDto = CustomerMapper.MapCustomer(customer);
+        var mappedActivity = activity.Select(CustomerMapper.MapActivity).ToList();
+        var insights = CustomerInsightsCalculator.Calculate(bookingSummary, mappedActivity, DateTimeOffset.Now);
 
         return new CustomerProfileDto(
             customerDto,
             notes.Select(CustomerMapper.MapNote).ToList(),
             tags.Select(CustomerMapper.MapTag).ToList(),
-            activity.Select(CustomerMapper.MapActivity).ToList(),
+            mappedActivity,
             BuildStatistics(customerDto, notes.Count, tags.Count),
-            bookingSummary);
+            bookingSummary,
+            insights);
     }
 
     /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to now. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure.</summary>

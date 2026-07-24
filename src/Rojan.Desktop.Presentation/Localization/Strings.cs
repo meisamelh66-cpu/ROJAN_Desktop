@@ -584,6 +584,16 @@ public static class Strings
 
     public static string Customers_CompletedBookings => Get(nameof(Customers_CompletedBookings));
 
+    public static string Customers_Insights => Get(nameof(Customers_Insights));
+
+    public static string Customers_CustomerScore => Get(nameof(Customers_CustomerScore));
+
+    public static string Customers_LoyaltyLevel => Get(nameof(Customers_LoyaltyLevel));
+
+    public static string Customers_EngagementStatus => Get(nameof(Customers_EngagementStatus));
+
+    public static string Customers_DaysSinceLastVisit => Get(nameof(Customers_DaysSinceLastVisit));
+
     public static string Inventory_Title => Get(nameof(Inventory_Title));
 
     public static string Inventory_Subtitle => Get(nameof(Inventory_Subtitle));

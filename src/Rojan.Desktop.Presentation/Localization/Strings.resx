@@ -807,6 +807,21 @@
   <data name="Customers_CompletedBookings" xml:space="preserve">
     <value>نوبت‌های انجام‌شده</value>
   </data>
+  <data name="Customers_Insights" xml:space="preserve">
+    <value>تحلیل هوشمند مشتری</value>
+  </data>
+  <data name="Customers_CustomerScore" xml:space="preserve">
+    <value>امتیاز مشتری</value>
+  </data>
+  <data name="Customers_LoyaltyLevel" xml:space="preserve">
+    <value>سطح وفاداری</value>
+  </data>
+  <data name="Customers_EngagementStatus" xml:space="preserve">
+    <value>وضعیت تعامل</value>
+  </data>
+  <data name="Customers_DaysSinceLastVisit" xml:space="preserve">
+    <value>روز از آخرین مراجعه</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>موجودی</value>
   </data>
@@ -1367,6 +1382,18 @@
   </data>
   <data name="Enum_Vip" xml:space="preserve">
     <value>ویژه (VIP)</value>
+  </data>
+  <data name="Enum_New" xml:space="preserve">
+    <value>جدید</value>
+  </data>
+  <data name="Enum_Regular" xml:space="preserve">
+    <value>عادی</value>
+  </data>
+  <data name="Enum_Loyal" xml:space="preserve">
+    <value>وفادار</value>
+  </data>
+  <data name="Enum_AtRisk" xml:space="preserve">
+    <value>در معرض ریزش</value>
   </data>
   <data name="Enum_Churned" xml:space="preserve">
     <value>از دست رفته</value>

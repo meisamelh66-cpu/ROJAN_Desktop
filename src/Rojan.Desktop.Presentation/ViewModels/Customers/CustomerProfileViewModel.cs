@@ -31,6 +31,20 @@ namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 /// already-bound ObservableCollection mutates in place - it would silently
 /// go stale after every Add Note/Tag reload. <see cref="Activity"/> itself
 /// is left untouched for anything else that still wants the raw DTOs.
+///
+/// Sprint 4 Commit 5 (Customer Intelligence): <see cref="CustomerScore"/>/
+/// <see cref="LoyaltyLevel"/>/<see cref="EngagementStatus"/>/
+/// <see cref="DaysSinceLastVisit"/> mirror <see cref="CustomerInsightsDto"/>
+/// straight through - the calculation itself lives entirely in
+/// <see cref="CustomerInsightsCalculator"/> (Application layer), never here.
+/// The remaining insight fields (visit/completed counts, last/upcoming
+/// visits) are deliberately NOT duplicated under new names - they are
+/// already exposed as <see cref="TotalBookingCount"/>/
+/// <see cref="CompletedBookingCount"/>/<see cref="LastAppointmentDate"/>/
+/// <see cref="UpcomingAppointments"/> (Sprint 4 Commit 3), and
+/// <see cref="CustomerInsightsDto"/> computes those same numbers from the
+/// same <c>CustomerBookingSummaryDto</c>, so a second, differently-named
+/// copy would only invite the two to drift.
 /// </summary>
 public sealed class CustomerProfileViewModel : ViewModelBase
 {
@@ -47,6 +61,10 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     private int _totalBookingCount;
     private int _completedBookingCount;
     private DateTimeOffset? _lastAppointmentDate;
+    private int _customerScore;
+    private LoyaltyLevel _loyaltyLevel = LoyaltyLevel.New;
+    private EngagementStatus _engagementStatus = EngagementStatus.Inactive;
+    private int? _daysSinceLastVisit;
 
     public CustomerProfileViewModel(
         string customerId,
@@ -162,6 +180,32 @@ public sealed class CustomerProfileViewModel : ViewModelBase
         private set => SetProperty(ref _lastAppointmentDate, value);
     }
 
+    /// <summary>Customer Intelligence (Sprint 4 Commit 5) - see <see cref="CustomerInsightsCalculator"/> for how this is derived.</summary>
+    public int CustomerScore
+    {
+        get => _customerScore;
+        private set => SetProperty(ref _customerScore, value);
+    }
+
+    public LoyaltyLevel LoyaltyLevel
+    {
+        get => _loyaltyLevel;
+        private set => SetProperty(ref _loyaltyLevel, value);
+    }
+
+    public EngagementStatus EngagementStatus
+    {
+        get => _engagementStatus;
+        private set => SetProperty(ref _engagementStatus, value);
+    }
+
+    /// <summary>Days since <see cref="LastAppointmentDate"/> - null when the customer has no past bookings.</summary>
+    public int? DaysSinceLastVisit
+    {
+        get => _daysSinceLastVisit;
+        private set => SetProperty(ref _daysSinceLastVisit, value);
+    }
+
     private async Task LoadAsync()
     {
         State = DashboardState.Loading;
@@ -183,6 +227,10 @@ public sealed class CustomerProfileViewModel : ViewModelBase
             TotalBookingCount = profile.BookingSummary.TotalBookingCount;
             CompletedBookingCount = profile.BookingSummary.CompletedBookingCount;
             LastAppointmentDate = profile.BookingSummary.LastAppointmentDate;
+            CustomerScore = profile.Insights.CustomerScore;
+            LoyaltyLevel = profile.Insights.LoyaltyLevel;
+            EngagementStatus = profile.Insights.EngagementStatus;
+            DaysSinceLastVisit = profile.Insights.DaysSinceLastVisit;
 
             State = DashboardState.Loaded;
         }
