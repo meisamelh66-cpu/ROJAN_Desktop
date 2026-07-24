@@ -15,6 +15,17 @@ namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 /// consistent with Presentation never reaching past Application into
 /// Domain/Infrastructure. Reuses <see cref="DashboardState"/> rather than a
 /// duplicate enum, same reasoning as every other page ViewModel.
+/// <see cref="SearchText"/>/<see cref="StatusFilter"/>/<see cref="CompanyFilter"/>/
+/// <see cref="TagFilter"/> (Sprint 4 Commit 2) are combined into one
+/// <see cref="CustomerSearchFilter"/> and run through
+/// <see cref="ICustomerQueryService.SearchCustomersAsync(CustomerSearchFilter, CancellationToken)"/> -
+/// every load (including the initial one and every post-create reload) goes
+/// through this same method now, not a separate <c>GetCustomersAsync</c>
+/// path, so an active filter survives a Create action instead of silently
+/// resetting. An all-default filter is equivalent to the old unfiltered
+/// <c>GetCustomersAsync</c> call - see <see cref="CustomerSearchFilter"/>'s
+/// own doc comment. Same <c>_filterVersion</c> staleness-guard pattern as
+/// <c>Bookings.BookingPageViewModel</c>.
 /// </summary>
 public sealed class CustomerPageViewModel : ViewModelBase
 {
@@ -25,12 +36,18 @@ public sealed class CustomerPageViewModel : ViewModelBase
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private string _searchText = string.Empty;
+    private string _companyFilter = string.Empty;
+    private string _tagFilter = string.Empty;
+    private CustomerStatus? _statusFilter;
     private CustomerDto? _selectedCustomer;
     private CustomerProfileViewModel? _profile;
     private string _newCustomerFullName = string.Empty;
     private string _newCustomerCompany = string.Empty;
     private string _newCustomerEmail = string.Empty;
     private string _newCustomerPhone = string.Empty;
+
+    /// <summary>Incremented on every filter/load-triggering change - see <c>Bookings.BookingPageViewModel</c>'s field of the same name for the full reasoning.</summary>
+    private int _filterVersion;
 
     public CustomerPageViewModel(
         ICustomerQueryService queryService,
@@ -79,10 +96,51 @@ public sealed class CustomerPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _searchText, value))
             {
-                _ = SearchAsync(value);
+                _ = LoadAsync();
             }
         }
     }
+
+    public string CompanyFilter
+    {
+        get => _companyFilter;
+        set
+        {
+            if (SetProperty(ref _companyFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    public string TagFilter
+    {
+        get => _tagFilter;
+        set
+        {
+            if (SetProperty(ref _tagFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Null means "every status" - the first entry of <see cref="AvailableStatusOptions"/>.</summary>
+    public CustomerStatus? StatusFilter
+    {
+        get => _statusFilter;
+        set
+        {
+            if (SetProperty(ref _statusFilter, value))
+            {
+                _ = LoadAsync();
+            }
+        }
+    }
+
+    /// <summary>Bindable options for the status filter ComboBox - leads with <c>null</c> ("every status") followed by every real <see cref="CustomerStatus"/> value.</summary>
+    public IReadOnlyList<CustomerStatus?> AvailableStatusOptions { get; } =
+        new CustomerStatus?[] { null }.Concat(Enum.GetValues<CustomerStatus>().Cast<CustomerStatus?>()).ToList();
 
     public CustomerDto? SelectedCustomer
     {
@@ -134,9 +192,20 @@ public sealed class CustomerPageViewModel : ViewModelBase
         State = DashboardState.Loading;
         ErrorMessage = null;
 
+        var requestVersion = ++_filterVersion;
+
         try
         {
-            var customers = await _queryService.GetCustomersAsync().ConfigureAwait(true);
+            var customers = await _queryService.SearchCustomersAsync(BuildFilter()).ConfigureAwait(true);
+
+            if (requestVersion != _filterVersion)
+            {
+                // A newer filter change (or another reload) started after
+                // this one - its result will win instead, so applying this
+                // now-stale response would flash outdated data.
+                return;
+            }
+
             ReplaceAll(customers);
 
             State = customers.Count == 0
@@ -147,43 +216,19 @@ public sealed class CustomerPageViewModel : ViewModelBase
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
-            State = DashboardState.Error;
-        }
-    }
-
-    /// <summary>
-    /// Runs the search through <see cref="ICustomerQueryService.SearchCustomersAsync"/>
-    /// rather than filtering a client-side cache - Search is now a real
-    /// Application use case (Phase 10), not View-layer logic. Guards
-    /// against out-of-order completions: if the user kept typing after
-    /// this call started, <paramref name="searchText"/> no longer matches
-    /// <see cref="SearchText"/> by the time the result arrives, and the
-    /// stale result is discarded.
-    /// </summary>
-    private async Task SearchAsync(string searchText)
-    {
-        try
-        {
-            var results = await _queryService.SearchCustomersAsync(searchText).ConfigureAwait(true);
-            if (!string.Equals(searchText, SearchText, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            ReplaceAll(results);
-        }
-#pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must surface as the Error state, not crash the page.
-        catch (Exception exception)
-#pragma warning restore CA1031
-        {
-            if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
+            if (requestVersion == _filterVersion)
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
             }
         }
     }
+
+    private CustomerSearchFilter BuildFilter() => new(
+        SearchText: string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
+        Company: string.IsNullOrWhiteSpace(CompanyFilter) ? null : CompanyFilter,
+        Status: StatusFilter,
+        Tag: string.IsNullOrWhiteSpace(TagFilter) ? null : TagFilter);
 
     private async Task CreateCustomerAsync()
     {

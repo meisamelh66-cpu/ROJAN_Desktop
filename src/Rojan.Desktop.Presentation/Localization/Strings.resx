@@ -780,6 +780,15 @@
   <data name="Customers_AddNote" xml:space="preserve">
     <value>افزودن یادداشت</value>
   </data>
+  <data name="Customers_SearchAndFilter" xml:space="preserve">
+    <value>جستجو و فیلتر</value>
+  </data>
+  <data name="Customers_AllStatuses" xml:space="preserve">
+    <value>همه وضعیت‌ها</value>
+  </data>
+  <data name="Customers_Tag" xml:space="preserve">
+    <value>برچسب</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>موجودی</value>
   </data>

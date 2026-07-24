@@ -17,4 +17,7 @@ internal sealed class StubCustomerQueryService : ICustomerQueryService
 
     public Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(string searchText, CancellationToken cancellationToken = default) =>
         Task.FromResult(_customers);
+
+    public Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(CustomerSearchFilter filter, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_customers);
 }

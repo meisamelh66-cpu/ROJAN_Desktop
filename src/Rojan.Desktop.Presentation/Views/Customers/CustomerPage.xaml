@@ -85,36 +85,52 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
-            <Border Grid.Row="2"
-                    Style="{StaticResource Rojan.Style.Panel}"
-                    Padding="16,10"
-                    Margin="0,24,0,0">
-                <Grid>
-                    <TextBlock Text="{x:Static loc:Strings.Customers_SearchPlaceholder}"
-                               Foreground="{StaticResource Rojan.Brush.HintText}"
-                               FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                               FontSize="15"
-                               IsHitTestVisible="False">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SearchText}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                             CaretBrush="{StaticResource Rojan.Brush.Accent}"
-                             FontFamily="{StaticResource Rojan.FontFamily.Default}"
-                             FontSize="15" />
-                </Grid>
-            </Border>
+            <!-- Search & Filter (Sprint 4 Commit 2): free text plus company/tag/status, combined by the ViewModel into one CustomerSearchFilter -->
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Customers_SearchAndFilter}" Margin="0,24,0,0">
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Customers_Company}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding CompanyFilter, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Customers_Tag}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding TagFilter, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,12,0,0">
+                        <TextBlock Text="{x:Static loc:Strings.Common_Status}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <ComboBox ItemsSource="{Binding AvailableStatusOptions}" SelectedItem="{Binding StatusFilter, Mode=TwoWay}" Margin="0,4,0,0" HorizontalAlignment="Left" MinWidth="180">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                        <Setter Property="Text" Value="{x:Static loc:Strings.Customers_AllStatuses}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
 
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Customers_AllCustomers}"

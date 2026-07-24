@@ -566,6 +566,12 @@ public static class Strings
 
     public static string Customers_AddNote => Get(nameof(Customers_AddNote));
 
+    public static string Customers_SearchAndFilter => Get(nameof(Customers_SearchAndFilter));
+
+    public static string Customers_AllStatuses => Get(nameof(Customers_AllStatuses));
+
+    public static string Customers_Tag => Get(nameof(Customers_Tag));
+
     public static string Inventory_Title => Get(nameof(Inventory_Title));
 
     public static string Inventory_Subtitle => Get(nameof(Inventory_Subtitle));

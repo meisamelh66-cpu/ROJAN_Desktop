@@ -169,4 +169,125 @@ public sealed class CustomerQueryServiceTests
 
         Assert.Equal(2, result.Count);
     }
+
+    // Sprint 4 Commit 2: customer search and filters.
+
+    [Fact]
+    public async Task SearchCustomersAsync_EmptyFilter_ReturnsEveryCustomerSameAsGetCustomersAsync()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var filtered = await sut.SearchCustomersAsync(CustomerSearchFilter.Empty);
+        var unfiltered = await sut.GetCustomersAsync();
+
+        Assert.Equal(unfiltered.Select(c => c.Id), filtered.Select(c => c.Id));
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FilterSearchText_ReturnsMatchingCustomersOnly()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(SearchText: "reyes"));
+
+        Assert.Equal("customer-3", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FilterStatus_ReturnsOnlyCustomersWithThatStatus()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(Status: CustomerStatus.Vip));
+
+        Assert.Equal("customer-3", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FilterCompany_ReturnsOnlyCustomersAtThatCompany()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(Company: "Hart"));
+
+        Assert.Equal("customer-1", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FilterTag_ReturnsOnlyCustomersWithThatTag()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        repository.Tags.Add(new DomainCustomers.CustomerTag("tag-1", "customer-2", "VIP", DateTimeOffset.UnixEpoch));
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(Tag: "vip"));
+
+        Assert.Equal("customer-2", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_CombinedFilters_AreAndedTogether()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        // customer-1 is Active with company "Hart & Co. Salon" - Active + a different company must match nobody.
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(Status: CustomerStatus.Active, Company: "Reyes"));
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_CombinedFilters_MatchWhenEveryCriterionAgrees()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(Status: CustomerStatus.Active, Company: "Hart & Co. Salon"));
+
+        Assert.Equal("customer-1", Assert.Single(result).Id);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FilterMatchesNoCustomer_ReturnsEmptyList()
+    {
+        var repository = new StubCustomerRepository(MakeSearchFixture());
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext());
+
+        var result = await sut.SearchCustomersAsync(new CustomerSearchFilter(SearchText: "no-such-customer"));
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_CustomerInDifferentOrganization_IsExcluded()
+    {
+        var domainCustomer = new DomainCustomers.Customer(
+            "customer-99", "Other Org Customer", string.Empty, "other@example.com", string.Empty,
+            DomainCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-2", "branch-3");
+        var repository = new StubCustomerRepository([domainCustomer]);
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext { CurrentOrganizationId = "org-1", CurrentBranchId = "branch-1" });
+
+        var result = await sut.SearchCustomersAsync(CustomerSearchFilter.Empty);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_CustomerInDifferentBranchSameOrganization_IsExcluded()
+    {
+        var domainCustomer = new DomainCustomers.Customer(
+            "customer-98", "Other Branch Customer", string.Empty, "other@example.com", string.Empty,
+            DomainCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-2");
+        var repository = new StubCustomerRepository([domainCustomer]);
+        var sut = new CustomerQueryService(repository, new StubEnterpriseContext { CurrentOrganizationId = "org-1", CurrentBranchId = "branch-1" });
+
+        var result = await sut.SearchCustomersAsync(CustomerSearchFilter.Empty);
+
+        Assert.Empty(result);
+    }
 }

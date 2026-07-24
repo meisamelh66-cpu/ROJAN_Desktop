@@ -768,6 +768,15 @@
   <data name="Customers_AddNote" xml:space="preserve">
     <value>إضافة ملاحظة</value>
   </data>
+  <data name="Customers_SearchAndFilter" xml:space="preserve">
+    <value>بحث وتصفية</value>
+  </data>
+  <data name="Customers_AllStatuses" xml:space="preserve">
+    <value>كل الحالات</value>
+  </data>
+  <data name="Customers_Tag" xml:space="preserve">
+    <value>وسم</value>
+  </data>
   <data name="Inventory_Title" xml:space="preserve">
     <value>المخزون</value>
   </data>

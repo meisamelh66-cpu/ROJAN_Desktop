@@ -63,6 +63,85 @@ public sealed class CustomerQueryService : ICustomerQueryService
             .ToList();
     }
 
+    /// <summary>
+    /// Composes over <see cref="DomainCustomers.ICustomerRepository.GetCustomersAsync"/>
+    /// (plus <see cref="DomainCustomers.ICustomerRepository.GetTagsAsync"/>
+    /// only when <see cref="CustomerSearchFilter.Tag"/> is set), same
+    /// reasoning as <see cref="SearchCustomersAsync(string, CancellationToken)"/>
+    /// above. Every criterion is applied only when present in
+    /// <paramref name="filter"/> and ANDed with the rest, so an all-default
+    /// filter falls through this method unchanged, ending up identical to
+    /// <see cref="GetCustomersAsync"/>.
+    /// </summary>
+    public async Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(CustomerSearchFilter filter, CancellationToken cancellationToken = default)
+    {
+        var customers = ScopeToCurrentSession(await _repository.GetCustomersAsync(cancellationToken).ConfigureAwait(true)).ToList();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            customers = customers.Where(customer =>
+                customer.FullName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Company.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Email.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Phone.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                customer.Notes.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.FullName))
+        {
+            customers = customers.Where(customer => customer.FullName.Contains(filter.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Company))
+        {
+            customers = customers.Where(customer => customer.Company.Contains(filter.Company, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Email))
+        {
+            customers = customers.Where(customer => customer.Email.Contains(filter.Email, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Phone))
+        {
+            customers = customers.Where(customer => customer.Phone.Contains(filter.Phone, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (filter.Status.HasValue)
+        {
+            var domainStatus = CustomerMapper.MapStatusToDomain(filter.Status.Value);
+            customers = customers.Where(customer => customer.Status == domainStatus).ToList();
+        }
+
+        if (filter.LastContactedFrom.HasValue)
+        {
+            customers = customers.Where(customer => DateOnly.FromDateTime(customer.LastContactedAt.DateTime) >= filter.LastContactedFrom.Value).ToList();
+        }
+
+        if (filter.LastContactedTo.HasValue)
+        {
+            customers = customers.Where(customer => DateOnly.FromDateTime(customer.LastContactedAt.DateTime) <= filter.LastContactedTo.Value).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Tag))
+        {
+            var matching = new List<DomainCustomers.Customer>();
+            foreach (var customer in customers)
+            {
+                var tags = await _repository.GetTagsAsync(customer.Id, cancellationToken).ConfigureAwait(true);
+                if (tags.Any(tag => tag.Label.Contains(filter.Tag, StringComparison.OrdinalIgnoreCase)))
+                {
+                    matching.Add(customer);
+                }
+            }
+
+            customers = matching;
+        }
+
+        return customers.Select(CustomerMapper.MapCustomer).ToList();
+    }
+
     /// <summary>Organization/Branch Scoping - matches by organization always, and by branch only when a branch is selected (a Platform/Organization-level session with no branch chosen yet sees every branch within its organization, never another organization's).</summary>
     private IEnumerable<DomainCustomers.Customer> ScopeToCurrentSession(IEnumerable<DomainCustomers.Customer> customers) =>
         customers.Where(customer =>

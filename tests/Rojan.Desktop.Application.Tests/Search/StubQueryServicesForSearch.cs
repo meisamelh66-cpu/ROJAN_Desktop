@@ -17,6 +17,9 @@ internal sealed class StubCustomerQueryServiceForSearch : ICustomerQueryService
 
     public Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(string searchText, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by GlobalSearchIndexService.");
+
+    public Task<IReadOnlyList<CustomerDto>> SearchCustomersAsync(CustomerSearchFilter filter, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by GlobalSearchIndexService.");
 }
 
 internal sealed class StubBookingQueryServiceForSearch : IBookingQueryService

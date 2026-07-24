@@ -63,21 +63,74 @@ public sealed class CustomerPageViewModelTests
         Assert.Equal("boom", sut.ErrorMessage);
     }
 
+    // Sprint 4 Commit 2: customer search and filters. SearchText/CompanyFilter/TagFilter/
+    // StatusFilter are combined into one CustomerSearchFilter and run through
+    // ICustomerQueryService.SearchCustomersAsync(CustomerSearchFilter, ...) - actual text/field
+    // matching behavior now lives in CustomerQueryService (see CustomerQueryServiceTests), so these
+    // ViewModel tests assert on filter composition (what got asked for), same split Bookings uses.
+
     [Fact]
-    public void SearchText_MatchesNameCompanyOrEmail_FiltersToMatchingCustomersOnly()
+    public void Constructor_NoFilterApplied_SearchesWithAnAllDefaultFilter()
     {
-        var customers = new List<CustomerDto>
-        {
-            MakeCustomer("customer-1", "Amelia Hart", company: "Hart & Co. Salon"),
-            MakeCustomer("customer-2", "Noah Bennett", email: "noah.bennett@example.com"),
-            MakeCustomer("customer-3", "Sophia Reyes", company: "Reyes Beauty Studio"),
-        };
+        // "Keep existing customer list behavior unchanged when no filter is applied" - an
+        // all-default CustomerSearchFilter is documented to behave identically to the old
+        // unfiltered GetCustomersAsync call (see CustomerSearchFilter's own doc comment).
+        var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
         var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
+
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        var filter = Assert.Single(queryService.SearchCalls);
+        Assert.Null(filter.SearchText);
+        Assert.Null(filter.Company);
+        Assert.Null(filter.Status);
+        Assert.Null(filter.Tag);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(customers, sut.Customers);
+    }
+
+    [Fact]
+    public void SearchText_Changed_SearchesWithSearchTextInFilter()
+    {
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
         var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         sut.SearchText = "reyes";
 
-        Assert.Equal(["customer-3"], sut.Customers.Select(c => c.Id));
+        Assert.Equal("reyes", queryService.SearchCalls[^1].SearchText);
+    }
+
+    [Fact]
+    public void CompanyFilter_Changed_SearchesWithCompanyInFilter()
+    {
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        sut.CompanyFilter = "Hart & Co. Salon";
+
+        Assert.Equal("Hart & Co. Salon", queryService.SearchCalls[^1].Company);
+    }
+
+    [Fact]
+    public void TagFilter_Changed_SearchesWithTagInFilter()
+    {
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        sut.TagFilter = "VIP";
+
+        Assert.Equal("VIP", queryService.SearchCalls[^1].Tag);
+    }
+
+    [Fact]
+    public void StatusFilter_Changed_SearchesWithStatusInFilter()
+    {
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>([]));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        sut.StatusFilter = CustomerStatus.Vip;
+
+        Assert.Equal(CustomerStatus.Vip, queryService.SearchCalls[^1].Status);
     }
 
     [Fact]
@@ -88,7 +141,12 @@ public sealed class CustomerPageViewModelTests
             MakeCustomer("customer-1", "Amelia Hart"),
             MakeCustomer("customer-2", "Noah Bennett"),
         };
-        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers),
+            searchCustomersByFilter: (filter, _) => Task.FromResult<IReadOnlyList<CustomerDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? customers
+                    : customers.Where(c => c.FullName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
         var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
         sut.SelectedCustomer = customers[0];
 
@@ -101,7 +159,12 @@ public sealed class CustomerPageViewModelTests
     public void SearchText_NoCustomerMatches_SelectedCustomerBecomesNull()
     {
         var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
-        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers),
+            searchCustomersByFilter: (filter, _) => Task.FromResult<IReadOnlyList<CustomerDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? customers
+                    : customers.Where(c => c.FullName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
         var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         sut.SearchText = "no-such-customer";
@@ -109,6 +172,59 @@ public sealed class CustomerPageViewModelTests
         Assert.Empty(sut.Customers);
         Assert.Null(sut.SelectedCustomer);
         Assert.Null(sut.Profile);
+    }
+
+    [Fact]
+    public void CreateCustomerCommand_Executed_ReloadPreservesActiveFilter()
+    {
+        // A create action's reload must not silently drop the user's active filter - same
+        // "filter survives a mutating action" behavior Bookings.BookingPageViewModel established.
+        var existing = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(existing.ToList()));
+        var commandService = new StubCustomerCommandService
+        {
+            OnCustomerCreated = (_, dto) => existing.Add(dto),
+        };
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), commandService)
+        {
+            NewCustomerFullName = "Grace Kim",
+        };
+        sut.CompanyFilter = "Hart & Co. Salon";
+
+        sut.CreateCustomerCommand.Execute(null);
+
+        Assert.Equal("Hart & Co. Salon", queryService.SearchCalls[^1].Company);
+    }
+
+    [Fact]
+    public void LoadAsync_OlderSearchCompletesAfterNewer_OlderResultIsDiscarded()
+    {
+        // Stale search result protection: if the user changes the filter again before the first
+        // search's response arrives, the slower/older response must not overwrite the newer one -
+        // same _filterVersion guard as Bookings.BookingPageViewModel.
+        // Index 0 is the constructor's own initial load (never resolved - left pending, harmless).
+        // Index 1 is triggered by SearchText = "first" (the older, slower search).
+        // Index 2 is triggered by SearchText = "second" (the newer search, whose result must win).
+        var completionSources = new List<TaskCompletionSource<IReadOnlyList<CustomerDto>>>
+        {
+            new(), new(), new(),
+        };
+        var callCount = 0;
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromResult<IReadOnlyList<CustomerDto>>([]),
+            searchCustomersByFilter: (_, _) => completionSources[callCount++].Task);
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        sut.SearchText = "first";
+        sut.SearchText = "second";
+
+        var newerResult = new List<CustomerDto> { MakeCustomer("customer-new", "Second Result") };
+        completionSources[2].SetResult(newerResult);
+        var olderResult = new List<CustomerDto> { MakeCustomer("customer-old", "First Result") };
+        completionSources[1].SetResult(olderResult);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(newerResult, sut.Customers);
     }
 
     [Fact]

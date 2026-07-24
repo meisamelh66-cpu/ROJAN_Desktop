@@ -18,6 +18,9 @@ internal sealed class StubCustomerQueryService(IReadOnlyList<AppCustomers.Custom
 
     public Task<IReadOnlyList<AppCustomers.CustomerDto>> SearchCustomersAsync(string searchText, CancellationToken cancellationToken = default) =>
         Task.FromResult(customers);
+
+    public Task<IReadOnlyList<AppCustomers.CustomerDto>> SearchCustomersAsync(AppCustomers.CustomerSearchFilter filter, CancellationToken cancellationToken = default) =>
+        Task.FromResult(customers);
 }
 
 internal sealed class StubBookingQueryService(IReadOnlyList<AppBookings.BookingDto> bookings) : AppBookings.IBookingQueryService
