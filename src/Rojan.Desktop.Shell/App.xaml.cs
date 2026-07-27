@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Security;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
+using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Localization;
@@ -69,6 +71,33 @@ public partial class App
         // under en-US. Blocking here happens before any Dispatcher loop is
         // pumping, so there is no synchronization-context deadlock risk.
         _host.StartAsync().GetAwaiter().GetResult();
+
+        // SQLite startup initialization fix: RojanDbContext's schema was
+        // never applied to the real database file anywhere in production -
+        // only test fixtures ever called Database.Migrate() (see
+        // EfBookingRepositoryTests' own doc comment), leaving the real
+        // %LocalAppData%\RojanDesktop\database\rojan.db permanently at
+        // zero tables, so every Ef*Repository (Customer/Specialist/
+        // Service/Booking/Calendar) failed with "no such table" the
+        // instant anything queried it - including the Bookings module,
+        // which the persisted default workspace reopens automatically on
+        // every launch (root-caused via Windows Event Viewer). Runs first,
+        // before every other InitializeAsync below and long before
+        // MainWindow/MainWindowViewModel (and thus workspace restoration)
+        // are constructed - "the database must exist before anything else
+        // can query it," the same "resolve before the thing that reads it"
+        // ordering this method already documents throughout. MigrateAsync
+        // creates the database file if it does not exist yet and applies
+        // every pending migration in one step (never EnsureCreated, which
+        // would bypass the migration history this app's own Migrations
+        // folder already defines). The factory (not an injected
+        // RojanDbContext) matches AddDbContextFactory's own "short-lived
+        // context per call, never held" doc comment - created, migrated,
+        // and disposed right here.
+        using (var dbContext = _host.Services.GetRequiredService<IDbContextFactory<RojanDbContext>>().CreateDbContext())
+        {
+            dbContext.Database.MigrateAsync().GetAwaiter().GetResult();
+        }
 
         // Fluent 2 Premium Theme pass: the design-system resource tree
         // must be assembled (with the correct Light/Dark color file)
