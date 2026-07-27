@@ -50,9 +50,9 @@
                                 VerticalAlignment="Top"
                                 Margin="0,50,0,0"
                                 IsHitTestVisible="False">
+                        <!-- Typography consistency: same Rojan.TextStyle.Display token every other KPI/stat number in the app uses (Analytics, shared:KPIValue, shared:StatTile) - previously a one-off SectionHeader+FontSize="28" override, the only KPI number in the app that didn't match. -->
                         <TextBlock Text="{Binding ScoreText, ElementName=Root}"
-                                   Style="{StaticResource Rojan.TextStyle.SectionHeader}"
-                                   FontSize="28"
+                                   Style="{StaticResource Rojan.TextStyle.Display}"
                                    Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                                    HorizontalAlignment="Center" />
                         <TextBlock Text="{x:Static loc:Strings.Dashboard_Analytics_HealthOutOf}"
