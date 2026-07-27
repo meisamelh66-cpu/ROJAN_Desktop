@@ -5,6 +5,7 @@ using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
+using Rojan.Desktop.Application.Common;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
@@ -235,6 +236,14 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ISupportMessageService, SupportMessageService>();
         services.AddSingleton<IDevelopmentApplicationService, DevelopmentApplicationService>();
+
+        // Product requirement: centralized DateTime service (foundation
+        // commit) - see IDateTimeService's own doc comment for why this
+        // lives here rather than Presentation. Consumed by nothing yet;
+        // migrating the ~100 existing raw DateTime.Now/UtcNow call sites
+        // across Application/Infrastructure/Presentation onto it is
+        // deliberately out of scope for this commit.
+        services.AddSingleton<IDateTimeService, SystemDateTimeService>();
 
         return services;
     }

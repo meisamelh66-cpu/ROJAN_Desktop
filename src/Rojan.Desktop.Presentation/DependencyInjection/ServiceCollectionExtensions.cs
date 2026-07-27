@@ -51,7 +51,17 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SupportPageViewModel>();
         services.AddSingleton<ICultureService, CultureService>();
         services.AddSingleton<ICurrencyFormatter, CurrencyFormatter>();
+
+        // Product requirement: centralized DateTime service (foundation
+        // commit) - see ICalendarService's own doc comment. Both
+        // IDateProvider implementations are now registered (previously
+        // only Gregorian was, leaving PersianCalendarProvider unreachable
+        // regardless of the active language) so CalendarService can
+        // actually select between them.
         services.AddSingleton<IDateProvider, GregorianCalendarProvider>();
+        services.AddSingleton<IDateProvider, PersianCalendarProvider>();
+        services.AddSingleton<ICalendarService, CalendarService>();
+
         services.AddSingleton<IHelpContentResolver, HelpContentResolver>();
         services.AddSingleton<INotificationContentResolver, NotificationContentResolver>();
         services.AddSingleton<IToastDismissScheduler, DispatcherToastDismissScheduler>();
