@@ -5,7 +5,8 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appBookings="clr-namespace:Rojan.Desktop.Application.Bookings;assembly=Rojan.Desktop.Application"
-             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
+             xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization"
+             xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters">
 
     <!--
         Phase 11: Booking Module Foundation. Same master-detail shape as
@@ -57,6 +58,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <converters:LocalizedDateTimeConverter x:Key="LocalizedDateTimeConverter" />
     </UserControl.Resources>
     <Grid Margin="32">
         <Grid.ColumnDefinitions>
@@ -224,7 +226,7 @@
                                         <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}">
                                             <Run Text="{Binding ServiceName, Mode=OneWay}" />
                                             <Run Text=" · " />
-                                            <Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, t}, Mode=OneWay}" />
+                                            <Run Text="{Binding ScheduledAt, Converter={StaticResource LocalizedDateTimeConverter}, ConverterParameter='MMM d, t', Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                     <shared:StatusPill Grid.Column="2"
@@ -301,7 +303,7 @@
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,8,0,0">
                             <Run Text="{x:Static loc:Strings.Bookings_When}" />
                             <Run Text=": " />
-                            <Run Text="{Binding ScheduledAt, StringFormat={}{0:MMM d, yyyy t}, Mode=OneWay}" />
+                            <Run Text="{Binding ScheduledAt, Converter={StaticResource LocalizedDateTimeConverter}, ConverterParameter='MMM d, yyyy t', Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,4,0,0">
                             <Run Text="{x:Static loc:Strings.Common_Duration}" />
@@ -334,11 +336,11 @@
                                 Margin="0,0,8,8" />
                         <Button Content="{x:Static loc:Strings.Bookings_NoShow}"
                                 Command="{Binding DataContext.NoShowBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                Style="{StaticResource Rojan.Style.ButtonOutlinedDanger}"
                                 Margin="0,0,8,8" />
                         <Button Content="{x:Static loc:Strings.Common_Cancel}"
                                 Command="{Binding DataContext.CancelBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                Style="{StaticResource Rojan.Style.ButtonOutlinedDanger}"
                                 Margin="0,0,0,8" />
                     </WrapPanel>
 

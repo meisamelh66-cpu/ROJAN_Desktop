@@ -210,7 +210,13 @@
                                 </Grid>
                                 <StackPanel Margin="0,12,0,0">
                                     <TextBlock Text="{x:Static loc:Strings.Hr_EmploymentType}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                    <ComboBox ItemsSource="{Binding AvailableEmploymentTypes}" SelectedItem="{Binding NewEmployeeEmploymentType, Mode=TwoWay}" Margin="0,4,0,0" HorizontalAlignment="Left" Width="200" />
+                                    <ComboBox ItemsSource="{Binding AvailableEmploymentTypes}" SelectedItem="{Binding NewEmployeeEmploymentType, Mode=TwoWay}" Margin="0,4,0,0" HorizontalAlignment="Left" Width="200">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </StackPanel>
                                 <Button Content="{x:Static loc:Strings.Hr_AddEmployee}" Command="{Binding CreateEmployeeCommand}" Style="{StaticResource Rojan.Style.ButtonPrimary}" HorizontalAlignment="Left" Margin="0,16,0,0" />
                             </StackPanel>
@@ -556,7 +562,13 @@
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="{x:Static loc:Strings.Common_Type}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                                        <ComboBox ItemsSource="{Binding AvailableCommissionTypes}" SelectedItem="{Binding NewRuleType, Mode=TwoWay}" Margin="0,4,0,0" />
+                                        <ComboBox ItemsSource="{Binding AvailableCommissionTypes}" SelectedItem="{Binding NewRuleType, Mode=TwoWay}" Margin="0,4,0,0">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </StackPanel>
                                 </Grid>
                                 <Grid Margin="0,12,0,0">

@@ -253,11 +253,11 @@
         <!-- Right: selected service's profile - category, duration/price, description, assigned specialists -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="{x:Static loc:Strings.Services_SelectPrompt}"
-                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           TextWrapping="Wrap">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Services}"
+                                        Message="{x:Static loc:Strings.Services_SelectPrompt}"
+                                        VerticalAlignment="Center">
+                    <shared:EmptyStateCard.Style>
+                        <Style TargetType="{x:Type shared:EmptyStateCard}">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Profile}" Value="{x:Null}">
@@ -265,8 +265,8 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </shared:EmptyStateCard.Style>
+                </shared:EmptyStateCard>
 
                 <StackPanel DataContext="{Binding Profile}">
                     <StackPanel.Style>

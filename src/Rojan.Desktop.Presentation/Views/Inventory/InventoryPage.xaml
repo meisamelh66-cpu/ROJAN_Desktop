@@ -71,7 +71,9 @@
                             </StackPanel>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <TextBox Text="{Binding NewSupplierName, UpdateSourceTrigger=PropertyChanged}" Width="120" />
-                                <Button Content="{x:Static loc:Strings.Inventory_AddSupplier}" Command="{Binding AddSupplierCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" />
+                                <Button Command="{Binding AddSupplierCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" Margin="8,0,0,0" MaxWidth="130">
+                                    <TextBlock Text="{x:Static loc:Strings.Inventory_AddSupplier}" TextWrapping="Wrap" TextAlignment="Center" />
+                                </Button>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -280,7 +282,13 @@
                                         <TextBlock Text="{x:Static loc:Strings.Common_Type}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                                         <ComboBox ItemsSource="{Binding AvailableTransactionTypes}"
                                                   SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
-                                                  Margin="0,4,0,0" />
+                                                  Margin="0,4,0,0">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="{x:Static loc:Strings.Common_Quantity}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />

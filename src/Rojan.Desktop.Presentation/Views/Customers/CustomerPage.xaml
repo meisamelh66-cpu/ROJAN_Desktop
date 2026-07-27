@@ -271,11 +271,11 @@
         <!-- Right: Customer 360 profile for the selected customer -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>
-                <TextBlock Text="{x:Static loc:Strings.Customers_SelectPrompt}"
-                           Foreground="{StaticResource Rojan.Brush.MutedText}"
-                           TextWrapping="Wrap">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Body}">
+                <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Customers}"
+                                        Message="{x:Static loc:Strings.Customers_SelectPrompt}"
+                                        VerticalAlignment="Center">
+                    <shared:EmptyStateCard.Style>
+                        <Style TargetType="{x:Type shared:EmptyStateCard}">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Profile}" Value="{x:Null}">
@@ -283,8 +283,8 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </shared:EmptyStateCard.Style>
+                </shared:EmptyStateCard>
 
                 <StackPanel DataContext="{Binding Profile}">
                     <StackPanel.Style>
@@ -326,7 +326,14 @@
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                                 <ComboBox ItemsSource="{Binding AvailableStatuses}"
                                           SelectedItem="{Binding EditableStatus, Mode=TwoWay}"
-                                          Width="150" />
+                                          Width="150">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}"
+                                                       Style="{StaticResource Rojan.TextStyle.Body}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button Content="{x:Static loc:Strings.Common_SaveChanges}"
                                         Command="{Binding SaveChangesCommand}"
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"

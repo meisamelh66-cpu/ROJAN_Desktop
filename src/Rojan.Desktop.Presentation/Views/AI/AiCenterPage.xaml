@@ -495,7 +495,13 @@
                     <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Ai_ModelSelector}" Margin="0,16,0,0">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.Ai_Provider}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
-                            <ComboBox ItemsSource="{Binding AvailableProviderTypes}" SelectedItem="{Binding SelectedProviderType}" Margin="0,4,0,12" />
+                            <ComboBox ItemsSource="{Binding AvailableProviderTypes}" SelectedItem="{Binding SelectedProviderType}" Margin="0,4,0,12">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                             <TextBlock Text="{x:Static loc:Strings.Ai_ModelId}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
                             <TextBox Text="{Binding ModelIdInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" />
                             <CheckBox Content="{x:Static loc:Strings.Common_Enabled}" IsChecked="{Binding IsProviderEnabled}" Margin="0,0,0,12" />

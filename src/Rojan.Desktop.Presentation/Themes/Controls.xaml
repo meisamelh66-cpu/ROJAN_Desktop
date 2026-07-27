@@ -224,6 +224,61 @@
   </Style>
 
   <!--
+    UX Stabilization Sprint 1: ButtonOutlinedDanger - same shape/hover/press
+    pattern as ButtonOutlined above, but for a destructive secondary action
+    (Cancel, No-show) that needs to visually read as different-in-kind from
+    a neutral/affirmative action, not just a lower-emphasis one. Reuses the
+    existing Rojan.Color.Error/Rojan.Brush.Error tokens already used by
+    StatusPill's Error severity (see Controls/Shared/StatusPill.xaml) - no
+    new colors introduced.
+  -->
+  <Style x:Key="Rojan.Style.ButtonOutlinedDanger" TargetType="Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.Error}" />
+    <Setter Property="FontFamily" Value="{StaticResource Rojan.FontFamily.Default}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{StaticResource Rojan.Brush.Error}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="ButtonBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background">
+                <Setter.Value>
+                  <SolidColorBrush Color="{StaticResource Rojan.Color.Error}" Opacity="0.14" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Background">
+                <Setter.Value>
+                  <SolidColorBrush Color="{StaticResource Rojan.Color.Error}" Opacity="0.22" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--
     Dashboard Modernization Sprint: Quick Actions button - bigger, rounded
     (Large radius), room for a leading icon in its Content, a soft resting
     shadow, and hover/press feedback as a scale change plus the same

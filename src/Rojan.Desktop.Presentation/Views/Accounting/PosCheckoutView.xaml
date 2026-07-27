@@ -245,7 +245,13 @@
                         <TextBlock Text="{x:Static loc:Strings.Pos_PaymentMethod}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
                         <ComboBox ItemsSource="{Binding AvailablePaymentMethods}"
                                   SelectedItem="{Binding SelectedPaymentMethod, Mode=TwoWay}"
-                                  Margin="0,4,0,0" />
+                                  Margin="0,4,0,0">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
                         <TextBlock Text="{x:Static loc:Strings.Pos_AmountTendered}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" Margin="0,12,0,0" />
                         <TextBox Text="{Binding AmountTendered, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />

@@ -156,6 +156,21 @@ public partial class KPIValue : UserControl
             return;
         }
 
+        // UX audit fix: a From=0 To=0 animation has no motion to play, and
+        // was leaving DisplayText at its empty-string default instead of
+        // "0" - every KPI badge whose real value is exactly zero (a brand-
+        // new, still-empty organization's very first look at Accounting/
+        // Inventory/Specialists) rendered as a blank pill. There is nothing
+        // to animate in this case anyway, so writing the formatted zero
+        // directly is both the fix and a reasonable simplification.
+        if (target == 0)
+        {
+            BeginAnimation(CountProperty, null);
+            SetValue(CountProperty, 0.0);
+            SetValue(DisplayTextProperty, FormatCount(0));
+            return;
+        }
+
         var animation = new DoubleAnimation
         {
             From = 0,
@@ -169,14 +184,18 @@ public partial class KPIValue : UserControl
     private static void OnCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var self = (KPIValue)d;
-        var count = (double)e.NewValue;
-        var pattern = self._useThousandsSeparator ? "#,0" : "0";
-        if (self._decimalPlaces > 0)
+        self.SetValue(DisplayTextProperty, self.FormatCount((double)e.NewValue));
+    }
+
+    private string FormatCount(double count)
+    {
+        var pattern = _useThousandsSeparator ? "#,0" : "0";
+        if (_decimalPlaces > 0)
         {
-            pattern += "." + new string('0', self._decimalPlaces);
+            pattern += "." + new string('0', _decimalPlaces);
         }
 
-        self.SetValue(DisplayTextProperty, self._prefix + count.ToString(pattern, CultureInfo.InvariantCulture) + self._suffix);
+        return _prefix + count.ToString(pattern, CultureInfo.InvariantCulture) + _suffix;
     }
 
     private void UpdateRenderedText() =>
