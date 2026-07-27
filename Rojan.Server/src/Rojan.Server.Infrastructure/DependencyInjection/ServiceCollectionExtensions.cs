@@ -5,6 +5,7 @@ using Rojan.Server.Application.Authentication;
 using Rojan.Server.Application.Tenancy;
 using Rojan.Server.Domain.Authentication;
 using Rojan.Server.Domain.Customers;
+using Rojan.Server.Domain.Specialists;
 using Rojan.Server.Infrastructure.Persistence;
 using Rojan.Server.Infrastructure.Persistence.Repositories;
 using Rojan.Server.Infrastructure.Security;
@@ -47,6 +48,10 @@ namespace Rojan.Server.Infrastructure.DependencyInjection;
 /// Sprint 8 Commit 4: Tenant-Aware Customer API. Adds
 /// <see cref="ICustomerRepository"/> - the first business-module
 /// repository, same scoped-DbContext reasoning as the others.
+///
+/// Sprint 8 Commit 5: Tenant-Aware Specialist API. Adds
+/// <see cref="ISpecialistRepository"/> - the second business-module
+/// repository, same scoped-DbContext reasoning as <see cref="ICustomerRepository"/>.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -64,6 +69,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, EfUserRepository>();
         services.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
         services.AddScoped<ICustomerRepository, EfCustomerRepository>();
+        services.AddScoped<ISpecialistRepository, EfSpecialistRepository>();
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<ITokenService, JwtTokenService>();

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rojan.Server.Domain.Authentication;
 using Rojan.Server.Domain.Customers;
+using Rojan.Server.Domain.Specialists;
 
 namespace Rojan.Server.Infrastructure.Persistence;
 
@@ -27,6 +28,12 @@ namespace Rojan.Server.Infrastructure.Persistence;
 /// <see cref="Configurations.CustomerConfiguration"/>'s own doc comment
 /// for why it has no foreign key to <see cref="Organizations"/>/
 /// <see cref="Branches"/> despite living in the same database).
+///
+/// Sprint 8 Commit 5: Tenant-Aware Specialist API. Adds
+/// <see cref="Specialists"/> - the second business-module entity, same
+/// direct-record-mapping pattern (see
+/// <see cref="Configurations.SpecialistConfiguration"/>'s own doc
+/// comment).
 /// </summary>
 public sealed class RojanServerDbContext : DbContext
 {
@@ -44,6 +51,8 @@ public sealed class RojanServerDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<Specialist> Specialists => Set<Specialist>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

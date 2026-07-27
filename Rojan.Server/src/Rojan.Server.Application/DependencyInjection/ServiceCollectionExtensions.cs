@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Server.Application.Authentication;
 using Rojan.Server.Application.Customers;
+using Rojan.Server.Application.Specialists;
 using Rojan.Server.Application.Tenancy;
 
 namespace Rojan.Server.Application.DependencyInjection;
@@ -30,6 +31,11 @@ namespace Rojan.Server.Application.DependencyInjection;
 /// <see cref="ICustomerService"/> - the first business module service,
 /// same scoped-because-it-depends-on-<see cref="ITenantContext"/>
 /// reasoning as <see cref="ITenantService"/>.
+///
+/// Sprint 8 Commit 5: Tenant-Aware Specialist API. Adds
+/// <see cref="ISpecialistService"/> - the second business module service,
+/// same shape and same scoped-because-it-depends-on-<see cref="ITenantContext"/>
+/// reasoning as <see cref="ICustomerService"/>.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -38,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<ISpecialistService, SpecialistService>();
 
         return services;
     }
