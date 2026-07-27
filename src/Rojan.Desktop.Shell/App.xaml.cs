@@ -22,6 +22,7 @@ using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Theming;
 using Rojan.Desktop.Presentation.Workspaces;
+using Rojan.Desktop.Shell.Dialogs;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Infrastructure.Automation;
@@ -294,7 +295,14 @@ public partial class App
         services.AddSingleton<IFloatingWindowManager, FloatingWindowManager>();
 
         services.AddSingleton<MainWindowViewModel>();
-        services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<MainWindowViewModel>());
+
+        // Deadlock fix: was `sp.GetRequiredService<MainWindowViewModel>()`
+        // directly - see LazyMainWindowDialogService's own doc comment for
+        // why that eager resolution deadlocks the instant a ViewModel
+        // constructed as part of MainWindowViewModel's own construction
+        // (e.g. BookingPageViewModel, when the persisted workspace
+        // restores Bookings) needs IDialogService.
+        services.AddSingleton<IDialogService, LazyMainWindowDialogService>();
         services.AddSingleton<MainWindow>();
     }
 
