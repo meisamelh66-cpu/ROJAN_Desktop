@@ -63,7 +63,24 @@
                 </Border>
             </Grid>
 
-            <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" Height="140" />
+            <!--
+                UX Improvements - Dashboard Layout: the chart is now a
+                keyboard-accessible click target navigating to Reports -
+                see Rojan.Style.ClickableChart's own doc comment.
+                Padding="0" (overriding the style's default) - this card's
+                DayLabelsCanvas below positions each label at an absolute
+                Canvas.Left computed from a hardcoded ChartWidth=320/
+                ChartPadding=8 that assumes SimpleBarChart occupies exactly
+                a 320px-wide area with no extra outer padding (see
+                RevenueTrendCard.xaml.cs's own doc comment) - any padding
+                here would shift the chart out from under its own labels.
+            -->
+            <Button Style="{StaticResource Rojan.Style.ClickableChart}"
+                    Padding="0"
+                    ToolTip="{x:Static loc:Strings.Dashboard_Analytics_RevenueTrendTitle}"
+                    AutomationProperties.Name="{x:Static loc:Strings.Dashboard_Analytics_RevenueTrendTitle}">
+                <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" Height="140" />
+            </Button>
 
             <!--
                 Deliberately a Canvas with each label placed at an absolute

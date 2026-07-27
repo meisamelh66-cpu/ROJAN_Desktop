@@ -58,7 +58,12 @@
                 </Border>
             </Grid>
 
-            <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" />
+            <!-- UX Improvements - Dashboard Layout: the chart is now a keyboard-accessible click target navigating to Services - see Rojan.Style.ClickableChart's own doc comment. -->
+            <Button Style="{StaticResource Rojan.Style.ClickableChart}"
+                    ToolTip="{x:Static loc:Strings.Dashboard_Analytics_TopServicesTitle}"
+                    AutomationProperties.Name="{x:Static loc:Strings.Dashboard_Analytics_TopServicesTitle}">
+                <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" />
+            </Button>
 
             <Button Content="{x:Static loc:Strings.Dashboard_Analytics_ViewAllServices}"
                     Style="{StaticResource Rojan.Style.ButtonOutlined}"

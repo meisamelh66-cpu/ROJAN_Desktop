@@ -34,9 +34,12 @@ public sealed class DashboardPageViewModel : ViewModelBase
         KpiMetrics = new ObservableCollection<KpiMetricDto>();
         RecentActivity = new ObservableCollection<ActivityEntryDto>();
 
+        // UX Improvements - Dashboard Layout: New Booking removed from this
+        // list - promoted to its own prominent top-of-page primary action
+        // button instead (see DashboardPage.xaml/.xaml.cs's own comments),
+        // not left duplicated in both places.
         QuickActions = new ObservableCollection<QuickActionItem>
         {
-            new(Strings.Dashboard_QuickAction_NewBooking),
             new(Strings.Dashboard_QuickAction_AddClient),
             new(Strings.Dashboard_QuickAction_CreateTask),
             new(Strings.Dashboard_QuickAction_ViewReports),

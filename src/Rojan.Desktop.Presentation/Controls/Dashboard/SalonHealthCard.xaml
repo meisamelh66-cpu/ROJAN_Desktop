@@ -39,23 +39,29 @@
                            VerticalAlignment="Center" />
             </Grid>
 
-            <Grid HorizontalAlignment="Center">
-                <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" />
-                <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Top"
-                            Margin="0,50,0,0"
-                            IsHitTestVisible="False">
-                    <TextBlock Text="{Binding ScoreText, ElementName=Root}"
-                               Style="{StaticResource Rojan.TextStyle.SectionHeader}"
-                               FontSize="28"
-                               Foreground="{StaticResource Rojan.Brush.TextPrimary}"
-                               HorizontalAlignment="Center" />
-                    <TextBlock Text="{x:Static loc:Strings.Dashboard_Analytics_HealthOutOf}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.MutedText}"
-                               HorizontalAlignment="Center" />
-                </StackPanel>
-            </Grid>
+            <!-- UX Improvements - Dashboard Layout: the chart (ring + overlaid score) is now a keyboard-accessible click target navigating to Analytics - see Rojan.Style.ClickableChart's own doc comment. -->
+            <Button Style="{StaticResource Rojan.Style.ClickableChart}"
+                    HorizontalAlignment="Center"
+                    ToolTip="{x:Static loc:Strings.Dashboard_Analytics_SalonHealthTitle}"
+                    AutomationProperties.Name="{x:Static loc:Strings.Dashboard_Analytics_SalonHealthTitle}">
+                <Grid HorizontalAlignment="Center">
+                    <analytics:SimpleBarChart Chart="{Binding Chart, ElementName=Root}" />
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                Margin="0,50,0,0"
+                                IsHitTestVisible="False">
+                        <TextBlock Text="{Binding ScoreText, ElementName=Root}"
+                                   Style="{StaticResource Rojan.TextStyle.SectionHeader}"
+                                   FontSize="28"
+                                   Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="{x:Static loc:Strings.Dashboard_Analytics_HealthOutOf}"
+                                   Style="{StaticResource Rojan.TextStyle.Caption}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Button>
 
             <TextBlock Text="{Binding StatusLabel, ElementName=Root}"
                        Style="{StaticResource Rojan.TextStyle.Success}"

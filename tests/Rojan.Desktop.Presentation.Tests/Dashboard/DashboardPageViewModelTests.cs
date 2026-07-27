@@ -64,6 +64,20 @@ public sealed class DashboardPageViewModelTests
     }
 
     [Fact]
+    public void Constructor_QuickActions_DoesNotIncludeNewBooking()
+    {
+        // UX Improvements - Dashboard Layout: New Booking was promoted to its own
+        // top-of-page primary action button, removed from this list so it is not
+        // duplicated in two places.
+        var queryService = new StubDashboardQueryService(_ => Task.FromResult(MakeOverview()));
+
+        var sut = new DashboardPageViewModel(queryService);
+
+        Assert.DoesNotContain(sut.QuickActions, item => item.Label == Rojan.Desktop.Presentation.Localization.Strings.Dashboard_QuickAction_NewBooking);
+        Assert.Equal(3, sut.QuickActions.Count);
+    }
+
+    [Fact]
     public void LoadCommand_ExecutedAfterFailure_RecoversToLoadedState()
     {
         var shouldFail = true;

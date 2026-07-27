@@ -135,47 +135,83 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <!-- UX Improvements - Dashboard Layout: primary action + date/time -->
+                    <RowDefinition Height="Auto" />
                     <!-- Phase B-1: AI Hero Banner -->
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- Welcome / header section - spans both columns so the ticker below can be genuinely full-width. -->
-                <Grid Grid.Row="0" Grid.ColumnSpan="2">
+                <!-- Page title/subtitle - same chrome every other module page has. -->
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2">
+                    <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
+                    <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+
+                <!--
+                    UX Improvements - Dashboard Layout: the "primary
+                    information area" (requirement #3 moves every
+                    analytics/KPI chart below this) - New Booking promoted
+                    to the very top as the primary action (#1), current
+                    date/time displayed prominently (#2). GreetingText/
+                    DateText/TimeText are the exact same real-clock-driven
+                    dependency properties this page already had (see this
+                    class's own doc comment) - only their position/size
+                    changed, not their data. New Booking is removed from
+                    the Quick Actions list below (see
+                    DashboardPageViewModel's own doc comment) since it now
+                    lives here instead of in both places.
+                -->
+                <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,20,0,0">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <controls:SectionHeader Title="{x:Static loc:Strings.Dashboard_Title}" />
-                        <TextBlock Text="{x:Static loc:Strings.Dashboard_Subtitle}"
-                                   Style="{StaticResource Rojan.TextStyle.Caption}"
-                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                   Margin="0,4,0,0" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+
+                    <Button Grid.Column="0"
+                            Style="{StaticResource Rojan.Style.ButtonQuickAction}"
+                            Click="NewBookingButton_Click"
+                            FontSize="16"
+                            Padding="28,16"
+                            AutomationProperties.Name="{x:Static loc:Strings.Dashboard_QuickAction_NewBooking}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource Rojan.Icon.Bookings}"
+                                       FontFamily="{StaticResource Rojan.FontFamily.Icons}"
+                                       FontSize="18"
+                                       Margin="0,0,10,0"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static loc:Strings.Dashboard_QuickAction_NewBooking}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <TextBlock Text="{Binding GreetingText, ElementName=Root}"
-                                   Style="{StaticResource Rojan.TextStyle.Subtitle}"
+                                   Style="{StaticResource Rojan.TextStyle.SectionHeader}"
                                    Foreground="{StaticResource Rojan.Brush.TextPrimary}"
                                    HorizontalAlignment="Right" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
                             <TextBlock Text="{Binding DateText, ElementName=Root}"
-                                       Style="{StaticResource Rojan.TextStyle.Caption}"
-                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       Foreground="{StaticResource Rojan.Brush.TextSecondary}" />
                             <TextBlock Text="•"
-                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
                                        Foreground="{StaticResource Rojan.Brush.MutedText}"
-                                       Margin="6,0" />
+                                       Margin="8,0" />
                             <TextBlock Text="{Binding TimeText, ElementName=Root}"
-                                       Style="{StaticResource Rojan.TextStyle.Caption}"
-                                       Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                       Style="{StaticResource Rojan.TextStyle.Body}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource Rojan.Brush.Accent}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
 
-                <!-- Phase B-1: AI Hero Banner - full width, directly below the greeting header, above the ticker. -->
-                <dashboardControls:AiHeroBanner Grid.Row="1"
+                <!-- Phase B-1: AI Hero Banner - full width, directly below the primary information area, above the ticker. -->
+                <dashboardControls:AiHeroBanner Grid.Row="2"
                                                  Grid.ColumnSpan="2"
                                                  Margin="0,12,0,0"
                                                  TagLabel="{Binding HeroTagLabel}"
@@ -186,13 +222,13 @@
                                                  SecondaryCommand="{Binding HeroSecondaryCommand}" />
 
                 <!-- Phase 36: Live News Ticker - full width, below the Hero Banner. -->
-                <dashboardControls:NewsTicker Grid.Row="2"
+                <dashboardControls:NewsTicker Grid.Row="3"
                                                Grid.ColumnSpan="2"
                                                Margin="0,12,0,0"
                                                ItemsSource="{Binding NewsTickerItems, ElementName=Root}" />
 
                 <!-- Left: KPI widget, quick actions, recent activity widget -->
-                <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
+                <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,16,0">
 
                     <!-- KPI cards region -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Dashboard_KeyMetrics}"
@@ -257,20 +293,36 @@
                             <ColumnDefinition Width="1.5*" />
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
+                        <!--
+                            UX Improvements - Dashboard Layout: each card's
+                            internal chart is now wrapped in a
+                            Rojan.Style.ClickableChart Button (see the
+                            three card XAML files' own comments) whose
+                            Click bubbles up through the visual tree
+                            unchanged - attaching Button.Click here catches
+                            it without SalonHealthCard/TopServicesCard/
+                            RevenueTrendCard's own code-behind needing any
+                            navigation knowledge, same "real navigation
+                            lives in the page's own code-behind" precedent
+                            QuickActionButton_Click already establishes.
+                        -->
                         <dashboardControls:SalonHealthCard Grid.Column="0"
                                                             Margin="0,0,0,0"
                                                             Chart="{Binding SalonHealthChart}"
                                                             ScoreText="{Binding SalonHealthScoreText}"
                                                             StatusLabel="{Binding SalonHealthStatusLabel}"
                                                             Subtitle="{Binding SalonHealthSubtitle}"
-                                                            DetailsCommand="{Binding SalonHealthDetailsCommand}" />
+                                                            DetailsCommand="{Binding SalonHealthDetailsCommand}"
+                                                            Button.Click="SalonHealthChart_Click" />
                         <dashboardControls:TopServicesCard Grid.Column="1"
                                                             Margin="12,0,12,0"
                                                             Chart="{Binding TopServicesChart}"
-                                                            ViewAllServicesCommand="{Binding ViewAllServicesCommand}" />
+                                                            ViewAllServicesCommand="{Binding ViewAllServicesCommand}"
+                                                            Button.Click="TopServicesChart_Click" />
                         <dashboardControls:RevenueTrendCard Grid.Column="2"
                                                              Chart="{Binding RevenueTrendChart}"
-                                                             DayLabels="{Binding DayLabels}" />
+                                                             DayLabels="{Binding DayLabels}"
+                                                             Button.Click="RevenueTrendChart_Click" />
                     </Grid>
 
                     <!-- Recent Activity region -->
@@ -478,7 +530,7 @@
                 </StackPanel>
 
                 <!-- Phase C-2: Staff Status Panel + Recent Alerts Panel - the freed left column (former AI Assistant column). -->
-                <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,16,0,0">
+                <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,16,0,0">
                     <dashboardControls:StaffStatusPanel Items="{Binding StaffStatuses}" ViewAllCommand="{Binding ViewAllStaffCommand}" />
                     <dashboardControls:RecentAlertsPanel Items="{Binding RecentAlerts}" Margin="0,16,0,0" />
                 </StackPanel>

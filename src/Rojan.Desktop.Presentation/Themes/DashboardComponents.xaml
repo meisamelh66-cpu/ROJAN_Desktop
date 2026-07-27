@@ -95,6 +95,48 @@
     </Setter>
   </Style>
 
+  <!--
+    UX Improvements - Dashboard Layout: wraps a single chart visual
+    (SalonHealthCard/TopServicesCard/RevenueTrendCard) in a keyboard-
+    accessible click target - Button gives Tab-focus and Enter/Space
+    activation for free, so no custom keyboard handling is needed. No
+    background/border when idle (the chart's own look is unchanged until
+    interacted with); IsMouseOver tints the surface as hover feedback
+    distinct from - additive to - DashboardCard's own whole-card hover
+    lift/glow above, since this marks the specific clickable region, not
+    just "somewhere on this card." Real navigation is wired by the
+    consumer (DashboardPage.xaml.cs) via the standard bubbling
+    Button.Click event, not a Command here - same "real navigation lives
+    in the page's own code-behind" precedent QuickActionButton_Click
+    already establishes.
+  -->
+  <Style x:Key="Rojan.Style.ClickableChart" TargetType="Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource Rojan.Style.FocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="HoverSurface"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="HoverSurface" Property="Background" Value="{StaticResource Rojan.Brush.SurfaceHover}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <!-- DashboardWidget: state-aware Card wrapper for repository-backed content. -->
   <Style TargetType="{x:Type dashboard:DashboardWidget}">
     <Setter Property="Template">

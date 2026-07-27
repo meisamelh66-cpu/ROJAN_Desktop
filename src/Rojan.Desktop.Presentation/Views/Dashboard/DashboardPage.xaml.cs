@@ -11,12 +11,14 @@ using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.ViewModels.AI;
+using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
+using Rojan.Desktop.Presentation.ViewModels.Services;
 
 namespace Rojan.Desktop.Presentation.Views.Dashboard;
 
@@ -37,6 +39,18 @@ namespace Rojan.Desktop.Presentation.Views.Dashboard;
 /// populates once at startup - see that class's own doc comment) to
 /// navigate to the matching existing page, or shows a "coming soon" message
 /// for the one action (Create Task) with no real destination yet.
+///
+/// UX Improvements - Dashboard Layout: New Booking is promoted out of the
+/// Quick Actions list into its own prominent top-of-page button
+/// (NewBookingButton_Click) - same NavigateOrShowComingSoon&lt;BookingPageViewModel&gt;
+/// destination as before, just a different trigger. The three Analytics
+/// Row charts (SalonHealthChart_Click/TopServicesChart_Click/
+/// RevenueTrendChart_Click) are new real navigation, following this same
+/// "real navigation lives here, not on the ViewModel's no-op *Command
+/// properties" precedent - wired via the standard bubbling Button.Click
+/// event from the clickable-chart Button each card now wraps its chart
+/// in (see Rojan.Style.ClickableChart's own doc comment), attached
+/// directly on each card's tag in DashboardPage.xaml.
 ///
 /// Phase 36 (Live News Ticker): NewsTickerItems mixes real entries (reusing
 /// the same RecentActivity ids ActivityDescriptionConverter already maps,
@@ -151,11 +165,9 @@ public partial class DashboardPage : UserControl
             return;
         }
 
-        if (item.Label == Strings.Dashboard_QuickAction_NewBooking)
-        {
-            NavigateOrShowComingSoon<BookingPageViewModel>();
-        }
-        else if (item.Label == Strings.Dashboard_QuickAction_AddClient)
+        // New Booking no longer appears in this list (see DashboardPageViewModel's
+        // own doc comment) - promoted to NewBookingButton_Click instead.
+        if (item.Label == Strings.Dashboard_QuickAction_AddClient)
         {
             NavigateOrShowComingSoon<CustomerPageViewModel>();
         }
@@ -170,6 +182,18 @@ public partial class DashboardPage : UserControl
             ShowComingSoon();
         }
     }
+
+    /// <summary>UX Improvements - Dashboard Layout: the promoted, top-of-page primary action - same destination the old Quick Action used.</summary>
+    private void NewBookingButton_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<BookingPageViewModel>();
+
+    /// <summary>UX Improvements - Dashboard Layout: Salon Health's chart click target - see Rojan.Style.ClickableChart's own doc comment.</summary>
+    private void SalonHealthChart_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<AnalyticsPageViewModel>();
+
+    /// <summary>UX Improvements - Dashboard Layout: Top Services' chart click target - see Rojan.Style.ClickableChart's own doc comment.</summary>
+    private void TopServicesChart_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<ServicePageViewModel>();
+
+    /// <summary>UX Improvements - Dashboard Layout: Revenue Trend's chart click target - see Rojan.Style.ClickableChart's own doc comment.</summary>
+    private void RevenueTrendChart_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<ReportingPageViewModel>();
 
     private static void NavigateOrShowComingSoon<TViewModel>() where TViewModel : ViewModelBase
     {
