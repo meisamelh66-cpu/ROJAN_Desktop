@@ -27,6 +27,7 @@ public sealed class MainWindowViewModelBranchSwitcherTests
             session,
             new OrganizationQueryService(new FakeOrganizationRepository()),
             TestThemeServices.Service,
+            TestLocalizationServices.Service,
             TestHelpServices.QueryService,
             TestHelpServices.ContentResolver,
             TestHelpServices.SearchService,

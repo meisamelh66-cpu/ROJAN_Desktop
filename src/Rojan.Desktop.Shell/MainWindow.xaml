@@ -229,17 +229,13 @@
                     <ColumnDefinition Width="*" />
                     <!-- Draggable spacer -->
                     <ColumnDefinition Width="Auto" />
-                    <!-- Search placeholder -->
-                    <ColumnDefinition Width="Auto" />
-                    <!-- Back/Forward -->
+                    <!-- Search -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Branch Switcher -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Phase 29: Workspace Switcher -->
                     <ColumnDefinition Width="Auto" />
-                    <!-- Reference-parity Phase A: Calendar quick-nav -->
-                    <ColumnDefinition Width="Auto" />
-                    <!-- Reference-parity Phase A: Theme toggle -->
+                    <!-- Language selector -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Notification -->
                     <ColumnDefinition Width="Auto" />
@@ -300,20 +296,6 @@
                     </Grid>
                 </Border>
 
-                <!-- Back / Forward / Help -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="8,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoBackCommand}" ToolTip="{x:Static loc:Strings.Common_Back}">
-                        <TextBlock Text="{StaticResource Rojan.Icon.Back}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
-                    </Button>
-                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}" Command="{Binding GoForwardCommand}" ToolTip="{x:Static loc:Strings.Common_Forward}">
-                        <TextBlock Text="{StaticResource Rojan.Icon.Forward}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
-                    </Button>
-                    <!-- Phase 26.3: Smart Help Button - contextual to whichever module is currently selected. -->
-                    <helpControls:HelpButton Margin="4,0,0,0"
-                                              Command="{Binding OpenHelpCommand}"
-                                              CommandParameter="{Binding SelectedNavigationItem.Descriptor.Metadata.Id}" />
-                </StackPanel>
-
                 <!--
                     Branch Switcher (Phase 22: Enterprise Multi-Branch &
                     Organization Platform). A professional Fluent 2 flyout,
@@ -325,7 +307,7 @@
                     the popup itself fades in/out (PopupAnimation="Fade")
                     for a smooth transition.
                 -->
-                <StackPanel Grid.Column="5" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="4" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="BranchSwitcherButton"
                             Command="{Binding ToggleBranchSwitcherCommand}"
                             Style="{StaticResource Rojan.Style.ButtonSecondary}"
@@ -430,7 +412,7 @@
                     rename/duplicate/delete - WorkspaceSwitcherRowTemplate
                     above).
                 -->
-                <StackPanel Grid.Column="6" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="5" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="WorkspaceSwitcherButton"
                             Command="{Binding WorkspaceHost.ToggleSwitcherCommand}"
                             Style="{StaticResource Rojan.Style.ChromeIconButton}"
@@ -521,41 +503,62 @@
                     </Popup>
                 </StackPanel>
 
-                <!-- Reference-parity Phase A: Calendar quick-nav - jumps straight to the Calendar module, reusing SelectedNavigationItem's existing navigation pipeline (no new navigation concept). -->
-                <Button Grid.Column="7"
-                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
-                        Command="{Binding NavigateToModuleCommand}"
-                        CommandParameter="calendar"
-                        Margin="4,0,0,0"
-                        ToolTip="{x:Static loc:Strings.Nav_Calendar}"
-                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <TextBlock Text="{StaticResource Rojan.Icon.Calendar2}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
-                </Button>
+                <!--
+                    Language selector - UX toolbar redesign: the toolbar's
+                    only entry point for switching language (Settings still
+                    has the full built-in/pack management UI). Same trigger-
+                    Button-plus-Popup chrome as Branch/Workspace Switcher
+                    above, not a plain ComboBox, for visual consistency.
+                    Switching is "select, persist, restart required" via
+                    ILocalizationService.SetLanguageAsync - same non-live
+                    flow SettingsPageViewModel/ToggleThemeCommand already
+                    use, communicated honestly via StatusMessage rather than
+                    faking a live language change.
+                -->
+                <StackPanel Grid.Column="6" Margin="8,0,0,0" VerticalAlignment="Center" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="LanguageSwitcherButton"
+                            Command="{Binding ToggleLanguageSwitcherCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                            ToolTip="{x:Static loc:Strings.Settings_Language_SectionTitle}"
+                            AutomationProperties.Name="{x:Static loc:Strings.Settings_Language_SectionTitle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding CurrentLanguage.Code}"
+                                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{StaticResource Rojan.Icon.ChevronDown}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="10" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        </StackPanel>
+                    </Button>
 
-                <!-- Reference-parity Phase A: Theme toggle - extends IThemeService (same "select mode, persist, restart required" flow SettingsPageViewModel already uses), not a live instant swap; ToolTip communicates the restart requirement honestly rather than faking a live theme change. -->
-                <Button Grid.Column="8"
-                        Style="{StaticResource Rojan.Style.ChromeIconButton}"
-                        Command="{Binding ToggleThemeCommand}"
-                        Margin="4,0,0,0"
-                        ToolTip="{x:Static loc:Strings.Settings_Theme_RestartRequired}"
-                        shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <TextBlock FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="{StaticResource Rojan.Icon.ThemeLight}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ResolvedThemeIsDark}" Value="True">
-                                        <Setter Property="Text" Value="{StaticResource Rojan.Icon.ThemeDark}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Button>
+                    <Popup IsOpen="{Binding IsLanguageSwitcherOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding ElementName=LanguageSwitcherButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+                        <Border Style="{StaticResource Rojan.Style.Panel}" Width="200" Padding="6" Margin="0,4,0,0">
+                            <ItemsControl ItemsSource="{Binding AvailableLanguages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type loc:LanguageInfo}">
+                                        <Button Command="{Binding DataContext.SelectLanguageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                HorizontalContentAlignment="Left"
+                                                HorizontalAlignment="Stretch"
+                                                Margin="0,2">
+                                            <TextBlock Text="{Binding NativeName}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </Popup>
+                </StackPanel>
 
                 <!-- Notification button - Phase 27: badge counter overlay shows NotificationCenter.UnreadCount when > 0. -->
-                <Grid Grid.Column="9" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Style="{StaticResource Rojan.Style.ChromeIconButton}"
+                <Grid Grid.Column="7" Margin="4,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="NotificationButton"
+                            Style="{StaticResource Rojan.Style.ChromeIconButton}"
                             Command="{Binding ToggleNotificationPanelCommand}"
                             ToolTip="{x:Static loc:Strings.Common_Notifications}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Notification}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="14" />
@@ -581,7 +584,7 @@
                 </Grid>
 
                 <!-- User profile placeholder - avatar/name still not functional (no User entity in this app, see Common_GuestUser's existing doc trail), but the role subtitle and plan badge are real session data (ICurrentSessionService.CurrentRole / CurrentOrganization.SubscriptionPlan), not fabricated. -->
-                <StackPanel Grid.Column="10" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Ellipse Width="26" Height="26" VerticalAlignment="Center" Fill="{StaticResource Rojan.Brush.SurfaceHover}" />
                     <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="{x:Static loc:Strings.Common_GuestUser}"
@@ -606,7 +609,7 @@
                 </StackPanel>
 
                 <!-- Window commands -->
-                <StackPanel Grid.Column="11" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Grid.Column="9" Orientation="Horizontal" Margin="16,0,0,0" shellChrome:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button x:Name="MinimizeButton" Style="{StaticResource Rojan.Style.ChromeIconButton}" Click="MinimizeButton_Click" ToolTip="{x:Static loc:Strings.Common_Minimize}">
                         <TextBlock Text="{StaticResource Rojan.Icon.Minimize}" FontFamily="{StaticResource Rojan.FontFamily.Icons}" FontSize="12" />
                     </Button>
@@ -825,24 +828,34 @@
                        Margin="16,0" />
         </Border>
 
-        <!-- ================= Notification region (Phase 27: Enterprise Notification Center) ================= -->
-        <Border Grid.Row="1"
-                Width="380"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="0,12,12,0">
-            <Border.Style>
-                <Style TargetType="Border" BasedOn="{StaticResource Rojan.Style.Card}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsNotificationPanelOpen}" Value="True">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-            <notificationViews:NotificationCenterPanelView DataContext="{Binding NotificationCenter}" />
-        </Border>
+        <!--
+            Notification region (Phase 27: Enterprise Notification Center).
+            UX toolbar redesign: was a plain Border driven by an
+            IsNotificationPanelOpen DataTrigger, which only closed when the
+            bell was clicked again - no outside-click dismissal. Now a
+            Popup with StaysOpen="False", the exact same idiom the header's
+            own Branch/Workspace Switcher already establish above: WPF
+            closes it automatically on an outside click and, because
+            IsOpen is bound Mode=TwoWay, that close pushes back into
+            IsNotificationPanelOpen - no click-away handler code needed.
+            HorizontalOffset="-348" = Rojan.Style.ChromeIconButton's own
+            32px width minus this panel's 380px width, right-aligning the
+            panel's right edge with the bell button's right edge (Bottom
+            placement otherwise left-aligns, which would run the panel off
+            the window's right edge given how close the bell sits to it).
+        -->
+        <Popup Grid.Row="1"
+               IsOpen="{Binding IsNotificationPanelOpen, Mode=TwoWay}"
+               PlacementTarget="{Binding ElementName=NotificationButton}"
+               Placement="Bottom"
+               HorizontalOffset="-348"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               PopupAnimation="Fade">
+            <Border Width="380" Style="{StaticResource Rojan.Style.Card}" Margin="0,4,0,0">
+                <notificationViews:NotificationCenterPanelView DataContext="{Binding NotificationCenter}" />
+            </Border>
+        </Popup>
 
         <!-- ================= Dialog region ================= -->
         <Grid Grid.Row="0" Grid.RowSpan="3">

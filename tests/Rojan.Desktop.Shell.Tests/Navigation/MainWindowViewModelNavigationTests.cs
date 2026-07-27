@@ -30,6 +30,7 @@ public sealed class MainWindowViewModelNavigationTests
             session,
             CreateOrganizationQueryService(),
             TestThemeServices.Service,
+            TestLocalizationServices.Service,
             TestHelpServices.QueryService,
             TestHelpServices.ContentResolver,
             TestHelpServices.SearchService,

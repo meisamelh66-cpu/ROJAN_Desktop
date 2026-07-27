@@ -48,6 +48,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private readonly ICurrentSessionService _currentSessionService;
     private readonly IOrganizationQueryService _organizationQueryService;
     private readonly IThemeService _themeService;
+    private readonly ILocalizationService _localizationService;
     private readonly IHelpQueryService _helpQueryService;
     private readonly IHelpContentResolver _helpContentResolver;
     private readonly IHelpSearchService _helpSearchService;
@@ -71,6 +72,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private Dictionary<string, BranchDto> _allBranchesById = [];
     private string _branchSearchText = string.Empty;
     private bool _isBranchSwitcherOpen;
+    private bool _isLanguageSwitcherOpen;
 
     public MainWindowViewModel(
         IModuleRegistry moduleRegistry,
@@ -79,6 +81,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         ICurrentSessionService currentSessionService,
         IOrganizationQueryService organizationQueryService,
         IThemeService themeService,
+        ILocalizationService localizationService,
         IHelpQueryService helpQueryService,
         IHelpContentResolver helpContentResolver,
         IHelpSearchService helpSearchService,
@@ -101,6 +104,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         _currentSessionService = currentSessionService;
         _organizationQueryService = organizationQueryService;
         _themeService = themeService;
+        _localizationService = localizationService;
         _helpQueryService = helpQueryService;
         _helpContentResolver = helpContentResolver;
         _helpSearchService = helpSearchService;
@@ -165,6 +169,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
             }
         });
         ToggleThemeCommand = new AsyncRelayCommand(_ => ToggleThemeAsync());
+        ToggleLanguageSwitcherCommand = new RelayCommand(_ => IsLanguageSwitcherOpen = !IsLanguageSwitcherOpen);
+        SelectLanguageCommand = new AsyncRelayCommand(parameter => SelectLanguageAsync(parameter as LanguageInfo));
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
 
@@ -337,6 +343,23 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
 
     /// <summary>Drives the header theme-toggle icon's Light/Dark glyph swap.</summary>
     public bool ResolvedThemeIsDark => _themeService.ResolvedTheme == ThemeMode.Dark;
+
+    /// <summary>The header Language selector's data source - built-in languages plus every installed pack, same source <c>SettingsPageViewModel</c> uses.</summary>
+    public IReadOnlyList<LanguageInfo> AvailableLanguages => _localizationService.AvailableLanguages;
+
+    /// <summary>The language active for this running session - drives the header selector trigger button's code label.</summary>
+    public LanguageInfo CurrentLanguage => _localizationService.CurrentLanguage;
+
+    public bool IsLanguageSwitcherOpen
+    {
+        get => _isLanguageSwitcherOpen;
+        set => SetProperty(ref _isLanguageSwitcherOpen, value);
+    }
+
+    public ICommand ToggleLanguageSwitcherCommand { get; }
+
+    /// <summary>Persists the selected language via <see cref="ILocalizationService.SetLanguageAsync"/> - same "select, persist, restart required" flow <see cref="ToggleThemeCommand"/>/<c>SettingsPageViewModel</c> already use, not a live instant swap.</summary>
+    public ICommand SelectLanguageCommand { get; }
 
     public ICommand SelectNavigationItemCommand { get; }
 
@@ -555,6 +578,20 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         var nextMode = _themeService.ResolvedTheme == ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark;
         await _themeService.SetThemeModeAsync(nextMode).ConfigureAwait(true);
         OnPropertyChanged(nameof(ResolvedThemeIsDark));
+    }
+
+    /// <summary>Closes the Language selector popover, and - if <paramref name="language"/> is a real change - persists it (effective next launch, see <see cref="ILocalizationService.SetLanguageAsync"/>'s own doc comment) and surfaces the same restart-required message <c>SettingsPageViewModel.ApplyLanguageAsync</c> already shows.</summary>
+    private async Task SelectLanguageAsync(LanguageInfo? language)
+    {
+        IsLanguageSwitcherOpen = false;
+
+        if (language is null || language.Code == _localizationService.CurrentLanguage.Code)
+        {
+            return;
+        }
+
+        await _localizationService.SetLanguageAsync(language.Code).ConfigureAwait(true);
+        StatusMessage = Strings.Settings_Language_RestartRequired;
     }
 
     private static string RoleDisplayName(WorkspaceRole role) => role switch
