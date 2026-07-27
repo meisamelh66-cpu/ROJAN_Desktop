@@ -10,6 +10,7 @@
         xmlns:appWorkspaces="clr-namespace:Rojan.Desktop.Application.Workspaces;assembly=Rojan.Desktop.Application"
         xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces;assembly=Rojan.Desktop.Presentation"
         xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters;assembly=Rojan.Desktop.Presentation"
+        xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared;assembly=Rojan.Desktop.Presentation"
         Title="ROJAN Desktop"
         Width="1280"
         Height="800"
@@ -103,6 +104,7 @@
         <converters:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
         <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToFlowDirectionConverter x:Key="BoolToFlowDirectionConverter" />
 
         <!--
             Phase 29: Enterprise Workspace & Window Management - one row in
@@ -539,14 +541,35 @@
                         <Border Style="{StaticResource Rojan.Style.Panel}" Width="200" Padding="6" Margin="0,4,0,0">
                             <ItemsControl ItemsSource="{Binding AvailableLanguages}">
                                 <ItemsControl.ItemTemplate>
+                                    <!--
+                                        Premium Language Selector: each row now shows a small
+                                        vector flag (shared:FlagIcon) beside the language name -
+                                        same Button/Command/CommandParameter wiring as before, only
+                                        the content changed from a bare TextBlock to a flag+text
+                                        StackPanel. FlowDirection is bound per-row to that
+                                        language's own IsRightToLeft (not the ambient app
+                                        FlowDirection), so Farsi/Arabic rows always read RTL and
+                                        English/German rows always read LTR regardless of which
+                                        language is currently active - WPF mirrors the StackPanel's
+                                        child order, the Button's HorizontalContentAlignment, and
+                                        the flag's own Margin together automatically, so the flag
+                                        always lands on the correct side without any extra
+                                        per-language logic. A fixed FlagIcon Width and Margin on
+                                        every row keeps every name starting at the same offset
+                                        (equal spacing, aligned rows).
+                                    -->
                                     <DataTemplate DataType="{x:Type loc:LanguageInfo}">
                                         <Button Command="{Binding DataContext.SelectLanguageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}"
                                                 Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                FlowDirection="{Binding IsRightToLeft, Converter={StaticResource BoolToFlowDirectionConverter}}"
                                                 HorizontalContentAlignment="Left"
                                                 HorizontalAlignment="Stretch"
                                                 Margin="0,2">
-                                            <TextBlock Text="{Binding NativeName}" Style="{StaticResource Rojan.TextStyle.Body}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <shared:FlagIcon LanguageCode="{Binding Code}" Width="20" Height="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding NativeName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                            </StackPanel>
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
