@@ -48,4 +48,15 @@ public interface IApiClient
     /// since every backend endpoint that needs this verb today sends none.
     /// </summary>
     public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Owner App Customer CRM Integration: a second <c>PatchAsync</c>
+    /// overload for the one case the body-less one above doesn't cover -
+    /// ROJAN_Backend's <c>PATCH /customers/{id}</c> is a genuine partial
+    /// update that takes a JSON body, unlike the parameterless booking
+    /// status-transition endpoints. Same "add the one verb shape a new
+    /// integration needs" reasoning as every earlier <see cref="IApiClient"/>
+    /// addition.
+    /// </summary>
+    public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default);
 }

@@ -122,6 +122,14 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
         SendAsync<TResponse>(() => new HttpRequestMessage(HttpMethod.Patch, path), cancellationToken);
 
+    public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
+        SendAsync<TResponse>(
+            () => new HttpRequestMessage(HttpMethod.Patch, path)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(body, SerializerOptions), Encoding.UTF8, "application/json"),
+            },
+            cancellationToken);
+
     public void Dispose() => _httpClient.Dispose();
 
     private async Task<ApiResponse<TResponse>> SendAsync<TResponse>(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)

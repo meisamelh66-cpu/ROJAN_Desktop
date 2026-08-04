@@ -4,12 +4,19 @@ using DomainCustomers = Rojan.Desktop.Domain.Customers;
 namespace Rojan.Desktop.Application.Customers;
 
 /// <summary>
-/// Default <see cref="ICustomerCommandService"/> implementation. Every
-/// mutation also records a <see cref="DomainCustomers.CustomerActivity"/>
-/// entry, so the profile's Timeline reflects real actions taken in the
-/// running app rather than only the seeded demo data - a business rule
-/// (what counts as timeline-worthy) that belongs here, not hidden as a
-/// side effect inside the fake repository.
+/// Default <see cref="ICustomerCommandService"/> implementation.
+///
+/// Customer CRM Integration Preparation: this service no longer calls
+/// <see cref="DomainCustomers.ICustomerRepository.AddActivityAsync"/> for
+/// any mutation. The backend Customer CRM API is the source of truth for
+/// the activity timeline and already logs tag add/remove and status
+/// changes itself as a side effect of its own use cases, and a note's
+/// appearance in the merged timeline makes a separate "Note added" entry
+/// redundant; there is no backend equivalent at all for a generic
+/// "Customer created"/"Customer profile updated" entry. Logging those
+/// here as well would double the entries once <c>BackendCustomerRepository</c>
+/// is wired in. See <c>ROJAN_Owner_App_Customer_CRM_Integration_Plan_v1.md</c>
+/// §3.3/§5.
 ///
 /// Phase 22A: <see cref="CreateCustomerAsync"/> stamps the new customer
 /// with the current session's organization/branch
@@ -54,7 +61,6 @@ public sealed class CustomerCommandService : ICustomerCommandService
             _enterpriseContext.CurrentBranchId ?? string.Empty);
 
         var created = await _repository.CreateCustomerAsync(customer, cancellationToken).ConfigureAwait(true);
-        await LogActivityAsync(created.Id, "Customer created", cancellationToken).ConfigureAwait(true);
 
         return CustomerMapper.MapCustomer(created);
     }
@@ -84,7 +90,6 @@ public sealed class CustomerCommandService : ICustomerCommandService
             existing.BranchId);
 
         var updated = await _repository.UpdateCustomerAsync(customer, cancellationToken).ConfigureAwait(true);
-        await LogActivityAsync(updated.Id, "Customer profile updated", cancellationToken).ConfigureAwait(true);
 
         return CustomerMapper.MapCustomer(updated);
     }
@@ -93,7 +98,6 @@ public sealed class CustomerCommandService : ICustomerCommandService
     {
         var note = new DomainCustomers.CustomerNote(Guid.NewGuid().ToString(), customerId, text, DateTimeOffset.Now);
         var added = await _repository.AddNoteAsync(note, cancellationToken).ConfigureAwait(true);
-        await LogActivityAsync(customerId, "Note added", cancellationToken).ConfigureAwait(true);
 
         return CustomerMapper.MapNote(added);
     }
@@ -102,7 +106,6 @@ public sealed class CustomerCommandService : ICustomerCommandService
     {
         var tag = new DomainCustomers.CustomerTag(Guid.NewGuid().ToString(), customerId, label, DateTimeOffset.Now);
         var added = await _repository.AddTagAsync(tag, cancellationToken).ConfigureAwait(true);
-        await LogActivityAsync(customerId, $"Tag added: {label}", cancellationToken).ConfigureAwait(true);
 
         return CustomerMapper.MapTag(added);
     }
@@ -110,11 +113,5 @@ public sealed class CustomerCommandService : ICustomerCommandService
     public async Task RemoveTagAsync(string customerId, string tagId, CancellationToken cancellationToken = default)
     {
         await _repository.RemoveTagAsync(customerId, tagId, cancellationToken).ConfigureAwait(true);
-        await LogActivityAsync(customerId, "Tag removed", cancellationToken).ConfigureAwait(true);
     }
-
-    private Task<DomainCustomers.CustomerActivity> LogActivityAsync(string customerId, string description, CancellationToken cancellationToken) =>
-        _repository.AddActivityAsync(
-            new DomainCustomers.CustomerActivity(Guid.NewGuid().ToString(), customerId, description, DateTimeOffset.Now),
-            cancellationToken);
 }

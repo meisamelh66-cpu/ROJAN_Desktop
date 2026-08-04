@@ -30,6 +30,7 @@ using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
 using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Connectivity;
+using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
@@ -40,7 +41,6 @@ using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
 using Rojan.Desktop.Infrastructure.Persistence.Calendar;
-using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Salons;
@@ -73,17 +73,18 @@ public static class ServiceCollectionExtensions
         // Sprint 6 Fake->real swap below.
         services.AddSingleton<IDashboardRepository, BackendDashboardRepository>();
 
-        // Sprint 6 Commit 2: Customers is the first Domain module moved
-        // off its Fake*Repository onto EF Core (see RojanDbContext's own
-        // doc comment). FakeCustomerRepository itself is intentionally
-        // left in the codebase, unreferenced - not deleted - so the
-        // previous behavior stays one line away if ever needed again. This
-        // is a real, user-visible behavior change: the Customer list now
-        // starts empty on a fresh SQLite database instead of showing the
-        // fake's 7 seeded demo customers - that is the actual point of
-        // "real persistence" (data now genuinely survives a restart,
-        // accumulated from real use, not replayed from a hardcoded seed).
-        services.AddSingleton<ICustomerRepository, EfCustomerRepository>();
+        // Owner App Customer CRM Integration: real GET/POST/PATCH/DELETE
+        // against ROJAN_Backend's Customer CRM endpoints, replacing
+        // EfCustomerRepository (Sprint 6 Commit 2's EF Core swap) - which
+        // stays in the codebase, unreferenced, same convention as every
+        // earlier Fake/Ef->Backend swap (see BackendDashboardRepository's
+        // own DI comment above). FakeCustomerRepository also remains,
+        // unreferenced. See BackendCustomerRepository's own doc comment
+        // for the mapping honesty notes (UserId-based booking-history
+        // linkage, always-present lifetime value, no backend equivalent
+        // for the vestigial Notes field/LastContactedAt) and for why
+        // AddActivityAsync throws.
+        services.AddSingleton<ICustomerRepository, BackendCustomerRepository>();
 
         // Owner App Booking Integration: real GET/PATCH/PUT against
         // ROJAN_Backend's booking endpoints, replacing EfBookingRepository
@@ -95,6 +96,8 @@ public static class ServiceCollectionExtensions
         // customer name, best-effort service/specialist name resolution,
         // Organization/Branch stamped from the current session rather than
         // a real backend concept) and for why CreateBookingAsync throws.
+        // ISalonContextService is shared by both Customer CRM and Booking
+        // integration - registered once, here.
         services.AddSingleton<ISalonContextService, BackendSalonContextService>();
         services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 

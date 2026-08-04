@@ -25,17 +25,16 @@ public sealed class CustomerCommandServiceTests
     }
 
     [Fact]
-    public async Task CreateCustomerAsync_ValidRequest_LogsCreationActivity()
+    public async Task CreateCustomerAsync_ValidRequest_DoesNotLogActivity()
     {
+        // Backend has no generic "customer created" activity - see CustomerCommandService's own doc comment.
         var repository = new StubCustomerRepository();
         var sut = new CustomerCommandService(repository, new StubEnterpriseContext());
         var request = new CreateCustomerRequest("Noah Bennett", string.Empty, "noah@example.com", "555-0100", string.Empty);
 
-        var created = await sut.CreateCustomerAsync(request);
+        await sut.CreateCustomerAsync(request);
 
-        var activity = Assert.Single(repository.Activities);
-        Assert.Equal(created.Id, activity.CustomerId);
-        Assert.Equal("Customer created", activity.Description);
+        Assert.Empty(repository.Activities);
     }
 
     [Fact]
@@ -53,22 +52,22 @@ public sealed class CustomerCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateCustomerAsync_ValidRequest_LogsUpdateActivity()
+    public async Task UpdateCustomerAsync_ValidRequest_DoesNotLogActivity()
     {
+        // Status change is logged by the backend's own UpdateCustomerUseCase - logging it again here would double it.
         var repository = new StubCustomerRepository([MakeCustomer()]);
         var sut = new CustomerCommandService(repository, new StubEnterpriseContext());
         var request = new UpdateCustomerRequest("customer-1", "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "+1 555 010 2231", CustomerStatus.Vip, "$9,000", "Upgraded");
 
         await sut.UpdateCustomerAsync(request);
 
-        var activity = Assert.Single(repository.Activities);
-        Assert.Equal("customer-1", activity.CustomerId);
-        Assert.Equal("Customer profile updated", activity.Description);
+        Assert.Empty(repository.Activities);
     }
 
     [Fact]
-    public async Task AddNoteAsync_ValidText_AddsNoteAndLogsActivity()
+    public async Task AddNoteAsync_ValidText_AddsNoteWithoutLoggingActivity()
     {
+        // A note already appears in the backend's merged timeline as its own entry - a separate "Note added" activity would be redundant.
         var repository = new StubCustomerRepository([MakeCustomer()]);
         var sut = new CustomerCommandService(repository, new StubEnterpriseContext());
 
@@ -76,12 +75,13 @@ public sealed class CustomerCommandServiceTests
 
         Assert.Equal("Prefers evening appointments.", note.Text);
         Assert.Single(repository.Notes);
-        Assert.Contains(repository.Activities, activity => activity.Description == "Note added");
+        Assert.Empty(repository.Activities);
     }
 
     [Fact]
-    public async Task AddTagAsync_ValidLabel_AddsTagAndLogsActivity()
+    public async Task AddTagAsync_ValidLabel_AddsTagWithoutLoggingActivity()
     {
+        // Backend's AddCustomerTagUseCase logs TAG_ADDED itself - logging it again here would double it.
         var repository = new StubCustomerRepository([MakeCustomer()]);
         var sut = new CustomerCommandService(repository, new StubEnterpriseContext());
 
@@ -89,12 +89,13 @@ public sealed class CustomerCommandServiceTests
 
         Assert.Equal("VIP", tag.Label);
         Assert.Single(repository.Tags);
-        Assert.Contains(repository.Activities, activity => activity.Description == "Tag added: VIP");
+        Assert.Empty(repository.Activities);
     }
 
     [Fact]
-    public async Task RemoveTagAsync_ExistingTag_RemovesTagAndLogsActivity()
+    public async Task RemoveTagAsync_ExistingTag_RemovesTagWithoutLoggingActivity()
     {
+        // Backend's RemoveCustomerTagUseCase logs TAG_REMOVED itself - logging it again here would double it.
         var repository = new StubCustomerRepository([MakeCustomer()]);
         repository.Tags.Add(new DomainCustomers.CustomerTag("tag-1", "customer-1", "VIP", DateTimeOffset.UnixEpoch));
         var sut = new CustomerCommandService(repository, new StubEnterpriseContext());
@@ -102,7 +103,7 @@ public sealed class CustomerCommandServiceTests
         await sut.RemoveTagAsync("customer-1", "tag-1");
 
         Assert.Empty(repository.Tags);
-        Assert.Contains(repository.Activities, activity => activity.Description == "Tag removed");
+        Assert.Empty(repository.Activities);
     }
 
     // Sprint 4 Commit 1: customer lifecycle rules.

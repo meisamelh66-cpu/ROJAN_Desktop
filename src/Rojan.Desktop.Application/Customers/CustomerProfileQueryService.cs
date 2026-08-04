@@ -30,6 +30,17 @@ namespace Rojan.Desktop.Application.Customers;
 /// already establishes. Both layers stay same-layer siblings (Application
 /// depending on Application), never a Domain-level or circular reference.
 ///
+/// Owner App Customer CRM Integration: <see cref="BuildBookingSummaryAsync"/>
+/// matches bookings by <see cref="DomainCustomers.Customer.UserId"/> when
+/// present, falling back to the customer's own <c>Id</c> otherwise. This
+/// matters for backend-sourced data specifically: ROJAN_Backend's booking
+/// records reference the booking customer's linked account id, never this
+/// Customer CRM record's own id, so matching by <c>Id</c> alone would
+/// silently show an empty booking history for every backend-linked
+/// customer. Local/EF-backed data has no <c>UserId</c> concept (always
+/// null), so the fallback keeps its existing by-<c>Id</c> behavior
+/// completely unchanged.
+///
 /// Sprint 4 Commit 5: <see cref="CustomerProfileDto.Insights"/> is computed
 /// by <see cref="CustomerInsightsCalculator"/> from the same
 /// <see cref="CustomerBookingSummaryDto"/> and mapped Activity this method
@@ -64,7 +75,7 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
         var notes = await _repository.GetNotesAsync(customerId, cancellationToken).ConfigureAwait(true);
         var tags = await _repository.GetTagsAsync(customerId, cancellationToken).ConfigureAwait(true);
         var activity = await _repository.GetActivityAsync(customerId, cancellationToken).ConfigureAwait(true);
-        var bookingSummary = await BuildBookingSummaryAsync(customerId, now, cancellationToken).ConfigureAwait(true);
+        var bookingSummary = await BuildBookingSummaryAsync(customer.UserId ?? customerId, now, cancellationToken).ConfigureAwait(true);
 
         var customerDto = CustomerMapper.MapCustomer(customer);
         var mappedActivity = activity.Select(CustomerMapper.MapActivity).ToList();
@@ -80,11 +91,11 @@ public sealed class CustomerProfileQueryService : ICustomerProfileQueryService
             insights);
     }
 
-    /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to <paramref name="now"/>. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure. <paramref name="now"/> is threaded in from <see cref="GetProfileAsync"/> rather than read here independently, so this split and <see cref="CustomerInsightsCalculator"/>'s day-based rules always agree on what "now" means for one profile load.</summary>
-    private async Task<CustomerBookingSummaryDto> BuildBookingSummaryAsync(string customerId, DateTimeOffset now, CancellationToken cancellationToken)
+    /// <summary>Filters the already-scoped booking list down to this customer, then splits into upcoming (soonest-first) and past (most-recent-first) by <see cref="AppBookings.BookingDto.ScheduledAt"/> relative to <paramref name="now"/>. A customer with no bookings at all returns <see cref="CustomerBookingSummaryDto.Empty"/> - never a failure. <paramref name="now"/> is threaded in from <see cref="GetProfileAsync"/> rather than read here independently, so this split and <see cref="CustomerInsightsCalculator"/>'s day-based rules always agree on what "now" means for one profile load. <paramref name="bookingLinkId"/> is <see cref="DomainCustomers.Customer.UserId"/> when present, else the customer's own <c>Id</c> - see this class's own doc comment for why the two are not interchangeable for backend-sourced data.</summary>
+    private async Task<CustomerBookingSummaryDto> BuildBookingSummaryAsync(string bookingLinkId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var bookings = await _bookingQueryService.GetBookingsAsync(cancellationToken).ConfigureAwait(true);
-        var customerBookings = bookings.Where(booking => booking.CustomerId == customerId).ToList();
+        var customerBookings = bookings.Where(booking => booking.CustomerId == bookingLinkId).ToList();
 
         if (customerBookings.Count == 0)
         {

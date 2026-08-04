@@ -172,6 +172,44 @@ public sealed class CustomerProfileQueryServiceTests
         Assert.Equal(1, profile.BookingSummary.CompletedBookingCount);
     }
 
+    // Owner App Customer CRM Integration: backend-sourced booking-history linkage.
+
+    [Fact]
+    public async Task GetProfileAsync_CustomerHasLinkedUserId_BookingSummaryMatchesByUserIdNotCustomerId()
+    {
+        // ROJAN_Backend's booking records reference the linked account's UserId, never this
+        // Customer CRM record's own Id - see BackendCustomerRepository's own doc comment.
+        var now = DateTimeOffset.Now;
+        var linkedCustomer = MakeCustomer() with { UserId = "user-42" };
+        var repository = new StubCustomerRepository([linkedCustomer]);
+        var bookingQueryService = new StubBookingQueryService([
+            MakeBooking("booking-1", "user-42", now.AddDays(3)),
+        ]);
+        var sut = new CustomerProfileQueryService(repository, bookingQueryService, new StubEnterpriseContext());
+
+        var profile = await sut.GetProfileAsync("customer-1");
+
+        Assert.Equal("booking-1", Assert.Single(profile.BookingSummary.UpcomingAppointments).Id);
+    }
+
+    [Fact]
+    public async Task GetProfileAsync_WalkInCustomerWithNoLinkedUserId_HasNoBookingHistory()
+    {
+        // A walk-in customer with no linked account - correctly empty, matching ROJAN_Backend's
+        // own GetCustomerBookingsUseCase behavior for an unlinked customer.
+        var now = DateTimeOffset.Now;
+        var repository = new StubCustomerRepository([MakeCustomer()]); // UserId defaults to null
+        var bookingQueryService = new StubBookingQueryService([
+            MakeBooking("booking-other-account", "some-other-user-id", now.AddDays(3)),
+        ]);
+        var sut = new CustomerProfileQueryService(repository, bookingQueryService, new StubEnterpriseContext());
+
+        var profile = await sut.GetProfileAsync("customer-1");
+
+        Assert.Empty(profile.BookingSummary.UpcomingAppointments);
+        Assert.Equal(0, profile.BookingSummary.TotalBookingCount);
+    }
+
     // Sprint 4 Commit 5: customer intelligence insights.
 
     [Fact]

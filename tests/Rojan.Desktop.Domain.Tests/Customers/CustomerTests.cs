@@ -32,4 +32,15 @@ public sealed class CustomerTests
 
         Assert.NotEqual(first, second);
     }
+
+    [Fact]
+    public void UserId_OmittedAtConstruction_DefaultsToNull()
+    {
+        // Owner App Customer CRM Integration: UserId is a trailing optional param specifically so
+        // every pre-existing positional Customer(...) call site (local/EF-backed data has no such
+        // concept) keeps compiling and behaving unchanged.
+        var customer = MakeCustomer();
+
+        Assert.Null(customer.UserId);
+    }
 }

@@ -83,6 +83,21 @@ public sealed class PersistenceDependencyInjectionTests
         Assert.NotNull(provider.GetService<Domain.Calendar.ICalendarRepository>());
     }
 
+    [Fact]
+    public void AddInfrastructure_RegistersBackendCustomerRepository()
+    {
+        // Owner App Customer CRM Integration: ICustomerRepository now resolves to the real,
+        // backend-connected implementation - same "prove the real composition root, not a
+        // reimplementation of it" reasoning as every other assertion in this file.
+        var services = new ServiceCollection().AddApplication().AddInfrastructure();
+        services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
+        var provider = services.BuildServiceProvider();
+
+        var repository = provider.GetRequiredService<Domain.Customers.ICustomerRepository>();
+
+        Assert.IsType<Rojan.Desktop.Infrastructure.Customers.BackendCustomerRepository>(repository);
+    }
+
     private sealed class StubEnterpriseContext : IEnterpriseContext
     {
         public string? CurrentOrganizationId => "org-1";

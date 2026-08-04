@@ -278,5 +278,8 @@ public sealed class BackendBookingRepositoryTests
 
             throw new InvalidOperationException($"Unexpected PATCH '{path}' - not configured by this test.");
         }
+
+        public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("BackendBookingRepository never sends a PATCH with a body.");
     }
 }
