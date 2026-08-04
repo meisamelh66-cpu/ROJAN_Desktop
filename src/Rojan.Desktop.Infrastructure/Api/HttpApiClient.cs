@@ -22,11 +22,9 @@ namespace Rojan.Desktop.Infrastructure.Api;
 /// <see cref="CancellationTokenSource"/> (Timeout support, layered on top
 /// of - not replacing - caller-supplied cancellation), and
 /// <see cref="MapException"/> (Exception Mapping). The base address comes
-/// from the <c>ROJAN_API_BASE_URL</c> environment variable rather than a
-/// hardcoded value (Phase 25's "no hardcoded values") - unset today,
-/// since no backend exists yet, which is why every real call currently
-/// fails with a clear <see cref="ApiConnectivityException"/> instead of
-/// silently succeeding against nothing.
+/// from <see cref="IApiEnvironmentService"/> rather than a hardcoded value
+/// (Phase 25's "no hardcoded values") - see that service's own doc comment
+/// for the Development/Production/env-var resolution order.
 ///
 /// Sprint 7 Commit 1: <see cref="PutAsync{TRequest, TResponse}"/>/
 /// <see cref="DeleteAsync{TResponse}"/> round out the CRUD surface (see
@@ -53,7 +51,6 @@ namespace Rojan.Desktop.Infrastructure.Api;
 /// </summary>
 public sealed class HttpApiClient : IApiClient, IDisposable
 {
-    private const string BaseAddressEnvironmentVariable = "ROJAN_API_BASE_URL";
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
     private static readonly TimeSpan TimeoutSeconds = TimeSpan.FromSeconds(30);
 
@@ -62,8 +59,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     private readonly ISessionService _sessionService;
     private readonly HttpClient _httpClient;
 
-    public HttpApiClient(IConnectivityService connectivityService, IRetryPolicy retryPolicy, ISessionService sessionService)
-        : this(connectivityService, retryPolicy, sessionService, new HttpClientHandler(), GetConfiguredBaseAddress())
+    /// <summary>Owner App Login Experience: base address now comes from <see cref="IApiEnvironmentService"/> (Development/Production, persisted, env-var-overridable) instead of reading <c>ROJAN_API_BASE_URL</c> directly - see that service's own doc comment for the full resolution order.</summary>
+    public HttpApiClient(IConnectivityService connectivityService, IRetryPolicy retryPolicy, ISessionService sessionService, IApiEnvironmentService apiEnvironmentService)
+        : this(connectivityService, retryPolicy, sessionService, new HttpClientHandler(), apiEnvironmentService.ResolvedBaseAddress)
     {
     }
 
@@ -72,12 +70,14 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     /// <c>InternalsVisibleTo</c>) - lets
     /// <c>Infrastructure.Tests.Api.HttpApiClientTests</c> substitute a
     /// fake <see cref="HttpMessageHandler"/> and an explicit
-    /// <paramref name="baseAddress"/>, so tests never depend on the
+    /// <paramref name="baseAddress"/>, so tests never depend on
+    /// <see cref="IApiEnvironmentService"/>'s persisted settings file or the
     /// process-wide <c>ROJAN_API_BASE_URL</c> environment variable (fragile
     /// to set/unset per test, especially under parallel test execution).
     /// The public constructor above always goes through this one too - its
-    /// own behavior is completely unchanged, still reading the environment
-    /// variable and using a real <see cref="HttpClientHandler"/>.
+    /// own behavior is completely unchanged, still resolving via
+    /// <see cref="IApiEnvironmentService"/> and using a real
+    /// <see cref="HttpClientHandler"/>.
     /// </summary>
     internal HttpApiClient(
         IConnectivityService connectivityService,
@@ -118,6 +118,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
     public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
         SendAsync<TResponse>(() => new HttpRequestMessage(HttpMethod.Delete, path), cancellationToken);
+
+    public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
+        SendAsync<TResponse>(() => new HttpRequestMessage(HttpMethod.Patch, path), cancellationToken);
 
     public void Dispose() => _httpClient.Dispose();
 
@@ -246,14 +249,8 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     {
         if (_httpClient.BaseAddress is null)
         {
-            throw new ApiConnectivityException($"No API base address is configured - set the '{BaseAddressEnvironmentVariable}' environment variable.");
+            throw new ApiConnectivityException("No API base address is configured - set an API environment in Settings, or the 'ROJAN_API_BASE_URL' environment variable.");
         }
-    }
-
-    private static Uri? GetConfiguredBaseAddress()
-    {
-        var baseAddress = Environment.GetEnvironmentVariable(BaseAddressEnvironmentVariable);
-        return string.IsNullOrWhiteSpace(baseAddress) ? null : new Uri(baseAddress, UriKind.Absolute);
     }
 
     private void AttachAuthenticationHeader(HttpRequestMessage request)

@@ -15,9 +15,11 @@ using Rojan.Desktop.Presentation.ViewModels.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 using Rojan.Desktop.Presentation.ViewModels.Services;
+using Rojan.Desktop.Presentation.ViewModels.Security;
 using Rojan.Desktop.Presentation.ViewModels.Settings;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Support;
+using Rojan.Desktop.Presentation.Threading;
 
 namespace Rojan.Desktop.Presentation.DependencyInjection;
 
@@ -33,6 +35,17 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
+        // Owner App Login Experience: transient, same reasoning as every
+        // page ViewModel above - a fresh instance each time the Login
+        // window is shown (including after a logout re-triggers it).
+        services.AddTransient<LoginViewModel>();
+
+        // Owner App Mobile Login: same transient reasoning as LoginViewModel
+        // above. LoginWindowViewModel composes both this and LoginViewModel
+        // (see its own doc comment), so it needs the same lifetime.
+        services.AddTransient<MobileOtpLoginViewModel>();
+        services.AddTransient<LoginWindowViewModel>();
+        services.AddSingleton<IDelayScheduler, DispatcherDelayScheduler>();
         services.AddTransient<DashboardPageViewModel>();
         services.AddTransient<CustomerPageViewModel>();
         services.AddTransient<BookingPageViewModel>();

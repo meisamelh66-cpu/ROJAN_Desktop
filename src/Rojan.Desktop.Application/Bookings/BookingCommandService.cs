@@ -46,6 +46,8 @@ public sealed class BookingCommandService : IBookingCommandService
         _enterpriseContext = enterpriseContext;
     }
 
+    public bool SupportsInProgressAndNoShowStatuses => _repository.SupportsInProgressAndNoShowStatuses;
+
     public async Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
         if (!DomainBookings.BookingRules.IsValidDuration(request.DurationMinutes))

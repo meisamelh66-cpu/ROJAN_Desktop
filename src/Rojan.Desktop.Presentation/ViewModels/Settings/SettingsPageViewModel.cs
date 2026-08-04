@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Api;
+using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Theming;
@@ -28,17 +30,29 @@ public sealed class SettingsPageViewModel : ViewModelBase
     private readonly ILocalizationService _localizationService;
     private readonly ILanguagePackRepository _packRepository;
     private readonly IThemeService _themeService;
+    private readonly IAuthenticationService _authenticationService;
+    private readonly IApiEnvironmentService _apiEnvironmentService;
 
     private LanguageInfo? _selectedLanguage;
     private string _statusMessage = string.Empty;
     private ThemeMode _selectedThemeMode;
     private string _themeStatusMessage = string.Empty;
+    private ApiEnvironment _selectedApiEnvironment;
+    private string _productionUrlInput;
+    private string _apiEnvironmentStatusMessage = string.Empty;
 
-    public SettingsPageViewModel(ILocalizationService localizationService, ILanguagePackRepository packRepository, IThemeService themeService)
+    public SettingsPageViewModel(
+        ILocalizationService localizationService,
+        ILanguagePackRepository packRepository,
+        IThemeService themeService,
+        IAuthenticationService authenticationService,
+        IApiEnvironmentService apiEnvironmentService)
     {
         _localizationService = localizationService;
         _packRepository = packRepository;
         _themeService = themeService;
+        _authenticationService = authenticationService;
+        _apiEnvironmentService = apiEnvironmentService;
 
         BuiltInLanguages = new ObservableCollection<LanguageInfo>(
             localizationService.AvailableLanguages.Where(language => language.IsBuiltIn));
@@ -48,6 +62,8 @@ public sealed class SettingsPageViewModel : ViewModelBase
 
         SelectedLanguage = localizationService.AvailableLanguages.FirstOrDefault(language => language.Code == localizationService.CurrentLanguage.Code);
         SelectedThemeMode = themeService.SelectedMode;
+        _selectedApiEnvironment = apiEnvironmentService.SelectedEnvironment;
+        _productionUrlInput = apiEnvironmentService.ProductionUrl ?? string.Empty;
 
         ApplyLanguageCommand = new AsyncRelayCommand(_ => ApplyLanguageAsync(), _ => SelectedLanguage is not null);
         RestartCommand = new RelayCommand(_ => Restart());
@@ -56,6 +72,9 @@ public sealed class SettingsPageViewModel : ViewModelBase
         RemovePackCommand = new AsyncRelayCommand(parameter => RemovePackAsync(parameter as LanguageInfo));
         SelectThemeModeCommand = new RelayCommand(parameter => SelectedThemeMode = (ThemeMode)parameter!);
         ApplyThemeCommand = new AsyncRelayCommand(_ => ApplyThemeAsync());
+        SignOutCommand = new AsyncRelayCommand(_ => _authenticationService.SignOutAsync());
+        SelectApiEnvironmentCommand = new RelayCommand(parameter => SelectedApiEnvironment = (ApiEnvironment)parameter!);
+        ApplyApiEnvironmentCommand = new AsyncRelayCommand(_ => ApplyApiEnvironmentAsync());
 
         _ = RefreshAvailablePacksAsync();
     }
@@ -79,6 +98,12 @@ public sealed class SettingsPageViewModel : ViewModelBase
     public ICommand SelectThemeModeCommand { get; }
 
     public ICommand ApplyThemeCommand { get; }
+
+    public ICommand SignOutCommand { get; }
+
+    public ICommand SelectApiEnvironmentCommand { get; }
+
+    public ICommand ApplyApiEnvironmentCommand { get; }
 
     public LanguageInfo? SelectedLanguage
     {
@@ -118,6 +143,33 @@ public sealed class SettingsPageViewModel : ViewModelBase
         private set => SetProperty(ref _themeStatusMessage, value);
     }
 
+    public ApiEnvironment SelectedApiEnvironment
+    {
+        get => _selectedApiEnvironment;
+        set => SetProperty(ref _selectedApiEnvironment, value);
+    }
+
+    public string ProductionUrlInput
+    {
+        get => _productionUrlInput;
+        set => SetProperty(ref _productionUrlInput, value);
+    }
+
+    public ApiEnvironment CurrentApiEnvironment => _apiEnvironmentService.SelectedEnvironment;
+
+    public string CurrentApiEnvironmentDisplay => Strings.Settings_ApiEnvironment_CurrentFormat.Replace(
+        "{0}",
+        CurrentApiEnvironment == ApiEnvironment.Development ? Strings.Settings_ApiEnvironment_Development : Strings.Settings_ApiEnvironment_Production,
+        StringComparison.Ordinal);
+
+    public bool IsApiEnvironmentRestartRequired => _apiEnvironmentService.IsRestartRequired;
+
+    public string ApiEnvironmentStatusMessage
+    {
+        get => _apiEnvironmentStatusMessage;
+        private set => SetProperty(ref _apiEnvironmentStatusMessage, value);
+    }
+
     private async Task ApplyLanguageAsync()
     {
         if (SelectedLanguage is null)
@@ -137,6 +189,19 @@ public sealed class SettingsPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(CurrentThemeDisplay));
         OnPropertyChanged(nameof(IsThemeRestartRequired));
         ThemeStatusMessage = _themeService.IsRestartRequired ? Strings.Settings_Theme_RestartRequired : string.Empty;
+    }
+
+    private async Task ApplyApiEnvironmentAsync()
+    {
+        var productionUrl = SelectedApiEnvironment == ApiEnvironment.Production && !string.IsNullOrWhiteSpace(ProductionUrlInput)
+            ? ProductionUrlInput.Trim()
+            : null;
+
+        await _apiEnvironmentService.SetEnvironmentAsync(SelectedApiEnvironment, productionUrl).ConfigureAwait(true);
+        OnPropertyChanged(nameof(CurrentApiEnvironment));
+        OnPropertyChanged(nameof(CurrentApiEnvironmentDisplay));
+        OnPropertyChanged(nameof(IsApiEnvironmentRestartRequired));
+        ApiEnvironmentStatusMessage = _apiEnvironmentService.IsRestartRequired ? Strings.Settings_ApiEnvironment_RestartRequired : string.Empty;
     }
 
     private static string ThemeModeDisplayName(ThemeMode mode) => mode switch

@@ -25,7 +25,7 @@ public sealed class HttpApiClientTests
     [Fact]
     public async Task GetAsync_ConnectivityIsOffline_ThrowsApiConnectivityExceptionWithoutAttemptingARequest()
     {
-        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Offline), new PassThroughRetryPolicy(), new StubSessionService());
+        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Offline), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null));
 
         await Assert.ThrowsAsync<ApiConnectivityException>(() => client.GetAsync<string>("health"));
     }
@@ -33,9 +33,7 @@ public sealed class HttpApiClientTests
     [Fact]
     public async Task GetAsync_OnlineButNoBaseAddressConfigured_ThrowsApiConnectivityException()
     {
-        // ROJAN_API_BASE_URL is intentionally unset in this test environment -
-        // Phase 25 ships no backend to point it at yet.
-        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), new StubSessionService());
+        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null));
 
         await Assert.ThrowsAsync<ApiConnectivityException>(() => client.GetAsync<string>("health"));
     }
@@ -65,6 +63,21 @@ public sealed class HttpApiClientTests
 
         Assert.True(response.IsSuccess);
         Assert.Equal(HttpMethod.Delete, handler.LastRequest?.Method);
+        Assert.Null(handler.LastRequest?.Content);
+    }
+
+    [Fact]
+    public async Task PatchAsync_SendsPatchMethodWithNoBodyAndReturnsDeserializedResponse()
+    {
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.OK, """{"value":"confirmed"}""")));
+        using var client = CreateClient(handler);
+
+        var response = await client.PatchAsync<TestResponse>("bookings/1/confirm");
+
+        Assert.True(response.IsSuccess);
+        Assert.Equal("confirmed", response.Data?.Value);
+        Assert.Equal(HttpMethod.Patch, handler.LastRequest?.Method);
         Assert.Null(handler.LastRequest?.Content);
     }
 
@@ -258,6 +271,22 @@ public sealed class HttpApiClientTests
 
     private sealed record TestResponse(string Value);
 
+    private sealed class StubApiEnvironmentService(Uri? resolvedBaseAddress) : IApiEnvironmentService
+    {
+        public ApiEnvironment SelectedEnvironment => ApiEnvironment.Development;
+
+        public Uri? ResolvedBaseAddress => resolvedBaseAddress;
+
+        public string? ProductionUrl => null;
+
+        public bool IsRestartRequired => false;
+
+        public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task SetEnvironmentAsync(ApiEnvironment environment, string? productionUrl, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("Not used by these tests.");
+    }
+
     private sealed class StubConnectivityService(ConnectionState state) : IConnectivityService
     {
         public ConnectionState CurrentState { get; } = state;
@@ -310,6 +339,14 @@ public sealed class HttpApiClientTests
         public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task<SessionIdentity> CreateSessionAsync(UserIdentity user, DeviceIdentity device, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("Not used by these tests.");
+
+        public Task<SessionIdentity> CreateSessionFromTokensAsync(
+            UserIdentity user,
+            DeviceIdentity device,
+            AuthToken accessToken,
+            RefreshToken refreshToken,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("Not used by these tests.");
 
         public Task<SessionIdentity> RefreshAsync(CancellationToken cancellationToken = default)

@@ -40,6 +40,18 @@ public sealed class LocalAuthenticationService : IAuthenticationService, IDispos
         return await _sessionService.CreateSessionAsync(user, device, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>This local-only implementation has no backend to authenticate credentials against - see <see cref="BackendAuthenticationService"/> for the real implementation.</summary>
+    public Task SignInWithCredentialsAsync(string email, string password, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to authenticate credentials against - use {nameof(BackendAuthenticationService)}.");
+
+    /// <summary>This local-only implementation has no backend to request an OTP code from - see <see cref="BackendAuthenticationService"/> for the real implementation.</summary>
+    public Task<OtpChallenge> RequestOtpAsync(string phoneNumber, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to request an OTP code from - use {nameof(BackendAuthenticationService)}.");
+
+    /// <summary>This local-only implementation has no backend to verify an OTP code against - see <see cref="BackendAuthenticationService"/> for the real implementation.</summary>
+    public Task SignInWithOtpAsync(string phoneNumber, string code, string? fullName = null, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to verify an OTP code against - use {nameof(BackendAuthenticationService)}.");
+
     public Task SignOutAsync(CancellationToken cancellationToken = default) =>
         _sessionService.ExpireAsync(cancellationToken);
 

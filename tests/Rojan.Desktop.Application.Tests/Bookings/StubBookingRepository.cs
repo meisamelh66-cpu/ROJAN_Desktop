@@ -16,6 +16,8 @@ internal sealed class StubBookingRepository : IBookingRepository
         Bookings.AddRange(bookings);
     }
 
+    public bool SupportsInProgressAndNoShowStatuses => true;
+
     public Task<IReadOnlyList<Booking>> GetBookingsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Booking>>(Bookings.ToList());
 

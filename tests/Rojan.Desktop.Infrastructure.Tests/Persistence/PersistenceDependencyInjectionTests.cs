@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Application.DependencyInjection;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
 using Rojan.Desktop.Infrastructure.Persistence;
 
 namespace Rojan.Desktop.Infrastructure.Tests.Persistence;
 
 /// <summary>
-/// Exercises <see cref="ServiceCollectionExtensions.AddInfrastructure"/>'s
+/// Exercises <see cref="Rojan.Desktop.Infrastructure.DependencyInjection.ServiceCollectionExtensions.AddInfrastructure"/>'s
 /// Sprint 6 Commit 1 persistence registrations specifically - proves the
 /// real composition root (not a reimplementation of it) resolves a
 /// working <see cref="IDbContextFactory{TContext}"/> and
@@ -57,13 +59,36 @@ public sealed class PersistenceDependencyInjectionTests
     {
         // The persistence foundation must not replace or remove any
         // existing Fake*Repository registration - Sprint 6 Commit 1 is
-        // additive plumbing only.
-        var provider = new ServiceCollection().AddInfrastructure().BuildServiceProvider();
+        // additive plumbing only. IEnterpriseContext is registered here
+        // (not by AddInfrastructure itself - the real implementation lives
+        // in Shell's composition root) because Owner App Booking
+        // Integration's BackendBookingRepository now depends on it - see
+        // that class's own doc comment for why (stamping Organization/
+        // Branch onto backend-sourced bookings so the existing
+        // BookingQueryService.ScopeToCurrentSession filter does not
+        // silently discard them). AddApplication() is also needed now -
+        // BackendBookingRepository resolves down to HttpApiClient, which
+        // needs Application.Security.IRetryPolicy (registered there, not
+        // by AddInfrastructure) - matching the real composition root's own
+        // AddApplication().AddInfrastructure().AddPresentation() call
+        // order (see Shell's App.xaml.cs).
+        var services = new ServiceCollection().AddApplication().AddInfrastructure();
+        services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
+        var provider = services.BuildServiceProvider();
 
         Assert.NotNull(provider.GetService<Domain.Customers.ICustomerRepository>());
         Assert.NotNull(provider.GetService<Domain.Specialists.ISpecialistRepository>());
         Assert.NotNull(provider.GetService<Domain.Services.IServiceRepository>());
         Assert.NotNull(provider.GetService<Domain.Bookings.IBookingRepository>());
         Assert.NotNull(provider.GetService<Domain.Calendar.ICalendarRepository>());
+    }
+
+    private sealed class StubEnterpriseContext : IEnterpriseContext
+    {
+        public string? CurrentOrganizationId => "org-1";
+
+        public string? CurrentBranchId => null;
+
+        public WorkspaceRole CurrentRole => WorkspaceRole.OrganizationOwner;
     }
 }

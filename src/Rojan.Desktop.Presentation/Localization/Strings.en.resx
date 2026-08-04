@@ -2884,4 +2884,94 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
     <value>View Full Schedule</value>
   </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Sign in to ROJAN Desktop</value>
+  </data>
+  <data name="Login_EmailLabel" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_PasswordLabel" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_SignInButton" xml:space="preserve">
+    <value>Sign In</value>
+  </data>
+  <data name="Login_Error_MissingCredentials" xml:space="preserve">
+    <value>Enter your email and password.</value>
+  </data>
+  <data name="Login_Error_InvalidCredentials" xml:space="preserve">
+    <value>Invalid email or password.</value>
+  </data>
+  <data name="Login_Error_Network" xml:space="preserve">
+    <value>Could not reach the server. Check your internet connection.</value>
+  </data>
+  <data name="Login_Error_Generic" xml:space="preserve">
+    <value>Something went wrong. Please try again.</value>
+  </data>
+  <data name="Login_SessionEndedMessage" xml:space="preserve">
+    <value>Your session has ended. The app will now close - please sign in again.</value>
+  </data>
+  <data name="Login_Mobile_PhoneLabel" xml:space="preserve">
+    <value>Mobile Number</value>
+  </data>
+  <data name="Login_Mobile_CodeLabel" xml:space="preserve">
+    <value>Verification Code</value>
+  </data>
+  <data name="Login_Mobile_SendCodeButton" xml:space="preserve">
+    <value>Send Code</value>
+  </data>
+  <data name="Login_Mobile_VerifyButton" xml:space="preserve">
+    <value>Verify &amp; Sign In</value>
+  </data>
+  <data name="Login_Mobile_ResendButton" xml:space="preserve">
+    <value>Resend Code</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingPhone" xml:space="preserve">
+    <value>Enter your mobile number.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
+    <value>Enter a valid mobile number in international format, e.g. +989123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
+    <value>Enter the verification code.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
+    <value>Invalid or expired verification code.</value>
+  </data>
+  <data name="Login_SwitchToEmailLink" xml:space="preserve">
+    <value>Sign in with email instead</value>
+  </data>
+  <data name="Login_SwitchToMobileLink" xml:space="preserve">
+    <value>Sign in with mobile number instead</value>
+  </data>
+  <data name="Settings_Account_SectionTitle" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Settings_Account_SignOutDescription" xml:space="preserve">
+    <value>Signing out ends your current session - you'll need to sign in again the next time you launch the app.</value>
+  </data>
+  <data name="Settings_Account_SignOutButton" xml:space="preserve">
+    <value>Sign Out</value>
+  </data>
+  <data name="Settings_ApiEnvironment_SectionTitle" xml:space="preserve">
+    <value>Server Environment</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Development" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Production" xml:space="preserve">
+    <value>Production</value>
+  </data>
+  <data name="Settings_ApiEnvironment_CurrentFormat" xml:space="preserve">
+    <value>Current: {0}</value>
+  </data>
+  <data name="Settings_ApiEnvironment_RestartRequired" xml:space="preserve">
+    <value>Restart the app to apply this change.</value>
+  </data>
+  <data name="Settings_ApiEnvironment_ProductionUrlLabel" xml:space="preserve">
+    <value>Production Server URL</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
 </root>

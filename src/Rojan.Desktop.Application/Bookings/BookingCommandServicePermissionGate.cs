@@ -14,6 +14,8 @@ public sealed class BookingCommandServicePermissionGate : IBookingCommandService
         _permissionGate = permissionGate;
     }
 
+    public bool SupportsInProgressAndNoShowStatuses => _inner.SupportsInProgressAndNoShowStatuses;
+
     public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
         _permissionGate.Ensure(Permission.BookingCreate);

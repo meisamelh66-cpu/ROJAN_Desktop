@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Notifications;
@@ -142,8 +143,44 @@ public partial class App
         var deviceRegistrationService = _host.Services.GetRequiredService<IDeviceRegistrationService>();
         deviceRegistrationService.EnsureRegisteredAsync().GetAwaiter().GetResult();
 
+        // Owner App Login Experience: the persisted API environment
+        // (Development/Production) must be resolved before anything
+        // resolves IApiClient/AuthBootstrapHttpClient - both now read their
+        // base address from this service instead of the environment
+        // variable directly (see IApiEnvironmentService's own doc
+        // comment). Ordering matches every other "resolve before the thing
+        // that reads it" InitializeAsync call in this method.
+        var apiEnvironmentService = _host.Services.GetRequiredService<IApiEnvironmentService>();
+        apiEnvironmentService.InitializeAsync().GetAwaiter().GetResult();
+
         var sessionService = _host.Services.GetRequiredService<ISessionService>();
         sessionService.InitializeAsync().GetAwaiter().GetResult();
+
+        // Owner App Login Experience: Application Start -> check existing
+        // secure session -> valid: proceed straight to Dashboard (below,
+        // unchanged) / invalid: show the Login screen and only proceed if
+        // it succeeds. ShowDialog() is synchronous/modal, consistent with
+        // this whole method's deliberate "stay synchronous end-to-end"
+        // shape (see this method's own opening doc comment). A session
+        // that goes stale *while already running* (a failed background
+        // refresh, or the user signing out from Settings) is handled by
+        // OnAuthenticationStateChanged below - by design this shows a
+        // message and exits cleanly rather than swapping windows live
+        // in-process; the existing gate here re-authenticates correctly on
+        // the next launch.
+        var authenticationService = _host.Services.GetRequiredService<IAuthenticationService>();
+        if (authenticationService.CurrentState != AuthenticationState.Authenticated)
+        {
+            var loginWindow = _host.Services.GetRequiredService<LoginWindow>();
+            var signedIn = loginWindow.ShowDialog() == true;
+            if (!signedIn)
+            {
+                Shutdown();
+                return;
+            }
+        }
+
+        authenticationService.StateChanged += OnAuthenticationStateChanged;
 
         var certificateService = _host.Services.GetRequiredService<ICertificateService>();
         certificateService.InitializeAsync().GetAwaiter().GetResult();
@@ -235,10 +272,47 @@ public partial class App
         }
     }
 
+    /// <summary>
+    /// Owner App Login Experience: reacts to the session going stale while
+    /// the app is already running - a user-initiated "Sign Out" from
+    /// Settings, or a background token refresh that failed because the
+    /// refresh token itself expired (<see cref="Domain.Security.AuthenticationState.Expired"/>).
+    /// Deliberately does not attempt to swap MainWindow for a fresh
+    /// LoginWindow in-process - that risks WPF window-lifecycle/ShutdownMode
+    /// interactions this environment has no way to visually verify.
+    /// Instead: tell the user plainly, then exit - OnStartup's own gate
+    /// re-authenticates correctly on the next launch. <see cref="_isHandlingSignOut"/>
+    /// guards against this firing more than once (StateChanged can raise
+    /// SignedOut multiple times in a row depending on the exact transition
+    /// path).
+    /// </summary>
+    private bool _isHandlingSignOut;
+
+    private void OnAuthenticationStateChanged(object? sender, AuthenticationState state)
+    {
+        if (state is not (AuthenticationState.SignedOut or AuthenticationState.Expired or AuthenticationState.Failed) || _isHandlingSignOut)
+        {
+            return;
+        }
+
+        _isHandlingSignOut = true;
+        Dispatcher.Invoke(() =>
+        {
+            MessageBox.Show(Strings.Login_SessionEndedMessage, "ROJAN Desktop", MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown();
+        });
+    }
+
     protected override async void OnExit(ExitEventArgs e)
     {
         if (_host is not null)
         {
+            var authenticationService = _host.Services.GetService<IAuthenticationService>();
+            if (authenticationService is not null)
+            {
+                authenticationService.StateChanged -= OnAuthenticationStateChanged;
+            }
+
             _host.Services.GetRequiredService<WorkflowSchedulerService>().Stop();
 
             using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -304,6 +378,13 @@ public partial class App
         // restores Bookings) needs IDialogService.
         services.AddSingleton<IDialogService, LazyMainWindowDialogService>();
         services.AddSingleton<MainWindow>();
+
+        // Owner App Login Experience: transient, not singleton - a WPF
+        // Window cannot be reopened once closed (ShowDialog/Show throw
+        // after Close), and this window can be shown again after a logout
+        // triggers OnAuthenticationStateChanged below, so DI must hand out
+        // a fresh instance every time.
+        services.AddTransient<LoginWindow>();
     }
 
     /// <summary>

@@ -28,6 +28,7 @@ using Rojan.Desktop.Infrastructure.Accounting;
 using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
+using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Help;
@@ -42,11 +43,13 @@ using Rojan.Desktop.Infrastructure.Persistence.Calendar;
 using Rojan.Desktop.Infrastructure.Persistence.Customers;
 using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
+using Rojan.Desktop.Infrastructure.Salons;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
+using Rojan.Desktop.Application.Salons;
 using DomainServices = Rojan.Desktop.Domain.Services;
 using InfraPersistenceServices = Rojan.Desktop.Infrastructure.Persistence.Services;
 
@@ -63,7 +66,12 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<IDashboardRepository, FakeDashboardRepository>();
+        // Owner App Backend Integration: real GET /api/v1/dashboard/insights,
+        // mapped onto the existing KpiMetric/ActivityEntry shapes (see
+        // BackendDashboardRepository's own doc comment). FakeDashboardRepository
+        // stays in the codebase, unreferenced - same convention as every
+        // Sprint 6 Fake->real swap below.
+        services.AddSingleton<IDashboardRepository, BackendDashboardRepository>();
 
         // Sprint 6 Commit 2: Customers is the first Domain module moved
         // off its Fake*Repository onto EF Core (see RojanDbContext's own
@@ -77,18 +85,18 @@ public static class ServiceCollectionExtensions
         // accumulated from real use, not replayed from a hardcoded seed).
         services.AddSingleton<ICustomerRepository, EfCustomerRepository>();
 
-        // Sprint 6 Commit 5: Bookings is the fourth Domain module moved off
-        // its Fake*Repository onto EF Core - same reasoning as Customers/
-        // Specialists/Services in Commits 2/3/4 (see EfCustomerRepository's
-        // own DI comment above). FakeBookingRepository stays in the
-        // codebase, unreferenced. No foreign keys to Customers/Specialists/
-        // Services (see BookingEntity's own doc comment) - CustomerId/
-        // SpecialistId/ServiceId round-trip as plain text, exactly matching
-        // Domain.Bookings.Booking's own "free-form, unvalidated references"
-        // contract. Behavior change: the Booking list now starts empty on
-        // a fresh SQLite database instead of showing the fake's 8 seeded
-        // demo bookings.
-        services.AddSingleton<IBookingRepository, EfBookingRepository>();
+        // Owner App Booking Integration: real GET/PATCH/PUT against
+        // ROJAN_Backend's booking endpoints, replacing EfBookingRepository
+        // (Sprint 6 Commit 5's EF Core swap) - which stays in the
+        // codebase, unreferenced, same convention as every earlier
+        // Fake/Ef->Backend swap (see BackendDashboardRepository's own DI
+        // comment above). See BackendBookingRepository's own doc comment
+        // for the three deliberate mapping honesty notes (unresolved
+        // customer name, best-effort service/specialist name resolution,
+        // Organization/Branch stamped from the current session rather than
+        // a real backend concept) and for why CreateBookingAsync throws.
+        services.AddSingleton<ISalonContextService, BackendSalonContextService>();
+        services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 
         // Sprint 6 Commit 3: Specialists is the second Domain module moved
         // off its Fake*Repository onto EF Core - same reasoning as
@@ -164,8 +172,23 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEncryptionService, AesEncryptionService>();
         services.AddSingleton<ISecretProvider, SecretProvider>();
 
-        services.AddSingleton<ISessionService, LocalSessionService>();
-        services.AddSingleton<IAuthenticationService, LocalAuthenticationService>();
+        // Owner App Backend Integration: real POST /api/v1/auth/login +
+        // /auth/refresh via AuthBootstrapHttpClient (deliberately not
+        // IApiClient - see that class's own doc comment), DPAPI-encrypted
+        // session persistence via the ISecureStorageService already
+        // registered above (closes the plaintext-token-storage finding
+        // from the Owner App Integration Audit). LocalSessionService/
+        // LocalAuthenticationService stay in the codebase, unreferenced -
+        // same convention as every Sprint 6 Fake->real swap above.
+        // Owner App Login Experience: Development/Production base-address
+        // selection (persisted, restart-required) - see IApiEnvironmentService's
+        // own doc comment. Registered ahead of AuthBootstrapHttpClient/
+        // HttpApiClient since both now depend on it to resolve their base
+        // address instead of reading ROJAN_API_BASE_URL directly.
+        services.AddSingleton<IApiEnvironmentService, ApiEnvironmentService>();
+        services.AddSingleton<AuthBootstrapHttpClient>();
+        services.AddSingleton<ISessionService, BackendSessionService>();
+        services.AddSingleton<IAuthenticationService, BackendAuthenticationService>();
         services.AddSingleton<ICertificateService, LocalCertificateService>();
 
         services.AddSingleton<IConnectivityService, ConnectivityService>();

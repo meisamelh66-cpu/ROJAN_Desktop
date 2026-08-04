@@ -2884,4 +2884,94 @@
   <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
     <value>عرض البرنامج الكامل</value>
   </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>تسجيل الدخول إلى روژان دسكتوب</value>
+  </data>
+  <data name="Login_EmailLabel" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Login_PasswordLabel" xml:space="preserve">
+    <value>كلمة المرور</value>
+  </data>
+  <data name="Login_SignInButton" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="Login_Error_MissingCredentials" xml:space="preserve">
+    <value>أدخل البريد الإلكتروني وكلمة المرور.</value>
+  </data>
+  <data name="Login_Error_InvalidCredentials" xml:space="preserve">
+    <value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value>
+  </data>
+  <data name="Login_Error_Network" xml:space="preserve">
+    <value>تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.</value>
+  </data>
+  <data name="Login_Error_Generic" xml:space="preserve">
+    <value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="Login_SessionEndedMessage" xml:space="preserve">
+    <value>انتهت جلستك. سيتم إغلاق التطبيق الآن - يرجى تسجيل الدخول مرة أخرى.</value>
+  </data>
+  <data name="Login_Mobile_PhoneLabel" xml:space="preserve">
+    <value>رقم الجوال</value>
+  </data>
+  <data name="Login_Mobile_CodeLabel" xml:space="preserve">
+    <value>رمز التحقق</value>
+  </data>
+  <data name="Login_Mobile_SendCodeButton" xml:space="preserve">
+    <value>إرسال الرمز</value>
+  </data>
+  <data name="Login_Mobile_VerifyButton" xml:space="preserve">
+    <value>تحقق وتسجيل الدخول</value>
+  </data>
+  <data name="Login_Mobile_ResendButton" xml:space="preserve">
+    <value>إعادة إرسال الرمز</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingPhone" xml:space="preserve">
+    <value>أدخل رقم جوالك.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
+    <value>أدخل رقم جوال صحيح بالصيغة الدولية، مثل ‎+989123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
+    <value>أدخل رمز التحقق.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
+    <value>رمز التحقق غير صحيح أو منتهي الصلاحية.</value>
+  </data>
+  <data name="Login_SwitchToEmailLink" xml:space="preserve">
+    <value>تسجيل الدخول بالبريد الإلكتروني</value>
+  </data>
+  <data name="Login_SwitchToMobileLink" xml:space="preserve">
+    <value>تسجيل الدخول برقم الجوال</value>
+  </data>
+  <data name="Settings_Account_SectionTitle" xml:space="preserve">
+    <value>الحساب</value>
+  </data>
+  <data name="Settings_Account_SignOutDescription" xml:space="preserve">
+    <value>سيؤدي تسجيل الخروج إلى إنهاء جلستك الحالية - ستحتاج إلى تسجيل الدخول مرة أخرى في المرة القادمة.</value>
+  </data>
+  <data name="Settings_Account_SignOutButton" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+  <data name="Settings_ApiEnvironment_SectionTitle" xml:space="preserve">
+    <value>بيئة الخادم</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Development" xml:space="preserve">
+    <value>التطوير</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Production" xml:space="preserve">
+    <value>الإنتاج</value>
+  </data>
+  <data name="Settings_ApiEnvironment_CurrentFormat" xml:space="preserve">
+    <value>الحالي: {0}</value>
+  </data>
+  <data name="Settings_ApiEnvironment_RestartRequired" xml:space="preserve">
+    <value>أعد تشغيل التطبيق لتطبيق هذا التغيير.</value>
+  </data>
+  <data name="Settings_ApiEnvironment_ProductionUrlLabel" xml:space="preserve">
+    <value>عنوان خادم الإنتاج</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
 </root>

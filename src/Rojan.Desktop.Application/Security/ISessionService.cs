@@ -29,6 +29,25 @@ public interface ISessionService
     public Task<SessionIdentity> CreateSessionAsync(UserIdentity user, DeviceIdentity device, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Owner App Backend Integration: issues and persists a new session for
+    /// <paramref name="user"/> on <paramref name="device"/> using an
+    /// already-issued <paramref name="accessToken"/>/<paramref name="refreshToken"/>
+    /// pair (e.g. from a real <c>POST /auth/login</c> response) rather than
+    /// generating one locally - the counterpart to <see cref="CreateSessionAsync"/>
+    /// for a caller that already has real backend-issued tokens in hand.
+    /// <see cref="SessionIdentity.ExpiresAt"/> is set from
+    /// <paramref name="refreshToken"/>'s own expiry, mirroring
+    /// <see cref="CreateSessionAsync"/>'s existing "refresh token expiry is
+    /// the session's true outer bound" contract.
+    /// </summary>
+    public Task<SessionIdentity> CreateSessionFromTokensAsync(
+        UserIdentity user,
+        DeviceIdentity device,
+        AuthToken accessToken,
+        RefreshToken refreshToken,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Issues a new <see cref="AuthToken"/>/<see cref="RefreshToken"/> pair
     /// for <see cref="CurrentSession"/>, extending its
     /// <see cref="SessionIdentity.ExpiresAt"/>. Throws

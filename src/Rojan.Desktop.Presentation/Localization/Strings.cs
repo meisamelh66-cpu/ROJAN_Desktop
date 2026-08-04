@@ -1519,4 +1519,66 @@ public static class Strings
     public static string Dashboard_Schedule_Now => Get(nameof(Dashboard_Schedule_Now));
 
     public static string Dashboard_Schedule_ViewFull => Get(nameof(Dashboard_Schedule_ViewFull));
+
+    // Owner App Login Experience.
+    public static string Login_Title => Get(nameof(Login_Title));
+
+    public static string Login_EmailLabel => Get(nameof(Login_EmailLabel));
+
+    public static string Login_PasswordLabel => Get(nameof(Login_PasswordLabel));
+
+    public static string Login_SignInButton => Get(nameof(Login_SignInButton));
+
+    public static string Login_Error_MissingCredentials => Get(nameof(Login_Error_MissingCredentials));
+
+    public static string Login_Error_InvalidCredentials => Get(nameof(Login_Error_InvalidCredentials));
+
+    public static string Login_Error_Network => Get(nameof(Login_Error_Network));
+
+    public static string Login_Error_Generic => Get(nameof(Login_Error_Generic));
+
+    public static string Login_SessionEndedMessage => Get(nameof(Login_SessionEndedMessage));
+
+    // Owner App Mobile Login: primary Mobile Number + OTP flow, and the mode-switch links to/from the secondary Email + Password flow above.
+    public static string Login_Mobile_PhoneLabel => Get(nameof(Login_Mobile_PhoneLabel));
+
+    public static string Login_Mobile_CodeLabel => Get(nameof(Login_Mobile_CodeLabel));
+
+    public static string Login_Mobile_SendCodeButton => Get(nameof(Login_Mobile_SendCodeButton));
+
+    public static string Login_Mobile_VerifyButton => Get(nameof(Login_Mobile_VerifyButton));
+
+    public static string Login_Mobile_ResendButton => Get(nameof(Login_Mobile_ResendButton));
+
+    public static string Login_Mobile_Error_MissingPhone => Get(nameof(Login_Mobile_Error_MissingPhone));
+
+    public static string Login_Mobile_Error_InvalidPhone => Get(nameof(Login_Mobile_Error_InvalidPhone));
+
+    public static string Login_Mobile_Error_MissingCode => Get(nameof(Login_Mobile_Error_MissingCode));
+
+    public static string Login_Mobile_Error_InvalidCode => Get(nameof(Login_Mobile_Error_InvalidCode));
+
+    public static string Login_SwitchToEmailLink => Get(nameof(Login_SwitchToEmailLink));
+
+    public static string Login_SwitchToMobileLink => Get(nameof(Login_SwitchToMobileLink));
+
+    public static string Settings_Account_SectionTitle => Get(nameof(Settings_Account_SectionTitle));
+
+    public static string Settings_Account_SignOutDescription => Get(nameof(Settings_Account_SignOutDescription));
+
+    public static string Settings_Account_SignOutButton => Get(nameof(Settings_Account_SignOutButton));
+
+    public static string Settings_ApiEnvironment_SectionTitle => Get(nameof(Settings_ApiEnvironment_SectionTitle));
+
+    public static string Settings_ApiEnvironment_Development => Get(nameof(Settings_ApiEnvironment_Development));
+
+    public static string Settings_ApiEnvironment_Production => Get(nameof(Settings_ApiEnvironment_Production));
+
+    public static string Settings_ApiEnvironment_CurrentFormat => Get(nameof(Settings_ApiEnvironment_CurrentFormat));
+
+    public static string Settings_ApiEnvironment_RestartRequired => Get(nameof(Settings_ApiEnvironment_RestartRequired));
+
+    public static string Settings_ApiEnvironment_ProductionUrlLabel => Get(nameof(Settings_ApiEnvironment_ProductionUrlLabel));
+
+    public static string Settings_ApiEnvironment_Apply => Get(nameof(Settings_ApiEnvironment_Apply));
 }

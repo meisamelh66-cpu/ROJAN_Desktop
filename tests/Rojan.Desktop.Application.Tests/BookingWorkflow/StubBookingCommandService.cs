@@ -15,6 +15,8 @@ internal sealed class StubBookingCommandService : IBookingCommandService
 
     public bool ThrowOnReschedule { get; set; }
 
+    public bool SupportsInProgressAndNoShowStatuses => true;
+
     public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
         if (ThrowOnCreate)

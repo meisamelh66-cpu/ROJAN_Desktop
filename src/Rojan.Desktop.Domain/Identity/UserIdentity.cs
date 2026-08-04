@@ -13,7 +13,7 @@ namespace Rojan.Desktop.Domain.Identity;
 /// server-issued <see cref="UserIdentity"/> - the shape does not need to
 /// change, only where <see cref="Id"/> comes from.
 /// </summary>
-public sealed record UserIdentity(string Id, string DisplayName, string? Email)
+public sealed record UserIdentity(string Id, string DisplayName, string? Email, string? PhoneNumber = null)
 {
     /// <summary>Bridges the current Windows account into a <see cref="UserIdentity"/> until real accounts exist - see this type's own doc comment.</summary>
     public static UserIdentity LocalUser(string machineUserName) =>

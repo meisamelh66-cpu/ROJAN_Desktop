@@ -8,6 +8,19 @@ namespace Rojan.Desktop.Domain.Bookings;
 /// </summary>
 public interface IBookingRepository
 {
+    /// <summary>
+    /// Owner App Booking Integration: <see langword="true"/> for a
+    /// repository that can actually persist <see cref="BookingStatus.InProgress"/>/
+    /// <see cref="BookingStatus.NoShow"/> (every local implementation);
+    /// <see langword="false"/> for a backend-connected one, since
+    /// ROJAN_Backend's own <c>BookingStatus</c> has only 4 states
+    /// (<c>PENDING/CONFIRMED/CANCELLED/COMPLETED</c>) with no equivalent
+    /// for either. <c>BookingPageViewModel</c> consults this (via
+    /// <c>IBookingCommandService</c>) to disable the Start/No-Show actions
+    /// rather than let them fail at the repository call.
+    /// </summary>
+    public bool SupportsInProgressAndNoShowStatuses { get; }
+
     public Task<IReadOnlyList<Booking>> GetBookingsAsync(CancellationToken cancellationToken = default);
 
     public Task<Booking?> GetBookingByIdAsync(string bookingId, CancellationToken cancellationToken = default);

@@ -54,6 +54,8 @@ public sealed class FakeBookingRepository : IBookingRepository
         ];
     }
 
+    public bool SupportsInProgressAndNoShowStatuses => true;
+
     public async Task<IReadOnlyList<Booking>> GetBookingsAsync(CancellationToken cancellationToken = default)
     {
         await Task.Delay(400, cancellationToken).ConfigureAwait(true);

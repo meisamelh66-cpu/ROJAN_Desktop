@@ -12,6 +12,8 @@ internal sealed class StubBookingCommandService : IBookingCommandService
     /// <summary>Optional hook run after a booking is created, before the DTO is returned - lets a test mirror the created booking into whatever backing list the paired query-service stub reads from.</summary>
     public Action<CreateBookingRequest, BookingDto>? OnBookingCreated { get; set; }
 
+    public bool SupportsInProgressAndNoShowStatuses { get; set; } = true;
+
     public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
         CreateRequests.Add(request);

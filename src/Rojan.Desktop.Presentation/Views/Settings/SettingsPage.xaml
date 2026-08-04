@@ -1,6 +1,7 @@
 <UserControl x:Class="Rojan.Desktop.Presentation.Views.Settings.SettingsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:appApi="clr-namespace:Rojan.Desktop.Application.Api;assembly=Rojan.Desktop.Application"
              xmlns:controls="clr-namespace:Rojan.Desktop.Presentation.Controls"
              xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters"
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
@@ -39,6 +40,8 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32" MaxWidth="720" HorizontalAlignment="Left">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -258,7 +261,7 @@
             </dashboardControls:DashboardCard>
 
             <!-- Available Languages (LANGUAGE STORE FOUNDATION) -->
-            <dashboardControls:DashboardCard Grid.Row="3" Title="{x:Static loc:Strings.Settings_Language_AvailableLanguages}" Margin="0,16,0,32">
+            <dashboardControls:DashboardCard Grid.Row="3" Title="{x:Static loc:Strings.Settings_Language_AvailableLanguages}" Margin="0,16,0,0">
                 <StackPanel>
                     <TextBlock Text="{x:Static loc:Strings.Settings_Language_ComingSoon}"
                                Style="{StaticResource Rojan.TextStyle.Body}"
@@ -305,6 +308,127 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+            <!-- Owner App Login Experience: API Environment (Development/Production) section -->
+            <dashboardControls:DashboardCard Grid.Row="4" Title="{x:Static loc:Strings.Settings_ApiEnvironment_SectionTitle}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentApiEnvironmentDisplay}" Style="{StaticResource Rojan.TextStyle.Body}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="{x:Static loc:Strings.Settings_ApiEnvironment_Development}"
+                                Command="{Binding SelectApiEnvironmentCommand}"
+                                CommandParameter="{x:Static appApi:ApiEnvironment.Development}"
+                                Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedApiEnvironment}" Value="Development">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="{x:Static loc:Strings.Settings_ApiEnvironment_Production}"
+                                Command="{Binding SelectApiEnvironmentCommand}"
+                                CommandParameter="{x:Static appApi:ApiEnvironment.Production}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedApiEnvironment}" Value="Production">
+                                            <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
+                                            <Setter Property="Foreground" Value="{StaticResource Rojan.Brush.ButtonText}" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+
+                    <TextBlock Text="{x:Static loc:Strings.Settings_ApiEnvironment_ProductionUrlLabel}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               Margin="0,16,0,4">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedApiEnvironment}" Value="Production">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBox Text="{Binding ProductionUrlInput, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedApiEnvironment}" Value="Production">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+
+                    <Button Content="{x:Static loc:Strings.Settings_ApiEnvironment_Apply}"
+                            Command="{Binding ApplyApiEnvironmentCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+
+                    <TextBlock Text="{Binding ApiEnvironmentStatusMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Warning}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsApiEnvironmentRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Button Content="{x:Static loc:Strings.Settings_Theme_RestartNow}"
+                            Command="{Binding RestartCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsApiEnvironmentRestartRequired}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
+            <!-- Owner App Login Experience: Account section -->
+            <dashboardControls:DashboardCard Grid.Row="5" Title="{x:Static loc:Strings.Settings_Account_SectionTitle}" Margin="0,16,0,32">
+                <StackPanel>
+                    <TextBlock Text="{x:Static loc:Strings.Settings_Account_SignOutDescription}"
+                               Style="{StaticResource Rojan.TextStyle.Body}"
+                               Foreground="{StaticResource Rojan.Brush.MutedText}"
+                               TextWrapping="Wrap" />
+                    <Button Content="{x:Static loc:Strings.Settings_Account_SignOutButton}"
+                            Command="{Binding SignOutCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonOutlinedDanger}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
 

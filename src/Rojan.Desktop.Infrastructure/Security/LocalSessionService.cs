@@ -86,6 +86,24 @@ public sealed class LocalSessionService : ISessionService
         return Task.FromResult(session);
     }
 
+    public Task<SessionIdentity> CreateSessionFromTokensAsync(
+        UserIdentity user,
+        DeviceIdentity device,
+        AuthToken accessToken,
+        RefreshToken refreshToken,
+        CancellationToken cancellationToken = default)
+    {
+        var session = new SessionIdentity(Guid.NewGuid().ToString("N"), user.Id, device.Id, DateTimeOffset.UtcNow, refreshToken.ExpiresAt);
+
+        CurrentSession = session;
+        CurrentAccessToken = accessToken;
+        _currentRefreshToken = refreshToken;
+        Persist(session, accessToken, refreshToken);
+        SetState(SessionRules.DetermineState(session, DateTimeOffset.UtcNow));
+
+        return Task.FromResult(session);
+    }
+
     public Task<SessionIdentity> RefreshAsync(CancellationToken cancellationToken = default)
     {
         if (CurrentSession is null || _currentRefreshToken is null)

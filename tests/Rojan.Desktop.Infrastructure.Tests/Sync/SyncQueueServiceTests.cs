@@ -248,6 +248,9 @@ public sealed class SyncQueueServiceTests : IDisposable
 
         public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("Not used by these tests.");
+
+        public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("Not used by these tests.");
     }
 
     /// <summary>A no-retry <see cref="IRetryPolicy"/> - the real <see cref="RetryPolicy"/> would make failure-path tests slow (5 attempts with real exponential backoff delays) for no additional coverage, since retry timing itself is already covered by <c>Application.Tests.Security.RetryPolicyTests</c>.</summary>

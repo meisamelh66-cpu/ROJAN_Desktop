@@ -91,9 +91,15 @@ public sealed class BookingPageViewModel : ViewModelBase
         ConfirmBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.Confirmed),
             _ => SelectedBooking?.Status == BookingStatus.Pending);
+        // Owner App Booking Integration: gated on SupportsInProgressAndNoShowStatuses (see
+        // IBookingCommandService's own doc comment) - a backend-connected command service
+        // reports false here, since ROJAN_Backend's BookingStatus has no InProgress/NoShow
+        // equivalent, so these two actions are disabled rather than left to fail at the
+        // repository call.
         StartBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.InProgress),
-            _ => SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
+            _ => _commandService.SupportsInProgressAndNoShowStatuses
+                && SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
         // Completed is only reachable via InProgress (see BookingRules) - this CanExecute used to
         // read Status == Confirmed, which let the button call UpdateBookingStatusAsync with an
         // illegal Confirmed -> Completed transition and throw at runtime (Sprint 3 Commit 3 fix).
@@ -102,7 +108,8 @@ public sealed class BookingPageViewModel : ViewModelBase
             _ => SelectedBooking?.Status == BookingStatus.InProgress);
         NoShowBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.NoShow),
-            _ => SelectedBooking?.Status == BookingStatus.Confirmed);
+            _ => _commandService.SupportsInProgressAndNoShowStatuses
+                && SelectedBooking?.Status == BookingStatus.Confirmed);
         CancelBookingCommand = new AsyncRelayCommand(
             _ => CancelSelectedBookingAsync(),
             _ => SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });

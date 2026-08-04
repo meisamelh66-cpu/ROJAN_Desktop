@@ -38,6 +38,8 @@ public sealed class EfBookingRepository : DomainBookings.IBookingRepository
         _contextFactory = contextFactory;
     }
 
+    public bool SupportsInProgressAndNoShowStatuses => true;
+
     public async Task<IReadOnlyList<DomainBookings.Booking>> GetBookingsAsync(CancellationToken cancellationToken = default)
     {
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);

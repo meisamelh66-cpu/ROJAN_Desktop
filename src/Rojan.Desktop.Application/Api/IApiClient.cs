@@ -38,4 +38,14 @@ public interface IApiClient
     public Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default);
 
     public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Owner App Booking Integration: rounds out the CRUD surface with the
+    /// one verb ROJAN_Backend's booking status-transition endpoints use
+    /// (<c>PATCH .../confirm</c>, <c>.../cancel</c>, <c>.../complete</c>) -
+    /// same reasoning as Sprint 7 Commit 1 adding <see cref="PutAsync{TRequest, TResponse}"/>/
+    /// <see cref="DeleteAsync{TResponse}"/>. No request body parameter,
+    /// since every backend endpoint that needs this verb today sends none.
+    /// </summary>
+    public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default);
 }

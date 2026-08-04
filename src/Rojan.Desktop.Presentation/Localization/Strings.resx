@@ -2896,4 +2896,94 @@
   <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
     <value>مشاهده برنامه کامل</value>
   </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>ورود به روژان دسکتاپ</value>
+  </data>
+  <data name="Login_EmailLabel" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="Login_PasswordLabel" xml:space="preserve">
+    <value>رمز عبور</value>
+  </data>
+  <data name="Login_SignInButton" xml:space="preserve">
+    <value>ورود</value>
+  </data>
+  <data name="Login_Error_MissingCredentials" xml:space="preserve">
+    <value>ایمیل و رمز عبور را وارد کنید.</value>
+  </data>
+  <data name="Login_Error_InvalidCredentials" xml:space="preserve">
+    <value>ایمیل یا رمز عبور نامعتبر است.</value>
+  </data>
+  <data name="Login_Error_Network" xml:space="preserve">
+    <value>خطا در اتصال به سرور. اتصال اینترنت خود را بررسی کنید.</value>
+  </data>
+  <data name="Login_Error_Generic" xml:space="preserve">
+    <value>مشکلی پیش آمد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="Login_SessionEndedMessage" xml:space="preserve">
+    <value>نشست شما پایان یافته است. برنامه بسته می‌شود؛ لطفاً دوباره وارد شوید.</value>
+  </data>
+  <data name="Login_Mobile_PhoneLabel" xml:space="preserve">
+    <value>شماره موبایل</value>
+  </data>
+  <data name="Login_Mobile_CodeLabel" xml:space="preserve">
+    <value>کد تأیید</value>
+  </data>
+  <data name="Login_Mobile_SendCodeButton" xml:space="preserve">
+    <value>ارسال کد</value>
+  </data>
+  <data name="Login_Mobile_VerifyButton" xml:space="preserve">
+    <value>تأیید و ورود</value>
+  </data>
+  <data name="Login_Mobile_ResendButton" xml:space="preserve">
+    <value>ارسال مجدد کد</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingPhone" xml:space="preserve">
+    <value>شماره موبایل خود را وارد کنید.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
+    <value>شماره موبایل نامعتبر است. آن را با فرمت بین‌المللی وارد کنید، مثلاً ‎+989123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
+    <value>کد تأیید را وارد کنید.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
+    <value>کد تأیید نامعتبر یا منقضی شده است.</value>
+  </data>
+  <data name="Login_SwitchToEmailLink" xml:space="preserve">
+    <value>ورود با ایمیل</value>
+  </data>
+  <data name="Login_SwitchToMobileLink" xml:space="preserve">
+    <value>ورود با شماره موبایل</value>
+  </data>
+  <data name="Settings_Account_SectionTitle" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+  <data name="Settings_Account_SignOutDescription" xml:space="preserve">
+    <value>با خروج از حساب، نشست فعلی شما بسته می‌شود و در راه‌اندازی بعدی باید دوباره وارد شوید.</value>
+  </data>
+  <data name="Settings_Account_SignOutButton" xml:space="preserve">
+    <value>خروج از حساب</value>
+  </data>
+  <data name="Settings_ApiEnvironment_SectionTitle" xml:space="preserve">
+    <value>محیط سرور</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Development" xml:space="preserve">
+    <value>توسعه (Development)</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Production" xml:space="preserve">
+    <value>تولید (Production)</value>
+  </data>
+  <data name="Settings_ApiEnvironment_CurrentFormat" xml:space="preserve">
+    <value>محیط فعلی: {0}</value>
+  </data>
+  <data name="Settings_ApiEnvironment_RestartRequired" xml:space="preserve">
+    <value>برای اعمال این تغییر، برنامه را دوباره راه‌اندازی کنید.</value>
+  </data>
+  <data name="Settings_ApiEnvironment_ProductionUrlLabel" xml:space="preserve">
+    <value>آدرس سرور Production</value>
+  </data>
+  <data name="Settings_ApiEnvironment_Apply" xml:space="preserve">
+    <value>اعمال</value>
+  </data>
 </root>
