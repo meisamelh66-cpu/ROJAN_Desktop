@@ -98,6 +98,34 @@ public sealed class PersistenceDependencyInjectionTests
         Assert.IsType<Rojan.Desktop.Infrastructure.Customers.BackendCustomerRepository>(repository);
     }
 
+    [Fact]
+    public void AddInfrastructure_RegistersBackendServiceRepository()
+    {
+        // Reception Booking Integration Phase 1: IServiceRepository now resolves to the real,
+        // backend-connected implementation - same reasoning as the Customer CRM assertion above.
+        var services = new ServiceCollection().AddApplication().AddInfrastructure();
+        services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
+        var provider = services.BuildServiceProvider();
+
+        var repository = provider.GetRequiredService<Domain.Services.IServiceRepository>();
+
+        Assert.IsType<Rojan.Desktop.Infrastructure.Services.BackendServiceRepository>(repository);
+    }
+
+    [Fact]
+    public void AddInfrastructure_RegistersBackendSpecialistRepository()
+    {
+        // Reception Booking Integration Phase 2: ISpecialistRepository now resolves to the real,
+        // backend-connected implementation - same reasoning as the Customer CRM/Service assertions above.
+        var services = new ServiceCollection().AddApplication().AddInfrastructure();
+        services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
+        var provider = services.BuildServiceProvider();
+
+        var repository = provider.GetRequiredService<Domain.Specialists.ISpecialistRepository>();
+
+        Assert.IsType<Rojan.Desktop.Infrastructure.Specialists.BackendSpecialistRepository>(repository);
+    }
+
     private sealed class StubEnterpriseContext : IEnterpriseContext
     {
         public string? CurrentOrganizationId => "org-1";

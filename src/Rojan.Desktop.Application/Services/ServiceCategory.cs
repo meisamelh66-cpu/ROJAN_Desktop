@@ -15,4 +15,7 @@ public enum ServiceCategory
     Skin,
     Spa,
     Consultation,
+
+    /// <summary>Owner App Service Integration: a backend category whose real name didn't match one of the five above - see <see cref="Rojan.Desktop.Domain.Services.ServiceCategory.Other"/>'s own doc comment.</summary>
+    Other,
 }

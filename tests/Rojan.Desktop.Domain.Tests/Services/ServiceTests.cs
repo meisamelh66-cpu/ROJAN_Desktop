@@ -25,4 +25,15 @@ public sealed class ServiceTests
 
         Assert.NotEqual(first, second);
     }
+
+    [Fact]
+    public void CategoryName_OmittedAtConstruction_DefaultsToNull()
+    {
+        // Reception Booking Integration Phase 1: CategoryName is a trailing optional param specifically so
+        // every pre-existing positional Service(...) call site (local/EF-backed data has no such concept)
+        // keeps compiling and behaving unchanged.
+        var service = MakeService();
+
+        Assert.Null(service.CategoryName);
+    }
 }

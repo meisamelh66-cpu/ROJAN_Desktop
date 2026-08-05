@@ -12,7 +12,8 @@ internal static class ServiceMapper
         MapStatus(service.Status),
         service.DurationMinutes,
         service.Price,
-        service.Description);
+        service.Description,
+        service.CategoryName);
 
     public static AssignedSpecialistDto MapAssignment(DomainServices.SpecialistService assignment) =>
         new(assignment.Id, assignment.ServiceId, assignment.SpecialistId, assignment.SpecialistName);
@@ -25,6 +26,7 @@ internal static class ServiceMapper
         DomainServices.ServiceCategory.Skin => ServiceCategory.Skin,
         DomainServices.ServiceCategory.Spa => ServiceCategory.Spa,
         DomainServices.ServiceCategory.Consultation => ServiceCategory.Consultation,
+        DomainServices.ServiceCategory.Other => ServiceCategory.Other,
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown domain service category."),
     };
 
@@ -45,6 +47,7 @@ internal static class ServiceMapper
         ServiceCategory.Skin => DomainServices.ServiceCategory.Skin,
         ServiceCategory.Spa => DomainServices.ServiceCategory.Spa,
         ServiceCategory.Consultation => DomainServices.ServiceCategory.Consultation,
+        ServiceCategory.Other => DomainServices.ServiceCategory.Other,
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown application service category."),
     };
 

@@ -41,17 +41,17 @@ using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
 using Rojan.Desktop.Infrastructure.Persistence.Calendar;
-using Rojan.Desktop.Infrastructure.Persistence.Specialists;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Salons;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
+using Rojan.Desktop.Infrastructure.Services;
+using Rojan.Desktop.Infrastructure.Specialists;
 using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
 using Rojan.Desktop.Application.Salons;
 using DomainServices = Rojan.Desktop.Domain.Services;
-using InfraPersistenceServices = Rojan.Desktop.Infrastructure.Persistence.Services;
 
 namespace Rojan.Desktop.Infrastructure.DependencyInjection;
 
@@ -101,27 +101,32 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISalonContextService, BackendSalonContextService>();
         services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 
-        // Sprint 6 Commit 3: Specialists is the second Domain module moved
-        // off its Fake*Repository onto EF Core - same reasoning as
-        // Customers in Commit 2 (see EfCustomerRepository's own DI comment
-        // above). FakeSpecialistRepository stays in the codebase,
-        // unreferenced. Behavior change: the Specialist directory now
-        // starts empty on a fresh SQLite database instead of showing the
-        // fake's 5 seeded demo specialists.
-        services.AddSingleton<ISpecialistRepository, EfSpecialistRepository>();
+        // Reception Booking Integration Phase 2 (Specialist Integration):
+        // real GET/POST/PUT against ROJAN_Backend's specialist catalog,
+        // replacing EfSpecialistRepository (Sprint 6 Commit 3's EF Core
+        // swap) - which stays in the codebase, unreferenced, same
+        // convention as every earlier Fake/Ef->Backend swap (see
+        // BackendDashboardRepository's own DI comment above).
+        // FakeSpecialistRepository also remains, unreferenced. See
+        // BackendSpecialistRepository's own doc comment for the mapping
+        // honesty notes (Title/Email/Phone map to empty, no OnLeave
+        // equivalent, why a status change via UpdateSpecialistAsync throws,
+        // and why specialist-skill reads/writes are empty/throw).
+        services.AddSingleton<ISpecialistRepository, BackendSpecialistRepository>();
 
-        // Sprint 6 Commit 4: Services is the third Domain module moved off
-        // its Fake*Repository onto EF Core - same reasoning as Customers/
-        // Specialists in Commits 2/3 (see EfCustomerRepository's own DI
-        // comment above). FakeServiceRepository stays in the codebase,
-        // unreferenced. Unlike Customers/Specialists, IServiceRepository
-        // has no create/update-service method at all (see
-        // EfServiceRepository's own doc comment), so the empty catalog on
-        // a fresh database cannot self-heal through the running app the
-        // way Customers/Specialists can - a real, known, pre-existing gap
-        // (catalog authoring was never in scope for this vertical slice),
-        // not something introduced or fixable here.
-        services.AddSingleton<DomainServices.IServiceRepository, InfraPersistenceServices.EfServiceRepository>();
+        // Reception Booking Integration Phase 1 (Service Integration): real
+        // GET against ROJAN_Backend's category/service catalog, replacing
+        // EfServiceRepository (Sprint 6 Commit 4's EF Core swap) - which
+        // stays in the codebase, unreferenced, same convention as every
+        // earlier Fake/Ef->Backend swap (see BackendDashboardRepository's
+        // own DI comment above). FakeServiceRepository also remains,
+        // unreferenced. See BackendServiceRepository's own doc comment for
+        // the mapping honesty notes (ServiceCategory.Other fallback +
+        // CategoryName, no Seasonal equivalent, and why specialist
+        // assignment throws) - IServiceRepository still has no create/
+        // update-service method at all, so catalog authoring remains out of
+        // scope, same pre-existing gap as before this swap.
+        services.AddSingleton<DomainServices.IServiceRepository, BackendServiceRepository>();
 
         // Sprint 6 Commit 6: Calendar is the fifth Domain module moved off
         // its Fake*Repository onto EF Core - same reasoning as Customers/

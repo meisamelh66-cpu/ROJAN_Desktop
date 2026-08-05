@@ -61,6 +61,7 @@ public sealed class ServiceQueryServiceTests
     [InlineData(DomainServices.ServiceCategory.Skin, ServiceCategory.Skin)]
     [InlineData(DomainServices.ServiceCategory.Spa, ServiceCategory.Spa)]
     [InlineData(DomainServices.ServiceCategory.Consultation, ServiceCategory.Consultation)]
+    [InlineData(DomainServices.ServiceCategory.Other, ServiceCategory.Other)]
     public async Task GetServicesAsync_EachDomainCategory_MapsToMatchingApplicationCategory(
         DomainServices.ServiceCategory domainCategory, ServiceCategory expectedCategory)
     {
@@ -72,6 +73,23 @@ public sealed class ServiceQueryServiceTests
         var result = await sut.GetServicesAsync();
 
         Assert.Equal(expectedCategory, Assert.Single(result).Category);
+    }
+
+    [Fact]
+    public async Task GetServicesAsync_CategoryNameIsNullForLocalData_PresentWhenSupplied()
+    {
+        // Reception Booking Integration Phase 1: CategoryName is only ever populated for
+        // backend-sourced data (BackendServiceRepository) - local/EF services always pass null through unchanged.
+        var localService = new DomainServices.Service(
+            "service-1", "Test Service", DomainServices.ServiceCategory.Hair, DomainServices.ServiceStatus.Active, 60, "$0", string.Empty);
+        var backendSourcedService = localService with { Id = "service-2", CategoryName = "Hair" };
+        var repository = new StubServiceRepository([localService, backendSourcedService]);
+        var sut = new ServiceQueryService(repository);
+
+        var result = await sut.GetServicesAsync();
+
+        Assert.Null(result.Single(dto => dto.Id == "service-1").CategoryName);
+        Assert.Equal("Hair", result.Single(dto => dto.Id == "service-2").CategoryName);
     }
 
     private static IReadOnlyList<DomainServices.Service> MakeSearchFixture() =>
