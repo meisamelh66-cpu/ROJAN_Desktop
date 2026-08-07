@@ -1,4 +1,6 @@
 using Rojan.Desktop.Application.Calendar;
+using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Tests.Services;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -8,11 +10,17 @@ public sealed class CalendarPageViewModelTests
 {
     private static ScheduledSpecialistDto MakeSpecialist(string id, string name) => new(id, name);
 
+    private static ServiceDto MakeService(string id, string name, ServiceStatus status = ServiceStatus.Active) =>
+        new(id, name, ServiceCategory.Hair, status, 30, "$0", string.Empty);
+
     private static AvailabilitySlotDto MakeSlot(string specialistId, AvailabilityStatus status) =>
         new(specialistId, "Jordan Lee", DateTimeOffset.Now, DateTimeOffset.Now.AddMinutes(30), status);
 
     private static DailyAvailabilityDto MakeAvailability(string specialistId, string specialistName, IReadOnlyList<AvailabilitySlotDto>? slots = null) =>
         new(specialistId, specialistName, DateOnly.FromDateTime(DateTime.Today), new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0), slots ?? []);
+
+    private static StubServiceQueryService MakeServiceQueryService(params ServiceDto[] services) =>
+        new(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
 
     [Fact]
     public void Constructor_SpecialistsQueryStillLoading_StateIsLoading()
@@ -20,9 +28,9 @@ public sealed class CalendarPageViewModelTests
         var tcs = new TaskCompletionSource<IReadOnlyList<ScheduledSpecialistDto>>();
         var queryService = new StubCalendarQueryService(
             _ => tcs.Task,
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
 
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -32,26 +40,42 @@ public sealed class CalendarPageViewModelTests
     {
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>([]),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
 
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         Assert.Equal(DashboardState.Empty, sut.State);
         Assert.Null(sut.SelectedSpecialist);
     }
 
     [Fact]
-    public void Constructor_SpecialistsAvailable_SelectsFirstAndLoadsAvailability()
+    public void Constructor_NoActiveServices_StateIsEmpty()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-9", "Retired", ServiceStatus.Discontinued)));
+
+        Assert.Equal(DashboardState.Empty, sut.State);
+        Assert.Null(sut.SelectedService);
+    }
+
+    [Fact]
+    public void Constructor_SpecialistsAndServicesAvailable_SelectsFirstOfEachAndLoadsAvailability()
     {
         var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
         var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var service = MakeService("service-1", "Haircut");
 
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(service));
 
         Assert.Equal(specialists[0], sut.SelectedSpecialist);
+        Assert.Equal(service, sut.SelectedService);
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Single(sut.Slots);
         Assert.StartsWith("Working", sut.WorkingHoursText, StringComparison.Ordinal);
@@ -62,9 +86,9 @@ public sealed class CalendarPageViewModelTests
     {
         var queryService = new StubCalendarQueryService(
             _ => Task.FromException<IReadOnlyList<ScheduledSpecialistDto>>(new InvalidOperationException("boom")),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
 
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -77,12 +101,12 @@ public sealed class CalendarPageViewModelTests
         var callCount = 0;
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) =>
+            (specialistId, _, _, _) =>
             {
                 callCount++;
                 return Task.FromResult(MakeAvailability(specialistId, "Jordan Lee"));
             });
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
         var countAfterConstruction = callCount;
 
         sut.SelectedDate = DateTime.Today.AddDays(5);
@@ -91,39 +115,41 @@ public sealed class CalendarPageViewModelTests
     }
 
     [Fact]
-    public void ToggleSlotCommand_AvailableSlot_CallsReserveSlotAsync()
+    public void SelectedService_Changed_ReloadsAvailability()
     {
         var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var callCount = 0;
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
-        var commandService = new StubCalendarCommandService();
-        var sut = new CalendarPageViewModel(queryService, commandService);
-        var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
+            (specialistId, _, _, _) =>
+            {
+                callCount++;
+                return Task.FromResult(MakeAvailability(specialistId, "Jordan Lee"));
+            });
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut"), MakeService("service-2", "Colour")));
+        var countAfterConstruction = callCount;
 
-        sut.ToggleSlotCommand.Execute(slot);
+        sut.SelectedService = new ServiceDto("service-2", "Colour", ServiceCategory.Hair, ServiceStatus.Active, 45, "$0", string.Empty);
 
-        var call = Assert.Single(commandService.ReserveCalls);
-        Assert.Equal("specialist-1", call.SpecialistId);
-        Assert.Empty(commandService.ReleaseCalls);
+        Assert.True(callCount > countAfterConstruction);
     }
 
     [Fact]
-    public void ToggleSlotCommand_BookedSlot_CallsReleaseSlotAsync()
+    public void GetDailyAvailabilityAsync_CalledWithSelectedSpecialistAndServiceIds()
     {
         var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        (string SpecialistId, string ServiceId)? lastCall = null;
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
-        var commandService = new StubCalendarCommandService();
-        var sut = new CalendarPageViewModel(queryService, commandService);
-        var slot = MakeSlot("specialist-1", AvailabilityStatus.Booked);
+            (specialistId, serviceId, _, _) =>
+            {
+                lastCall = (specialistId, serviceId);
+                return Task.FromResult(MakeAvailability(specialistId, "Jordan Lee"));
+            });
 
-        sut.ToggleSlotCommand.Execute(slot);
+        _ = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
-        var call = Assert.Single(commandService.ReleaseCalls);
-        Assert.Equal("specialist-1", call.SpecialistId);
-        Assert.Empty(commandService.ReserveCalls);
+        Assert.Equal(("specialist-1", "service-1"), lastCall);
     }
 
     [Fact]
@@ -134,10 +160,10 @@ public sealed class CalendarPageViewModelTests
         var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => shouldFail
+            (specialistId, _, _, _) => shouldFail
                 ? Task.FromException<DailyAvailabilityDto>(new InvalidOperationException("boom"))
                 : Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;
@@ -153,9 +179,9 @@ public sealed class CalendarPageViewModelTests
         var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
 
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         Assert.Equal(CalendarViewMode.Day, sut.ViewMode);
         Assert.True(sut.IsDayView);
@@ -169,8 +195,8 @@ public sealed class CalendarPageViewModelTests
         var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
 
@@ -189,8 +215,8 @@ public sealed class CalendarPageViewModelTests
         var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
         sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
 
         sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
@@ -206,8 +232,8 @@ public sealed class CalendarPageViewModelTests
     {
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>([]),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
 
@@ -221,8 +247,8 @@ public sealed class CalendarPageViewModelTests
         var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])));
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
         sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
@@ -244,33 +270,16 @@ public sealed class CalendarPageViewModelTests
         var callCount = 0;
         var queryService = new StubCalendarQueryService(
             _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) =>
+            (specialistId, _, _, _) =>
             {
                 callCount++;
                 return Task.FromResult(MakeAvailability(specialistId, "Jordan Lee"));
             });
-        var sut = new CalendarPageViewModel(queryService, new StubCalendarCommandService());
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
         var countAfterConstruction = callCount;
 
         sut.SetViewModeCommand.Execute(CalendarViewMode.Day);
 
         Assert.Equal(countAfterConstruction, callCount);
-    }
-
-    [Fact]
-    public void ToggleSlotCommand_UnavailableSlot_DoesNotCallReserveOrRelease()
-    {
-        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
-        var queryService = new StubCalendarQueryService(
-            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
-            (specialistId, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
-        var commandService = new StubCalendarCommandService();
-        var sut = new CalendarPageViewModel(queryService, commandService);
-        var slot = MakeSlot("specialist-1", AvailabilityStatus.Unavailable);
-
-        sut.ToggleSlotCommand.Execute(slot);
-
-        Assert.Empty(commandService.ReserveCalls);
-        Assert.Empty(commandService.ReleaseCalls);
     }
 }

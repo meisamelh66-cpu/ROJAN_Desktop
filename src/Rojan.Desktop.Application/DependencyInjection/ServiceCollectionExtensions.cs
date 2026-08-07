@@ -15,6 +15,7 @@ using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
+using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
@@ -38,6 +39,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddSingleton<IDashboardQueryService, DashboardQueryService>();
+        // Phase 1.2 Owner App Create Salon Flow: SalonCommandService is registered
+        // directly as ISalonCommandService, unlike every *CommandService below it -
+        // deliberately not permission-gated, see that class's own doc comment for why.
+        services.AddSingleton<ISalonQueryService, SalonQueryService>();
+        services.AddSingleton<ISalonCommandService, SalonCommandService>();
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
 
@@ -75,7 +81,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppServices.IServiceCommandService>(sp =>
             new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
         services.AddSingleton<IIntelligenceEngine, IntelligenceEngine>();
-        services.AddSingleton<ICalendarQueryService, CalendarQueryService>();
+        // ICalendarQueryService is registered in AddInfrastructure() instead of here -
+        // Calendar/Availability Integration Phase 3 replaced CalendarQueryService (local
+        // generation) with BackendCalendarAvailabilityRepository (Infrastructure). See that
+        // class's own doc comment for why an Infrastructure type implements this
+        // Application-layer interface directly, unlike every other vertical slice's
+        // swap-the-Domain-repository pattern.
         services.AddSingleton<CalendarCommandService>();
         services.AddSingleton<ICalendarCommandService>(sp =>
             new CalendarCommandServicePermissionGate(sp.GetRequiredService<CalendarCommandService>(), sp.GetRequiredService<IPermissionGate>()));

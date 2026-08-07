@@ -6,7 +6,7 @@ namespace Rojan.Desktop.Presentation.Tests.BookingWorkflow;
 internal sealed class StubBookingWorkflowService : IBookingWorkflowService
 {
     private readonly Func<CancellationToken, Task<BookingOptionsDto>> _getOptions;
-    private readonly Func<string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>> _getSlots;
+    private readonly Func<string, string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>> _getSlots;
     private readonly Func<CreateBookingWorkflowRequest, CancellationToken, Task<BookingConfirmationDto>> _createBooking;
     private readonly Func<string, DateTimeOffset, CancellationToken, Task<BookingConfirmationDto>> _rescheduleBooking;
 
@@ -18,12 +18,12 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
 
     public StubBookingWorkflowService(
         Func<CancellationToken, Task<BookingOptionsDto>>? getOptions = null,
-        Func<string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>>? getSlots = null,
+        Func<string, string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>>? getSlots = null,
         Func<CreateBookingWorkflowRequest, CancellationToken, Task<BookingConfirmationDto>>? createBooking = null,
         Func<string, DateTimeOffset, CancellationToken, Task<BookingConfirmationDto>>? rescheduleBooking = null)
     {
         _getOptions = getOptions ?? (_ => Task.FromResult(new BookingOptionsDto([], [], [])));
-        _getSlots = getSlots ?? ((_, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([]));
+        _getSlots = getSlots ?? ((_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([]));
         _createBooking = createBooking ?? ((request, _) => Task.FromResult(new BookingConfirmationDto(
             "booking-new", request.CustomerName, request.ServiceName, request.SpecialistName, request.SlotStart, request.DurationMinutes, request.Price)));
         _rescheduleBooking = rescheduleBooking ?? ((bookingId, newSlotStart, _) => Task.FromResult(new BookingConfirmationDto(
@@ -33,8 +33,8 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default) =>
         _getOptions(cancellationToken);
 
-    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
-        _getSlots(specialistId, scheduleDate, cancellationToken);
+    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
+        _getSlots(specialistId, serviceId, scheduleDate, cancellationToken);
 
     public Task<BookingConfirmationDto> CreateBookingAsync(CreateBookingWorkflowRequest request, CancellationToken cancellationToken = default)
     {

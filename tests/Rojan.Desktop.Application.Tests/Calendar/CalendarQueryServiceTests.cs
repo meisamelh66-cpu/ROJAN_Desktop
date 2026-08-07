@@ -29,7 +29,7 @@ public sealed class CalendarQueryServiceTests
         var repository = new StubCalendarRepository();
         var sut = new CalendarQueryService(repository);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetDailyAvailabilityAsync("no-such-specialist", TestDate));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetDailyAvailabilityAsync("no-such-specialist", "service-1", TestDate));
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class CalendarQueryServiceTests
             "s-1", "specialist-1", "Jordan Lee", OtherDayOfWeek(TestDate), new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         Assert.Empty(result.Slots);
         Assert.Null(result.WorkingStart);
@@ -56,7 +56,7 @@ public sealed class CalendarQueryServiceTests
             "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         Assert.Equal(4, result.Slots.Count);
         Assert.All(result.Slots, slot => Assert.Equal(TimeSpan.FromMinutes(30), slot.End - slot.Start));
@@ -79,7 +79,7 @@ public sealed class CalendarQueryServiceTests
         ];
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         var bookedSlot = Assert.Single(result.Slots, slot => slot.Status == AvailabilityStatus.Booked);
         Assert.Equal(9, bookedSlot.Start.Hour);
@@ -99,7 +99,7 @@ public sealed class CalendarQueryServiceTests
                 new DateTimeOffset(TestDate.Year, TestDate.Month, TestDate.Day, breakStart.Hours, breakStart.Minutes, 0, DateTimeOffset.Now.Offset).AddMinutes(30))]));
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         var unavailableSlot = Assert.Single(result.Slots, slot => slot.Status == AvailabilityStatus.Unavailable);
         Assert.Equal(9, unavailableSlot.Start.Hour);
@@ -121,7 +121,7 @@ public sealed class CalendarQueryServiceTests
         ];
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetDailyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetDailyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         var overlapSlot = Assert.Single(result.Slots, slot => slot.Start == overlapStart);
         Assert.Equal(AvailabilityStatus.Unavailable, overlapSlot.Status);
@@ -133,7 +133,7 @@ public sealed class CalendarQueryServiceTests
         var repository = new StubCalendarRepository();
         var sut = new CalendarQueryService(repository);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetWeeklyAvailabilityAsync("no-such-specialist", TestDate));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetWeeklyAvailabilityAsync("no-such-specialist", "service-1", TestDate));
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class CalendarQueryServiceTests
             "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         Assert.Equal("specialist-1", result.SpecialistId);
         Assert.Equal("Jordan Lee", result.SpecialistName);
@@ -161,7 +161,7 @@ public sealed class CalendarQueryServiceTests
             "s-1", "specialist-1", "Jordan Lee", TestDate.DayOfWeek, new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0)));
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         var otherDay = result.Days.Single(day => day.Date == TestDate.AddDays(1));
         Assert.Empty(otherDay.Slots);
@@ -188,7 +188,7 @@ public sealed class CalendarQueryServiceTests
         ];
         var sut = new CalendarQueryService(repository);
 
-        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", TestDate);
+        var result = await sut.GetWeeklyAvailabilityAsync("specialist-1", "service-1", TestDate);
 
         var breakDayResult = result.Days.Single(day => day.Date == TestDate);
         Assert.Contains(breakDayResult.Slots, slot => slot.Status == AvailabilityStatus.Unavailable);

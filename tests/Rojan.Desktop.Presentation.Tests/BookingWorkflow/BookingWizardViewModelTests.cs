@@ -85,7 +85,7 @@ public sealed class BookingWizardViewModelTests
     {
         var workflowService = new StubBookingWorkflowService(
             getOptions: _ => Task.FromResult(MakeOptions()),
-            getSlots: (_, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(30))]));
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(30))]));
         var sut = MakeSutOnDateStep(workflowService);
 
         sut.NextCommand.Execute(null); // Date -> TimeSlot
@@ -100,7 +100,7 @@ public sealed class BookingWizardViewModelTests
     {
         var workflowService = new StubBookingWorkflowService(
             getOptions: _ => Task.FromResult(MakeOptions()),
-            getSlots: (_, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([]));
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([]));
         var sut = MakeSutOnDateStep(workflowService);
 
         sut.NextCommand.Execute(null); // Date -> TimeSlot
@@ -113,7 +113,7 @@ public sealed class BookingWizardViewModelTests
     {
         var workflowService = new StubBookingWorkflowService(
             getOptions: _ => Task.FromResult(MakeOptions()),
-            getSlots: (_, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]));
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]));
         var sut = MakeSutOnDateStep(workflowService);
 
         Assert.False(sut.ConfirmBookingCommand.CanExecute(null));
@@ -130,7 +130,7 @@ public sealed class BookingWizardViewModelTests
     {
         var workflowService = new StubBookingWorkflowService(
             getOptions: _ => Task.FromResult(MakeOptions()),
-            getSlots: (_, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]));
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]));
         var created = false;
         var sut = new BookingWizardViewModel(workflowService, new StubDialogService(), () => created = true)
         {

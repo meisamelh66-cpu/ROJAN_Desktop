@@ -2986,4 +2986,31 @@
   <data name="Settings_ApiEnvironment_Apply" xml:space="preserve">
     <value>اعمال</value>
   </data>
+  <data name="Nav_Salon" xml:space="preserve">
+    <value>سالن</value>
+  </data>
+  <data name="Salon_Title" xml:space="preserve">
+    <value>سالن من</value>
+  </data>
+  <data name="Salon_Subtitle" xml:space="preserve">
+    <value>اطلاعات سالن خود را مدیریت کنید.</value>
+  </data>
+  <data name="Salon_YourSalon" xml:space="preserve">
+    <value>اطلاعات سالن</value>
+  </data>
+  <data name="Salon_CreateSalon" xml:space="preserve">
+    <value>ایجاد سالن</value>
+  </data>
+  <data name="Salon_CreatePrompt" xml:space="preserve">
+    <value>برای شروع، اطلاعات سالن خود را وارد کنید.</value>
+  </data>
+  <data name="Common_Address" xml:space="preserve">
+    <value>آدرس</value>
+  </data>
+  <data name="Common_Active" xml:space="preserve">
+    <value>فعال</value>
+  </data>
+  <data name="Common_Inactive" xml:space="preserve">
+    <value>غیرفعال</value>
+  </data>
 </root>

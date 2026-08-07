@@ -27,19 +27,30 @@
         tile changed from a solid-status-color ButtonPrimary to a neutral
         ButtonSecondary tile with a Shared StatusPill carrying the status
         color instead - avoids double-encoding color (a colored pill on an
-        already-colored button reads poorly), and disables the button for
-        Unavailable slots (same no-op ToggleSlotAsync behavior as before,
-        now visually reflected via IsEnabled rather than only a muted
-        color). The specialist ComboBox gained a per-item EntityAvatar.
-        WorkingHoursText is now a StatusPill instead of plain caption text.
-        Week view's per-day tile dropped DashboardCard for a plain
-        Rojan.Style.Card Border plus an explicit PremiumCardHeader (lighter
-        chrome, more fitting for seven small tiles in a row) and three
-        status-count StatusPills (via the new local
-        AvailabilitySlotStatusCountConverter). Still no drag-and-drop, no
-        Booking integration, no Month view, no appointment-card redesign
-        beyond what is described here - Day/Week load/toggle behavior is
-        unchanged, only the visuals are.
+        already-colored button reads poorly). The specialist ComboBox
+        gained a per-item EntityAvatar. WorkingHoursText is now a
+        StatusPill instead of plain caption text. Week view's per-day tile
+        dropped DashboardCard for a plain Rojan.Style.Card Border plus an
+        explicit PremiumCardHeader (lighter chrome, more fitting for seven
+        small tiles in a row) and three status-count StatusPills (via the
+        new local AvailabilitySlotStatusCountConverter). Still no
+        drag-and-drop, no Month view, no appointment-card redesign beyond
+        what is described here.
+
+        Calendar/Availability Integration Phase 3 (Service-driven Calendar
+        flow, product decision): added a Service picker alongside
+        Specialist/Date - the backend availability engine requires one to
+        compute slot length. The Day-view slot tile is no longer a Button -
+        the manual "toggle a slot to Booked" feature is gone (a slot's
+        Booked state now comes from real Booking data only, never a local
+        reservation this page wrote itself), so each slot is now a plain,
+        non-interactive Border. Every slot this page can show is Available
+        (see BackendCalendarAvailabilityRepository's own doc comment for
+        why) - the StatusPill's Booked/Unavailable trigger branches stay
+        harmlessly unreachable rather than being stripped out, so this
+        template still renders correctly against
+        Application.Calendar.CalendarQueryService's local/EF data too
+        (which can still produce those statuses).
     -->
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -82,6 +93,14 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,24,0">
+                        <TextBlock Text="{x:Static loc:Strings.Common_Service}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <ComboBox ItemsSource="{Binding Services}"
+                                  SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"
+                                  Width="200"
+                                  Margin="0,4,0,0" />
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
                         <TextBlock Text="{x:Static loc:Strings.Common_Date}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -133,19 +152,13 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type appCalendar:AvailabilitySlotDto}">
-                                <Button Command="{Binding DataContext.ToggleSlotCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"
+                                <!-- Read-only display, not a Button - the manual toggle-to-Booked feature
+                                     is gone (Calendar/Availability Integration Phase 3, product decision:
+                                     a slot's Booked state comes from real Booking data only). -->
+                                <Border Style="{StaticResource Rojan.Style.Card}"
                                         MinWidth="120"
+                                        Padding="12,8"
                                         Margin="0,0,10,10">
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Status}" Value="Unavailable">
-                                                    <Setter Property="IsEnabled" Value="False" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="{Binding Start, StringFormat={}{0:h:mm tt}}"
                                                    Style="{StaticResource Rojan.TextStyle.Body}"
@@ -170,7 +183,7 @@
                                             </shared:StatusPill.Style>
                                         </shared:StatusPill>
                                     </StackPanel>
-                                </Button>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

@@ -17,8 +17,8 @@ public sealed class BookingWorkflowServicePermissionGate : IBookingWorkflowServi
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default) =>
         _inner.GetBookingOptionsAsync(cancellationToken);
 
-    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
-        _inner.GetAvailableSlotsAsync(specialistId, scheduleDate, cancellationToken);
+    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
+        _inner.GetAvailableSlotsAsync(specialistId, serviceId, scheduleDate, cancellationToken);
 
     public Task<BookingConfirmationDto> CreateBookingAsync(CreateBookingWorkflowRequest request, CancellationToken cancellationToken = default)
     {

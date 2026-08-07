@@ -6,13 +6,13 @@ namespace Rojan.Desktop.Presentation.Tests.Calendar;
 internal sealed class StubCalendarQueryService : ICalendarQueryService
 {
     private readonly Func<CancellationToken, Task<IReadOnlyList<ScheduledSpecialistDto>>> _getSpecialists;
-    private readonly Func<string, DateOnly, CancellationToken, Task<DailyAvailabilityDto>> _getDailyAvailability;
-    private readonly Func<string, DateOnly, CancellationToken, Task<WeeklyAvailabilityDto>> _getWeeklyAvailability;
+    private readonly Func<string, string, DateOnly, CancellationToken, Task<DailyAvailabilityDto>> _getDailyAvailability;
+    private readonly Func<string, string, DateOnly, CancellationToken, Task<WeeklyAvailabilityDto>> _getWeeklyAvailability;
 
     public StubCalendarQueryService(
         Func<CancellationToken, Task<IReadOnlyList<ScheduledSpecialistDto>>> getSpecialists,
-        Func<string, DateOnly, CancellationToken, Task<DailyAvailabilityDto>> getDailyAvailability,
-        Func<string, DateOnly, CancellationToken, Task<WeeklyAvailabilityDto>>? getWeeklyAvailability = null)
+        Func<string, string, DateOnly, CancellationToken, Task<DailyAvailabilityDto>> getDailyAvailability,
+        Func<string, string, DateOnly, CancellationToken, Task<WeeklyAvailabilityDto>>? getWeeklyAvailability = null)
     {
         _getSpecialists = getSpecialists;
         _getDailyAvailability = getDailyAvailability;
@@ -27,18 +27,18 @@ internal sealed class StubCalendarQueryService : ICalendarQueryService
     public Task<IReadOnlyList<ScheduledSpecialistDto>> GetScheduledSpecialistsAsync(CancellationToken cancellationToken = default) =>
         _getSpecialists(cancellationToken);
 
-    public Task<DailyAvailabilityDto> GetDailyAvailabilityAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
-        _getDailyAvailability(specialistId, scheduleDate, cancellationToken);
+    public Task<DailyAvailabilityDto> GetDailyAvailabilityAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
+        _getDailyAvailability(specialistId, serviceId, scheduleDate, cancellationToken);
 
-    public Task<WeeklyAvailabilityDto> GetWeeklyAvailabilityAsync(string specialistId, DateOnly weekStart, CancellationToken cancellationToken = default) =>
-        _getWeeklyAvailability(specialistId, weekStart, cancellationToken);
+    public Task<WeeklyAvailabilityDto> GetWeeklyAvailabilityAsync(string specialistId, string serviceId, DateOnly weekStart, CancellationToken cancellationToken = default) =>
+        _getWeeklyAvailability(specialistId, serviceId, weekStart, cancellationToken);
 
-    private async Task<WeeklyAvailabilityDto> DefaultGetWeeklyAvailabilityAsync(string specialistId, DateOnly weekStart, CancellationToken cancellationToken)
+    private async Task<WeeklyAvailabilityDto> DefaultGetWeeklyAvailabilityAsync(string specialistId, string serviceId, DateOnly weekStart, CancellationToken cancellationToken)
     {
         var days = new List<DailyAvailabilityDto>(7);
         for (var offset = 0; offset < 7; offset++)
         {
-            days.Add(await _getDailyAvailability(specialistId, weekStart.AddDays(offset), cancellationToken).ConfigureAwait(true));
+            days.Add(await _getDailyAvailability(specialistId, serviceId, weekStart.AddDays(offset), cancellationToken).ConfigureAwait(true));
         }
 
         var specialistName = days.Count > 0 ? days[0].SpecialistName : string.Empty;

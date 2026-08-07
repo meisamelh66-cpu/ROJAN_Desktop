@@ -21,6 +21,7 @@ using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Automation;
+using Rojan.Desktop.Domain.Salons;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Domain.Support;
 using Rojan.Desktop.Domain.Workspaces;
@@ -29,6 +30,7 @@ using Rojan.Desktop.Infrastructure.Automation;
 using Rojan.Desktop.Infrastructure.AI;
 using Rojan.Desktop.Infrastructure.Api;
 using Rojan.Desktop.Infrastructure.Bookings;
+using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
@@ -51,6 +53,7 @@ using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
 using Rojan.Desktop.Application.Salons;
+using AppCalendar = Rojan.Desktop.Application.Calendar;
 using DomainServices = Rojan.Desktop.Domain.Services;
 
 namespace Rojan.Desktop.Infrastructure.DependencyInjection;
@@ -99,6 +102,11 @@ public static class ServiceCollectionExtensions
         // ISalonContextService is shared by both Customer CRM and Booking
         // integration - registered once, here.
         services.AddSingleton<ISalonContextService, BackendSalonContextService>();
+
+        // Phase 1.2 Owner App Create Salon Flow: no Fake/Ef predecessor to replace -
+        // Salon is a genuinely new vertical slice. See BackendSalonRepository's own
+        // doc comment for why it depends on IApiClient alone, not ISalonContextService.
+        services.AddSingleton<ISalonRepository, BackendSalonRepository>();
         services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 
         // Reception Booking Integration Phase 2 (Specialist Integration):
@@ -132,16 +140,26 @@ public static class ServiceCollectionExtensions
         // its Fake*Repository onto EF Core - same reasoning as Customers/
         // Specialists/Services/Bookings in Commits 2/3/4/5 (see
         // EfCustomerRepository's own DI comment above). FakeCalendarRepository
-        // stays in the codebase, unreferenced. Like Services (Commit 4),
-        // ICalendarRepository has no create/update-schedule method at all
-        // (see EfCalendarRepository's own doc comment) - a fresh database
-        // starts with zero WorkingSchedule rows, and unlike the Services
-        // gap, Application.Calendar.CalendarQueryService's daily/weekly
-        // availability reads actively throw for a specialist with none,
-        // not merely return empty. A real, known, pre-existing gap
-        // (schedule authoring was never in scope for this vertical
-        // slice), not something introduced or fixable here.
+        // stays in the codebase, unreferenced. ICalendarRepository/
+        // EfCalendarRepository remain registered and unchanged by Calendar/
+        // Availability Integration Phase 3 below - ICalendarCommandService's
+        // implementation still depends on them for its own reserve/release
+        // bookkeeping (a concern separate from availability *reads*, which
+        // this registration no longer serves - see
+        // BackendCalendarAvailabilityRepository's own doc comment).
         services.AddSingleton<ICalendarRepository, EfCalendarRepository>();
+
+        // Calendar/Availability Integration Phase 3: ICalendarQueryService
+        // (Application) is registered here instead of in AddApplication() -
+        // BackendCalendarAvailabilityRepository implements it directly,
+        // deliberately bypassing CalendarQueryService/ICalendarRepository's
+        // "raw schedule rows in, generate slots in Application" shape,
+        // since ROJAN_Backend's available-slots endpoint already performs
+        // that entire computation server-side. CalendarQueryService stays
+        // in the codebase, unreferenced, same convention as every earlier
+        // Fake/Ef->Backend swap. See BackendCalendarAvailabilityRepository's
+        // own doc comment for the full reasoning and its honesty notes.
+        services.AddSingleton<AppCalendar.ICalendarQueryService, BackendCalendarAvailabilityRepository>();
 
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
         services.AddSingleton<IAccountingRepository, FakeAccountingRepository>();

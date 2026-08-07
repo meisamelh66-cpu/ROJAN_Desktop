@@ -227,7 +227,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
     private async Task LoadAvailableSlotsAsync()
     {
-        if (SelectedSpecialist is null)
+        if (SelectedSpecialist is null || SelectedService is null)
         {
             return;
         }
@@ -239,7 +239,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         try
         {
             var slots = await _workflowService
-                .GetAvailableSlotsAsync(SelectedSpecialist.Id, DateOnly.FromDateTime(SelectedDate))
+                .GetAvailableSlotsAsync(SelectedSpecialist.Id, SelectedService.Id, DateOnly.FromDateTime(SelectedDate))
                 .ConfigureAwait(true);
 
             AvailableSlots.Clear();

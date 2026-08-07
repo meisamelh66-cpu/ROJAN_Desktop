@@ -58,19 +58,65 @@ public sealed class BackendSalonContextServiceTests
         await Assert.ThrowsAsync<ApiException>(() => service.GetSalonIdAsync());
     }
 
+    // Phase 1.2 Owner App Create Salon Flow: Invalidate() - see ISalonContextService's own doc comment for why this exists.
+
+    [Fact]
+    public async Task Invalidate_ThenGetSalonIdAsync_ReResolvesFromTheBackend()
+    {
+        var apiClient = new StubApiClient([]);
+        using var service = new BackendSalonContextService(apiClient);
+        Assert.Null(await service.GetSalonIdAsync());
+
+        // Simulates the owner creating a salon between the first (cached, null) resolution and now.
+        apiClient.Salons = [Salon("salon-1")];
+        service.Invalidate();
+
+        Assert.Equal("salon-1", await service.GetSalonIdAsync());
+    }
+
+    [Fact]
+    public async Task Invalidate_ThenGetSalonIdAsync_CallsTheBackendAgain()
+    {
+        var apiClient = new StubApiClient([Salon("salon-1")]);
+        using var service = new BackendSalonContextService(apiClient);
+        await service.GetSalonIdAsync();
+        await service.GetSalonIdAsync();
+        Assert.Equal(1, apiClient.CallCount);
+
+        service.Invalidate();
+        await service.GetSalonIdAsync();
+
+        Assert.Equal(2, apiClient.CallCount);
+    }
+
+    [Fact]
+    public async Task GetSalonIdAsync_WithoutInvalidate_NeverSeesASalonCreatedAfterTheFirstResolution()
+    {
+        // The known caching limitation Invalidate() exists to work around - confirms it's real.
+        var apiClient = new StubApiClient([]);
+        using var service = new BackendSalonContextService(apiClient);
+        Assert.Null(await service.GetSalonIdAsync());
+
+        apiClient.Salons = [Salon("salon-1")];
+
+        Assert.Null(await service.GetSalonIdAsync());
+    }
+
     private static SalonResponse Salon(string id) => new(id, "owner-1", "Test Salon", null, "0912", null, "Address", true);
 
     private sealed class StubApiClient : IApiClient
     {
-        private readonly List<SalonResponse>? _salons;
         private readonly int? _failureStatusCode;
         private readonly string? _failureMessage;
 
         public int CallCount { get; private set; }
 
+        /// <summary>Settable (not just constructor-supplied) so a test can simulate a salon appearing between two resolutions - see the Invalidate() tests above.</summary>
+        public List<SalonResponse>? Salons { get; set; }
+
         public StubApiClient(List<SalonResponse> salons)
         {
-            _salons = salons;
+            Salons = salons;
         }
 
         public StubApiClient(int failureStatusCode, string failureMessage)
@@ -82,9 +128,9 @@ public sealed class BackendSalonContextServiceTests
         public Task<ApiResponse<TResponse>> GetAsync<TResponse>(string path, CancellationToken cancellationToken = default)
         {
             CallCount++;
-            if (_salons is not null)
+            if (Salons is not null)
             {
-                return Task.FromResult(ApiResponseFactory.Success((TResponse)(object)_salons, 200));
+                return Task.FromResult(ApiResponseFactory.Success((TResponse)(object)Salons, 200));
             }
 
             return Task.FromResult(ApiResponseFactory.Failure<TResponse>(_failureStatusCode, _failureMessage!));

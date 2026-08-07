@@ -2974,4 +2974,31 @@
   <data name="Settings_ApiEnvironment_Apply" xml:space="preserve">
     <value>تطبيق</value>
   </data>
+  <data name="Nav_Salon" xml:space="preserve">
+    <value>الصالون</value>
+  </data>
+  <data name="Salon_Title" xml:space="preserve">
+    <value>صالوني</value>
+  </data>
+  <data name="Salon_Subtitle" xml:space="preserve">
+    <value>إدارة معلومات صالونك.</value>
+  </data>
+  <data name="Salon_YourSalon" xml:space="preserve">
+    <value>تفاصيل الصالون</value>
+  </data>
+  <data name="Salon_CreateSalon" xml:space="preserve">
+    <value>إنشاء صالون</value>
+  </data>
+  <data name="Salon_CreatePrompt" xml:space="preserve">
+    <value>للبدء، أدخل تفاصيل صالونك.</value>
+  </data>
+  <data name="Common_Address" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="Common_Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Common_Inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
 </root>

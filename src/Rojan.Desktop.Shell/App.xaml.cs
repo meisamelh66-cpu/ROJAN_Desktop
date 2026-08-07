@@ -404,6 +404,7 @@ public partial class App
     private static void RegisterModules(IServiceCollection services)
     {
         services.AddSingleton<IModule, DashboardModule>();
+        services.AddSingleton<IModule, SalonModule>();
         services.AddSingleton<IModule, OrganizationModule>();
         services.AddSingleton<IModule, CustomerModule>();
         services.AddSingleton<IModule, BookingModule>();

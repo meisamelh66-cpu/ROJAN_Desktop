@@ -56,9 +56,9 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         return new BookingOptionsDto(customerOptions, serviceOptions, specialistOptions);
     }
 
-    public async Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default)
     {
-        var availability = await _calendarQueryService.GetDailyAvailabilityAsync(specialistId, scheduleDate, cancellationToken).ConfigureAwait(true);
+        var availability = await _calendarQueryService.GetDailyAvailabilityAsync(specialistId, serviceId, scheduleDate, cancellationToken).ConfigureAwait(true);
         return availability.Slots
             .Where(slot => slot.Status == AppCalendar.AvailabilityStatus.Available)
             .Select(slot => new WorkflowSlotDto(slot.Start, slot.End))

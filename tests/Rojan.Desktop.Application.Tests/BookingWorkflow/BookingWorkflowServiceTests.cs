@@ -68,11 +68,11 @@ public sealed class BookingWorkflowServiceTests
             new("specialist-1", "Jordan Lee", SlotStart.AddMinutes(30), SlotStart.AddMinutes(60), AppCalendar.AvailabilityStatus.Booked),
         };
         var calendarQueryService = new StubCalendarQueryService(
-            getDailyAvailability: (specialistId, date, _) => Task.FromResult(
+            getDailyAvailability: (specialistId, _, date, _) => Task.FromResult(
                 new AppCalendar.DailyAvailabilityDto(specialistId, "Jordan Lee", date, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0), slots)));
         var sut = MakeSut(calendarQueryService: calendarQueryService);
 
-        var result = await sut.GetAvailableSlotsAsync("specialist-1", DateOnly.FromDateTime(SlotStart.Date));
+        var result = await sut.GetAvailableSlotsAsync("specialist-1", "service-1", DateOnly.FromDateTime(SlotStart.Date));
 
         var slot = Assert.Single(result);
         Assert.Equal(SlotStart, slot.Start);

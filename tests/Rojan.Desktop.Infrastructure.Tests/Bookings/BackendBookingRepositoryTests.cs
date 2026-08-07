@@ -12,8 +12,10 @@ namespace Rojan.Desktop.Infrastructure.Tests.Bookings;
 /// best-effort service/specialist name (and price/duration) resolution
 /// and its graceful fallback, status-transition endpoint mapping
 /// (including the InProgress/NoShow/Pending unsupported cases), reschedule,
-/// and why <see cref="BackendBookingRepository.CreateBookingAsync"/> always
-/// throws. Only the HTTP transport (<see cref="IApiClient"/>) is faked -
+/// and (Calendar/Availability Integration Phase 3)
+/// <see cref="BackendBookingRepository.CreateBookingAsync"/>'s real call to
+/// the owner-initiated <c>POST /api/v1/salons/{salonId}/bookings</c>
+/// endpoint. Only the HTTP transport (<see cref="IApiClient"/>) is faked -
 /// same "exercise the real workflow" convention as <c>BackendDashboardRepositoryTests</c>.
 /// </summary>
 public sealed class BackendBookingRepositoryTests
@@ -126,16 +128,70 @@ public sealed class BackendBookingRepositoryTests
     }
 
     [Fact]
-    public async Task CreateBookingAsync_AlwaysThrowsNotSupportedException()
+    public async Task CreateBookingAsync_SendsCustomerCrmIdServiceSpecialistAndStartTime()
     {
-        // ROJAN_Backend's POST /api/v1/bookings always attributes the booking to the caller as
-        // customer - there is no owner-initiated "create for this customer" endpoint. See
-        // BackendBookingRepository.CreateBookingAsync's own doc comment.
-        var repository = CreateRepository(new StubApiClient(), SalonId);
-        var booking = new Booking("id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
+        var apiClient = new StubApiClient
+        {
+            PostResponse = SampleBooking("booking-new"),
+        };
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse>();
+        EmptySpecialistLookupFallback(apiClient);
+        var repository = CreateRepository(apiClient, SalonId);
+        var scheduledAt = new DateTimeOffset(2026, 8, 10, 14, 0, 0, TimeSpan.Zero);
+        var booking = new Booking("client-temp-id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
+            scheduledAt, 45, "0", BookingStatus.Pending, "Walk-in", "org-1", "branch-1");
+
+        var created = await repository.CreateBookingAsync(booking);
+
+        Assert.Equal("booking-new", created.Id);
+        Assert.Equal($"/api/v1/salons/{SalonId}/bookings", apiClient.LastPostCall?.Path);
+        var body = (CreateBookingForCustomerRequest)apiClient.LastPostCall!.Value.Body!;
+        Assert.Equal("customer-1", body.CustomerId);
+        Assert.Equal("service-1", body.ServiceId);
+        Assert.Equal("specialist-1", body.SpecialistId);
+        Assert.Equal(scheduledAt.DateTime, body.StartTime);
+        Assert.Equal("Walk-in", body.Notes);
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_EmptyNotes_SendsNullNotes()
+    {
+        var apiClient = new StubApiClient
+        {
+            PostResponse = SampleBooking("booking-new"),
+        };
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse>();
+        EmptySpecialistLookupFallback(apiClient);
+        var repository = CreateRepository(apiClient, SalonId);
+        var booking = new Booking("client-temp-id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
             DateTimeOffset.Now, 30, "0", BookingStatus.Pending, string.Empty, "org-1", "branch-1");
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => repository.CreateBookingAsync(booking));
+        await repository.CreateBookingAsync(booking);
+
+        var body = (CreateBookingForCustomerRequest)apiClient.LastPostCall!.Value.Body!;
+        Assert.Null(body.Notes);
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_NoSalon_ThrowsApiException()
+    {
+        var repository = CreateRepository(new StubApiClient(), salonId: null);
+        var booking = new Booking("client-temp-id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
+            DateTimeOffset.Now, 30, "0", BookingStatus.Pending, string.Empty, "org-1", "branch-1");
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.CreateBookingAsync(booking));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_BackendRejects_ThrowsApiException()
+    {
+        // e.g. the customer has no linked account yet (409) - see SalonBookingController's own doc comment.
+        var apiClient = new StubApiClient { PostFailure = (409, "Customer has no linked account") };
+        var repository = CreateRepository(apiClient, SalonId);
+        var booking = new Booking("client-temp-id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
+            DateTimeOffset.Now, 30, "0", BookingStatus.Pending, string.Empty, "org-1", "branch-1");
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.CreateBookingAsync(booking));
     }
 
     [Theory]
@@ -241,6 +297,12 @@ public sealed class BackendBookingRepositoryTests
 
         public (string Path, object? Body)? LastPutCall { get; private set; }
 
+        public object? PostResponse { get; set; }
+
+        public (int? Status, string Message)? PostFailure { get; set; }
+
+        public (string Path, object? Body)? LastPostCall { get; private set; }
+
         public Task<ApiResponse<TResponse>> GetAsync<TResponse>(string path, CancellationToken cancellationToken = default)
         {
             if (GetFailures.TryGetValue(path, out var failure))
@@ -256,8 +318,17 @@ public sealed class BackendBookingRepositoryTests
             throw new InvalidOperationException($"Unexpected GET '{path}' - not configured by this test.");
         }
 
-        public Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException("BackendBookingRepository never posts - CreateBookingAsync always throws before reaching the network.");
+        public Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
+        {
+            LastPostCall = (path, body);
+
+            if (PostFailure is { } failure)
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
+
+            return Task.FromResult(ApiResponseFactory.Success((TResponse)PostResponse!, 201));
+        }
 
         public Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
         {

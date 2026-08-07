@@ -181,6 +181,24 @@ public static class Strings
 
     public static string Nav_Calendar => Get(nameof(Nav_Calendar));
 
+    public static string Nav_Salon => Get(nameof(Nav_Salon));
+
+    public static string Salon_Title => Get(nameof(Salon_Title));
+
+    public static string Salon_Subtitle => Get(nameof(Salon_Subtitle));
+
+    public static string Salon_YourSalon => Get(nameof(Salon_YourSalon));
+
+    public static string Salon_CreateSalon => Get(nameof(Salon_CreateSalon));
+
+    public static string Salon_CreatePrompt => Get(nameof(Salon_CreatePrompt));
+
+    public static string Common_Address => Get(nameof(Common_Address));
+
+    public static string Common_Active => Get(nameof(Common_Active));
+
+    public static string Common_Inactive => Get(nameof(Common_Inactive));
+
     public static string Nav_Services => Get(nameof(Nav_Services));
 
     public static string Nav_Inventory => Get(nameof(Nav_Inventory));

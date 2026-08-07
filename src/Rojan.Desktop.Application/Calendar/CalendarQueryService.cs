@@ -11,6 +11,17 @@ namespace Rojan.Desktop.Application.Calendar;
 /// Infrastructure, the same "Application owns the composition, Domain/
 /// Infrastructure stay dumb data providers" rule every other vertical
 /// slice's search/profile logic already follows.
+///
+/// Calendar/Availability Integration Phase 3: no longer the registered
+/// <see cref="ICalendarQueryService"/> implementation - stays in the
+/// codebase, unreferenced by DI, same convention as every earlier Fake/Ef
+/// implementation this app has retired in favor of a Backend* one (see
+/// <c>Infrastructure.Calendar.BackendCalendarAvailabilityRepository</c>'s
+/// own doc comment). Kept alive here purely so its own tests keep exercising
+/// real generation logic; the <c>serviceId</c> parameter on
+/// <see cref="GetDailyAvailabilityAsync"/>/<see cref="GetWeeklyAvailabilityAsync"/>
+/// is accepted and ignored, since this class's fixed-30-minute local
+/// generation never depended on a service duration to begin with.
 /// </summary>
 public sealed class CalendarQueryService : ICalendarQueryService
 {
@@ -33,7 +44,7 @@ public sealed class CalendarQueryService : ICalendarQueryService
             .ToList();
     }
 
-    public async Task<DailyAvailabilityDto> GetDailyAvailabilityAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default)
+    public async Task<DailyAvailabilityDto> GetDailyAvailabilityAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default)
     {
         var schedules = await _repository.GetWorkingSchedulesAsync(cancellationToken).ConfigureAwait(true);
         var specialistSchedules = GetSpecialistSchedulesOrThrow(schedules, specialistId);
@@ -41,7 +52,7 @@ public sealed class CalendarQueryService : ICalendarQueryService
         return await BuildDailyAvailabilityAsync(specialistId, specialistSchedules, scheduleDate, cancellationToken).ConfigureAwait(true);
     }
 
-    public async Task<WeeklyAvailabilityDto> GetWeeklyAvailabilityAsync(string specialistId, DateOnly weekStart, CancellationToken cancellationToken = default)
+    public async Task<WeeklyAvailabilityDto> GetWeeklyAvailabilityAsync(string specialistId, string serviceId, DateOnly weekStart, CancellationToken cancellationToken = default)
     {
         var schedules = await _repository.GetWorkingSchedulesAsync(cancellationToken).ConfigureAwait(true);
         var specialistSchedules = GetSpecialistSchedulesOrThrow(schedules, specialistId);

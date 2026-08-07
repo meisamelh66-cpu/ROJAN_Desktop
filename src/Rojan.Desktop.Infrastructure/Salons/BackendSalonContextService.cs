@@ -63,5 +63,12 @@ public sealed class BackendSalonContextService(IApiClient apiClient) : ISalonCon
         }
     }
 
+    /// <summary>Phase 1.2: resets the cache so the next <see cref="GetSalonIdAsync"/> call re-resolves from the backend - see the interface's own doc comment for why this exists.</summary>
+    public void Invalidate()
+    {
+        _hasResolved = false;
+        _resolvedSalonId = null;
+    }
+
     public void Dispose() => _resolveLock.Dispose();
 }

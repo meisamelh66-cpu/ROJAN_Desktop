@@ -31,3 +31,15 @@ public sealed record CreateBookingRequest(string SalonId, string ServiceId, stri
 
 /// <summary>The request body <c>PUT {ApiVersion.BasePath()}/bookings/{id}/reschedule</c> accepts - matches ROJAN_Backend's <c>RescheduleBookingRequest</c> field-for-field.</summary>
 public sealed record RescheduleBookingRequest(DateTime NewStartTime);
+
+/// <summary>
+/// The request body <c>POST /api/v1/salons/{salonId}/bookings</c> accepts -
+/// matches ROJAN_Backend's <c>CreateBookingForCustomerRequest</c>
+/// field-for-field (see <c>api/booking/BookingDtos.kt</c>). The
+/// owner-authorized counterpart to <see cref="CreateBookingRequest"/>:
+/// <see cref="CustomerId"/> here is a Customer CRM id (from
+/// <c>GET .../customers</c>), not a User id, and the backend rejects it with
+/// 409 if that customer has no linked account yet - see
+/// <c>BackendBookingRepository.CreateBookingAsync</c>'s own doc comment.
+/// </summary>
+public sealed record CreateBookingForCustomerRequest(string CustomerId, string ServiceId, string SpecialistId, DateTime StartTime, string? Notes);

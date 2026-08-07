@@ -39,8 +39,19 @@ namespace Rojan.Desktop.Infrastructure.Bookings;
 /// no-op for backend data, not a redesign of it.</item>
 /// </list>
 ///
-/// <see cref="CreateBookingAsync"/> throws - see its own doc comment for
-/// why an owner-initiated create has no backend endpoint to call yet.
+/// Calendar/Availability Integration Phase 3: <see cref="CreateBookingAsync"/>
+/// now calls the real owner-initiated <c>POST /api/v1/salons/{salonId}/bookings</c>
+/// endpoint (<c>SalonBookingController.createForCustomer</c>) instead of
+/// throwing - <see cref="DomainBookings.Booking.CustomerId"/> is sent as-is
+/// as the request's <c>customerId</c>, which the backend expects to be a
+/// Customer CRM id (not a User id) - exactly what
+/// <c>Customers.BackendCustomerRepository</c> already populates
+/// <see cref="DomainBookings.Booking.CustomerId"/> with via
+/// <c>WorkflowCustomerOptionDto.Id</c>, so no extra resolution is needed
+/// here. The backend rejects the call with 409 if that customer has no
+/// linked account yet (see <c>ROJAN_Team1_Integration_Verification_Report_v1.md</c>'s
+/// walk-in-customer finding) - surfaced as an <see cref="ApiException"/>
+/// like every other non-2xx response, not specially handled.
 /// <see cref="SupportsInProgressAndNoShowStatuses"/> is <see langword="false"/> -
 /// ROJAN_Backend's <c>BookingStatus</c> has only 4 states, no equivalent
 /// for <see cref="DomainBookings.BookingStatus.InProgress"/>/<see cref="DomainBookings.BookingStatus.NoShow"/>.
@@ -92,23 +103,31 @@ public sealed class BackendBookingRepository(
     }
 
     /// <summary>
-    /// ROJAN_Backend's <c>POST /api/v1/bookings</c> always resolves the new
-    /// booking's customer from the *caller's own* bearer token - there is
-    /// no request field for a different customer id, and no separate
-    /// owner-initiated endpoint. Calling it from the Owner App's session
-    /// (the salon owner's own account) would silently create a booking
-    /// where the owner is recorded as the customer - wrong data, not a
-    /// missing feature, so this throws rather than doing that. Not one of
-    /// this phase's four required flows (view/details/status-update/
-    /// cancel-confirm) - deferred until the backend exposes an
-    /// owner-initiated creation path.
+    /// Calls the owner-authorized <c>POST /api/v1/salons/{salonId}/bookings</c>
+    /// endpoint - the counterpart to ROJAN_Backend's self-service
+    /// <c>POST /api/v1/bookings</c> (which always attributes the new
+    /// booking to the caller as its own customer and has no field for a
+    /// different one). See this class's own doc comment for the
+    /// <see cref="DomainBookings.Booking.CustomerId"/> mapping note and the
+    /// 409-if-unlinked business rule.
     /// </summary>
-    public Task<DomainBookings.Booking> CreateBookingAsync(DomainBookings.Booking booking, CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException(
-            "ROJAN_Backend's POST /api/v1/bookings always attributes the new booking to the calling user as its customer - " +
-            "there is no owner-initiated \"create a booking for this customer\" endpoint. Calling it from the Owner App's own " +
-            "session would incorrectly make the salon owner the booking's customer. See BackendBookingRepository's own doc " +
-            "comment and ROJAN_Booking_Integration_Implementation_Report_v1.md.");
+    public async Task<DomainBookings.Booking> CreateBookingAsync(DomainBookings.Booking booking, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+        var request = new CreateBookingForCustomerRequest(
+            booking.CustomerId, booking.ServiceId, booking.SpecialistId, booking.ScheduledAt.DateTime, NullIfEmpty(booking.Notes));
+
+        var response = await apiClient
+            .PostAsync<CreateBookingForCustomerRequest, BookingResponse>($"/api/v1/salons/{salonId}/bookings", request, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to create booking for customer '{booking.CustomerId}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return await MapWithLookupsAsync(response.Data, cancellationToken).ConfigureAwait(false);
+    }
 
     public async Task<DomainBookings.Booking> UpdateBookingStatusAsync(string bookingId, DomainBookings.BookingStatus status, CancellationToken cancellationToken = default)
     {
@@ -290,4 +309,6 @@ public sealed class BackendBookingRepository(
     };
 
     private static string FormatToman(decimal amount) => $"{amount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} تومان";
+
+    private static string? NullIfEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
 }

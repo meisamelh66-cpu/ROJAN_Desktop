@@ -22,4 +22,22 @@ public interface ISalonContextService
     /// see the concrete implementation's own doc comment).
     /// </summary>
     public Task<string?> GetSalonIdAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Phase 1.2 Owner App Create Salon Flow: forces the next
+    /// <see cref="GetSalonIdAsync"/> call to re-resolve from the backend
+    /// rather than returning a cached result - <c>Salons.SalonCommandService</c>
+    /// calls this immediately after a successful create, so every other
+    /// already-loaded module picks up the new salon on its next read
+    /// without requiring an app restart (the concrete implementation
+    /// otherwise caches "no salon" for its entire singleton lifetime, which
+    /// would silently strand a brand-new owner even after they finish
+    /// onboarding). Defaults to a no-op so every existing
+    /// <see cref="ISalonContextService"/> test double keeps compiling
+    /// unchanged - only the real, caching implementation needs to override
+    /// it.
+    /// </summary>
+    public void Invalidate()
+    {
+    }
 }

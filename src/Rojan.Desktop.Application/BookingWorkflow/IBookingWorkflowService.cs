@@ -15,8 +15,8 @@ public interface IBookingWorkflowService
     /// <summary>The customers/services/specialists the wizard's picker steps offer - services and specialists are filtered to Active only.</summary>
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Available (unbooked) slots for the given specialist and date, delegating slot generation and conflict detection to <c>Calendar.ICalendarQueryService</c>.</summary>
-    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, DateOnly scheduleDate, CancellationToken cancellationToken = default);
+    /// <summary>Available slots for the given specialist/service/date, delegating slot generation to <c>Calendar.ICalendarQueryService</c> - <paramref name="serviceId"/> is required because slot length is derived from the selected service (Calendar/Availability Integration Phase 3).</summary>
+    public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default);
 
     /// <summary>Reserves the chosen calendar slot, then creates the booking; if booking creation fails, the calendar reservation is rolled back (released) since there is no database transaction spanning both writes.</summary>
     public Task<BookingConfirmationDto> CreateBookingAsync(CreateBookingWorkflowRequest request, CancellationToken cancellationToken = default);
