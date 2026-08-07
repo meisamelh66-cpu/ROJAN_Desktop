@@ -412,6 +412,7 @@ public partial class App
     {
         services.AddSingleton<IModule, DashboardModule>();
         services.AddSingleton<IModule, SalonModule>();
+        services.AddSingleton<IModule, AcceptInviteModule>();
         services.AddSingleton<IModule, OrganizationModule>();
         services.AddSingleton<IModule, CustomerModule>();
         services.AddSingleton<IModule, BookingModule>();

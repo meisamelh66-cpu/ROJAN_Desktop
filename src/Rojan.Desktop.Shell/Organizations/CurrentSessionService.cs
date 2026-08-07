@@ -83,12 +83,23 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
 
     public event EventHandler? SessionChanged;
 
+    /// <summary>
+    /// Reception Production Integration: raises <see cref="SessionChanged"/>
+    /// at the end unconditionally (both the real and fallback paths) - a
+    /// no-op the first time this runs (called from <c>App.xaml.cs</c> before
+    /// <c>MainWindowViewModel</c> exists to subscribe), but exactly what lets
+    /// <c>AcceptInviteViewModel</c> re-run this after a successful accept and
+    /// have the shell's navigation/permissions refresh live, the same way
+    /// <see cref="SwitchRoleAsync"/>/<see cref="SwitchBranchAsync"/> already
+    /// do for their own changes.
+    /// </summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         var salonContext = await _salonContextService.GetCurrentContextAsync(cancellationToken).ConfigureAwait(false);
         if (salonContext is not null)
         {
             ApplyRealMembership(salonContext);
+            SessionChanged?.Invoke(this, EventArgs.Empty);
             return;
         }
 
@@ -97,6 +108,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         var organizations = await _organizationQueryService.GetOrganizationsAsync(cancellationToken).ConfigureAwait(false);
         if (organizations.Count == 0)
         {
+            SessionChanged?.Invoke(this, EventArgs.Empty);
             return;
         }
 
@@ -116,6 +128,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         CurrentRole = role;
         _recentBranchIds = persisted?.RecentBranchIds ?? [];
         _favoriteBranchIds = persisted?.FavoriteBranchIds ?? [];
+        SessionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task SwitchBranchAsync(string branchId, CancellationToken cancellationToken = default)

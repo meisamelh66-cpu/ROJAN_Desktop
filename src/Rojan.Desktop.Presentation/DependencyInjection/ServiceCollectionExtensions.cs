@@ -12,6 +12,7 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
 using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
+using Rojan.Desktop.Presentation.ViewModels.Membership;
 using Rojan.Desktop.Presentation.ViewModels.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 using Rojan.Desktop.Presentation.ViewModels.Salons;
@@ -49,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDelayScheduler, DispatcherDelayScheduler>();
         services.AddTransient<DashboardPageViewModel>();
         services.AddTransient<SalonPageViewModel>();
+        services.AddTransient<AcceptInviteViewModel>();
         services.AddTransient<CustomerPageViewModel>();
         services.AddTransient<BookingPageViewModel>();
         services.AddTransient<SpecialistPageViewModel>();

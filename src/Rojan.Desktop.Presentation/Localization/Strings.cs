@@ -183,6 +183,25 @@ public static class Strings
 
     public static string Nav_Salon => Get(nameof(Nav_Salon));
 
+    public static string Nav_AcceptInvite => Get(nameof(Nav_AcceptInvite));
+
+    public static string AcceptInvite_Title => Get(nameof(AcceptInvite_Title));
+
+    public static string AcceptInvite_Subtitle => Get(nameof(AcceptInvite_Subtitle));
+
+    public static string AcceptInvite_TokenLabel => Get(nameof(AcceptInvite_TokenLabel));
+
+    public static string AcceptInvite_LookupButton => Get(nameof(AcceptInvite_LookupButton));
+
+    /// <summary>Format string, <c>{0}</c> = salon name, <c>{1}</c> = role display name - applied via <see cref="string.Format(System.IFormatProvider?, string, object?, object?)"/> at the call site, same "Get() returns the raw resx value, formatting happens where it's used" convention <see cref="Common_ViewingFormat"/> already establishes.</summary>
+    public static string AcceptInvite_JoinPromptFormat => Get(nameof(AcceptInvite_JoinPromptFormat));
+
+    public static string AcceptInvite_AcceptButton => Get(nameof(AcceptInvite_AcceptButton));
+
+    public static string AcceptInvite_RoleReceptionist => Get(nameof(AcceptInvite_RoleReceptionist));
+
+    public static string AcceptInvite_RoleManager => Get(nameof(AcceptInvite_RoleManager));
+
     public static string Salon_Title => Get(nameof(Salon_Title));
 
     public static string Salon_Subtitle => Get(nameof(Salon_Subtitle));

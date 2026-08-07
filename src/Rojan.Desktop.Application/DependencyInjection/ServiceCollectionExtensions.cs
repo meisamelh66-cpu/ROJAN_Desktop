@@ -12,6 +12,7 @@ using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Application.Help;
+using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
@@ -44,6 +45,11 @@ public static class ServiceCollectionExtensions
         // deliberately not permission-gated, see that class's own doc comment for why.
         services.AddSingleton<ISalonQueryService, SalonQueryService>();
         services.AddSingleton<ISalonCommandService, SalonCommandService>();
+        // Reception Production Integration: same "no permission gate" reasoning as
+        // ISalonCommandService above - a caller accepting an invite has no real
+        // membership/permission yet, gating this would lock them out of the one
+        // action that grants everything else.
+        services.AddSingleton<ISalonInviteService, SalonInviteService>();
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
 
