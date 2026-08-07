@@ -124,13 +124,6 @@ public partial class App
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-        // Phase 22: the current organization/branch/role must be resolved
-        // before MainWindowViewModel builds its permission-filtered
-        // NavigationItems - same "before the thing that reads it" ordering
-        // as culture/theme above.
-        var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
-        currentSessionService.InitializeAsync().GetAwaiter().GetResult();
-
         // Phase 25: Enterprise Identity & Secure Client Platform. Device/
         // installation registration, session restoration, offline
         // certificate issuance, and sync-queue restoration all need to
@@ -181,6 +174,20 @@ public partial class App
         }
 
         authenticationService.StateChanged += OnAuthenticationStateChanged;
+
+        // Reception Production Integration: moved from before the login gate
+        // (its original Phase 22 position) to here. Resolving the current
+        // organization/branch/role now means resolving the *signed-in user's*
+        // real salon membership (owner via GET /salons/mine, or an accepted
+        // Salon Invite) - both require a valid authenticated session, which
+        // does not exist yet at Phase 22's original position (before
+        // apiEnvironmentService/sessionService/the login gate above). Still
+        // runs well before MainWindowViewModel builds its permission-filtered
+        // NavigationItems (constructed further below), preserving the
+        // original "before the thing that reads it" guarantee - only the
+        // "after authentication" half of the ordering is new.
+        var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
+        currentSessionService.InitializeAsync().GetAwaiter().GetResult();
 
         var certificateService = _host.Services.GetRequiredService<ICertificateService>();
         certificateService.InitializeAsync().GetAwaiter().GetResult();
