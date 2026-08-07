@@ -4,6 +4,7 @@ using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
+using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
@@ -17,6 +18,7 @@ using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.Help;
 using Rojan.Desktop.Domain.HR;
 using Rojan.Desktop.Domain.Inventory;
+using Rojan.Desktop.Domain.Membership;
 using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
@@ -38,6 +40,7 @@ using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
 using Rojan.Desktop.Infrastructure.Identity;
 using Rojan.Desktop.Infrastructure.Inventory;
+using Rojan.Desktop.Infrastructure.Membership;
 using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
@@ -107,6 +110,14 @@ public static class ServiceCollectionExtensions
         // Salon is a genuinely new vertical slice. See BackendSalonRepository's own
         // doc comment for why it depends on IApiClient alone, not ISalonContextService.
         services.AddSingleton<ISalonRepository, BackendSalonRepository>();
+
+        // Reception Production Integration: the real Salon Invite accept flow.
+        // ISalonInviteRepository has no Fake/Ef predecessor either, same
+        // reasoning as ISalonRepository above. IAcceptedMembershipStore wraps
+        // the existing ISecureStorageService (DPAPI) rather than introducing a
+        // new persistence mechanism - see its own doc comment.
+        services.AddSingleton<ISalonInviteRepository, BackendSalonInviteRepository>();
+        services.AddSingleton<IAcceptedMembershipStore, AcceptedMembershipStore>();
         services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 
         // Reception Booking Integration Phase 2 (Specialist Integration):
