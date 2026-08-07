@@ -35,9 +35,33 @@ public interface ISalonContextService
     /// onboarding). Defaults to a no-op so every existing
     /// <see cref="ISalonContextService"/> test double keeps compiling
     /// unchanged - only the real, caching implementation needs to override
-    /// it.
+    /// it. Reception Production Integration: the Accept Invite flow
+    /// (<c>Presentation.ViewModels.Membership.AcceptInviteViewModel</c>)
+    /// calls this too, for the identical reason - a brand-new Reception
+    /// member's salon must be picked up without a restart, same as a
+    /// brand-new owner's.
     /// </summary>
     public void Invalidate()
     {
     }
+
+    /// <summary>
+    /// Reception Production Integration: the fuller picture
+    /// <see cref="GetSalonIdAsync"/>'s bare id doesn't carry - which salon
+    /// (name, not just id) and whether the caller reached it through
+    /// ownership or an accepted <c>SalonInvite</c> membership (and which
+    /// role, if the latter). <c>Shell.Organizations.CurrentSessionService</c>
+    /// is the only caller - every other module keeps depending on
+    /// <see cref="GetSalonIdAsync"/> alone, unaffected by this addition.
+    /// Resolves from the exact same cached lookup <see cref="GetSalonIdAsync"/>
+    /// uses - never a second, independent backend call. Defaults to
+    /// <see langword="null"/> for the same "existing test doubles keep
+    /// compiling unchanged" reason <see cref="Invalidate"/> already
+    /// documents - only the real implementation needs to override it.
+    /// </summary>
+    public Task<SalonContext?> GetCurrentContextAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<SalonContext?>(null);
 }
+
+/// <summary>See <see cref="ISalonContextService.GetCurrentContextAsync"/>. <see cref="IsOwner"/> true means <see cref="MembershipRole"/> is always null (an owner's role is never a <c>SalonRole</c> membership - see ROJAN_Backend's own <c>SalonRole</c> doc comment); false means <see cref="MembershipRole"/> carries the raw backend role string (<c>"MANAGER"</c>/<c>"RECEPTIONIST"</c>).</summary>
+public sealed record SalonContext(string SalonId, string SalonName, bool IsOwner, string? MembershipRole);

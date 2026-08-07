@@ -1,16 +1,26 @@
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Api.Contracts;
+using Rojan.Desktop.Application.Membership;
+using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Domain.Membership;
 using Rojan.Desktop.Infrastructure.Salons;
 
 namespace Rojan.Desktop.Infrastructure.Tests.Salons;
 
-/// <summary>Exercises <see cref="BackendSalonContextService"/> - single-salon resolution, the documented multi-salon "first one wins" behavior, the zero-salon case, caching (one call resolves, every later call reuses it), and failure propagation.</summary>
+/// <summary>
+/// Exercises <see cref="BackendSalonContextService"/> - single-salon
+/// resolution, the documented multi-salon "first one wins" behavior,
+/// caching (one call resolves, every later call reuses it), failure
+/// propagation, and (Reception Production Integration) the accepted-invite
+/// fallback for a caller who owns no salon, plus <see cref="ISalonContextService.GetCurrentContextAsync"/>
+/// sharing the exact same cached resolution <see cref="ISalonContextService.GetSalonIdAsync"/> uses.
+/// </summary>
 public sealed class BackendSalonContextServiceTests
 {
     [Fact]
     public async Task GetSalonIdAsync_OneSalon_ReturnsItsId()
     {
-        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1")]));
+        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1")]), new StubAcceptedMembershipStore());
 
         var salonId = await service.GetSalonIdAsync();
 
@@ -21,7 +31,7 @@ public sealed class BackendSalonContextServiceTests
     public async Task GetSalonIdAsync_MultipleSalons_ReturnsTheFirstOne()
     {
         // Documented Phase 1 limitation - no salon-switcher UI yet, see this class's own doc comment.
-        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1"), Salon("salon-2")]));
+        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1"), Salon("salon-2")]), new StubAcceptedMembershipStore());
 
         var salonId = await service.GetSalonIdAsync();
 
@@ -29,9 +39,9 @@ public sealed class BackendSalonContextServiceTests
     }
 
     [Fact]
-    public async Task GetSalonIdAsync_NoSalons_ReturnsNull()
+    public async Task GetSalonIdAsync_NoOwnedSalonAndNoAcceptedInvite_ReturnsNull()
     {
-        using var service = new BackendSalonContextService(new StubApiClient([]));
+        using var service = new BackendSalonContextService(new StubApiClient([]), new StubAcceptedMembershipStore());
 
         var salonId = await service.GetSalonIdAsync();
 
@@ -39,10 +49,69 @@ public sealed class BackendSalonContextServiceTests
     }
 
     [Fact]
+    public async Task GetSalonIdAsync_NoOwnedSalon_FallsBackToAcceptedInviteMembership()
+    {
+        var membershipStore = new StubAcceptedMembershipStore { Membership = new AcceptedMembership("salon-9", "Glow Salon", "RECEPTIONIST") };
+        using var service = new BackendSalonContextService(new StubApiClient([]), membershipStore);
+
+        var salonId = await service.GetSalonIdAsync();
+
+        Assert.Equal("salon-9", salonId);
+    }
+
+    [Fact]
+    public async Task GetSalonIdAsync_OwnsASalon_NeverConsultsAcceptedInviteMembership()
+    {
+        // Ownership wins over any locally-persisted membership - a real owner is never treated as a mere member of their own salon.
+        var membershipStore = new StubAcceptedMembershipStore { Membership = new AcceptedMembership("salon-9", "Some Other Salon", "RECEPTIONIST") };
+        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1")]), membershipStore);
+
+        var salonId = await service.GetSalonIdAsync();
+
+        Assert.Equal("salon-1", salonId);
+    }
+
+    [Fact]
+    public async Task GetCurrentContextAsync_Owner_ReturnsIsOwnerTrueAndNoMembershipRole()
+    {
+        using var service = new BackendSalonContextService(new StubApiClient([Salon("salon-1", name: "Glow Salon")]), new StubAcceptedMembershipStore());
+
+        var context = await service.GetCurrentContextAsync();
+
+        Assert.NotNull(context);
+        Assert.Equal("salon-1", context!.SalonId);
+        Assert.Equal("Glow Salon", context.SalonName);
+        Assert.True(context.IsOwner);
+        Assert.Null(context.MembershipRole);
+    }
+
+    [Fact]
+    public async Task GetCurrentContextAsync_AcceptedReceptionInvite_ReturnsIsOwnerFalseAndTheBackendRole()
+    {
+        var membershipStore = new StubAcceptedMembershipStore { Membership = new AcceptedMembership("salon-9", "Glow Salon", "RECEPTIONIST") };
+        using var service = new BackendSalonContextService(new StubApiClient([]), membershipStore);
+
+        var context = await service.GetCurrentContextAsync();
+
+        Assert.NotNull(context);
+        Assert.Equal("salon-9", context!.SalonId);
+        Assert.False(context.IsOwner);
+        Assert.Equal("RECEPTIONIST", context.MembershipRole);
+    }
+
+    [Fact]
+    public async Task GetCurrentContextAsync_NoOwnershipAndNoMembership_ReturnsNull()
+    {
+        using var service = new BackendSalonContextService(new StubApiClient([]), new StubAcceptedMembershipStore());
+
+        Assert.Null(await service.GetCurrentContextAsync());
+    }
+
+    [Fact]
     public async Task GetSalonIdAsync_CalledTwice_OnlyCallsTheBackendOnce()
     {
         var apiClient = new StubApiClient([Salon("salon-1")]);
-        using var service = new BackendSalonContextService(apiClient);
+        using var service = new BackendSalonContextService(apiClient, new StubAcceptedMembershipStore());
 
         await service.GetSalonIdAsync();
         await service.GetSalonIdAsync();
@@ -51,9 +120,21 @@ public sealed class BackendSalonContextServiceTests
     }
 
     [Fact]
+    public async Task GetSalonIdAsync_AndGetCurrentContextAsync_ShareTheSameCache_OnlyOneBackendCallTotal()
+    {
+        var apiClient = new StubApiClient([Salon("salon-1")]);
+        using var service = new BackendSalonContextService(apiClient, new StubAcceptedMembershipStore());
+
+        await service.GetSalonIdAsync();
+        await service.GetCurrentContextAsync();
+
+        Assert.Equal(1, apiClient.CallCount);
+    }
+
+    [Fact]
     public async Task GetSalonIdAsync_ApiCallFails_ThrowsApiException()
     {
-        using var service = new BackendSalonContextService(new StubApiClient(failureStatusCode: 500, failureMessage: "Internal error"));
+        using var service = new BackendSalonContextService(new StubApiClient(failureStatusCode: 500, failureMessage: "Internal error"), new StubAcceptedMembershipStore());
 
         await Assert.ThrowsAsync<ApiException>(() => service.GetSalonIdAsync());
     }
@@ -64,7 +145,7 @@ public sealed class BackendSalonContextServiceTests
     public async Task Invalidate_ThenGetSalonIdAsync_ReResolvesFromTheBackend()
     {
         var apiClient = new StubApiClient([]);
-        using var service = new BackendSalonContextService(apiClient);
+        using var service = new BackendSalonContextService(apiClient, new StubAcceptedMembershipStore());
         Assert.Null(await service.GetSalonIdAsync());
 
         // Simulates the owner creating a salon between the first (cached, null) resolution and now.
@@ -78,7 +159,7 @@ public sealed class BackendSalonContextServiceTests
     public async Task Invalidate_ThenGetSalonIdAsync_CallsTheBackendAgain()
     {
         var apiClient = new StubApiClient([Salon("salon-1")]);
-        using var service = new BackendSalonContextService(apiClient);
+        using var service = new BackendSalonContextService(apiClient, new StubAcceptedMembershipStore());
         await service.GetSalonIdAsync();
         await service.GetSalonIdAsync();
         Assert.Equal(1, apiClient.CallCount);
@@ -94,7 +175,7 @@ public sealed class BackendSalonContextServiceTests
     {
         // The known caching limitation Invalidate() exists to work around - confirms it's real.
         var apiClient = new StubApiClient([]);
-        using var service = new BackendSalonContextService(apiClient);
+        using var service = new BackendSalonContextService(apiClient, new StubAcceptedMembershipStore());
         Assert.Null(await service.GetSalonIdAsync());
 
         apiClient.Salons = [Salon("salon-1")];
@@ -102,7 +183,26 @@ public sealed class BackendSalonContextServiceTests
         Assert.Null(await service.GetSalonIdAsync());
     }
 
-    private static SalonResponse Salon(string id) => new(id, "owner-1", "Test Salon", null, "0912", null, "Address", true);
+    private static SalonResponse Salon(string id, string name = "Test Salon") => new(id, "owner-1", name, null, "0912", null, "Address", true);
+
+    private sealed class StubAcceptedMembershipStore : IAcceptedMembershipStore
+    {
+        public AcceptedMembership? Membership { get; set; }
+
+        public Task<AcceptedMembership?> GetAsync(CancellationToken cancellationToken = default) => Task.FromResult(Membership);
+
+        public Task SaveAsync(AcceptedMembership membership, CancellationToken cancellationToken = default)
+        {
+            Membership = membership;
+            return Task.CompletedTask;
+        }
+
+        public Task ClearAsync(CancellationToken cancellationToken = default)
+        {
+            Membership = null;
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class StubApiClient : IApiClient
     {
