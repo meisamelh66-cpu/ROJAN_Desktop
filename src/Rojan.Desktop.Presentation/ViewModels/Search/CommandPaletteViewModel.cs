@@ -38,7 +38,7 @@ public sealed class CommandPaletteViewModel : ViewModelBase
     private readonly IReadOnlyDictionary<string, ICommand> _commandActions;
 
     private IReadOnlyList<SearchCandidate>? _staticCandidates;
-    private IReadOnlySet<string> _favoriteIds = new HashSet<string>();
+    private HashSet<string> _favoriteIds = [];
     private string _searchText = string.Empty;
     private int _selectedIndex = -1;
 
@@ -117,7 +117,7 @@ public sealed class CommandPaletteViewModel : ViewModelBase
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        _favoriteIds = await _favoritesStore.GetFavoriteIdsAsync(cancellationToken).ConfigureAwait(true);
+        _favoriteIds = (await _favoritesStore.GetFavoriteIdsAsync(cancellationToken).ConfigureAwait(true)).ToHashSet();
 
         var recent = await _historyStore.GetRecentSearchesAsync(cancellationToken).ConfigureAwait(true);
         RecentSearches.Clear();
@@ -240,7 +240,7 @@ public sealed class CommandPaletteViewModel : ViewModelBase
     {
         var isNowFavorite = await _favoritesStore.ToggleFavoriteAsync(row.Id).ConfigureAwait(true);
         row.IsFavorite = isNowFavorite;
-        _favoriteIds = await _favoritesStore.GetFavoriteIdsAsync().ConfigureAwait(true);
+        _favoriteIds = (await _favoritesStore.GetFavoriteIdsAsync().ConfigureAwait(true)).ToHashSet();
         await RefreshFavoriteResultsAsync(CancellationToken.None).ConfigureAwait(true);
     }
 
