@@ -24,6 +24,16 @@ public interface ICurrentSessionService
 
     public WorkspaceRole CurrentRole { get; }
 
+    /// <summary>
+    /// Reception Stabilization Sprint: <see langword="true"/> once <see cref="InitializeAsync"/> has
+    /// resolved a real backend salon membership (owner via <c>GET /salons/mine</c>, or an accepted
+    /// Salon Invite) rather than falling back to the local/demo organization path - the same signal
+    /// the concrete implementation already uses internally to lock <see cref="SwitchRoleAsync"/>/
+    /// <see cref="SwitchBranchAsync"/>, now exposed so Presentation-layer consumers (e.g. the
+    /// shell's initial navigation selection) can also branch on it without new plumbing.
+    /// </summary>
+    public bool HasRealMembership { get; }
+
     /// <summary>Every branch in <see cref="CurrentOrganization"/> - the Branch Switcher's data source.</summary>
     public IReadOnlyList<BranchDto> AvailableBranches { get; }
 

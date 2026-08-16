@@ -23,7 +23,8 @@ internal static class CustomerMapper
         customer.LastContactedAt,
         customer.Notes,
         customer.OrganizationId,
-        customer.BranchId);
+        customer.BranchId,
+        customer.UserId);
 
     public static CustomerNoteDto MapNote(DomainCustomers.CustomerNote note) =>
         new(note.Id, note.CustomerId, note.Text, note.CreatedAt);

@@ -1,9 +1,14 @@
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Navigation;
+using Rojan.Desktop.Presentation.Organizations;
+using Rojan.Desktop.Presentation.ViewModels.Automation;
+using Rojan.Desktop.Presentation.ViewModels.Organizations;
+using Rojan.Desktop.Presentation.ViewModels.Reporting;
 
 namespace Rojan.Desktop.Shell.Navigation;
 
@@ -23,18 +28,51 @@ namespace Rojan.Desktop.Shell.Navigation;
 /// between the two stacks - a fresh NavigateTo always clears "forward",
 /// exactly like a web browser abandons forward history once you click a
 /// new link after going back.
+///
+/// Reception Stabilization Sprint: <see cref="NavigateTo{TViewModel}"/> is
+/// now permission-checked - previously the sidebar's own
+/// <c>MainWindowViewModel.BuildVisibleNavigationItems</c> filter was the
+/// only permission gate in the app, and it only ever guards
+/// <see cref="NavigateTo(ModuleDescriptor)"/> (sidebar clicks, always
+/// called with an already-filtered <see cref="ModuleDescriptor"/>) - a
+/// direct <see cref="NavigateTo{TViewModel}"/> call (e.g. a Dashboard
+/// chart/quick-action click) bypassed it entirely.
+/// <see cref="RequiredPermissionsByViewModelType"/> is a small, explicit
+/// map rather than one derived by invoking every gated module's
+/// <see cref="ModuleDescriptor.CreateViewModel"/> to learn its type - that
+/// would construct real page ViewModels (several of which fire off a
+/// background load from their constructor) purely to inspect their
+/// <see cref="Type"/>, an avoidable side effect. Must be kept in sync with
+/// each module's own <see cref="ModuleMetadata.RequiredPermission"/>
+/// declaration (currently just <see cref="AutomationModule"/>/
+/// <see cref="OrganizationModule"/>/<see cref="ReportingModule"/>) -
+/// covered by <c>NavigationServiceTests</c>.
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
+    private static readonly IReadOnlyDictionary<Type, Permission> RequiredPermissionsByViewModelType = new Dictionary<Type, Permission>
+    {
+        [typeof(AutomationPageViewModel)] = Permission.AutomationView,
+        [typeof(OrganizationPageViewModel)] = Permission.OrganizationManage,
+        [typeof(ReportingPageViewModel)] = Permission.ReportingView,
+    };
+
     private readonly IServiceProvider _serviceProvider;
+    private readonly IPermissionEngine _permissionEngine;
+    private readonly ICurrentSessionService _currentSessionService;
     private readonly Stack<ViewModelBase> _backStack = new();
     private readonly Stack<ViewModelBase> _forwardStack = new();
     private ContentControl? _host;
     private ViewModelBase? _current;
 
-    public NavigationService(IServiceProvider serviceProvider)
+    public NavigationService(
+        IServiceProvider serviceProvider,
+        IPermissionEngine permissionEngine,
+        ICurrentSessionService currentSessionService)
     {
         _serviceProvider = serviceProvider;
+        _permissionEngine = permissionEngine;
+        _currentSessionService = currentSessionService;
     }
 
     public bool CanGoBack => _backStack.Count > 0;
@@ -66,6 +104,12 @@ public sealed class NavigationService : INavigationService
 
     public void NavigateTo<TViewModel>() where TViewModel : ViewModelBase
     {
+        if (RequiredPermissionsByViewModelType.TryGetValue(typeof(TViewModel), out var requiredPermission)
+            && !_permissionEngine.HasPermission(_currentSessionService.CurrentRole, requiredPermission))
+        {
+            return;
+        }
+
         Navigate(_serviceProvider.GetRequiredService<TViewModel>());
     }
 

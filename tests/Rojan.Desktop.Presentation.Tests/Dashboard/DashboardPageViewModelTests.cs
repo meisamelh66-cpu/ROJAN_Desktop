@@ -1,4 +1,6 @@
 using Rojan.Desktop.Application.Dashboard;
+using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 namespace Rojan.Desktop.Presentation.Tests.Dashboard;
@@ -16,13 +18,16 @@ public sealed class DashboardPageViewModelTests
         return new DashboardOverviewDto(metrics, activity);
     }
 
+    private static DashboardPageViewModel CreateSut(StubDashboardQueryService queryService, WorkspaceRole role = WorkspaceRole.PlatformOwner) =>
+        new(queryService, new PermissionEngine(), new FakeCurrentSessionService { CurrentRole = role });
+
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
     {
         var tcs = new TaskCompletionSource<DashboardOverviewDto>();
         var queryService = new StubDashboardQueryService(_ => tcs.Task);
 
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -33,7 +38,7 @@ public sealed class DashboardPageViewModelTests
         var overview = MakeOverview(metricCount: 2, activityCount: 3);
         var queryService = new StubDashboardQueryService(_ => Task.FromResult(overview));
 
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal(overview.KpiMetrics, sut.KpiMetrics);
@@ -46,7 +51,7 @@ public sealed class DashboardPageViewModelTests
         var overview = MakeOverview(metricCount: 0, activityCount: 0);
         var queryService = new StubDashboardQueryService(_ => Task.FromResult(overview));
 
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Empty, sut.State);
     }
@@ -57,7 +62,7 @@ public sealed class DashboardPageViewModelTests
         var queryService = new StubDashboardQueryService(
             _ => Task.FromException<DashboardOverviewDto>(new InvalidOperationException("boom")));
 
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -71,7 +76,7 @@ public sealed class DashboardPageViewModelTests
         // duplicated in two places.
         var queryService = new StubDashboardQueryService(_ => Task.FromResult(MakeOverview()));
 
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
 
         Assert.DoesNotContain(sut.QuickActions, item => item.Label == Rojan.Desktop.Presentation.Localization.Strings.Dashboard_QuickAction_NewBooking);
         Assert.Equal(3, sut.QuickActions.Count);
@@ -85,7 +90,7 @@ public sealed class DashboardPageViewModelTests
         var queryService = new StubDashboardQueryService(_ => shouldFail
             ? Task.FromException<DashboardOverviewDto>(new InvalidOperationException("boom"))
             : Task.FromResult(overview));
-        var sut = new DashboardPageViewModel(queryService);
+        var sut = CreateSut(queryService);
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;
@@ -93,5 +98,62 @@ public sealed class DashboardPageViewModelTests
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Null(sut.ErrorMessage);
+    }
+
+    // ---- Reception Stabilization Sprint: financial KPI RBAC ----
+
+    private static DashboardOverviewDto MakeOverviewWithRevenueKpi() => new(
+        [
+            new KpiMetricDto("kpi-bookings", "Bookings", "128", TrendDirection.Up, 12.5),
+            new KpiMetricDto("kpi-revenue", "Revenue", "124,000,000", TrendDirection.Down, 2.1),
+        ],
+        []);
+
+    [Fact]
+    public void LoadAsync_RoleWithoutAccountingView_ExcludesRevenueKpi()
+    {
+        var queryService = new StubDashboardQueryService(_ => Task.FromResult(MakeOverviewWithRevenueKpi()));
+
+        var sut = CreateSut(queryService, WorkspaceRole.Reception);
+
+        Assert.DoesNotContain(sut.KpiMetrics, metric => metric.Id == "kpi-revenue");
+        Assert.Contains(sut.KpiMetrics, metric => metric.Id == "kpi-bookings");
+    }
+
+    [Fact]
+    public void LoadAsync_RoleWithAccountingView_IncludesRevenueKpi()
+    {
+        var queryService = new StubDashboardQueryService(_ => Task.FromResult(MakeOverviewWithRevenueKpi()));
+
+        var sut = CreateSut(queryService, WorkspaceRole.PlatformOwner);
+
+        Assert.Contains(sut.KpiMetrics, metric => metric.Id == "kpi-revenue");
+    }
+
+    private sealed class FakeCurrentSessionService : ICurrentSessionService
+    {
+        public OrganizationDto? CurrentOrganization => null;
+
+        public BranchDto? CurrentBranch => null;
+
+        public WorkspaceRole CurrentRole { get; init; } = WorkspaceRole.PlatformOwner;
+
+        public bool HasRealMembership => false;
+
+        public IReadOnlyList<BranchDto> AvailableBranches => [];
+
+        public IReadOnlyList<string> RecentBranchIds => [];
+
+        public IReadOnlyList<string> FavoriteBranchIds => [];
+
+        public event EventHandler? SessionChanged { add { } remove { } }
+
+        public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task SwitchBranchAsync(string branchId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task SwitchRoleAsync(WorkspaceRole role, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task ToggleFavoriteBranchAsync(string branchId, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

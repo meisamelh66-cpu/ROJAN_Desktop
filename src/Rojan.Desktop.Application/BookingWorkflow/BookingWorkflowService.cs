@@ -6,7 +6,7 @@ using AppSpecialists = Rojan.Desktop.Application.Specialists;
 
 namespace Rojan.Desktop.Application.BookingWorkflow;
 
-/// <summary>Default <see cref="IBookingWorkflowService"/> implementation - see the interface doc comment for why depending on five sibling Application services here is expected, not a layering violation.</summary>
+/// <summary>Default <see cref="IBookingWorkflowService"/> implementation - see the interface doc comment for why depending on six sibling Application services here is expected, not a layering violation (Reception Stabilization Sprint added <see cref="AppCustomers.ICustomerCommandService"/>, for <see cref="CreateGuestCustomerAsync"/>).</summary>
 public sealed class BookingWorkflowService : IBookingWorkflowService
 {
     private readonly AppCustomers.ICustomerQueryService _customerQueryService;
@@ -16,6 +16,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
     private readonly AppCalendar.ICalendarCommandService _calendarCommandService;
     private readonly AppBookings.IBookingQueryService _bookingQueryService;
     private readonly AppBookings.IBookingCommandService _bookingCommandService;
+    private readonly AppCustomers.ICustomerCommandService _customerCommandService;
 
     public BookingWorkflowService(
         AppCustomers.ICustomerQueryService customerQueryService,
@@ -24,7 +25,8 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         AppCalendar.ICalendarQueryService calendarQueryService,
         AppCalendar.ICalendarCommandService calendarCommandService,
         AppBookings.IBookingQueryService bookingQueryService,
-        AppBookings.IBookingCommandService bookingCommandService)
+        AppBookings.IBookingCommandService bookingCommandService,
+        AppCustomers.ICustomerCommandService customerCommandService)
     {
         _customerQueryService = customerQueryService;
         _serviceQueryService = serviceQueryService;
@@ -33,6 +35,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         _calendarCommandService = calendarCommandService;
         _bookingQueryService = bookingQueryService;
         _bookingCommandService = bookingCommandService;
+        _customerCommandService = customerCommandService;
     }
 
     public async Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default)
@@ -42,7 +45,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         var specialists = await _specialistQueryService.GetSpecialistsAsync(cancellationToken).ConfigureAwait(true);
 
         var customerOptions = customers
-            .Select(customer => new WorkflowCustomerOptionDto(customer.Id, customer.FullName))
+            .Select(customer => new WorkflowCustomerOptionDto(customer.Id, customer.FullName, customer.UserId is not null))
             .ToList();
         var serviceOptions = services
             .Where(service => service.Status == AppServices.ServiceStatus.Active)
@@ -54,6 +57,13 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
             .ToList();
 
         return new BookingOptionsDto(customerOptions, serviceOptions, specialistOptions);
+    }
+
+    public async Task<WorkflowCustomerOptionDto> CreateGuestCustomerAsync(string fullName, string phone, CancellationToken cancellationToken = default)
+    {
+        var request = new AppCustomers.CreateCustomerRequest(fullName, Company: string.Empty, Email: string.Empty, phone, Notes: string.Empty);
+        var created = await _customerCommandService.CreateCustomerAsync(request, cancellationToken).ConfigureAwait(true);
+        return new WorkflowCustomerOptionDto(created.Id, created.FullName, IsLinkedToAccount: false);
     }
 
     public async Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default)

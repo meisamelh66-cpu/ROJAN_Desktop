@@ -17,6 +17,13 @@ public sealed class BookingWorkflowServicePermissionGate : IBookingWorkflowServi
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default) =>
         _inner.GetBookingOptionsAsync(cancellationToken);
 
+    /// <summary>Reception Stabilization Sprint: gated on <see cref="Permission.CustomerEdit"/>, same permission <c>Customers.CustomerCommandServicePermissionGate</c> already requires for customer creation - this is a write (a new CRM customer record), unlike the picker reads above.</summary>
+    public Task<WorkflowCustomerOptionDto> CreateGuestCustomerAsync(string fullName, string phone, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.CustomerEdit);
+        return _inner.CreateGuestCustomerAsync(fullName, phone, cancellationToken);
+    }
+
     public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
         _inner.GetAvailableSlotsAsync(specialistId, serviceId, scheduleDate, cancellationToken);
 

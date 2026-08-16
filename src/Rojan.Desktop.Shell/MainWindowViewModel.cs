@@ -178,7 +178,21 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         // the initial selection navigates too - the first module in
         // display order is both the default item and the first thing
         // shown.
-        SelectedNavigationItem = NavigationItems[0];
+        //
+        // Reception Stabilization Sprint: a session with no real salon
+        // membership yet (a brand-new Reception invitee who hasn't
+        // redeemed their invite - see ICurrentSessionService.HasRealMembership's
+        // own doc comment) previously always landed on Dashboard (order 0)
+        // regardless, silently showing the local/demo fallback data under
+        // WorkspaceRole.PlatformOwner. Soft redirect only: prefer the
+        // Accept Invite item as the *default* landing page in that case,
+        // falling back to the normal first item otherwise (real
+        // membership, or - e.g. a brand-new Owner with no salon yet -
+        // AcceptInviteModule simply not present in this NavigationItems
+        // set). The sidebar itself is completely unaffected - every module
+        // remains exactly as reachable as before, this changes only which
+        // one is initially selected.
+        SelectedNavigationItem = SelectInitialNavigationItem();
 
         _ = LoadBranchSwitcherDataAsync();
 
@@ -396,6 +410,32 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
             .Where(descriptor => descriptor.Metadata.RequiredPermission is not Permission requiredPermission
                 || _permissionEngine.HasPermission(_currentSessionService.CurrentRole, requiredPermission))
             .Select(descriptor => new NavigationItem(descriptor));
+
+    /// <summary>
+    /// Reception Stabilization Sprint: the initial <see cref="SelectedNavigationItem"/> - the
+    /// Accept Invite item (if present in <see cref="NavigationItems"/>) whenever the current
+    /// session has no real salon membership yet (<see cref="ICurrentSessionService.HasRealMembership"/>
+    /// is <see langword="false"/>), the normal first item otherwise. Deliberately a soft default
+    /// only, not a hard gate: the sidebar itself is completely unfiltered by this (every module,
+    /// including Dashboard, stays exactly as reachable as before) - a brand-new Owner with no
+    /// salon yet also has no real membership, but has no invite token to enter either, so blocking
+    /// them behind this page would trap them; falling back to the first item whenever Accept
+    /// Invite isn't present in <see cref="NavigationItems"/> covers that (and any other) case
+    /// safely.
+    /// </summary>
+    private NavigationItem SelectInitialNavigationItem()
+    {
+        if (!_currentSessionService.HasRealMembership)
+        {
+            var acceptInvite = NavigationItems.FirstOrDefault(item => item.Descriptor.Metadata.Id == "accept-invite");
+            if (acceptInvite is not null)
+            {
+                return acceptInvite;
+            }
+        }
+
+        return NavigationItems[0];
+    }
 
     /// <summary>Rebuilds <see cref="NavigationItems"/> after a branch/role switch - re-selects the current item if it's still visible, otherwise falls back to the first visible one (never leaves <see cref="SelectedNavigationItem"/> pointing at a now-hidden module).</summary>
     private void RefreshNavigationItems()

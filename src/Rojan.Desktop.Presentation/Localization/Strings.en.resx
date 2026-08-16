@@ -633,6 +633,21 @@
   <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
     <value>Confirm Booking</value>
   </data>
+  <data name="BookingWizard_CustomerNotLinkedToAccountMessage" xml:space="preserve">
+    <value>This customer isn't linked to an account yet and can't be booked. To book them, the customer needs to install the app and verify their phone number.</value>
+  </data>
+  <data name="BookingWizard_AddGuestCustomer" xml:space="preserve">
+    <value>Add Guest Customer</value>
+  </data>
+  <data name="BookingWizard_GuestFullNameLabel" xml:space="preserve">
+    <value>Full Name</value>
+  </data>
+  <data name="BookingWizard_GuestPhoneLabel" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="BookingWizard_UnlinkedCustomerBadge" xml:space="preserve">
+    <value>No account - not bookable</value>
+  </data>
   <data name="Specialists_Title" xml:space="preserve">
     <value>Specialists</value>
   </data>
@@ -2910,6 +2925,9 @@ Use the action buttons in the detail panel to make changes.</value>
   </data>
   <data name="Login_SessionEndedMessage" xml:space="preserve">
     <value>Your session has ended. The app will now close - please sign in again.</value>
+  </data>
+  <data name="Startup_SessionResolutionFailedMessage" xml:space="preserve">
+    <value>Couldn't reach the server to load your account. Would you like to try again?</value>
   </data>
   <data name="Login_Mobile_PhoneLabel" xml:space="preserve">
     <value>Mobile Number</value>

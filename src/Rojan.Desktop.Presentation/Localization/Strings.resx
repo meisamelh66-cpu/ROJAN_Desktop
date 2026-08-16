@@ -645,6 +645,21 @@
   <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
     <value>تأیید رزرو</value>
   </data>
+  <data name="BookingWizard_CustomerNotLinkedToAccountMessage" xml:space="preserve">
+    <value>این مشتری هنوز به حساب کاربری متصل نشده و امکان رزرو برای او وجود ندارد. برای رزرو، مشتری باید اپلیکیشن را نصب و شماره خود را تأیید کند.</value>
+  </data>
+  <data name="BookingWizard_AddGuestCustomer" xml:space="preserve">
+    <value>افزودن مشتری حضوری</value>
+  </data>
+  <data name="BookingWizard_GuestFullNameLabel" xml:space="preserve">
+    <value>نام کامل</value>
+  </data>
+  <data name="BookingWizard_GuestPhoneLabel" xml:space="preserve">
+    <value>شماره تماس</value>
+  </data>
+  <data name="BookingWizard_UnlinkedCustomerBadge" xml:space="preserve">
+    <value>بدون حساب کاربری - غیرقابل رزرو</value>
+  </data>
   <data name="Specialists_Title" xml:space="preserve">
     <value>متخصصان</value>
   </data>
@@ -2922,6 +2937,9 @@
   </data>
   <data name="Login_SessionEndedMessage" xml:space="preserve">
     <value>نشست شما پایان یافته است. برنامه بسته می‌شود؛ لطفاً دوباره وارد شوید.</value>
+  </data>
+  <data name="Startup_SessionResolutionFailedMessage" xml:space="preserve">
+    <value>خطا در اتصال به سرور برای بارگذاری حساب شما. آیا می‌خواهید دوباره تلاش کنید؟</value>
   </data>
   <data name="Login_Mobile_PhoneLabel" xml:space="preserve">
     <value>شماره موبایل</value>

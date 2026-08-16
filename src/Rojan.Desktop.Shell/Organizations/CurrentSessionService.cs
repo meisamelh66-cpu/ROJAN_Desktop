@@ -71,6 +71,8 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
 
     public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.PlatformOwner;
 
+    public bool HasRealMembership => _hasRealMembership;
+
     string? IEnterpriseContext.CurrentOrganizationId => CurrentOrganization?.Id;
 
     string? IEnterpriseContext.CurrentBranchId => CurrentBranch?.Id;

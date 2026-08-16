@@ -9,6 +9,7 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
     private readonly Func<string, string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>> _getSlots;
     private readonly Func<CreateBookingWorkflowRequest, CancellationToken, Task<BookingConfirmationDto>> _createBooking;
     private readonly Func<string, DateTimeOffset, CancellationToken, Task<BookingConfirmationDto>> _rescheduleBooking;
+    private readonly Func<string, string, CancellationToken, Task<WorkflowCustomerOptionDto>> _createGuestCustomer;
 
     public List<CreateBookingWorkflowRequest> CreateRequests { get; } = [];
 
@@ -16,11 +17,14 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
 
     public List<(string BookingId, DateTimeOffset NewSlotStart)> RescheduleCalls { get; } = [];
 
+    public List<(string FullName, string Phone)> CreateGuestCustomerCalls { get; } = [];
+
     public StubBookingWorkflowService(
         Func<CancellationToken, Task<BookingOptionsDto>>? getOptions = null,
         Func<string, string, DateOnly, CancellationToken, Task<IReadOnlyList<WorkflowSlotDto>>>? getSlots = null,
         Func<CreateBookingWorkflowRequest, CancellationToken, Task<BookingConfirmationDto>>? createBooking = null,
-        Func<string, DateTimeOffset, CancellationToken, Task<BookingConfirmationDto>>? rescheduleBooking = null)
+        Func<string, DateTimeOffset, CancellationToken, Task<BookingConfirmationDto>>? rescheduleBooking = null,
+        Func<string, string, CancellationToken, Task<WorkflowCustomerOptionDto>>? createGuestCustomer = null)
     {
         _getOptions = getOptions ?? (_ => Task.FromResult(new BookingOptionsDto([], [], [])));
         _getSlots = getSlots ?? ((_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([]));
@@ -28,10 +32,17 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
             "booking-new", request.CustomerName, request.ServiceName, request.SpecialistName, request.SlotStart, request.DurationMinutes, request.Price)));
         _rescheduleBooking = rescheduleBooking ?? ((bookingId, newSlotStart, _) => Task.FromResult(new BookingConfirmationDto(
             bookingId, "Test Customer", "Test Service", "Test Specialist", newSlotStart, 60, "$0")));
+        _createGuestCustomer = createGuestCustomer ?? ((fullName, _, _) => Task.FromResult(new WorkflowCustomerOptionDto("guest-new", fullName, IsLinkedToAccount: false)));
     }
 
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default) =>
         _getOptions(cancellationToken);
+
+    public Task<WorkflowCustomerOptionDto> CreateGuestCustomerAsync(string fullName, string phone, CancellationToken cancellationToken = default)
+    {
+        CreateGuestCustomerCalls.Add((fullName, phone));
+        return _createGuestCustomer(fullName, phone, cancellationToken);
+    }
 
     public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default) =>
         _getSlots(specialistId, serviceId, scheduleDate, cancellationToken);
