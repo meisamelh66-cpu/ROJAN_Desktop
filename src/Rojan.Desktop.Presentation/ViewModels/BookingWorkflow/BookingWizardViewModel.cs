@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -34,6 +35,9 @@ public sealed class BookingWizardViewModel : ViewModelBase
     private WorkflowSlotDto? _selectedSlot;
     private string _notes = string.Empty;
     private BookingConfirmationDto? _confirmation;
+    private string _guestFullName = string.Empty;
+    private string _guestPhone = string.Empty;
+    private bool _isAddingGuestCustomer;
 
     public BookingWizardViewModel(IBookingWorkflowService workflowService, IDialogService dialogService, Action? onBookingCreated = null)
     {
@@ -52,6 +56,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         CancelCommand = new RelayCommand(_ => _dialogService.CloseDialog());
         ConfirmBookingCommand = new AsyncRelayCommand(_ => ConfirmBookingAsync(), _ => CurrentStep == BookingWizardStep.Review);
         DoneCommand = new RelayCommand(_ => _dialogService.CloseDialog());
+        AddGuestCustomerCommand = new AsyncRelayCommand(_ => AddGuestCustomerAsync(), _ => CanAddGuestCustomer());
 
         // Safe fire-and-forget: LoadOptionsAsync catches every failure
         // internally and represents it via State/ErrorMessage, same
@@ -79,6 +84,8 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
     public ICommand DoneCommand { get; }
 
+    public ICommand AddGuestCustomerCommand { get; }
+
     public DashboardState State
     {
         get => _state;
@@ -101,6 +108,25 @@ public sealed class BookingWizardViewModel : ViewModelBase
     {
         get => _selectedCustomer;
         set => SetProperty(ref _selectedCustomer, value);
+    }
+
+    /// <summary>Reception Stabilization Sprint: the Customer step's "Walk-in" entry point - bound to a text field, submitted via <see cref="AddGuestCustomerCommand"/>.</summary>
+    public string GuestFullName
+    {
+        get => _guestFullName;
+        set => SetProperty(ref _guestFullName, value);
+    }
+
+    public string GuestPhone
+    {
+        get => _guestPhone;
+        set => SetProperty(ref _guestPhone, value);
+    }
+
+    public bool IsAddingGuestCustomer
+    {
+        get => _isAddingGuestCustomer;
+        private set => SetProperty(ref _isAddingGuestCustomer, value);
     }
 
     public WorkflowServiceOptionDto? SelectedService
@@ -189,6 +215,40 @@ public sealed class BookingWizardViewModel : ViewModelBase
         _ => false,
     };
 
+    private bool CanAddGuestCustomer() => !IsAddingGuestCustomer && !string.IsNullOrWhiteSpace(GuestFullName);
+
+    /// <summary>Reception Stabilization Sprint: the Customer step's "Walk-in" entry point - creates a new CRM customer via <see cref="IBookingWorkflowService.CreateGuestCustomerAsync"/> (a real backend write, gated the same as any other customer creation), adds it to <see cref="Customers"/>, and selects it, exactly as if it had been picked from the list. The created customer is never bookable immediately (<see cref="WorkflowCustomerOptionDto.IsLinkedToAccount"/> is always <see langword="false"/> for a freshly-created guest) - <see cref="ConfirmBookingAsync"/> is what surfaces that clearly, not this method.</summary>
+    private async Task AddGuestCustomerAsync()
+    {
+        IsAddingGuestCustomer = true;
+        ErrorMessage = null;
+
+        try
+        {
+            var guest = await _workflowService.CreateGuestCustomerAsync(GuestFullName.Trim(), GuestPhone.Trim()).ConfigureAwait(true);
+            Customers.Add(guest);
+            SelectedCustomer = guest;
+            GuestFullName = string.Empty;
+            GuestPhone = string.Empty;
+            State = DashboardState.Loaded;
+        }
+#pragma warning disable CA1031 // Top-level command boundary: any failure must surface via ErrorMessage, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            // State = Error only drives the shared error banner's visibility (BookingWizardView's
+            // Row 2) and the TimeSlot step's empty-state card - none of the 7 step panels
+            // (including this one, Customer) gate their own visibility on State, so this does not
+            // hide the picker the way it would on a full-page ViewModel.
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+        }
+        finally
+        {
+            IsAddingGuestCustomer = false;
+        }
+    }
+
     private async Task NextAsync()
     {
         switch (CurrentStep)
@@ -263,6 +323,18 @@ public sealed class BookingWizardViewModel : ViewModelBase
     {
         if (SelectedCustomer is null || SelectedService is null || SelectedSpecialist is null || SelectedSlot is null)
         {
+            return;
+        }
+
+        // Reception Stabilization Sprint: a customer with no linked backend user account will
+        // always fail booking creation with a 409 CUSTOMER_NOT_LINKED_TO_ACCOUNT (a real,
+        // unchangeable backend business rule) - surfaced here, clearly, at the last step, instead
+        // of letting Reception hit that raw exception message after already completing all 7
+        // steps.
+        if (!SelectedCustomer.IsLinkedToAccount)
+        {
+            ErrorMessage = Strings.BookingWizard_CustomerNotLinkedToAccountMessage;
+            State = DashboardState.Error;
             return;
         }
 

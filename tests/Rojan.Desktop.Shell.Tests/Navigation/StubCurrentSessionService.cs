@@ -12,6 +12,8 @@ internal sealed class StubCurrentSessionService : ICurrentSessionService
 
     public WorkspaceRole CurrentRole { get; set; } = WorkspaceRole.PlatformOwner;
 
+    public bool HasRealMembership { get; set; }
+
     public IReadOnlyList<BranchDto> AvailableBranches { get; set; } = [];
 
     public IReadOnlyList<string> RecentBranchIds { get; set; } = [];

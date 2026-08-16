@@ -15,6 +15,17 @@ public interface IBookingWorkflowService
     /// <summary>The customers/services/specialists the wizard's picker steps offer - services and specialists are filtered to Active only.</summary>
     public Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Reception Stabilization Sprint: the Wizard's "Walk-in" entry point - creates a new CRM
+    /// customer (via the same <c>Customers.ICustomerCommandService.CreateCustomerAsync</c> every
+    /// other customer-creation path already uses, so it is subject to the same
+    /// <c>Permission.CustomerEdit</c> gate Reception already has) and returns it as a
+    /// <see cref="WorkflowCustomerOptionDto"/> with <see cref="WorkflowCustomerOptionDto.IsLinkedToAccount"/>
+    /// always <see langword="false"/> - a customer created this way has no backend user account by
+    /// definition, the same "walk-in" distinction the rest of this interface's docs describe.
+    /// </summary>
+    public Task<WorkflowCustomerOptionDto> CreateGuestCustomerAsync(string fullName, string phone, CancellationToken cancellationToken = default);
+
     /// <summary>Available slots for the given specialist/service/date, delegating slot generation to <c>Calendar.ICalendarQueryService</c> - <paramref name="serviceId"/> is required because slot length is derived from the selected service (Calendar/Availability Integration Phase 3).</summary>
     public Task<IReadOnlyList<WorkflowSlotDto>> GetAvailableSlotsAsync(string specialistId, string serviceId, DateOnly scheduleDate, CancellationToken cancellationToken = default);
 

@@ -11,8 +11,8 @@ public sealed class BookingWorkflowServiceTests
 {
     private static readonly DateTimeOffset SlotStart = new(2026, 3, 2, 9, 0, 0, DateTimeOffset.Now.Offset);
 
-    private static AppCustomers.CustomerDto MakeCustomer(string id, string name) =>
-        new(id, name, string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1");
+    private static AppCustomers.CustomerDto MakeCustomer(string id, string name, string? userId = null) =>
+        new(id, name, string.Empty, string.Empty, string.Empty, AppCustomers.CustomerStatus.Active, "$0", DateTimeOffset.UnixEpoch, string.Empty, "org-1", "branch-1", userId);
 
     private static AppServices.ServiceDto MakeService(string id, string name, AppServices.ServiceStatus status) =>
         new(id, name, AppServices.ServiceCategory.Hair, status, 60, "$65", string.Empty);
@@ -27,14 +27,16 @@ public sealed class BookingWorkflowServiceTests
         StubCalendarQueryService? calendarQueryService = null,
         StubCalendarCommandService? calendarCommandService = null,
         StubBookingQueryService? bookingQueryService = null,
-        StubBookingCommandService? bookingCommandService = null) => new(
+        StubBookingCommandService? bookingCommandService = null,
+        StubCustomerCommandService? customerCommandService = null) => new(
         customerQueryService ?? new StubCustomerQueryService([]),
         serviceQueryService ?? new StubServiceQueryService([]),
         specialistQueryService ?? new StubSpecialistQueryService([]),
         calendarQueryService ?? new StubCalendarQueryService(),
         calendarCommandService ?? new StubCalendarCommandService(),
         bookingQueryService ?? new StubBookingQueryService(),
-        bookingCommandService ?? new StubBookingCommandService());
+        bookingCommandService ?? new StubBookingCommandService(),
+        customerCommandService ?? new StubCustomerCommandService());
 
     [Fact]
     public async Task GetBookingOptionsAsync_FiltersServicesAndSpecialistsToActiveOnly()
@@ -315,5 +317,44 @@ public sealed class BookingWorkflowServiceTests
         Assert.Equal(2, calendarCommandService.ReleaseCalls.Count);
         var releaseAfterCancel = calendarCommandService.ReleaseCalls[^1];
         Assert.Equal(newStart, releaseAfterCancel.Start); // cancel released the RESCHEDULED slot, not the original
+    }
+
+    // ---- Reception Stabilization Sprint: walk-in / guest customer ----
+
+    [Fact]
+    public async Task GetBookingOptionsAsync_CustomerHasLinkedUserAccount_MapsIsLinkedToAccountTrue()
+    {
+        var customerQueryService = new StubCustomerQueryService([MakeCustomer("customer-1", "Amelia Hart", userId: "user-1")]);
+        var sut = MakeSut(customerQueryService);
+
+        var options = await sut.GetBookingOptionsAsync();
+
+        Assert.True(options.Customers[0].IsLinkedToAccount);
+    }
+
+    [Fact]
+    public async Task GetBookingOptionsAsync_CustomerHasNoLinkedUserAccount_MapsIsLinkedToAccountFalse()
+    {
+        var customerQueryService = new StubCustomerQueryService([MakeCustomer("customer-2", "Walk-in Guest", userId: null)]);
+        var sut = MakeSut(customerQueryService);
+
+        var options = await sut.GetBookingOptionsAsync();
+
+        Assert.False(options.Customers[0].IsLinkedToAccount);
+    }
+
+    [Fact]
+    public async Task CreateGuestCustomerAsync_CreatesCustomerAndReturnsUnlinkedOption()
+    {
+        var customerCommandService = new StubCustomerCommandService();
+        var sut = MakeSut(customerCommandService: customerCommandService);
+
+        var option = await sut.CreateGuestCustomerAsync("Walk-in Guest", "555-0100");
+
+        var createRequest = Assert.Single(customerCommandService.CreateRequests);
+        Assert.Equal("Walk-in Guest", createRequest.FullName);
+        Assert.Equal("555-0100", createRequest.Phone);
+        Assert.False(option.IsLinkedToAccount);
+        Assert.Equal("Walk-in Guest", option.FullName);
     }
 }

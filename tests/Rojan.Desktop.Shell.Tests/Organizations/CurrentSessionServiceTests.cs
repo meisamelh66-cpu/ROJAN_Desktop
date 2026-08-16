@@ -234,6 +234,27 @@ public sealed class CurrentSessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task InitializeAsync_RealMembershipResolved_HasRealMembershipIsTrue()
+    {
+        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST");
+        var service = new CurrentSessionService(_queryService, _salonContextService, _settingsFilePath);
+
+        await service.InitializeAsync();
+
+        Assert.True(service.HasRealMembership);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_NoRealMembership_HasRealMembershipIsFalse()
+    {
+        var service = new CurrentSessionService(_queryService, _salonContextService, _settingsFilePath);
+
+        await service.InitializeAsync();
+
+        Assert.False(service.HasRealMembership);
+    }
+
+    [Fact]
     public async Task SwitchRoleAsync_SessionHasRealMembership_Throws()
     {
         _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST");

@@ -12,4 +12,10 @@ public sealed record CustomerDto(
     DateTimeOffset LastContactedAt,
     string Notes,
     string OrganizationId,
-    string BranchId);
+    string BranchId,
+    // Reception Stabilization Sprint: additive, trailing - null for a walk-in/guest customer with
+    // no linked backend user account. Lets the Booking Wizard tell a bookable customer from one
+    // that will 409 on CreateBookingAsync (a real, unchangeable backend business rule - see
+    // BookingWorkflow.WorkflowCustomerOptionDto.IsLinkedToAccount) before Reception reaches the
+    // last step.
+    string? UserId = null);

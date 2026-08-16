@@ -13,6 +13,8 @@ internal sealed class FakeCurrentSessionService : ICurrentSessionService
 
     public WorkspaceRole CurrentRole => WorkspaceRole.PlatformOwner;
 
+    public bool HasRealMembership => false;
+
     public IReadOnlyList<BranchDto> AvailableBranches => [];
 
     public IReadOnlyList<string> RecentBranchIds => [];

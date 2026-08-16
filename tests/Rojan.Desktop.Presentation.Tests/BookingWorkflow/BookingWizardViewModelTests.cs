@@ -9,7 +9,7 @@ public sealed class BookingWizardViewModelTests
 {
     private static readonly DateTimeOffset SlotStart = new(2026, 3, 2, 9, 0, 0, DateTimeOffset.Now.Offset);
 
-    private static WorkflowCustomerOptionDto MakeCustomer() => new("customer-1", "Amelia Hart");
+    private static WorkflowCustomerOptionDto MakeCustomer() => new("customer-1", "Amelia Hart", IsLinkedToAccount: true);
 
     private static WorkflowServiceOptionDto MakeService() => new("service-1", "Haircut & Style", 60, "$65");
 
@@ -175,5 +175,70 @@ public sealed class BookingWizardViewModelTests
         sut.DoneCommand.Execute(null);
 
         Assert.Equal(1, dialogService.CloseCount);
+    }
+
+    // ---- Reception Stabilization Sprint: walk-in / guest customer ----
+
+    [Fact]
+    public void ConfirmBookingCommand_Executed_CustomerNotLinkedToAccount_SetsErrorMessageAndDoesNotCreateBooking()
+    {
+        var unlinkedCustomer = new WorkflowCustomerOptionDto("customer-9", "Walk-in Guest", IsLinkedToAccount: false);
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService())
+        {
+            SelectedCustomer = unlinkedCustomer,
+        };
+        sut.NextCommand.Execute(null); // Customer -> Service
+        sut.SelectedService = MakeService();
+        sut.NextCommand.Execute(null); // Service -> Specialist
+        sut.SelectedSpecialist = MakeSpecialist();
+        sut.NextCommand.Execute(null); // Specialist -> Date
+        sut.NextCommand.Execute(null); // Date -> TimeSlot
+        sut.SelectedSlot = new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60));
+        sut.NextCommand.Execute(null); // TimeSlot -> Review
+
+        sut.ConfirmBookingCommand.Execute(null);
+
+        Assert.Empty(workflowService.CreateRequests);
+        Assert.Equal(BookingWizardStep.Review, sut.CurrentStep);
+        Assert.False(string.IsNullOrEmpty(sut.ErrorMessage));
+    }
+
+    [Fact]
+    public void AddGuestCustomerCommand_CanExecute_FalseWhenGuestFullNameIsEmpty()
+    {
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(MakeOptions()));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        Assert.False(sut.AddGuestCustomerCommand.CanExecute(null));
+
+        sut.GuestFullName = "Walk-in Guest";
+
+        Assert.True(sut.AddGuestCustomerCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void AddGuestCustomerCommand_Executed_AddsAndSelectsNewUnlinkedCustomer()
+    {
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            createGuestCustomer: (fullName, _, _) => Task.FromResult(new WorkflowCustomerOptionDto("guest-1", fullName, IsLinkedToAccount: false)));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService())
+        {
+            GuestFullName = "Walk-in Guest",
+            GuestPhone = "555-0100",
+        };
+
+        sut.AddGuestCustomerCommand.Execute(null);
+
+        var createCall = Assert.Single(workflowService.CreateGuestCustomerCalls);
+        Assert.Equal("Walk-in Guest", createCall.FullName);
+        Assert.Equal("555-0100", createCall.Phone);
+        Assert.Contains(sut.Customers, c => c.Id == "guest-1");
+        Assert.Equal("guest-1", sut.SelectedCustomer?.Id);
+        Assert.False(sut.SelectedCustomer?.IsLinkedToAccount);
+        Assert.Equal(string.Empty, sut.GuestFullName);
     }
 }

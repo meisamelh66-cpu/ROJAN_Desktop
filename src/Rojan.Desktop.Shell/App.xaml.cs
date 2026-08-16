@@ -186,8 +186,24 @@ public partial class App
         // NavigationItems (constructed further below), preserving the
         // original "before the thing that reads it" guarantee - only the
         // "after authentication" half of the ordering is new.
+        //
+        // Reception Stabilization Sprint: unlike every other InitializeAsync
+        // call in this method, this one is the sole real network round-trip
+        // in the whole sequence (API environment/session restore above are
+        // local-file-only; auth's own network calls already happened inside
+        // LoginWindow.ShowDialog() above) - it can fail for reasons outside
+        // the app's control (network blip, backend hiccup, expired token).
+        // Routed through InitializeSessionWithRetry so that failure no
+        // longer propagates unhandled off the top of OnStartup (where
+        // nothing could recover it - see OnUnhandledException's own doc
+        // comment); a declined retry exits the same clean way the login
+        // gate above already does for "user declined."
         var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
-        currentSessionService.InitializeAsync().GetAwaiter().GetResult();
+        if (!InitializeSessionWithRetry(currentSessionService, ConfirmSessionResolutionRetry))
+        {
+            Shutdown();
+            return;
+        }
 
         var certificateService = _host.Services.GetRequiredService<ICertificateService>();
         certificateService.InitializeAsync().GetAwaiter().GetResult();
@@ -487,4 +503,47 @@ public partial class App
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }
+
+    /// <summary>
+    /// Reception Stabilization Sprint: runs <see cref="ICurrentSessionService.InitializeAsync"/>,
+    /// offering Retry/Exit (via <paramref name="confirmRetry"/>) on failure instead of letting the
+    /// exception propagate off the top of <see cref="OnStartup"/> - see the call site's own doc
+    /// comment for why this call specifically needs this (it is the only real network round-trip
+    /// left unguarded in that sequence). Same top-level "must not crash the app" boundary reasoning
+    /// as every ViewModel's own broad-catch load boundary elsewhere in this codebase - the exact
+    /// failure reason (network down, backend error, expired token) doesn't change what the user
+    /// needs to do (retry or exit), so it is not distinguished here. Returns
+    /// <see langword="false"/> only when <paramref name="confirmRetry"/> returns
+    /// <see langword="false"/>, mirroring the login gate's own "declined, exit" shape.
+    /// <paramref name="confirmRetry"/> is a seam rather than a direct <c>MessageBox.Show</c> call
+    /// purely so this method is unit-testable without a real dialog - the production call site
+    /// passes <see cref="ConfirmSessionResolutionRetry"/>.
+    /// </summary>
+    internal static bool InitializeSessionWithRetry(ICurrentSessionService currentSessionService, Func<bool> confirmRetry)
+    {
+        while (true)
+        {
+#pragma warning disable CA1031 // Top-level startup boundary: any failure must offer Retry/Exit, not crash the app - see this method's own doc comment.
+            try
+            {
+                currentSessionService.InitializeAsync().GetAwaiter().GetResult();
+                return true;
+            }
+            catch (Exception)
+            {
+                if (!confirmRetry())
+                {
+                    return false;
+                }
+            }
+#pragma warning restore CA1031
+        }
+    }
+
+    private static bool ConfirmSessionResolutionRetry() =>
+        MessageBox.Show(
+            Strings.Startup_SessionResolutionFailedMessage,
+            "ROJAN Desktop",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning) == MessageBoxResult.Yes;
 }

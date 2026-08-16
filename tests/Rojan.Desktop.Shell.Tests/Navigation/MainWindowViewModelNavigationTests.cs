@@ -106,4 +106,41 @@ public sealed class MainWindowViewModelNavigationTests
 
         Assert.Equal("dashboard", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
     }
+
+    // ---- Reception Stabilization Sprint: initial-selection soft redirect ----
+
+    [Fact]
+    public void SelectedNavigationItem_NoRealMembership_DefaultsToAcceptInviteWhenPresent()
+    {
+        var modules = new[] { Module("dashboard"), Module("accept-invite") };
+        var session = new StubCurrentSessionService { HasRealMembership = false };
+
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
+
+        Assert.Equal("accept-invite", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
+    }
+
+    [Fact]
+    public void SelectedNavigationItem_HasRealMembership_DefaultsToFirstItemEvenWhenAcceptInvitePresent()
+    {
+        var modules = new[] { Module("dashboard"), Module("accept-invite") };
+        var session = new StubCurrentSessionService { HasRealMembership = true };
+
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
+
+        Assert.Equal("dashboard", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
+    }
+
+    [Fact]
+    public void SelectedNavigationItem_NoRealMembershipButAcceptInviteNotPresent_FallsBackToFirstItem()
+    {
+        // Covers a brand-new Owner with no salon yet - also HasRealMembership == false, but with
+        // no invite token to enter, so this must not trap them behind a page they can't get past.
+        var modules = new[] { Module("dashboard"), Module("salon") };
+        var session = new StubCurrentSessionService { HasRealMembership = false };
+
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
+
+        Assert.Equal("dashboard", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
+    }
 }

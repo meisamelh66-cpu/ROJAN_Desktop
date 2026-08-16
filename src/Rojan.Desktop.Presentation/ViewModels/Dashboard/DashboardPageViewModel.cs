@@ -4,9 +4,11 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Dashboard;
+using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
+using Rojan.Desktop.Presentation.Organizations;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -18,18 +20,32 @@ namespace Rojan.Desktop.Presentation.ViewModels.Dashboard;
 /// display data here: they are UI affordances (buttons that trigger future
 /// commands), not fetched data, so they have no repository/DTO of their
 /// own.
+///
+/// Reception Stabilization Sprint: <see cref="LoadAsync"/> now filters out
+/// the <see cref="FinancialKpiId"/> tile (real backend revenue) for any
+/// role lacking <see cref="Permission.AccountingView"/> - previously every
+/// role, including Reception (which <c>RolePermissions</c> never grants
+/// that permission), saw real salon revenue on first login with no
+/// filtering anywhere in this ViewModel. Reuses the existing permission -
+/// no new one added.
 /// </summary>
 public sealed class DashboardPageViewModel : ViewModelBase
 {
+    private const string FinancialKpiId = "kpi-revenue";
+
     private static readonly CompositeFormat HeroCtaFormat = CompositeFormat.Parse(Strings.Dashboard_Hero_CtaFormat);
 
     private readonly IDashboardQueryService _queryService;
+    private readonly IPermissionEngine _permissionEngine;
+    private readonly ICurrentSessionService _currentSessionService;
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
 
-    public DashboardPageViewModel(IDashboardQueryService queryService)
+    public DashboardPageViewModel(IDashboardQueryService queryService, IPermissionEngine permissionEngine, ICurrentSessionService currentSessionService)
     {
         _queryService = queryService;
+        _permissionEngine = permissionEngine;
+        _currentSessionService = currentSessionService;
 
         KpiMetrics = new ObservableCollection<KpiMetricDto>();
         RecentActivity = new ObservableCollection<ActivityEntryDto>();
@@ -241,10 +257,16 @@ public sealed class DashboardPageViewModel : ViewModelBase
         try
         {
             var overview = await _queryService.GetOverviewAsync().ConfigureAwait(true);
+            var canViewFinancials = _permissionEngine.HasPermission(_currentSessionService.CurrentRole, Permission.AccountingView);
 
             KpiMetrics.Clear();
             foreach (var metric in overview.KpiMetrics)
             {
+                if (metric.Id == FinancialKpiId && !canViewFinancials)
+                {
+                    continue;
+                }
+
                 KpiMetrics.Add(metric);
             }
 

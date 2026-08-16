@@ -513,6 +513,16 @@ public static class Strings
 
     public static string BookingWizard_ConfirmBooking => Get(nameof(BookingWizard_ConfirmBooking));
 
+    public static string BookingWizard_CustomerNotLinkedToAccountMessage => Get(nameof(BookingWizard_CustomerNotLinkedToAccountMessage));
+
+    public static string BookingWizard_AddGuestCustomer => Get(nameof(BookingWizard_AddGuestCustomer));
+
+    public static string BookingWizard_GuestFullNameLabel => Get(nameof(BookingWizard_GuestFullNameLabel));
+
+    public static string BookingWizard_GuestPhoneLabel => Get(nameof(BookingWizard_GuestPhoneLabel));
+
+    public static string BookingWizard_UnlinkedCustomerBadge => Get(nameof(BookingWizard_UnlinkedCustomerBadge));
+
     public static string Specialists_Title => Get(nameof(Specialists_Title));
 
     public static string Specialists_Subtitle => Get(nameof(Specialists_Subtitle));
@@ -1575,6 +1585,8 @@ public static class Strings
     public static string Login_Error_Generic => Get(nameof(Login_Error_Generic));
 
     public static string Login_SessionEndedMessage => Get(nameof(Login_SessionEndedMessage));
+
+    public static string Startup_SessionResolutionFailedMessage => Get(nameof(Startup_SessionResolutionFailedMessage));
 
     // Owner App Mobile Login: primary Mobile Number + OTP flow, and the mode-switch links to/from the secondary Email + Password flow above.
     public static string Login_Mobile_PhoneLabel => Get(nameof(Login_Mobile_PhoneLabel));
