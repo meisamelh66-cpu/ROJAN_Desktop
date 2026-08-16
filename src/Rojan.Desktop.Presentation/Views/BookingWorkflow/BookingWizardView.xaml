@@ -228,7 +228,6 @@
                                         <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
                                         <!-- Reception Stabilization Sprint: flags a walk-in/guest customer as not yet bookable, before Reception reaches the last step. -->
                                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_UnlinkedCustomerBadge}"
-                                                   Style="{StaticResource Rojan.TextStyle.Caption}"
                                                    Foreground="{StaticResource Rojan.Brush.Error}"
                                                    VerticalAlignment="Center"
                                                    Margin="8,0,0,0">
