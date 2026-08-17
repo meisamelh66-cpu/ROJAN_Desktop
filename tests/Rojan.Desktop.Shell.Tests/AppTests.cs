@@ -72,7 +72,7 @@ public sealed class AppTests
 
         public IReadOnlyList<string> FavoriteBranchIds => [];
 
-        public event EventHandler? SessionChanged;
+        public event EventHandler? SessionChanged { add { } remove { } }
 
         public Task InitializeAsync(CancellationToken cancellationToken = default)
         {

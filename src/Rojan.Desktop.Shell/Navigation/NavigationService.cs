@@ -50,7 +50,7 @@ namespace Rojan.Desktop.Shell.Navigation;
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
-    private static readonly IReadOnlyDictionary<Type, Permission> RequiredPermissionsByViewModelType = new Dictionary<Type, Permission>
+    private static readonly Dictionary<Type, Permission> RequiredPermissionsByViewModelType = new()
     {
         [typeof(AutomationPageViewModel)] = Permission.AutomationView,
         [typeof(OrganizationPageViewModel)] = Permission.OrganizationManage,

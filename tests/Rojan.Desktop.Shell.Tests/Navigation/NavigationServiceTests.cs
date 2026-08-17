@@ -23,7 +23,7 @@ public sealed class NavigationServiceTests
     private static NavigationService CreateSut(IServiceProvider serviceProvider, WorkspaceRole role) =>
         new(serviceProvider, new PermissionEngine(), new StubCurrentSessionService { CurrentRole = role });
 
-    private static IServiceProvider CreateServiceProviderWithOrganizationPageViewModel()
+    private static ServiceProvider CreateServiceProviderWithOrganizationPageViewModel()
     {
         var services = new ServiceCollection();
         services.AddSingleton<IOrganizationQueryService>(new OrganizationQueryService(new FakeOrganizationRepository()));
