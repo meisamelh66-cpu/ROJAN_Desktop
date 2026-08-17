@@ -18,16 +18,14 @@
         constructed - see App.xaml.cs's OnStartup gating. FlowDirection is
         set in code-behind from ILocalizationService, same as MainWindow.
 
-        DataContext is LoginWindowViewModel - Mobile Number + OTP
-        (MobileLogin) is the only sign-in flow (Login UI Simplification:
-        the previous secondary Email/Password panel + mode-switch links
-        were removed entirely - see LoginWindowViewModel's own doc
-        comment for why the email flow itself still exists elsewhere,
-        just not wired into this window anymore). Bindings stay fully
-        qualified (MobileLogin.X) even with only one panel left, matching
-        every other ViewModel-per-section convention in this app.
-        IsBusy/ErrorMessage/step-switching react via Style+DataTrigger (no
-        value converters needed).
+        DataContext is LoginWindowViewModel - Email/Password (EmailLogin)
+        is the only sign-in flow (Authentication Recovery, Option C: Mobile
+        Number + OTP was the sole flow for a period, but calls backend
+        endpoints that do not exist on the real ROJAN_Backend - see
+        LoginWindowViewModel's own doc comment). Bindings stay fully
+        qualified (EmailLogin.X) matching every other ViewModel-per-section
+        convention in this app. IsBusy/ErrorMessage react via
+        Style+DataTrigger (no value converters needed).
     -->
     <Grid Margin="40">
         <Grid.RowDefinitions>
@@ -48,116 +46,65 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,32" />
 
-            <!-- ===================== Mobile Number + OTP (only sign-in flow) ===================== -->
+            <!-- ===================== Email + Password (only sign-in flow) ===================== -->
             <StackPanel>
-                <!-- Step 1: phone number entry -->
-                <StackPanel>
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
+                <TextBlock Text="{x:Static loc:Strings.Login_EmailLabel}"
+                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                           Foreground="{StaticResource Rojan.Brush.TextSecondary}"
+                           Margin="0,0,0,4" />
+                <TextBox x:Name="EmailTextBox"
+                         Text="{Binding EmailLogin.Email, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,16">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding MobileLogin.IsCodeSent}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed" />
+                                <DataTrigger Binding="{Binding EmailLogin.IsBusy}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </StackPanel.Style>
+                    </TextBox.Style>
+                </TextBox>
 
-                    <TextBlock Text="{x:Static loc:Strings.Login_Mobile_PhoneLabel}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.TextSecondary}"
-                               Margin="0,0,0,4" />
-                    <TextBox x:Name="PhoneNumberTextBox"
-                             Text="{Binding MobileLogin.PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
-                             Margin="0,0,0,16">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding MobileLogin.IsBusy}" Value="True">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-
-                    <Button Content="{x:Static loc:Strings.Login_Mobile_SendCodeButton}"
-                            Command="{Binding MobileLogin.RequestCodeCommand}"
-                            IsDefault="True"
-                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                            HorizontalAlignment="Stretch"
-                            Height="40" />
-                </StackPanel>
-
-                <!-- Step 2: OTP code entry -->
-                <StackPanel>
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding MobileLogin.IsCodeSent}" Value="False">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-
-                    <TextBlock Text="{x:Static loc:Strings.Login_Mobile_CodeLabel}"
-                               Style="{StaticResource Rojan.TextStyle.Caption}"
-                               Foreground="{StaticResource Rojan.Brush.TextSecondary}"
-                               Margin="0,0,0,4" />
-                    <TextBox x:Name="CodeTextBox"
-                             Text="{Binding MobileLogin.Code, UpdateSourceTrigger=PropertyChanged}"
-                             MaxLength="6"
+                <TextBlock Text="{x:Static loc:Strings.Login_PasswordLabel}"
+                           Style="{StaticResource Rojan.TextStyle.Caption}"
+                           Foreground="{StaticResource Rojan.Brush.TextSecondary}"
+                           Margin="0,0,0,4" />
+                <PasswordBox x:Name="PasswordBox"
+                             PasswordChanged="PasswordBox_PasswordChanged"
                              Margin="0,0,0,8">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding MobileLogin.IsBusy}" Value="True">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                    <PasswordBox.Style>
+                        <Style TargetType="PasswordBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding EmailLogin.IsBusy}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </PasswordBox.Style>
+                </PasswordBox>
 
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0"
-                                Content="{x:Static loc:Strings.Common_Back}"
-                                Command="{Binding MobileLogin.ChangeNumberCommand}"
-                                Style="{StaticResource Rojan.Style.ButtonSecondary}"
-                                HorizontalAlignment="Left" />
-                        <Button Grid.Column="1"
-                                Content="{x:Static loc:Strings.Login_Mobile_ResendButton}"
-                                Command="{Binding MobileLogin.ResendCodeCommand}"
-                                Style="{StaticResource Rojan.Style.ButtonSecondary}"
-                                HorizontalAlignment="Right" />
-                    </Grid>
-
-                    <Button Content="{x:Static loc:Strings.Login_Mobile_VerifyButton}"
-                            Command="{Binding MobileLogin.VerifyCodeCommand}"
-                            IsDefault="True"
-                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
-                            HorizontalAlignment="Stretch"
-                            Height="40" />
-                </StackPanel>
-
-                <TextBlock Text="{Binding MobileLogin.ErrorMessage}"
+                <TextBlock Text="{Binding EmailLogin.ErrorMessage}"
                            Foreground="{StaticResource Rojan.Brush.Error}"
                            TextWrapping="Wrap"
-                           Margin="0,16,0,0">
+                           Margin="0,0,0,16">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding MobileLogin.ErrorMessage}" Value="{x:Null}">
+                                <DataTrigger Binding="{Binding EmailLogin.ErrorMessage}" Value="{x:Null}">
                                     <Setter Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+
+                <Button Content="{x:Static loc:Strings.Login_SignInButton}"
+                        Command="{Binding EmailLogin.SignInCommand}"
+                        IsDefault="True"
+                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                        HorizontalAlignment="Stretch"
+                        Height="40" />
             </StackPanel>
         </StackPanel>
     </Grid>

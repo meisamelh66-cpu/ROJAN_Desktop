@@ -3,31 +3,35 @@ using Rojan.Desktop.Presentation.Mvvm;
 namespace Rojan.Desktop.Presentation.ViewModels.Security;
 
 /// <summary>
-/// Login UI Simplification: thin wrapper around the primary Mobile Number +
-/// OTP flow (<see cref="MobileLogin"/>) - <c>LoginWindow</c>'s actual
-/// DataContext. Previously also composed a secondary Email/Password flow
-/// (<see cref="LoginViewModel"/>) behind a mode-switch flag; that flow was
-/// removed from the Login UI entirely (backend/API support for it is
-/// unchanged and still exists in <c>IAuthenticationService</c>/
-/// <see cref="LoginViewModel"/> itself, simply no longer wired into this
-/// window) so Mobile Number + OTP is now the only way to sign in from
-/// Desktop. This wrapper is kept (rather than binding <c>LoginWindow</c>
-/// directly to <see cref="MobileOtpLoginViewModel"/>) so <c>SignedIn</c>
-/// keeps the same event shape/name the Shell's DI wiring and
-/// <c>LoginWindow.xaml.cs</c> already depend on.
+/// Authentication Recovery (Option C): thin wrapper around the Email/
+/// Password flow (<see cref="EmailLogin"/>) - <c>LoginWindow</c>'s actual
+/// DataContext. Mobile Number + OTP (<see cref="MobileOtpLoginViewModel"/>)
+/// was the sole sign-in flow for a period, but calls backend endpoints
+/// (<c>/auth/otp/request</c>/<c>/verify</c>) that do not exist on the real,
+/// confirmed-authoritative ROJAN_Backend - see
+/// ROJAN_Authentication_Contract_Verification.md/
+/// ROJAN_Authentication_Recovery_Plan.md. Email/Password calls endpoints
+/// that are verified to exist and match exactly, so it is restored here as
+/// the only wired flow; <see cref="MobileOtpLoginViewModel"/> itself is
+/// deliberately left completely untouched (not deleted, not modified) so
+/// future OTP work - once ROJAN_Backend actually supports it - can re-wire
+/// it without rebuilding it. This wrapper is kept (rather than binding
+/// <c>LoginWindow</c> directly to <see cref="LoginViewModel"/>) so
+/// <c>SignedIn</c> keeps the same event shape/name the Shell's DI wiring
+/// and <c>LoginWindow.xaml.cs</c> already depend on.
 /// </summary>
 public sealed class LoginWindowViewModel : ViewModelBase
 {
-    public LoginWindowViewModel(MobileOtpLoginViewModel mobileLogin)
+    public LoginWindowViewModel(LoginViewModel emailLogin)
     {
-        MobileLogin = mobileLogin;
-        MobileLogin.SignedIn += OnMobileSignedIn;
+        EmailLogin = emailLogin;
+        EmailLogin.SignedIn += OnEmailSignedIn;
     }
 
-    public MobileOtpLoginViewModel MobileLogin { get; }
+    public LoginViewModel EmailLogin { get; }
 
-    /// <summary>Raised once <see cref="MobileLogin"/>'s own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this to know when to close.</summary>
+    /// <summary>Raised once <see cref="EmailLogin"/>'s own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this to know when to close.</summary>
     public event EventHandler? SignedIn;
 
-    private void OnMobileSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
+    private void OnEmailSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
 }

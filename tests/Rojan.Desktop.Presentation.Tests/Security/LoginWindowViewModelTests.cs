@@ -2,32 +2,32 @@ using Rojan.Desktop.Presentation.ViewModels.Security;
 
 namespace Rojan.Desktop.Presentation.Tests.Security;
 
-/// <summary>Exercises <see cref="LoginWindowViewModel"/> - the thin wrapper around the Mobile Number + OTP flow, and its bubbled <see cref="LoginWindowViewModel.SignedIn"/> signal.</summary>
+/// <summary>Exercises <see cref="LoginWindowViewModel"/> - the thin wrapper around the Email/Password flow, and its bubbled <see cref="LoginWindowViewModel.SignedIn"/> signal.</summary>
 public sealed class LoginWindowViewModelTests
 {
     [Fact]
-    public async Task MobileLoginSignedIn_BubblesThroughTheComposedSignedInEvent()
+    public async Task EmailLoginSignedIn_BubblesThroughTheComposedSignedInEvent()
     {
-        var sut = CreateViewModel(out var mobileService);
+        var sut = CreateViewModel(out var emailService);
         var raised = false;
         sut.SignedIn += (_, _) => raised = true;
 
-        sut.MobileLogin.PhoneNumber = "+989123456789";
-        sut.MobileLogin.Code = "123456";
-        sut.MobileLogin.VerifyCodeCommand.Execute(null);
-        for (var i = 0; i < 100 && sut.MobileLogin.IsBusy; i++)
+        sut.EmailLogin.Email = "owner@example.com";
+        sut.EmailLogin.Password = "supersecret123";
+        sut.EmailLogin.SignInCommand.Execute(null);
+        for (var i = 0; i < 100 && sut.EmailLogin.IsBusy; i++)
         {
             await Task.Delay(10);
         }
 
         Assert.True(raised);
-        Assert.Equal(1, mobileService.SignInWithOtpCallCount);
+        Assert.Equal(1, emailService.SignInWithCredentialsCallCount);
     }
 
-    private static LoginWindowViewModel CreateViewModel(out StubAuthenticationService mobileService)
+    private static LoginWindowViewModel CreateViewModel(out StubAuthenticationService emailService)
     {
-        mobileService = new StubAuthenticationService();
-        var mobileLogin = new MobileOtpLoginViewModel(mobileService, new StubDelayScheduler());
-        return new LoginWindowViewModel(mobileLogin);
+        emailService = new StubAuthenticationService();
+        var emailLogin = new LoginViewModel(emailService);
+        return new LoginWindowViewModel(emailLogin);
     }
 }
