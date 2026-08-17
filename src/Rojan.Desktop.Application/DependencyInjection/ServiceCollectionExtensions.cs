@@ -50,6 +50,10 @@ public static class ServiceCollectionExtensions
         // membership/permission yet, gating this would lock them out of the one
         // action that grants everything else.
         services.AddSingleton<ISalonInviteService, SalonInviteService>();
+        // Salon Adapter Migration Phase 1: translates a resolved real SalonContext
+        // into the legacy OrganizationDto/WorkspaceRole shape CurrentSessionService
+        // still exposes - see ISalonSessionAdapter's own doc comment.
+        services.AddSingleton<ISalonSessionAdapter, SalonSessionAdapter>();
         services.AddSingleton<ICustomerQueryService, CustomerQueryService>();
         services.AddSingleton<ICustomerProfileQueryService, CustomerProfileQueryService>();
 

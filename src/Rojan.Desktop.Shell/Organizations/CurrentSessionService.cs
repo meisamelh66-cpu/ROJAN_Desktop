@@ -47,21 +47,23 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
 
     private readonly IOrganizationQueryService _organizationQueryService;
     private readonly ISalonContextService _salonContextService;
+    private readonly ISalonSessionAdapter _salonSessionAdapter;
     private readonly string _settingsFilePath;
     private List<BranchDto> _availableBranches = [];
     private List<string> _recentBranchIds = [];
     private List<string> _favoriteBranchIds = [];
     private bool _hasRealMembership;
 
-    public CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService)
-        : this(organizationQueryService, salonContextService, DefaultSettingsFilePath())
+    public CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter)
+        : this(organizationQueryService, salonContextService, salonSessionAdapter, DefaultSettingsFilePath())
     {
     }
 
-    internal CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, string settingsFilePath)
+    internal CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter, string settingsFilePath)
     {
         _organizationQueryService = organizationQueryService;
         _salonContextService = salonContextService;
+        _salonSessionAdapter = salonSessionAdapter;
         _settingsFilePath = settingsFilePath;
     }
 
@@ -194,52 +196,22 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
     /// <see cref="SalonContext"/> - no branch (backend Branch integration is
     /// out of this phase's scope, see the plan's own Context section),
     /// nothing recent/favorited (those are a local, per-org UI convenience
-    /// this phase doesn't extend to real salons yet). <see cref="OrganizationDto"/>'s
-    /// many fields beyond id/name (LegalName/Logo/Subscription/Code/TimeZone/etc.)
-    /// have no equivalent on ROJAN_Backend's <c>Salon</c> at all - populated
-    /// with honest defaults, not fabricated values standing in for real data
-    /// that simply does not exist in this backend's model.
+    /// this phase doesn't extend to real salons yet). Salon Adapter
+    /// Migration Phase 1: the actual field-mapping (both the
+    /// <see cref="OrganizationDto"/> shape and the <see cref="WorkspaceRole"/>)
+    /// now lives in <see cref="_salonSessionAdapter"/> - this method only
+    /// orchestrates this service's own state, unchanged in behavior from
+    /// before the extraction.
     /// </summary>
     private void ApplyRealMembership(SalonContext salonContext)
     {
-        CurrentOrganization = new OrganizationDto(
-            Id: salonContext.SalonId,
-            Name: salonContext.SalonName,
-            LegalName: salonContext.SalonName,
-            Logo: string.Empty,
-            BrandColor: string.Empty,
-            TaxInformation: string.Empty,
-            Subscription: SubscriptionPlan.Trial,
-            Status: OrganizationStatus.Active,
-            CreatedDate: DateTimeOffset.UtcNow,
-            Code: string.Empty,
-            Phone: string.Empty,
-            Email: string.Empty,
-            Address: string.Empty,
-            TimeZone: string.Empty,
-            Language: string.Empty,
-            Currency: string.Empty);
+        CurrentOrganization = _salonSessionAdapter.ToOrganizationDto(salonContext);
         _availableBranches = [];
         CurrentBranch = null;
-        CurrentRole = MapRole(salonContext);
+        CurrentRole = _salonSessionAdapter.ToWorkspaceRole(salonContext);
         _recentBranchIds = [];
         _favoriteBranchIds = [];
         _hasRealMembership = true;
-    }
-
-    /// <summary>An owner's role is never a <c>SalonRole</c> membership (see ROJAN_Backend's own doc comment on that enum) - only the non-owner branch maps a backend role string. Falls back to <see cref="WorkspaceRole.Reception"/> for any role string this Desktop app doesn't otherwise recognize (e.g. a manager invite accepted here, out of this phase's own scope) rather than throwing - a real, backend-confirmed membership must never fail to resolve into *some* usable session.</summary>
-    private static WorkspaceRole MapRole(SalonContext salonContext)
-    {
-        if (salonContext.IsOwner)
-        {
-            return WorkspaceRole.OrganizationOwner;
-        }
-
-        return salonContext.MembershipRole switch
-        {
-            "MANAGER" => WorkspaceRole.OrganizationManager,
-            _ => WorkspaceRole.Reception,
-        };
     }
 
     private SessionSettingsFile? ReadPersistedSelection()
