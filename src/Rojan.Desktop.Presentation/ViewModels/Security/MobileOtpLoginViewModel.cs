@@ -251,9 +251,19 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
             await _authenticationService.SignInWithOtpAsync(NormalizePhoneNumber(PhoneNumber), Code.Trim()).ConfigureAwait(true);
             SignedIn?.Invoke(this, EventArgs.Empty);
         }
-        catch (ApiAuthenticationException)
+        catch (ApiAuthenticationException exception)
         {
-            ErrorMessage = Strings.Login_Mobile_Error_InvalidCode;
+            // Authentication Error Handling Alignment (Phase 1): a 403 means
+            // the account/request was rejected on authorization grounds, not
+            // that the code itself was wrong - showing "invalid code" for
+            // that case would send the user retyping a code that was never
+            // the actual problem. 401 (and any case with no known status,
+            // preserving the prior behavior) still means "wrong/expired
+            // code," the only thing SignInWithOtpAsync's own contract says
+            // a 401 here means.
+            ErrorMessage = exception.StatusCode == 403
+                ? Strings.Login_Mobile_Error_NotAuthorized
+                : Strings.Login_Mobile_Error_InvalidCode;
         }
         catch (ApiConnectivityException)
         {

@@ -2956,6 +2956,9 @@
   <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
     <value>رمز التحقق غير صحيح أو منتهي الصلاحية.</value>
   </data>
+  <data name="Login_Mobile_Error_NotAuthorized" xml:space="preserve">
+    <value>هذا الحساب غير مصرح له بتسجيل الدخول. يرجى التواصل مع الدعم.</value>
+  </data>
   <data name="Login_SwitchToEmailLink" xml:space="preserve">
     <value>تسجيل الدخول بالبريد الإلكتروني</value>
   </data>

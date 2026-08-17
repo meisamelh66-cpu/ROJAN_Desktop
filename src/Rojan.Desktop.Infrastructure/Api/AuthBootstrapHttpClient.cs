@@ -86,7 +86,7 @@ public sealed class AuthBootstrapHttpClient : IDisposable
 
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
-                throw new ApiAuthenticationException($"Request was rejected with status {(int)response.StatusCode}: {responseBody}");
+                throw new ApiAuthenticationException($"Request was rejected with status {(int)response.StatusCode}: {responseBody}", (int)response.StatusCode);
             }
 
             if (!response.IsSuccessStatusCode)

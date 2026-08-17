@@ -2956,6 +2956,9 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
     <value>Invalid or expired verification code.</value>
   </data>
+  <data name="Login_Mobile_Error_NotAuthorized" xml:space="preserve">
+    <value>This account isn't authorized to sign in. Please contact support.</value>
+  </data>
   <data name="Login_SwitchToEmailLink" xml:space="preserve">
     <value>Sign in with email instead</value>
   </data>

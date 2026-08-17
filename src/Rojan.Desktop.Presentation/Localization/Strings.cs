@@ -1607,6 +1607,8 @@ public static class Strings
 
     public static string Login_Mobile_Error_InvalidCode => Get(nameof(Login_Mobile_Error_InvalidCode));
 
+    public static string Login_Mobile_Error_NotAuthorized => Get(nameof(Login_Mobile_Error_NotAuthorized));
+
     public static string Login_SwitchToEmailLink => Get(nameof(Login_SwitchToEmailLink));
 
     public static string Login_SwitchToMobileLink => Get(nameof(Login_SwitchToMobileLink));

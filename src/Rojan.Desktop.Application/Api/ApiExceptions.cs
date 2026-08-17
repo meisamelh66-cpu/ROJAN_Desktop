@@ -40,14 +40,31 @@ public sealed class ApiTimeoutException : ApiException
 /// <summary>Thrown when the backend responds 401/403 - distinct from other non-2xx responses (which surface as a failed <see cref="ApiResponse{T}"/>) because an auth failure is something the authentication handler should react to (e.g. by expiring the session), not just report.</summary>
 public sealed class ApiAuthenticationException : ApiException
 {
-    public ApiAuthenticationException(string message)
+    public ApiAuthenticationException(string message, int? statusCode = null)
         : base(message)
     {
+        StatusCode = statusCode;
     }
 
     /// <summary>Sprint 7 Commit 2: used when a 401's refresh-and-retry attempt fails because <c>ISessionService.RefreshAsync</c> itself threw (e.g. an expired refresh token) - the original exception is preserved as <see cref="Exception.InnerException"/> rather than discarded.</summary>
-    public ApiAuthenticationException(string message, Exception innerException)
+    public ApiAuthenticationException(string message, Exception innerException, int? statusCode = null)
         : base(message, innerException)
     {
+        StatusCode = statusCode;
     }
+
+    /// <summary>
+    /// Authentication Error Handling Alignment (Phase 1): the raw HTTP status
+    /// (401 or 403) that caused this exception, when the throw site knows it -
+    /// <see langword="null"/> for call sites that don't have one (e.g. a
+    /// synthetic "session refresh itself failed" exception with no single
+    /// status code of its own). Lets a caller (e.g.
+    /// <c>MobileOtpLoginViewModel.VerifyCodeAsync</c>) distinguish "invalid/
+    /// expired code" (401) from "not authorized to sign in this way" (403)
+    /// without parsing the response body or assuming a backend-specific
+    /// error-code contract - deliberately the smallest possible addition,
+    /// not a general error-code/body-parsing overhaul (out of scope for this
+    /// phase).
+    /// </summary>
+    public int? StatusCode { get; }
 }

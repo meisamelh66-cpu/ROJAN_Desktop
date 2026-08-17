@@ -2968,6 +2968,9 @@
   <data name="Login_Mobile_Error_InvalidCode" xml:space="preserve">
     <value>کد تأیید نامعتبر یا منقضی شده است.</value>
   </data>
+  <data name="Login_Mobile_Error_NotAuthorized" xml:space="preserve">
+    <value>این حساب مجاز به ورود نیست. با پشتیبانی تماس بگیرید.</value>
+  </data>
   <data name="Login_SwitchToEmailLink" xml:space="preserve">
     <value>ورود با ایمیل</value>
   </data>
