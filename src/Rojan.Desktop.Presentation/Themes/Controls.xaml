@@ -102,6 +102,19 @@
     hierarchy: one Primary, everything else Secondary/Subtle). No pill
     shape, no gradient, no hover glow - a subtle fill-color shift on
     hover/pressed is Fluent's own primary-button feedback.
+
+    Design System Alignment pass: this and the three sibling button
+    styles below (Secondary/Outlined/OutlinedDanger), plus the TextBox
+    style further down, moved from Rojan.CornerRadius.Small (4px) to
+    .Medium (8px) to match rojanai.ir's own button/input radius
+    convention (Tailwind's `rounded-md`) - see
+    ROJAN_Desktop_Design_Token_Proposal.md §5/§6. Deliberately NOT a
+    change to the Small/Medium/Large scale itself (Shapes.xaml
+    untouched) and NOT applied to NavigationItem/ComboBoxItem/
+    ToggleButton/popup chrome below, which keep their existing 4px -
+    still "no pill shape" per Phase 16's own reasoning above, just one
+    step rounder than before on the two control families the proposal
+    flagged as measurably behind the website.
   -->
   <Style x:Key="Rojan.Style.ButtonPrimary" TargetType="Button">
     <Setter Property="Background" Value="{StaticResource Rojan.Brush.Accent}" />
@@ -118,7 +131,7 @@
         <ControlTemplate TargetType="Button">
           <Border x:Name="ButtonBorder"
                   Background="{TemplateBinding Background}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
                   Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
@@ -157,7 +170,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
                   Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
@@ -202,7 +215,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
                   Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
@@ -250,7 +263,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}"
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}"
                   Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
@@ -500,7 +513,7 @@
     <Setter Property="Validation.ErrorTemplate">
       <Setter.Value>
         <ControlTemplate>
-          <Border BorderBrush="{StaticResource Rojan.Brush.Error}" BorderThickness="1" CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+          <Border BorderBrush="{StaticResource Rojan.Brush.Error}" BorderThickness="1" CornerRadius="{StaticResource Rojan.CornerRadius.Medium}">
             <AdornedElementPlaceholder />
           </Border>
         </ControlTemplate>
@@ -513,7 +526,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{StaticResource Rojan.CornerRadius.Small}">
+                  CornerRadius="{StaticResource Rojan.CornerRadius.Medium}">
             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
           </Border>
           <ControlTemplate.Triggers>

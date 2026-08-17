@@ -40,7 +40,24 @@
     sole place the design system is assembled since the Fluent 2 Premium
     Theme pass removed every other file's redundant self-merge).
   -->
-  <FontFamily x:Key="Rojan.FontFamily.Default">Segoe UI Variable, Segoe UI</FontFamily>
+  <!--
+    Design System Alignment pass: Vazirmatn/Inter added ahead of the
+    existing Segoe UI Variable/Segoe UI pair, matching rojanai.ir's own
+    font stack (`Vazirmatn, Inter, Geist Sans` - see
+    ROJAN_Web_Design_System_Audit.md §2 / ROJAN_Desktop_Design_Token_
+    Proposal.md §2), Vazirmatn first since this app ships full Persian/
+    RTL localization (Strings.ar.resx). NOT bundled as an embedded font
+    resource in this pass - no font files were added to the project (no
+    new dependency, per this pass's own constraint) - so Vazirmatn/
+    Inter only take effect on a machine that already has them installed
+    system-wide; everywhere else this resolves straight through to
+    Segoe UI Variable/Segoe UI exactly as before. Embedding the actual
+    font files for guaranteed Persian-glyph-accurate rendering on every
+    machine is a separate, larger decision (asset licensing + app size),
+    intentionally not done here - flagged in this pass's report as an
+    open question, not resolved by this one-line change.
+  -->
+  <FontFamily x:Key="Rojan.FontFamily.Default">Vazirmatn, Inter, Segoe UI Variable, Segoe UI</FontFamily>
 
   <!--
     Enterprise UX/UI Refinement pass: titles pushed larger/heavier across

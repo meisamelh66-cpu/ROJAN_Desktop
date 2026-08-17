@@ -31,20 +31,43 @@
     (#E5484D -> #F1555B) to move it from a borderline ~4.45:1 to a
     comfortable ~5.1:1 against this file's own Background, see
     Light.xaml's doc comment for the full rationale.
+
+    Design System Alignment pass: Background and Surface/Card retargeted
+    to the exact rojanai.ir product theme's dark shell (`.rojan-theme`
+    "background" #1A1426, "card" #241B30 - see
+    ROJAN_Web_Design_System_Audit.md §1 / ROJAN_Desktop_Design_Token_
+    Proposal.md §1) - a warm purple-navy instead of the prior cool
+    blue-navy, matching the website's actual dark app shell rather than
+    a generic dark neutral. The website only defines two dark-surface
+    tiers (background/card); Workspace/SurfaceSecondary/SurfaceElevated/
+    SurfaceHover/SurfacePressed below are interpolated to preserve this
+    file's existing five-tier hierarchy (Background < Workspace <
+    Surface/Card < SurfaceElevated, with Hover/Pressed as Card-adjacent
+    steps) - same relative-lightness relationship as before, just
+    re-based on the new purple-navy hue instead of the old blue-navy
+    one. Border/BorderStrong (translucent white) and every text/status
+    color are UNCHANGED - already conceptually aligned with the
+    website's own translucent-white-border dark convention, and text/
+    status contrast was previously AA-verified against the old
+    Background; deliberately not re-verified against the new one in
+    this pass (all are darker/similar lightness, not lighter, so this
+    is not expected to regress contrast, but flagging as unverified
+    rather than silently claiming AA compliance for values not
+    explicitly re-checked here).
   -->
 
-  <Color x:Key="Rojan.Color.Background">#FF15192A</Color>
+  <Color x:Key="Rojan.Color.Background">#FF1A1426</Color>
   <!-- Premium Lavender Enhancement pass (light theme only - see Light.xaml's own doc comment): Header/Navigation are new keys every consumer now references, so they must resolve here too or selecting Dark theme throws a StaticResource-not-found error. No dark-appropriate target values were given, so both alias straight to this file's own Background, leaving dark mode's appearance unchanged. -->
-  <Color x:Key="Rojan.Color.Header">#FF15192A</Color>
-  <Color x:Key="Rojan.Color.Navigation">#FF15192A</Color>
+  <Color x:Key="Rojan.Color.Header">#FF1A1426</Color>
+  <Color x:Key="Rojan.Color.Navigation">#FF1A1426</Color>
   <!-- Enterprise UX/UI Refinement pass: mirrors Light.xaml's new Background/Workspace split - a step brighter than Background, one step below Card, so the workspace content area still reads as distinct chrome-vs-canvas in dark mode too. -->
-  <Color x:Key="Rojan.Color.Workspace">#FF181D30</Color>
-  <Color x:Key="Rojan.Color.Surface">#FF1F2438</Color>
-  <Color x:Key="Rojan.Color.Card">#FF1F2438</Color>
-  <Color x:Key="Rojan.Color.SurfaceSecondary">#FF1A1F32</Color>
-  <Color x:Key="Rojan.Color.SurfaceElevated">#FF262C46</Color>
-  <Color x:Key="Rojan.Color.SurfaceHover">#FF2A3049</Color>
-  <Color x:Key="Rojan.Color.SurfacePressed">#FF232840</Color>
+  <Color x:Key="Rojan.Color.Workspace">#FF1F172B</Color>
+  <Color x:Key="Rojan.Color.Surface">#FF241B30</Color>
+  <Color x:Key="Rojan.Color.Card">#FF241B30</Color>
+  <Color x:Key="Rojan.Color.SurfaceSecondary">#FF161120</Color>
+  <Color x:Key="Rojan.Color.SurfaceElevated">#FF2C2238</Color>
+  <Color x:Key="Rojan.Color.SurfaceHover">#FF281F36</Color>
+  <Color x:Key="Rojan.Color.SurfacePressed">#FF221A2E</Color>
   <Color x:Key="Rojan.Color.Border">#21FFFFFF</Color>
   <Color x:Key="Rojan.Color.BorderStrong">#3DFFFFFF</Color>
 

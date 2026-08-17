@@ -62,4 +62,23 @@
                      BlurRadius="22"
                      Opacity="0.20" />
 
+  <!--
+    Design System Alignment pass: an additive, OPT-IN brand-tinted glow,
+    matching rojanai.ir's own glass-surface shadow recipe
+    (`0 8px 32px` brand-primary @ ~15-20% opacity - see
+    ROJAN_Web_Design_System_Audit.md §1 / ROJAN_Desktop_Design_Token_
+    Proposal.md §4). Deliberately NOT wired into ElevationCard itself or
+    any view yet - Phase 16 intentionally made every existing elevation
+    tier flat/neutral-black so the depth scale stays reusable app-wide
+    without brand-color coupling; this token exists for a scoped,
+    explicitly-chosen surface (e.g. Dashboard KPI cards) if and when
+    that's approved, not as a silent app-wide shadow change.
+  -->
+  <DropShadowEffect x:Key="Rojan.Effect.ElevationCardBrand"
+                     Color="#FF7C3AA6"
+                     Direction="270"
+                     ShadowDepth="0"
+                     BlurRadius="32"
+                     Opacity="0.18" />
+
 </ResourceDictionary>

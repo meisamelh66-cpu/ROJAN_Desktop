@@ -30,12 +30,22 @@
     Controls.xaml/ShellChrome.xaml for where it's actually applied).
   -->
 
-  <!-- ROJAN accent - the one saturated, INTERACTIVE color (the "Purple" brand accent) - used only for primary/selected/active/progress/focus/links. -->
-  <Color x:Key="Rojan.Color.Accent">#FF8E28E7</Color>
-  <Color x:Key="Rojan.Color.AccentHover">#FF9F49EA</Color>
-  <Color x:Key="Rojan.Color.AccentPressed">#FF7620BE</Color>
-  <Color x:Key="Rojan.Color.AccentSubtle">#1F8E28E7</Color>
-  <Color x:Key="Rojan.Color.FocusRing">#FF8E28E7</Color>
+  <!--
+    Design System Alignment pass: retargeted to the exact rojanai.ir
+    product brand purple (#7C3AA6, from the website's `.rojan-theme`
+    "brand-primary" token - see ROJAN_Web_Design_System_Audit.md /
+    ROJAN_Desktop_Design_Token_Proposal.md §1) - same key names, same
+    "one interactive accent" role Phase 16 established, only the hex
+    value changes, so every existing consumer (buttons, focus rings,
+    selection states) picks up the brand-exact purple automatically with
+    no template changes. Hover/Pressed are the same +/-lightness step
+    pattern as the prior value, recomputed from the new base.
+  -->
+  <Color x:Key="Rojan.Color.Accent">#FF7C3AA6</Color>
+  <Color x:Key="Rojan.Color.AccentHover">#FF8E4BB8</Color>
+  <Color x:Key="Rojan.Color.AccentPressed">#FF692E8E</Color>
+  <Color x:Key="Rojan.Color.AccentSubtle">#1F7C3AA6</Color>
+  <Color x:Key="Rojan.Color.FocusRing">#FF7C3AA6</Color>
 
   <!-- The "Rose Gold" brand accent - kept for the SectionHeader's decorative underline, also available generally for emphasis (badges/highlights), never interactive. -->
   <Color x:Key="Rojan.Color.RoseGoldHighlight">#FFFF8FC8</Color>
@@ -43,6 +53,18 @@
   <!-- The "Lavender" and "Aqua" brand accents - emphasis-only, same reasoning as Rose Gold above; not used for ordinary text or as a second interactive color. -->
   <Color x:Key="Rojan.Color.AccentLavender">#FFB9A6F0</Color>
   <Color x:Key="Rojan.Color.AccentAqua">#FF2FC6C6</Color>
+
+  <!--
+    Design System Alignment pass: the website's exact "brand-secondary"
+    (gold) and "brand-rose" tokens, added alongside (not replacing)
+    RoseGoldHighlight/AccentLavender/AccentAqua above - emphasis-only,
+    same non-interactive reasoning. Recommended use: BrandGold sparingly
+    as a tertiary accent (e.g. a premium/VIP badge), BrandRose for a
+    purely decorative highlight - neither is a semantic status color and
+    neither should replace Rojan.Brush.Error/Warning/Success.
+  -->
+  <Color x:Key="Rojan.Color.BrandGold">#FFD4AF7A</Color>
+  <Color x:Key="Rojan.Color.BrandRose">#FFF5B7D5</Color>
 
   <!-- Text drawn on a filled Accent surface (buttons) - white in both themes. -->
   <Color x:Key="Rojan.Color.ButtonText">#FFFFFFFF</Color>
@@ -63,6 +85,8 @@
   <SolidColorBrush x:Key="Rojan.Brush.AccentRoseGold" Color="{StaticResource Rojan.Color.RoseGoldHighlight}" />
   <SolidColorBrush x:Key="Rojan.Brush.AccentLavender" Color="{StaticResource Rojan.Color.AccentLavender}" />
   <SolidColorBrush x:Key="Rojan.Brush.AccentAqua" Color="{StaticResource Rojan.Color.AccentAqua}" />
+  <SolidColorBrush x:Key="Rojan.Brush.BrandGold" Color="{StaticResource Rojan.Color.BrandGold}" />
+  <SolidColorBrush x:Key="Rojan.Brush.BrandRose" Color="{StaticResource Rojan.Color.BrandRose}" />
 
   <SolidColorBrush x:Key="Rojan.Brush.ButtonText" Color="{StaticResource Rojan.Color.ButtonText}" />
   <SolidColorBrush x:Key="Rojan.Brush.Scrim" Color="{StaticResource Rojan.Color.Scrim}" />
