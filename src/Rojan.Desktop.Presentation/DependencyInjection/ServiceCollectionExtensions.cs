@@ -40,11 +40,16 @@ public static class ServiceCollectionExtensions
         // Owner App Login Experience: transient, same reasoning as every
         // page ViewModel above - a fresh instance each time the Login
         // window is shown (including after a logout re-triggers it).
+        // Desktop OTP Authentication Migration: LoginViewModel (Email/Password)
+        // stays registered but is no longer composed into LoginWindowViewModel -
+        // kept per this repo's "superseded but not deleted" convention (see
+        // LoginWindowViewModel's own doc comment), not because anything still
+        // constructs it.
         services.AddTransient<LoginViewModel>();
 
         // Owner App Mobile Login: same transient reasoning as LoginViewModel
-        // above. LoginWindowViewModel composes both this and LoginViewModel
-        // (see its own doc comment), so it needs the same lifetime.
+        // above - LoginWindowViewModel composes this one (see its own doc
+        // comment), so it needs the same lifetime.
         services.AddTransient<MobileOtpLoginViewModel>();
         services.AddTransient<LoginWindowViewModel>();
         services.AddSingleton<IDelayScheduler, DispatcherDelayScheduler>();

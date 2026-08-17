@@ -37,6 +37,25 @@ public sealed class ApiTimeoutException : ApiException
     }
 }
 
+/// <summary>
+/// Desktop OTP Authentication Migration: thrown when the backend responds
+/// 429 - distinct from a generic non-2xx response because a rate-limit
+/// rejection is a case the OTP request/resend/verify flow needs to show a
+/// specific "too many attempts, wait and retry" message for, not the same
+/// catch-all as an unrecognized failure. Which specific backend rate limit
+/// this was (<c>OTP_REQUEST_RATE_LIMITED</c> vs <c>OTP_VERIFY_RATE_LIMITED</c>)
+/// is not carried on the exception itself - the calling ViewModel method
+/// (request/resend vs verify) already identifies which one applies, since
+/// each hits a different endpoint.
+/// </summary>
+public sealed class ApiRateLimitException : ApiException
+{
+    public ApiRateLimitException(string message)
+        : base(message)
+    {
+    }
+}
+
 /// <summary>Thrown when the backend responds 401/403 - distinct from other non-2xx responses (which surface as a failed <see cref="ApiResponse{T}"/>) because an auth failure is something the authentication handler should react to (e.g. by expiring the session), not just report.</summary>
 public sealed class ApiAuthenticationException : ApiException
 {

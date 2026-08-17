@@ -109,16 +109,67 @@ public sealed class MobileOtpLoginViewModelTests
     [Fact]
     public async Task RequestCodeCommand_RejectedByTheBackend_ShowsGenericErrorMessage()
     {
-        // Covers rate-limiting (429) among other non-2xx responses - the client does not
-        // parse ApiErrorResponse yet (see that contract's own doc comment), so every
-        // rejected request surfaces the same generic message, same as the email flow.
-        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiException("Too many requests") };
+        // A non-2xx, non-rate-limited, non-auth rejection (e.g. a validation
+        // failure) still surfaces the same generic message.
+        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiException("Malformed request") };
         var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789" };
 
         await ExecuteAsync(sut.RequestCodeCommand, sut);
 
         Assert.Equal(Strings.Login_Error_Generic, sut.ErrorMessage);
         Assert.False(sut.IsCodeSent);
+    }
+
+    [Fact]
+    public async Task RequestCodeCommand_RateLimited_ShowsRateLimitedMessage()
+    {
+        // Desktop OTP Authentication Migration: real backend's OTP_REQUEST_RATE_LIMITED (429).
+        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiRateLimitException("429") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789" };
+
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Mobile_Error_RateLimited, sut.ErrorMessage);
+        Assert.False(sut.IsCodeSent);
+    }
+
+    [Fact]
+    public async Task ResendCodeCommand_Success_CallsResendOtpNotRequestOtpAndReArmsTheCooldown()
+    {
+        // Desktop OTP Authentication Migration: resend hits the real backend's distinct
+        // /otp/resend endpoint, not /otp/request again.
+        var service = new StubAuthenticationService { ChallengeToReturn = new OtpChallenge("+989123456789", TimeSpan.FromMinutes(2), TimeSpan.FromSeconds(60)) };
+        var scheduler = new StubDelayScheduler();
+        var sut = new MobileOtpLoginViewModel(service, scheduler) { PhoneNumber = "+989123456789" };
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+        scheduler.FireAll();
+        Assert.True(sut.CanResend);
+
+        await ExecuteAsync(sut.ResendCodeCommand, sut);
+
+        Assert.Equal(1, service.RequestOtpCallCount);
+        Assert.Equal(1, service.ResendOtpCallCount);
+        Assert.True(sut.IsCodeSent);
+        Assert.False(sut.CanResend);
+        Assert.Null(sut.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ResendCodeCommand_RateLimited_ShowsRateLimitedMessage()
+    {
+        var service = new StubAuthenticationService
+        {
+            ChallengeToReturn = new OtpChallenge("+989123456789", TimeSpan.FromMinutes(2), TimeSpan.FromSeconds(60)),
+        };
+        var scheduler = new StubDelayScheduler();
+        var sut = new MobileOtpLoginViewModel(service, scheduler) { PhoneNumber = "+989123456789" };
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+        scheduler.FireAll();
+        service.ResendOtpExceptionToThrow = new ApiRateLimitException("429");
+
+        await ExecuteAsync(sut.ResendCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Mobile_Error_RateLimited, sut.ErrorMessage);
     }
 
     [Fact]
@@ -136,12 +187,41 @@ public sealed class MobileOtpLoginViewModelTests
     [Fact]
     public async Task VerifyCodeCommand_InvalidOrExpiredCode_ShowsInvalidCodeMessage()
     {
-        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiAuthenticationException("401") };
+        // Desktop OTP Authentication Migration: real backend's INVALID_OTP (401) - deliberately
+        // covers wrong code, expired code, and no active code at all as one indistinguishable case.
+        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiAuthenticationException("401", statusCode: 401) };
         var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789", Code = "000000" };
 
         await ExecuteAsync(sut.VerifyCodeCommand, sut);
 
         Assert.Equal(Strings.Login_Mobile_Error_InvalidCode, sut.ErrorMessage);
+        Assert.False(sut.IsBusy);
+    }
+
+    [Fact]
+    public async Task VerifyCodeCommand_InactiveUser_ShowsNotAuthorizedMessage()
+    {
+        // Desktop OTP Authentication Migration: real backend's INACTIVE_USER (403).
+        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiAuthenticationException("403", statusCode: 403) };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789", Code = "123456" };
+
+        await ExecuteAsync(sut.VerifyCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Mobile_Error_NotAuthorized, sut.ErrorMessage);
+        Assert.False(sut.IsBusy);
+    }
+
+    [Fact]
+    public async Task VerifyCodeCommand_RateLimited_ShowsRateLimitedMessage()
+    {
+        // Desktop OTP Authentication Migration: real backend's OTP_VERIFY_RATE_LIMITED (429),
+        // distinct from OTP_REQUEST_RATE_LIMITED since it's per-phone verify-attempt limiting.
+        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiRateLimitException("429") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789", Code = "123456" };
+
+        await ExecuteAsync(sut.VerifyCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Mobile_Error_RateLimited, sut.ErrorMessage);
         Assert.False(sut.IsBusy);
     }
 

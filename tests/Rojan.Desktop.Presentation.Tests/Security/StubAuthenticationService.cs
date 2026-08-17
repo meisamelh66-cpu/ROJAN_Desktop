@@ -18,6 +18,8 @@ internal sealed class StubAuthenticationService : IAuthenticationService
 
     public int RequestOtpCallCount { get; private set; }
 
+    public int ResendOtpCallCount { get; private set; }
+
     public int SignInWithOtpCallCount { get; private set; }
 
     public string? LastEmail { get; private set; }
@@ -29,6 +31,8 @@ internal sealed class StubAuthenticationService : IAuthenticationService
     public Exception? SignInWithCredentialsExceptionToThrow { get; set; }
 
     public Exception? RequestOtpExceptionToThrow { get; set; }
+
+    public Exception? ResendOtpExceptionToThrow { get; set; }
 
     public Exception? SignInWithOtpExceptionToThrow { get; set; }
 
@@ -64,6 +68,18 @@ internal sealed class StubAuthenticationService : IAuthenticationService
         if (RequestOtpExceptionToThrow is not null)
         {
             throw RequestOtpExceptionToThrow;
+        }
+
+        return Task.FromResult(ChallengeToReturn);
+    }
+
+    public Task<OtpChallenge> ResendOtpAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    {
+        ResendOtpCallCount++;
+        LastPhoneNumber = phoneNumber;
+        if (ResendOtpExceptionToThrow is not null)
+        {
+            throw ResendOtpExceptionToThrow;
         }
 
         return Task.FromResult(ChallengeToReturn);

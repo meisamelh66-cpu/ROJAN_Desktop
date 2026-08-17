@@ -48,6 +48,10 @@ public sealed class LocalAuthenticationService : IAuthenticationService, IDispos
     public Task<OtpChallenge> RequestOtpAsync(string phoneNumber, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to request an OTP code from - use {nameof(BackendAuthenticationService)}.");
 
+    /// <summary>This local-only implementation has no backend to resend an OTP code from - see <see cref="BackendAuthenticationService"/> for the real implementation.</summary>
+    public Task<OtpChallenge> ResendOtpAsync(string phoneNumber, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to resend an OTP code from - use {nameof(BackendAuthenticationService)}.");
+
     /// <summary>This local-only implementation has no backend to verify an OTP code against - see <see cref="BackendAuthenticationService"/> for the real implementation.</summary>
     public Task SignInWithOtpAsync(string phoneNumber, string code, string? fullName = null, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException($"{nameof(LocalAuthenticationService)} has no backend to verify an OTP code against - use {nameof(BackendAuthenticationService)}.");

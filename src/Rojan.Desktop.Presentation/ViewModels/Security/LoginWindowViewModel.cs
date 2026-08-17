@@ -3,35 +3,37 @@ using Rojan.Desktop.Presentation.Mvvm;
 namespace Rojan.Desktop.Presentation.ViewModels.Security;
 
 /// <summary>
-/// Authentication Recovery (Option C): thin wrapper around the Email/
-/// Password flow (<see cref="EmailLogin"/>) - <c>LoginWindow</c>'s actual
-/// DataContext. Mobile Number + OTP (<see cref="MobileOtpLoginViewModel"/>)
-/// was the sole sign-in flow for a period, but calls backend endpoints
-/// (<c>/auth/otp/request</c>/<c>/verify</c>) that do not exist on the real,
-/// confirmed-authoritative ROJAN_Backend - see
+/// Desktop OTP Authentication Migration: thin wrapper around the Phone
+/// Number + OTP flow (<see cref="MobileLogin"/>) - <c>LoginWindow</c>'s
+/// actual DataContext. Mobile Number + OTP was previously reverted to
+/// Email/Password (Authentication Recovery, Option C) because the real
+/// ROJAN_Backend had no OTP endpoints at the time - see
 /// ROJAN_Authentication_Contract_Verification.md/
-/// ROJAN_Authentication_Recovery_Plan.md. Email/Password calls endpoints
-/// that are verified to exist and match exactly, so it is restored here as
-/// the only wired flow; <see cref="MobileOtpLoginViewModel"/> itself is
-/// deliberately left completely untouched (not deleted, not modified) so
-/// future OTP work - once ROJAN_Backend actually supports it - can re-wire
-/// it without rebuilding it. This wrapper is kept (rather than binding
-/// <c>LoginWindow</c> directly to <see cref="LoginViewModel"/>) so
-/// <c>SignedIn</c> keeps the same event shape/name the Shell's DI wiring
+/// ROJAN_Authentication_Recovery_Plan.md. That contract is now confirmed
+/// live (v1.0.2-production-release: <c>POST /auth/otp/request</c>/
+/// <c>/resend</c>/<c>/verify</c>, verified field-for-field against the real
+/// backend source), so Phone + OTP is restored as the sole sign-in flow per
+/// the approved Identity Policy - Email/Password (<see cref="LoginViewModel"/>)
+/// is deliberately left completely untouched (not deleted, not modified),
+/// matching this repo's own "superseded but not deleted" convention
+/// (<c>Infrastructure.Security.LocalAuthenticationService</c>), in case it
+/// is ever needed again. This wrapper is kept (rather than
+/// binding <c>LoginWindow</c> directly to <see cref="MobileOtpLoginViewModel"/>)
+/// so <c>SignedIn</c> keeps the same event shape/name the Shell's DI wiring
 /// and <c>LoginWindow.xaml.cs</c> already depend on.
 /// </summary>
 public sealed class LoginWindowViewModel : ViewModelBase
 {
-    public LoginWindowViewModel(LoginViewModel emailLogin)
+    public LoginWindowViewModel(MobileOtpLoginViewModel mobileLogin)
     {
-        EmailLogin = emailLogin;
-        EmailLogin.SignedIn += OnEmailSignedIn;
+        MobileLogin = mobileLogin;
+        MobileLogin.SignedIn += OnMobileSignedIn;
     }
 
-    public LoginViewModel EmailLogin { get; }
+    public MobileOtpLoginViewModel MobileLogin { get; }
 
-    /// <summary>Raised once <see cref="EmailLogin"/>'s own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this to know when to close.</summary>
+    /// <summary>Raised once <see cref="MobileLogin"/>'s own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this to know when to close.</summary>
     public event EventHandler? SignedIn;
 
-    private void OnEmailSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
+    private void OnMobileSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
 }

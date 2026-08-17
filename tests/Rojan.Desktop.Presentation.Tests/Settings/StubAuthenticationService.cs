@@ -24,6 +24,9 @@ internal sealed class StubAuthenticationService : IAuthenticationService
     public Task<OtpChallenge> RequestOtpAsync(string phoneNumber, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by these tests.");
 
+    public Task<OtpChallenge> ResendOtpAsync(string phoneNumber, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by these tests.");
+
     public Task SignInWithOtpAsync(string phoneNumber, string code, string? fullName = null, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by these tests.");
 

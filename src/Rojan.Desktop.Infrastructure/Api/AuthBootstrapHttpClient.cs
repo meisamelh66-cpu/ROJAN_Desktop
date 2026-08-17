@@ -50,9 +50,11 @@ public sealed class AuthBootstrapHttpClient : IDisposable
     /// <summary>
     /// Throws <see cref="ApiAuthenticationException"/> for a 401/403 (the
     /// caller's credentials/refresh token were rejected - never retried,
-    /// since there is nothing to refresh here), <see cref="ApiConnectivityException"/>
-    /// if no base address is configured or the transport fails, and
-    /// <see cref="ApiException"/> for any other non-2xx response.
+    /// since there is nothing to refresh here), <see cref="ApiRateLimitException"/>
+    /// for a 429 (Desktop OTP Authentication Migration - request/resend/verify
+    /// rate limiting), <see cref="ApiConnectivityException"/> if no base
+    /// address is configured or the transport fails, and <see cref="ApiException"/>
+    /// for any other non-2xx response.
     /// </summary>
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
     {
@@ -87,6 +89,11 @@ public sealed class AuthBootstrapHttpClient : IDisposable
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
                 throw new ApiAuthenticationException($"Request was rejected with status {(int)response.StatusCode}: {responseBody}", (int)response.StatusCode);
+            }
+
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new ApiRateLimitException($"Request was rate-limited: {responseBody}");
             }
 
             if (!response.IsSuccessStatusCode)

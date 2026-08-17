@@ -63,6 +63,18 @@ public interface IAuthenticationService
     public Task<OtpChallenge> RequestOtpAsync(string phoneNumber, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Desktop OTP Authentication Migration: re-issues an OTP code for
+    /// <paramref name="phoneNumber"/> via the real backend's
+    /// <c>POST /auth/otp/resend</c> - a distinct endpoint from
+    /// <see cref="RequestOtpAsync"/>'s <c>/auth/otp/request</c>, though it
+    /// shares the same request/response shape and the same rate limiter
+    /// (confirmed against the real backend's <c>AuthController</c>/
+    /// <c>OtpDtos.kt</c>). Only valid to call once a code has already been
+    /// requested for this phone number in the current flow.
+    /// </summary>
+    public Task<OtpChallenge> ResendOtpAsync(string phoneNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Owner App Mobile Login: verifies <paramref name="code"/> for
     /// <paramref name="phoneNumber"/> via the real backend's
     /// <c>POST /auth/otp/verify</c> and establishes a session from the

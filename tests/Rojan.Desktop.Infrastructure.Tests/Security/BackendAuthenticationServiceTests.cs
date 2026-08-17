@@ -84,13 +84,45 @@ public sealed class BackendAuthenticationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RequestOtpAsync_RateLimited_ThrowsApiException()
+    public async Task RequestOtpAsync_RateLimited_ThrowsApiRateLimitException()
+    {
+        // Desktop OTP Authentication Migration: confirmed against the real deployed
+        // backend (v1.0.2-production-release) - OTP_REQUEST_RATE_LIMITED is a 429.
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(JsonResponse((HttpStatusCode)429, """{"errorCode":"OTP_REQUEST_RATE_LIMITED","message":"Too many OTP requests"}""")));
+        using var service = CreateService(handler);
+
+        await Assert.ThrowsAsync<ApiRateLimitException>(() => service.RequestOtpAsync("+989123456789"));
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_ValidPhoneNumber_CallsTheDistinctResendEndpointAndReturnsTheIssuedChallenge()
+    {
+        // Desktop OTP Authentication Migration: /otp/resend is a distinct endpoint from
+        // /otp/request on the real backend (AuthController.kt), not a re-call of /request.
+        var handler = new FakeHttpMessageHandler((request, _) =>
+        {
+            Assert.Equal("/api/v1/auth/otp/resend", request.RequestUri?.AbsolutePath);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, """
+                {"phoneNumber":"+989123456789","expiresInSeconds":120,"canResendAfterSeconds":60}
+                """));
+        });
+        using var service = CreateService(handler);
+
+        var challenge = await service.ResendOtpAsync("+989123456789");
+
+        Assert.Equal("+989123456789", challenge.PhoneNumber);
+        Assert.Equal(TimeSpan.FromSeconds(120), challenge.ExpiresIn);
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_RateLimited_ThrowsApiRateLimitException()
     {
         var handler = new FakeHttpMessageHandler((_, _) =>
             Task.FromResult(JsonResponse((HttpStatusCode)429, """{"errorCode":"OTP_REQUEST_RATE_LIMITED","message":"Too many OTP requests"}""")));
         using var service = CreateService(handler);
 
-        await Assert.ThrowsAsync<ApiException>(() => service.RequestOtpAsync("+989123456789"));
+        await Assert.ThrowsAsync<ApiRateLimitException>(() => service.ResendOtpAsync("+989123456789"));
     }
 
     [Fact]
@@ -123,6 +155,32 @@ public sealed class BackendAuthenticationServiceTests : IDisposable
         using var service = CreateService(handler);
 
         await Assert.ThrowsAsync<ApiAuthenticationException>(() => service.SignInWithOtpAsync("+989123456789", "000000"));
+        Assert.Equal(AuthenticationState.SignedOut, service.CurrentState);
+    }
+
+    [Fact]
+    public async Task SignInWithOtpAsync_InactiveUser_ThrowsApiAuthenticationExceptionWith403()
+    {
+        // Desktop OTP Authentication Migration: real backend's INACTIVE_USER is a 403
+        // (GlobalExceptionHandler.kt's handleInactiveUser), not a 401.
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.Forbidden, """{"errorCode":"INACTIVE_USER","message":"Account is deactivated"}""")));
+        using var service = CreateService(handler);
+
+        var exception = await Assert.ThrowsAsync<ApiAuthenticationException>(() => service.SignInWithOtpAsync("+989123456789", "123456"));
+        Assert.Equal(403, exception.StatusCode);
+        Assert.Equal(AuthenticationState.SignedOut, service.CurrentState);
+    }
+
+    [Fact]
+    public async Task SignInWithOtpAsync_VerifyRateLimited_ThrowsApiRateLimitException()
+    {
+        // Desktop OTP Authentication Migration: real backend's OTP_VERIFY_RATE_LIMITED (429).
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(JsonResponse((HttpStatusCode)429, """{"errorCode":"OTP_VERIFY_RATE_LIMITED","message":"Too many verification attempts"}""")));
+        using var service = CreateService(handler);
+
+        await Assert.ThrowsAsync<ApiRateLimitException>(() => service.SignInWithOtpAsync("+989123456789", "123456"));
         Assert.Equal(AuthenticationState.SignedOut, service.CurrentState);
     }
 

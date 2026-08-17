@@ -1599,6 +1599,8 @@ public static class Strings
 
     public static string Login_Mobile_ResendButton => Get(nameof(Login_Mobile_ResendButton));
 
+    public static string Login_Mobile_ChangeNumberButton => Get(nameof(Login_Mobile_ChangeNumberButton));
+
     public static string Login_Mobile_Error_MissingPhone => Get(nameof(Login_Mobile_Error_MissingPhone));
 
     public static string Login_Mobile_Error_InvalidPhone => Get(nameof(Login_Mobile_Error_InvalidPhone));
@@ -1608,6 +1610,8 @@ public static class Strings
     public static string Login_Mobile_Error_InvalidCode => Get(nameof(Login_Mobile_Error_InvalidCode));
 
     public static string Login_Mobile_Error_NotAuthorized => Get(nameof(Login_Mobile_Error_NotAuthorized));
+
+    public static string Login_Mobile_Error_RateLimited => Get(nameof(Login_Mobile_Error_RateLimited));
 
     public static string Login_SwitchToEmailLink => Get(nameof(Login_SwitchToEmailLink));
 

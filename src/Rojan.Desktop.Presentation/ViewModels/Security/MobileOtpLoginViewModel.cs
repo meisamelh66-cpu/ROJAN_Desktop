@@ -54,7 +54,7 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         _authenticationService = authenticationService;
         _delayScheduler = delayScheduler;
         RequestCodeCommand = new AsyncRelayCommand(_ => RequestCodeAsync(), _ => CanRequestCode());
-        ResendCodeCommand = new AsyncRelayCommand(_ => RequestCodeAsync(), _ => CanResendCode());
+        ResendCodeCommand = new AsyncRelayCommand(_ => ResendCodeAsync(), _ => CanResendCode());
         VerifyCodeCommand = new AsyncRelayCommand(_ => VerifyCodeAsync(), _ => CanVerifyCode());
         ChangeNumberCommand = new RelayCommand(_ => ChangeNumber(), _ => !IsBusy);
     }
@@ -209,14 +209,15 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         try
         {
             var challenge = await _authenticationService.RequestOtpAsync(phoneNumber).ConfigureAwait(true);
-            IsCodeSent = true;
-            CanResend = false;
-            _resendCooldownHandle?.Dispose();
-            _resendCooldownHandle = _delayScheduler.Schedule(challenge.CanResendAfter, () =>
-            {
-                CanResend = true;
-                CommandManager.InvalidateRequerySuggested();
-            });
+            ApplyIssuedChallenge(challenge);
+        }
+        catch (ApiRateLimitException)
+        {
+            // Desktop OTP Authentication Migration: OTP_REQUEST_RATE_LIMITED -
+            // the real backend's request/resend rate limiter (shared between
+            // the two endpoints; see AuthController.kt's "resendOtp ...
+            // subject to the same rate limits as /otp/request").
+            ErrorMessage = Strings.Login_Mobile_Error_RateLimited;
         }
         catch (ApiConnectivityException)
         {
@@ -236,6 +237,59 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Desktop OTP Authentication Migration: re-issues a code via the real
+    /// backend's distinct <c>/otp/resend</c> endpoint (see
+    /// <see cref="IAuthenticationService.ResendOtpAsync"/>'s own doc
+    /// comment) - previously this reused <see cref="RequestCodeAsync"/>
+    /// (and therefore <c>/otp/request</c>) for both first-send and resend,
+    /// which the real backend contract does not support as the same call.
+    /// </summary>
+    private async Task ResendCodeAsync()
+    {
+        var phoneNumber = NormalizePhoneNumber(PhoneNumber);
+
+        IsBusy = true;
+        ErrorMessage = null;
+        try
+        {
+            var challenge = await _authenticationService.ResendOtpAsync(phoneNumber).ConfigureAwait(true);
+            ApplyIssuedChallenge(challenge);
+        }
+        catch (ApiRateLimitException)
+        {
+            ErrorMessage = Strings.Login_Mobile_Error_RateLimited;
+        }
+        catch (ApiConnectivityException)
+        {
+            ErrorMessage = Strings.Login_Error_Network;
+        }
+        catch (ApiTimeoutException)
+        {
+            ErrorMessage = Strings.Login_Error_Network;
+        }
+        catch (ApiException)
+        {
+            ErrorMessage = Strings.Login_Error_Generic;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ApplyIssuedChallenge(OtpChallenge challenge)
+    {
+        IsCodeSent = true;
+        CanResend = false;
+        _resendCooldownHandle?.Dispose();
+        _resendCooldownHandle = _delayScheduler.Schedule(challenge.CanResendAfter, () =>
+        {
+            CanResend = true;
+            CommandManager.InvalidateRequerySuggested();
+        });
+    }
+
     private async Task VerifyCodeAsync()
     {
         if (string.IsNullOrWhiteSpace(Code))
@@ -253,17 +307,25 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         }
         catch (ApiAuthenticationException exception)
         {
-            // Authentication Error Handling Alignment (Phase 1): a 403 means
-            // the account/request was rejected on authorization grounds, not
-            // that the code itself was wrong - showing "invalid code" for
-            // that case would send the user retyping a code that was never
-            // the actual problem. 401 (and any case with no known status,
-            // preserving the prior behavior) still means "wrong/expired
-            // code," the only thing SignInWithOtpAsync's own contract says
-            // a 401 here means.
+            // Desktop OTP Authentication Migration: confirmed against the
+            // real backend's GlobalExceptionHandler/OtpDomainExceptions - a
+            // 403 here is always INACTIVE_USER (the account is deactivated/
+            // blocked), never a generic authorization rejection; a 401 is
+            // always INVALID_OTP, which the real backend deliberately
+            // collapses "wrong code," "expired code," and "no active code
+            // at all" into one indistinguishable case (avoids an
+            // enumeration/timing signal) - so this can only ever show one
+            // message for all three, by backend design, not a client
+            // limitation.
             ErrorMessage = exception.StatusCode == 403
                 ? Strings.Login_Mobile_Error_NotAuthorized
                 : Strings.Login_Mobile_Error_InvalidCode;
+        }
+        catch (ApiRateLimitException)
+        {
+            // OTP_VERIFY_RATE_LIMITED - the real backend's per-phone verify-attempt
+            // rate limiter, distinct from the request/resend one above.
+            ErrorMessage = Strings.Login_Mobile_Error_RateLimited;
         }
         catch (ApiConnectivityException)
         {

@@ -2956,6 +2956,9 @@
   <data name="Login_Mobile_ResendButton" xml:space="preserve">
     <value>ارسال مجدد کد</value>
   </data>
+  <data name="Login_Mobile_ChangeNumberButton" xml:space="preserve">
+    <value>تغییر شماره</value>
+  </data>
   <data name="Login_Mobile_Error_MissingPhone" xml:space="preserve">
     <value>شماره موبایل خود را وارد کنید.</value>
   </data>
@@ -2970,6 +2973,9 @@
   </data>
   <data name="Login_Mobile_Error_NotAuthorized" xml:space="preserve">
     <value>این حساب مجاز به ورود نیست. با پشتیبانی تماس بگیرید.</value>
+  </data>
+  <data name="Login_Mobile_Error_RateLimited" xml:space="preserve">
+    <value>تعداد درخواست‌ها بیش از حد مجاز است. کمی صبر کنید و دوباره تلاش کنید.</value>
   </data>
   <data name="Login_SwitchToEmailLink" xml:space="preserve">
     <value>ورود با ایمیل</value>

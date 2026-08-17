@@ -69,6 +69,15 @@ public sealed class BackendAuthenticationService : IAuthenticationService, IDisp
         return new OtpChallenge(response.PhoneNumber, TimeSpan.FromSeconds(response.ExpiresInSeconds), TimeSpan.FromSeconds(response.CanResendAfterSeconds));
     }
 
+    public async Task<OtpChallenge> ResendOtpAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    {
+        var response = await _authClient
+            .PostAsync<OtpRequestRequest, OtpIssuedResponse>("/api/v1/auth/otp/resend", new OtpRequestRequest(phoneNumber), cancellationToken)
+            .ConfigureAwait(false);
+
+        return new OtpChallenge(response.PhoneNumber, TimeSpan.FromSeconds(response.ExpiresInSeconds), TimeSpan.FromSeconds(response.CanResendAfterSeconds));
+    }
+
     public async Task SignInWithOtpAsync(string phoneNumber, string code, string? fullName = null, CancellationToken cancellationToken = default)
     {
         var device = _deviceRegistrationService.CurrentDevice

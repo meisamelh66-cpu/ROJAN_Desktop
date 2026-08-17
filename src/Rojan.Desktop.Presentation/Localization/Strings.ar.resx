@@ -2944,6 +2944,9 @@
   <data name="Login_Mobile_ResendButton" xml:space="preserve">
     <value>إعادة إرسال الرمز</value>
   </data>
+  <data name="Login_Mobile_ChangeNumberButton" xml:space="preserve">
+    <value>تغيير الرقم</value>
+  </data>
   <data name="Login_Mobile_Error_MissingPhone" xml:space="preserve">
     <value>أدخل رقم جوالك.</value>
   </data>
@@ -2958,6 +2961,9 @@
   </data>
   <data name="Login_Mobile_Error_NotAuthorized" xml:space="preserve">
     <value>هذا الحساب غير مصرح له بتسجيل الدخول. يرجى التواصل مع الدعم.</value>
+  </data>
+  <data name="Login_Mobile_Error_RateLimited" xml:space="preserve">
+    <value>عدد كبير جدًا من المحاولات. يرجى الانتظار قليلاً والمحاولة مرة أخرى.</value>
   </data>
   <data name="Login_SwitchToEmailLink" xml:space="preserve">
     <value>تسجيل الدخول بالبريد الإلكتروني</value>
