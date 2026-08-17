@@ -82,7 +82,7 @@
                              Text="{Binding MobileLogin.PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16">
                         <TextBox.Style>
-                            <Style TargetType="TextBox">
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding MobileLogin.IsBusy}" Value="True">
                                         <Setter Property="IsEnabled" Value="False" />
@@ -121,7 +121,7 @@
                              MaxLength="6"
                              Margin="0,0,0,8">
                         <TextBox.Style>
-                            <Style TargetType="TextBox">
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding MobileLogin.IsBusy}" Value="True">
                                         <Setter Property="IsEnabled" Value="False" />
@@ -192,7 +192,7 @@
                          Text="{Binding EmailLogin.Email, UpdateSourceTrigger=PropertyChanged}"
                          Margin="0,0,0,16">
                     <TextBox.Style>
-                        <Style TargetType="TextBox">
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding EmailLogin.IsBusy}" Value="True">
                                     <Setter Property="IsEnabled" Value="False" />
