@@ -21,9 +21,9 @@ public sealed class MobileOtpLoginViewModelTests
     }
 
     [Theory]
-    [InlineData("09123456789")]
     [InlineData("+98")]
     [InlineData("not-a-phone-number")]
+    [InlineData("091234567")] // too short - not a real 10-digit Iranian subscriber number
     public async Task RequestCodeCommand_InvalidPhoneNumberFormat_ShowsInlineErrorWithoutCallingTheService(string phoneNumber)
     {
         var service = new StubAuthenticationService();
@@ -33,6 +33,32 @@ public sealed class MobileOtpLoginViewModelTests
 
         Assert.Equal(Strings.Login_Mobile_Error_InvalidPhone, sut.ErrorMessage);
         Assert.Equal(0, service.RequestOtpCallCount);
+    }
+
+    /// <summary>
+    /// Login UI Simplification: Iranian-local and Persian-digit input, all normalized to
+    /// the same E.164 value the backend always expected - see <c>MobileOtpLoginViewModel.NormalizePhoneNumber</c>'s
+    /// own doc comment.
+    /// </summary>
+    [Theory]
+    [InlineData("09123456789", "+989123456789")] // local, leading 0
+    [InlineData("9123456789", "+989123456789")] // local, no leading 0
+    [InlineData("00989123456789", "+989123456789")] // 00-prefixed international
+    [InlineData("0912 345 6789", "+989123456789")] // spaces
+    [InlineData("0912-345-6789", "+989123456789")] // dashes
+    [InlineData("۰۹۱۲۳۴۵۶۷۸۹", "+989123456789")] // Persian-Indic digits
+    [InlineData("+989123456789", "+989123456789")] // already E.164 - passes through unchanged
+    public async Task RequestCodeCommand_LocalOrPersianFormattedPhoneNumber_NormalizesAndCallsTheServiceWithE164(string phoneNumber, string expectedE164)
+    {
+        var service = new StubAuthenticationService { ChallengeToReturn = new OtpChallenge(expectedE164, TimeSpan.FromMinutes(2), TimeSpan.FromSeconds(60)) };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = phoneNumber };
+
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+
+        Assert.Null(sut.ErrorMessage);
+        Assert.True(sut.IsCodeSent);
+        Assert.Equal(1, service.RequestOtpCallCount);
+        Assert.Equal(expectedE164, service.LastPhoneNumber);
     }
 
     [Fact]
@@ -134,6 +160,19 @@ public sealed class MobileOtpLoginViewModelTests
         Assert.Equal(1, service.SignInWithOtpCallCount);
         Assert.Equal("+989123456789", service.LastPhoneNumber);
         Assert.Equal("123456", service.LastCode);
+    }
+
+    [Fact]
+    public async Task VerifyCodeCommand_LocalFormattedPhoneNumber_NormalizesToE164BeforeCallingTheService()
+    {
+        var service = new StubAuthenticationService();
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "09123456789", Code = "123456" };
+
+        await ExecuteAsync(sut.VerifyCodeCommand, sut);
+
+        Assert.Null(sut.ErrorMessage);
+        Assert.Equal(1, service.SignInWithOtpCallCount);
+        Assert.Equal("+989123456789", service.LastPhoneNumber);
     }
 
     [Fact]

@@ -2948,7 +2948,7 @@
     <value>أدخل رقم جوالك.</value>
   </data>
   <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
-    <value>أدخل رقم جوال صحيح بالصيغة الدولية، مثل ‎+989123456789.</value>
+    <value>أدخل رقم جوال إيراني صحيح، مثل ٠٩١٢٣٤٥٦٧٨٩ أو ‎+989123456789.</value>
   </data>
   <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
     <value>أدخل رمز التحقق.</value>

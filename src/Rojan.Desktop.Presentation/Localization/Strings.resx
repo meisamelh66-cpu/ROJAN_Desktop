@@ -2960,7 +2960,7 @@
     <value>شماره موبایل خود را وارد کنید.</value>
   </data>
   <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
-    <value>شماره موبایل نامعتبر است. آن را با فرمت بین‌المللی وارد کنید، مثلاً ‎+989123456789.</value>
+    <value>شماره موبایل نامعتبر است. مثال: ۰۹۱۲۳۴۵۶۷۸۹ یا ‎+989123456789.</value>
   </data>
   <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
     <value>کد تأیید را وارد کنید.</value>

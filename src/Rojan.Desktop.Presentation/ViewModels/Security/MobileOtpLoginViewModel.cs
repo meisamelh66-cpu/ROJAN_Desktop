@@ -24,6 +24,20 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
 {
     private static readonly Regex E164Pattern = new(@"^\+[1-9]\d{7,14}$", RegexOptions.Compiled);
 
+    /// <summary>
+    /// Login UI Simplification: Iranian mobile numbers as Persian users
+    /// actually type them - a leading 0 (<c>09123456789</c>) or no prefix
+    /// at all (<c>9123456789</c>) - both normalized to the E.164 form the
+    /// backend's <c>POST /api/v1/auth/otp/request</c>/<c>otp/verify</c>
+    /// always expected. Backend contract is unchanged; only what Desktop
+    /// accepts as raw user input got more forgiving.
+    /// </summary>
+    private static readonly Regex IranLocalMobilePattern = new(@"^0?9\d{9}$", RegexOptions.Compiled);
+
+    /// <summary>Persian-Indic and Extended Arabic-Indic digit characters, index-matched to '0'-'9' - both are commonly produced by a Persian keyboard layout.</summary>
+    private const string PersianDigits = "۰۱۲۳۴۵۶۷۸۹";
+    private const string ArabicIndicDigits = "٠١٢٣٤٥٦٧٨٩";
+
     private readonly IAuthenticationService _authenticationService;
     private readonly IDelayScheduler _delayScheduler;
 
@@ -127,9 +141,57 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         ErrorMessage = null;
     }
 
+    /// <summary>
+    /// Login UI Simplification: converts Persian-Indic/Arabic-Indic digits to ASCII, strips
+    /// spaces/dashes/parentheses, and expands a local Iranian mobile number (<see cref="IranLocalMobilePattern"/>)
+    /// or a <c>0098</c>-prefixed one to E.164 - already-E.164 input passes through unchanged.
+    /// Purely a display/input-tolerance concern; the normalized value is what every caller
+    /// downstream (validation, the API call) actually uses.
+    /// </summary>
+    private static string NormalizePhoneNumber(string input)
+    {
+        var digits = new System.Text.StringBuilder(input.Length);
+        foreach (var ch in input.Trim())
+        {
+            if (ch is ' ' or '-' or '(' or ')')
+            {
+                continue;
+            }
+
+            var persianIndex = PersianDigits.IndexOf(ch);
+            if (persianIndex >= 0)
+            {
+                digits.Append((char)('0' + persianIndex));
+                continue;
+            }
+
+            var arabicIndex = ArabicIndicDigits.IndexOf(ch);
+            if (arabicIndex >= 0)
+            {
+                digits.Append((char)('0' + arabicIndex));
+                continue;
+            }
+
+            digits.Append(ch);
+        }
+
+        var normalized = digits.ToString();
+
+        if (normalized.StartsWith("0098", StringComparison.Ordinal))
+        {
+            normalized = "+98" + normalized[4..];
+        }
+        else if (IranLocalMobilePattern.IsMatch(normalized))
+        {
+            normalized = normalized.StartsWith('0') ? "+98" + normalized[1..] : "+98" + normalized;
+        }
+
+        return normalized;
+    }
+
     private async Task RequestCodeAsync()
     {
-        var phoneNumber = PhoneNumber.Trim();
+        var phoneNumber = NormalizePhoneNumber(PhoneNumber);
         if (string.IsNullOrWhiteSpace(phoneNumber))
         {
             ErrorMessage = Strings.Login_Mobile_Error_MissingPhone;
@@ -186,7 +248,7 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         ErrorMessage = null;
         try
         {
-            await _authenticationService.SignInWithOtpAsync(PhoneNumber.Trim(), Code.Trim()).ConfigureAwait(true);
+            await _authenticationService.SignInWithOtpAsync(NormalizePhoneNumber(PhoneNumber), Code.Trim()).ConfigureAwait(true);
             SignedIn?.Invoke(this, EventArgs.Empty);
         }
         catch (ApiAuthenticationException)

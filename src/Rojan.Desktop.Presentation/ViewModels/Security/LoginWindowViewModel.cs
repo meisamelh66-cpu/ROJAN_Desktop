@@ -1,51 +1,33 @@
-using System.Windows.Input;
 using Rojan.Desktop.Presentation.Mvvm;
 
 namespace Rojan.Desktop.Presentation.ViewModels.Security;
 
 /// <summary>
-/// Owner App Mobile Login: composes the primary Mobile Number + OTP flow
-/// (<see cref="MobileLogin"/>) with the still-fully-functional email/
-/// password flow (<see cref="EmailLogin"/>, kept as a secondary/fallback
-/// path per "remove dependency on email login as primary UI flow, keep
-/// email support internally") behind one <see cref="SignedIn"/> signal -
-/// <c>LoginWindow</c>'s actual DataContext now. <see cref="IsEmailModeActive"/>
-/// is the one flag its XAML needs to switch between the two panels; neither
-/// child ViewModel knows the other exists, so <see cref="LoginViewModel"/>
-/// itself needed zero changes for this - it is exactly as testable and
-/// self-contained as it was before this flow existed.
+/// Login UI Simplification: thin wrapper around the primary Mobile Number +
+/// OTP flow (<see cref="MobileLogin"/>) - <c>LoginWindow</c>'s actual
+/// DataContext. Previously also composed a secondary Email/Password flow
+/// (<see cref="LoginViewModel"/>) behind a mode-switch flag; that flow was
+/// removed from the Login UI entirely (backend/API support for it is
+/// unchanged and still exists in <c>IAuthenticationService</c>/
+/// <see cref="LoginViewModel"/> itself, simply no longer wired into this
+/// window) so Mobile Number + OTP is now the only way to sign in from
+/// Desktop. This wrapper is kept (rather than binding <c>LoginWindow</c>
+/// directly to <see cref="MobileOtpLoginViewModel"/>) so <c>SignedIn</c>
+/// keeps the same event shape/name the Shell's DI wiring and
+/// <c>LoginWindow.xaml.cs</c> already depend on.
 /// </summary>
 public sealed class LoginWindowViewModel : ViewModelBase
 {
-    private bool _isEmailModeActive;
-
-    public LoginWindowViewModel(MobileOtpLoginViewModel mobileLogin, LoginViewModel emailLogin)
+    public LoginWindowViewModel(MobileOtpLoginViewModel mobileLogin)
     {
         MobileLogin = mobileLogin;
-        EmailLogin = emailLogin;
-        SwitchToEmailLoginCommand = new RelayCommand(_ => IsEmailModeActive = true);
-        SwitchToMobileLoginCommand = new RelayCommand(_ => IsEmailModeActive = false);
-        MobileLogin.SignedIn += OnChildSignedIn;
-        EmailLogin.SignedIn += OnChildSignedIn;
+        MobileLogin.SignedIn += OnMobileSignedIn;
     }
 
     public MobileOtpLoginViewModel MobileLogin { get; }
 
-    public LoginViewModel EmailLogin { get; }
-
-    /// <summary>False (Mobile Number + OTP, the default/primary flow) unless the user explicitly asked to fall back to email/password.</summary>
-    public bool IsEmailModeActive
-    {
-        get => _isEmailModeActive;
-        private set => SetProperty(ref _isEmailModeActive, value);
-    }
-
-    public ICommand SwitchToEmailLoginCommand { get; }
-
-    public ICommand SwitchToMobileLoginCommand { get; }
-
-    /// <summary>Raised once either child ViewModel's own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this one event regardless of which flow the user completed.</summary>
+    /// <summary>Raised once <see cref="MobileLogin"/>'s own <c>SignedIn</c> fires - <c>LoginWindow</c> subscribes to this to know when to close.</summary>
     public event EventHandler? SignedIn;
 
-    private void OnChildSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
+    private void OnMobileSignedIn(object? sender, EventArgs e) => SignedIn?.Invoke(this, e);
 }
