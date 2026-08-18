@@ -26,7 +26,7 @@ public interface ICurrentSessionService
 
     /// <summary>
     /// Reception Stabilization Sprint: <see langword="true"/> once <see cref="InitializeAsync"/> has
-    /// resolved a real backend salon membership (owner via <c>GET /salons/mine</c>, or an accepted
+    /// resolved a real backend salon membership (owner or staff via <c>GET /me/salon-access</c>, or an accepted
     /// Salon Invite) rather than falling back to the local/demo organization path - the same signal
     /// the concrete implementation already uses internally to lock <see cref="SwitchRoleAsync"/>/
     /// <see cref="SwitchBranchAsync"/>, now exposed so Presentation-layer consumers (e.g. the

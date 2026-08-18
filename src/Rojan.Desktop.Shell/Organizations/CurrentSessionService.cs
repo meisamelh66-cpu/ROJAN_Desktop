@@ -29,7 +29,7 @@ namespace Rojan.Desktop.Shell.Organizations;
 ///
 /// Reception Production Integration: <see cref="InitializeAsync"/> now
 /// tries a *real* resolution first, via <see cref="ISalonContextService.GetCurrentContextAsync"/>
-/// (owner via <c>GET /salons/mine</c>, or an accepted Salon Invite) -
+/// (owner or staff via <c>GET /me/salon-access</c>, or an accepted Salon Invite) -
 /// only when that yields nothing does it fall back to the
 /// <see cref="IOrganizationQueryService"/>/<c>session.json</c> path
 /// documented above, entirely unchanged. A session resolved for real is

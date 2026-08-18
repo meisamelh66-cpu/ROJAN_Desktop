@@ -178,8 +178,8 @@ public partial class App
         // Reception Production Integration: moved from before the login gate
         // (its original Phase 22 position) to here. Resolving the current
         // organization/branch/role now means resolving the *signed-in user's*
-        // real salon membership (owner via GET /salons/mine, or an accepted
-        // Salon Invite) - both require a valid authenticated session, which
+        // real salon membership (owner or staff via GET /me/salon-access, or
+        // an accepted Salon Invite) - both require a valid authenticated session, which
         // does not exist yet at Phase 22's original position (before
         // apiEnvironmentService/sessionService/the login gate above). Still
         // runs well before MainWindowViewModel builds its permission-filtered
