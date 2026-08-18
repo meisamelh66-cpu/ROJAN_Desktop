@@ -378,6 +378,11 @@ public partial class App
         // instance also serves Application.Organizations.IEnterpriseContext
         // (registered once as itself, aliased to both interfaces) - see
         // CurrentSessionService's own doc comment.
+        // Phase 2B Context State Hardening: IDemoModeProvider registered
+        // here too - CurrentSessionService's constructor now requires it,
+        // and this is the one place Demo Context can be explicitly,
+        // deliberately enabled, never as a side effect of anything else.
+        services.AddSingleton<IDemoModeProvider, EnvironmentDemoModeProvider>();
         services.AddSingleton<CurrentSessionService>();
         services.AddSingleton<ICurrentSessionService>(sp => sp.GetRequiredService<CurrentSessionService>());
         services.AddSingleton<IEnterpriseContext>(sp => sp.GetRequiredService<CurrentSessionService>());

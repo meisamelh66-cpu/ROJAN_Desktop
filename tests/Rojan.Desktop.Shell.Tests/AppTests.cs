@@ -64,7 +64,7 @@ public sealed class AppTests
 
         public WorkspaceRole CurrentRole => WorkspaceRole.PlatformOwner;
 
-        public bool HasRealMembership => false;
+        public DesktopContextState ContextState => DesktopContextState.NoBusinessContext;
 
         public IReadOnlyList<BranchDto> AvailableBranches => [];
 

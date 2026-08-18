@@ -108,12 +108,13 @@ public sealed class MainWindowViewModelNavigationTests
     }
 
     // ---- Reception Stabilization Sprint: initial-selection soft redirect ----
+    // ---- Phase 2B Context State Hardening: same soft redirect, now driven by ContextState ----
 
     [Fact]
-    public void SelectedNavigationItem_NoRealMembership_DefaultsToAcceptInviteWhenPresent()
+    public void SelectedNavigationItem_NoBusinessContext_DefaultsToAcceptInviteWhenPresent()
     {
         var modules = new[] { Module("dashboard"), Module("accept-invite") };
-        var session = new StubCurrentSessionService { HasRealMembership = false };
+        var session = new StubCurrentSessionService { ContextState = DesktopContextState.NoBusinessContext };
 
         var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 
@@ -121,10 +122,10 @@ public sealed class MainWindowViewModelNavigationTests
     }
 
     [Fact]
-    public void SelectedNavigationItem_HasRealMembership_DefaultsToFirstItemEvenWhenAcceptInvitePresent()
+    public void SelectedNavigationItem_OwnerContext_DefaultsToFirstItemEvenWhenAcceptInvitePresent()
     {
         var modules = new[] { Module("dashboard"), Module("accept-invite") };
-        var session = new StubCurrentSessionService { HasRealMembership = true };
+        var session = new StubCurrentSessionService { ContextState = DesktopContextState.OwnerContext };
 
         var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 
@@ -132,12 +133,37 @@ public sealed class MainWindowViewModelNavigationTests
     }
 
     [Fact]
-    public void SelectedNavigationItem_NoRealMembershipButAcceptInviteNotPresent_FallsBackToFirstItem()
+    public void SelectedNavigationItem_StaffContext_DefaultsToFirstItemEvenWhenAcceptInvitePresent()
     {
-        // Covers a brand-new Owner with no salon yet - also HasRealMembership == false, but with
+        // StaffContext is a real membership exactly like OwnerContext, for this method's purposes.
+        var modules = new[] { Module("dashboard"), Module("accept-invite") };
+        var session = new StubCurrentSessionService { ContextState = DesktopContextState.StaffContext };
+
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
+
+        Assert.Equal("dashboard", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
+    }
+
+    [Fact]
+    public void SelectedNavigationItem_DemoContext_DefaultsToAcceptInviteWhenPresent()
+    {
+        // DemoContext is not a real business context, so it routes exactly like NoBusinessContext here -
+        // this method has no reason to distinguish "no context" from "deliberately demoed" context.
+        var modules = new[] { Module("dashboard"), Module("accept-invite") };
+        var session = new StubCurrentSessionService { ContextState = DesktopContextState.DemoContext };
+
+        var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
+
+        Assert.Equal("accept-invite", viewModel.SelectedNavigationItem.Descriptor.Metadata.Id);
+    }
+
+    [Fact]
+    public void SelectedNavigationItem_NoBusinessContextButAcceptInviteNotPresent_FallsBackToFirstItem()
+    {
+        // Covers a brand-new Owner with no salon yet - also NoBusinessContext, but with
         // no invite token to enter, so this must not trap them behind a page they can't get past.
         var modules = new[] { Module("dashboard"), Module("salon") };
-        var session = new StubCurrentSessionService { HasRealMembership = false };
+        var session = new StubCurrentSessionService { ContextState = DesktopContextState.NoBusinessContext };
 
         var viewModel = CreateViewModel(new StubModuleRegistry(modules), session);
 

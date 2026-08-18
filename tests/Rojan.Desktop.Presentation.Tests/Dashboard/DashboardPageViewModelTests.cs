@@ -138,7 +138,7 @@ public sealed class DashboardPageViewModelTests
 
         public WorkspaceRole CurrentRole { get; init; } = WorkspaceRole.PlatformOwner;
 
-        public bool HasRealMembership => false;
+        public DesktopContextState ContextState => DesktopContextState.NoBusinessContext;
 
         public IReadOnlyList<BranchDto> AvailableBranches => [];
 

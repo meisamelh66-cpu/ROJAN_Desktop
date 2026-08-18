@@ -12,7 +12,7 @@ internal sealed class StubCurrentSessionService : ICurrentSessionService
 
     public WorkspaceRole CurrentRole { get; set; } = WorkspaceRole.PlatformOwner;
 
-    public bool HasRealMembership { get; set; }
+    public DesktopContextState ContextState { get; set; } = DesktopContextState.NoBusinessContext;
 
     public IReadOnlyList<BranchDto> AvailableBranches { get; set; } = [];
 

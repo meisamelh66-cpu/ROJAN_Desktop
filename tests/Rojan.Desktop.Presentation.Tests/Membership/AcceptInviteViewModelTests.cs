@@ -180,7 +180,7 @@ public sealed class AcceptInviteViewModelTests
 
         public WorkspaceRole CurrentRole => WorkspaceRole.Reception;
 
-        public bool HasRealMembership => false;
+        public DesktopContextState ContextState => DesktopContextState.NoBusinessContext;
 
         public IReadOnlyList<BranchDto> AvailableBranches => [];
 

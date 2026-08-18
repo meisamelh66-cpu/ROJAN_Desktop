@@ -27,14 +27,25 @@ namespace Rojan.Desktop.Shell.Organizations;
 /// alias-registration pattern <c>App.xaml.cs</c> already uses for
 /// <c>NavigationService</c>/<c>INavigationService</c>.
 ///
-/// Reception Production Integration: <see cref="InitializeAsync"/> now
-/// tries a *real* resolution first, via <see cref="ISalonContextService.GetCurrentContextAsync"/>
+/// Reception Production Integration: <see cref="InitializeAsync"/> tries a
+/// *real* resolution, via <see cref="ISalonContextService.GetCurrentContextAsync"/>
 /// (owner or staff via <c>GET /me/salon-access</c>, or an accepted Salon Invite) -
 /// only when that yields nothing does it fall back to the
 /// <see cref="IOrganizationQueryService"/>/<c>session.json</c> path
-/// documented above, entirely unchanged. A session resolved for real is
-/// marked (<see cref="_hasRealMembership"/>) so <see cref="SwitchRoleAsync"/>/
-/// <see cref="SwitchBranchAsync"/> can refuse to silently overwrite it -
+/// documented above, entirely unchanged in its own internal behavior.
+///
+/// Phase 2B Context State Hardening: that fallback is no longer reached
+/// silently. <see cref="_demoModeProvider"/> is checked first, before real
+/// resolution is even attempted - only when it reports
+/// <see langword="true"/> does <see cref="InitializeAsync"/> ever reach the
+/// seeded-organization path, and the result is tagged
+/// <see cref="DesktopContextState.DemoContext"/>, never conflated with a
+/// real session. An empty real resolution with the flag off now resolves
+/// to <see cref="DesktopContextState.NoBusinessContext"/> instead - no
+/// organization, no fabricated privilege. <see cref="ContextState"/>
+/// replaces the former <c>HasRealMembership</c> boolean this doc comment
+/// used to describe here; <see cref="SwitchRoleAsync"/>/<see cref="SwitchBranchAsync"/>
+/// now guard against it the same way, just against a richer signal -
 /// closing the exact hole a real Reception session must not have (freely
 /// switching to a role/org the backend never granted).
 /// </summary>
@@ -48,22 +59,24 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
     private readonly IOrganizationQueryService _organizationQueryService;
     private readonly ISalonContextService _salonContextService;
     private readonly ISalonSessionAdapter _salonSessionAdapter;
+    private readonly IDemoModeProvider _demoModeProvider;
     private readonly string _settingsFilePath;
     private List<BranchDto> _availableBranches = [];
     private List<string> _recentBranchIds = [];
     private List<string> _favoriteBranchIds = [];
-    private bool _hasRealMembership;
+    private DesktopContextState _contextState = DesktopContextState.NoBusinessContext;
 
-    public CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter)
-        : this(organizationQueryService, salonContextService, salonSessionAdapter, DefaultSettingsFilePath())
+    public CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter, IDemoModeProvider demoModeProvider)
+        : this(organizationQueryService, salonContextService, salonSessionAdapter, demoModeProvider, DefaultSettingsFilePath())
     {
     }
 
-    internal CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter, string settingsFilePath)
+    internal CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter, IDemoModeProvider demoModeProvider, string settingsFilePath)
     {
         _organizationQueryService = organizationQueryService;
         _salonContextService = salonContextService;
         _salonSessionAdapter = salonSessionAdapter;
+        _demoModeProvider = demoModeProvider;
         _settingsFilePath = settingsFilePath;
     }
 
@@ -71,9 +84,20 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
 
     public BranchDto? CurrentBranch { get; private set; }
 
-    public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.PlatformOwner;
+    /// <summary>
+    /// Phase 2B Context State Hardening: the existing-enum least-privileged
+    /// role (<see cref="WorkspaceRole.Support"/> - <c>DashboardView</c>,
+    /// <c>CustomerRead</c>, <c>BookingRead</c> only, per <c>RolePermissions</c>,
+    /// unchanged by this phase) is the default for
+    /// <see cref="DesktopContextState.NoBusinessContext"/> - the safest
+    /// value expressible without adding a new <see cref="WorkspaceRole"/>
+    /// member, which this phase is explicitly barred from doing. No
+    /// existing role expresses "zero permissions"; this is the closest
+    /// available, documented here rather than left implicit.
+    /// </summary>
+    public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.Support;
 
-    public bool HasRealMembership => _hasRealMembership;
+    public DesktopContextState ContextState => _contextState;
 
     string? IEnterpriseContext.CurrentOrganizationId => CurrentOrganization?.Id;
 
@@ -99,6 +123,13 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
     /// </summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        if (_demoModeProvider.IsEnabled)
+        {
+            await ApplyDemoContextAsync(cancellationToken).ConfigureAwait(false);
+            SessionChanged?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         var salonContext = await _salonContextService.GetCurrentContextAsync(cancellationToken).ConfigureAwait(false);
         if (salonContext is not null)
         {
@@ -107,12 +138,23 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
             return;
         }
 
-        _hasRealMembership = false;
+        ApplyNoBusinessContext();
+        SessionChanged?.Invoke(this, EventArgs.Empty);
+    }
 
+    /// <summary>
+    /// Phase 2B Context State Hardening: the seeded-organization path -
+    /// unchanged in its own internal behavior from before this phase, only
+    /// now reachable exclusively via <see cref="_demoModeProvider"/>
+    /// (see <see cref="InitializeAsync"/>), never as a side effect of empty
+    /// real resolution.
+    /// </summary>
+    private async Task ApplyDemoContextAsync(CancellationToken cancellationToken)
+    {
         var organizations = await _organizationQueryService.GetOrganizationsAsync(cancellationToken).ConfigureAwait(false);
         if (organizations.Count == 0)
         {
-            SessionChanged?.Invoke(this, EventArgs.Empty);
+            _contextState = DesktopContextState.DemoContext;
             return;
         }
 
@@ -132,12 +174,31 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         CurrentRole = role;
         _recentBranchIds = persisted?.RecentBranchIds ?? [];
         _favoriteBranchIds = persisted?.FavoriteBranchIds ?? [];
-        SessionChanged?.Invoke(this, EventArgs.Empty);
+        _contextState = DesktopContextState.DemoContext;
+    }
+
+    /// <summary>
+    /// Phase 2B Context State Hardening: no organization, no branch, and
+    /// the least-privileged existing role (see <see cref="CurrentRole"/>'s
+    /// own doc comment) - the replacement for what used to silently become
+    /// the seeded-organization fallback whenever real resolution came back
+    /// empty. This is the P0 fix: an account with no real business context
+    /// now genuinely has none, rather than one fabricated for it.
+    /// </summary>
+    private void ApplyNoBusinessContext()
+    {
+        CurrentOrganization = null;
+        _availableBranches = [];
+        CurrentBranch = null;
+        CurrentRole = WorkspaceRole.Support;
+        _recentBranchIds = [];
+        _favoriteBranchIds = [];
+        _contextState = DesktopContextState.NoBusinessContext;
     }
 
     public async Task SwitchBranchAsync(string branchId, CancellationToken cancellationToken = default)
     {
-        if (_hasRealMembership)
+        if (_contextState is DesktopContextState.OwnerContext or DesktopContextState.StaffContext)
         {
             throw new InvalidOperationException("Cannot switch branches for a session resolved from a real salon membership - there is no branch concept for a real salon in this phase.");
         }
@@ -168,7 +229,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
 
     public Task SwitchRoleAsync(WorkspaceRole role, CancellationToken cancellationToken = default)
     {
-        if (_hasRealMembership)
+        if (_contextState is DesktopContextState.OwnerContext or DesktopContextState.StaffContext)
         {
             throw new InvalidOperationException("Cannot switch roles for a session resolved from a real salon membership - accept a different invite, or sign in as a different user, instead.");
         }
@@ -211,7 +272,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         CurrentRole = _salonSessionAdapter.ToWorkspaceRole(salonContext);
         _recentBranchIds = [];
         _favoriteBranchIds = [];
-        _hasRealMembership = true;
+        _contextState = salonContext.IsOwner ? DesktopContextState.OwnerContext : DesktopContextState.StaffContext;
     }
 
     private SessionSettingsFile? ReadPersistedSelection()

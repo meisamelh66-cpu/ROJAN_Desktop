@@ -414,18 +414,26 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     /// <summary>
     /// Reception Stabilization Sprint: the initial <see cref="SelectedNavigationItem"/> - the
     /// Accept Invite item (if present in <see cref="NavigationItems"/>) whenever the current
-    /// session has no real salon membership yet (<see cref="ICurrentSessionService.HasRealMembership"/>
-    /// is <see langword="false"/>), the normal first item otherwise. Deliberately a soft default
-    /// only, not a hard gate: the sidebar itself is completely unfiltered by this (every module,
-    /// including Dashboard, stays exactly as reachable as before) - a brand-new Owner with no
-    /// salon yet also has no real membership, but has no invite token to enter either, so blocking
-    /// them behind this page would trap them; falling back to the first item whenever Accept
-    /// Invite isn't present in <see cref="NavigationItems"/> covers that (and any other) case
-    /// safely.
+    /// session has no real salon membership yet, the normal first item otherwise. Deliberately a
+    /// soft default only, not a hard gate: the sidebar itself is completely unfiltered by this
+    /// (every module, including Dashboard, stays exactly as reachable as before) - a brand-new
+    /// Owner with no salon yet also has no real membership, but has no invite token to enter
+    /// either, so blocking them behind this page would trap them; falling back to the first item
+    /// whenever Accept Invite isn't present in <see cref="NavigationItems"/> covers that (and any
+    /// other) case safely.
+    ///
+    /// Phase 2B Context State Hardening: "no real salon membership yet" is now
+    /// <see cref="ICurrentSessionService.ContextState"/> being anything other than
+    /// <see cref="DesktopContextState.OwnerContext"/>/<see cref="DesktopContextState.StaffContext"/>
+    /// (previously the single <c>HasRealMembership</c> boolean) - <see cref="DesktopContextState.NoBusinessContext"/>
+    /// and <see cref="DesktopContextState.DemoContext"/> both route through this exact same
+    /// branch, preserving this method's observable behavior unchanged for every persona; only the
+    /// signal driving it is richer now.
     /// </summary>
     private NavigationItem SelectInitialNavigationItem()
     {
-        if (!_currentSessionService.HasRealMembership)
+        var isRealBusinessContext = _currentSessionService.ContextState is DesktopContextState.OwnerContext or DesktopContextState.StaffContext;
+        if (!isRealBusinessContext)
         {
             var acceptInvite = NavigationItems.FirstOrDefault(item => item.Descriptor.Metadata.Id == "accept-invite");
             if (acceptInvite is not null)

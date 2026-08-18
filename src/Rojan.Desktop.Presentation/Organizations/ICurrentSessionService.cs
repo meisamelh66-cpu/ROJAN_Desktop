@@ -25,14 +25,14 @@ public interface ICurrentSessionService
     public WorkspaceRole CurrentRole { get; }
 
     /// <summary>
-    /// Reception Stabilization Sprint: <see langword="true"/> once <see cref="InitializeAsync"/> has
-    /// resolved a real backend salon membership (owner or staff via <c>GET /me/salon-access</c>, or an accepted
-    /// Salon Invite) rather than falling back to the local/demo organization path - the same signal
-    /// the concrete implementation already uses internally to lock <see cref="SwitchRoleAsync"/>/
-    /// <see cref="SwitchBranchAsync"/>, now exposed so Presentation-layer consumers (e.g. the
-    /// shell's initial navigation selection) can also branch on it without new plumbing.
+    /// Phase 2B Context State Hardening: which kind of session <see cref="InitializeAsync"/>
+    /// resolved - replaces the former <c>HasRealMembership</c> boolean, which could say a
+    /// session was "not real" but never *why*. The concrete implementation uses this same
+    /// value internally to lock <see cref="SwitchRoleAsync"/>/<see cref="SwitchBranchAsync"/>
+    /// against a real session, and exposes it here so Presentation-layer consumers (e.g. the
+    /// shell's initial navigation selection) can branch on it without new plumbing.
     /// </summary>
-    public bool HasRealMembership { get; }
+    public DesktopContextState ContextState { get; }
 
     /// <summary>Every branch in <see cref="CurrentOrganization"/> - the Branch Switcher's data source.</summary>
     public IReadOnlyList<BranchDto> AvailableBranches { get; }
