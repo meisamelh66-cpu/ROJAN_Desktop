@@ -2,7 +2,6 @@ using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Identity;
-using DomainWorkspaceRole = Rojan.Desktop.Domain.Organizations.WorkspaceRole;
 
 namespace Rojan.Desktop.Infrastructure.Identity;
 
@@ -39,7 +38,7 @@ public sealed class IdentityContextService : IIdentityContextService
         var workspace = new WorkspaceIdentity(
             OrganizationId: _enterpriseContext.CurrentOrganizationId ?? string.Empty,
             BranchId: _enterpriseContext.CurrentBranchId,
-            Role: ToDomainRole(_enterpriseContext.CurrentRole));
+            Role: DesktopRoleBridge.ToDomainRole(_enterpriseContext.CurrentRole));
 
         var user = UserIdentity.LocalUser(Environment.UserName);
 
@@ -50,14 +49,4 @@ public sealed class IdentityContextService : IIdentityContextService
             _deviceRegistrationService.CurrentInstallation,
             _sessionService.CurrentSession);
     }
-
-    /// <summary>
-    /// <see cref="IEnterpriseContext"/> deliberately carries Application's
-    /// own <c>WorkspaceRole</c> copy (see that type's own doc comment),
-    /// not Domain's - both enumerate the identical set of roles by
-    /// design, so a name-based parse is the correct, tautology-free
-    /// bridge rather than a hand-maintained switch that would silently
-    /// drift if either enum ever gained a member the other didn't.
-    /// </summary>
-    private static DomainWorkspaceRole ToDomainRole(WorkspaceRole role) => Enum.Parse<DomainWorkspaceRole>(role.ToString());
 }
