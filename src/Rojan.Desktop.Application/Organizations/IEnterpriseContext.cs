@@ -22,4 +22,14 @@ public interface IEnterpriseContext
     public string? CurrentBranchId { get; }
 
     public WorkspaceRole CurrentRole { get; }
+
+    /// <summary>
+    /// Phase 3A Permission Consumer Adapter: the backend's own already-
+    /// computed permission strings for the current real (owner/staff)
+    /// session - see <c>Salons.SalonContext.Permissions</c>, which this is
+    /// carried from unchanged. Empty (never null) for a session with no
+    /// real salon context (Demo Context, No Business Context) - there is
+    /// nothing backend-computed to carry in either case.
+    /// </summary>
+    public IReadOnlySet<string> BackendPermissions { get; }
 }

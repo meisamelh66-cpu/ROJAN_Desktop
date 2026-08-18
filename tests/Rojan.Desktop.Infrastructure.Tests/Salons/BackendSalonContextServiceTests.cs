@@ -117,6 +117,49 @@ public sealed class BackendSalonContextServiceTests
     }
 
     [Fact]
+    public async Task GetCurrentContextAsync_Owner_CarriesPermissionsFromTheBackendResponse()
+    {
+        // Phase 3A Permission Consumer Adapter: SalonContext.Permissions must carry the backend's
+        // response through unchanged - opaque strings, no interpretation, no filtering.
+        var ownerPermissions = new[] { "MANAGE_SALON", "MANAGE_MEMBERSHIP", "MANAGE_CATALOG", "MANAGE_STAFF", "MANAGE_SCHEDULE_ALL", "MANAGE_SCHEDULE_OWN", "VIEW_CRM", "MANAGE_CRM", "MANAGE_BOOKINGS", "MANAGE_OWN_BOOKINGS" };
+        using var service = new BackendSalonContextService(new StubApiClient(owned: [Owned("salon-1", permissions: ownerPermissions)]), new StubAcceptedMembershipStore());
+
+        var context = await service.GetCurrentContextAsync();
+
+        Assert.NotNull(context);
+        Assert.Equal(ownerPermissions.ToHashSet(), context!.Permissions);
+    }
+
+    [Fact]
+    public async Task GetCurrentContextAsync_BackendMembership_CarriesPermissionsFromTheBackendResponse()
+    {
+        var managerPermissions = new[] { "MANAGE_CATALOG", "MANAGE_STAFF", "MANAGE_SCHEDULE_ALL", "VIEW_CRM", "MANAGE_CRM", "MANAGE_BOOKINGS" };
+        using var service = new BackendSalonContextService(
+            new StubApiClient(memberships: [Membership("salon-9", "Glow Salon", "MANAGER", permissions: managerPermissions)]),
+            new StubAcceptedMembershipStore());
+
+        var context = await service.GetCurrentContextAsync();
+
+        Assert.NotNull(context);
+        Assert.Equal(managerPermissions.ToHashSet(), context!.Permissions);
+    }
+
+    [Fact]
+    public async Task GetCurrentContextAsync_AcceptedInviteFallback_HasEmptyPermissions()
+    {
+        // The local accepted-invite fallback has never carried permissions - it predates
+        // /me/salon-access entirely. Empty, not null: IEnterpriseContext.BackendPermissions
+        // always has a set to query, never a nullable one every future consumer would need to guard.
+        var membershipStore = new StubAcceptedMembershipStore { Membership = new AcceptedMembership("salon-9", "Glow Salon", "RECEPTIONIST") };
+        using var service = new BackendSalonContextService(new StubApiClient(), membershipStore);
+
+        var context = await service.GetCurrentContextAsync();
+
+        Assert.NotNull(context);
+        Assert.Empty(context!.Permissions);
+    }
+
+    [Fact]
     public async Task GetCurrentContextAsync_OwnedAndMember_OwnershipWins()
     {
         using var service = new BackendSalonContextService(
@@ -243,9 +286,9 @@ public sealed class BackendSalonContextServiceTests
         Assert.Null(await service.GetSalonIdAsync());
     }
 
-    private static OwnedSalonAccess Owned(string id, string name = "Test Salon") => new(id, name, Active: true, Permissions: []);
+    private static OwnedSalonAccess Owned(string id, string name = "Test Salon", IReadOnlyList<string>? permissions = null) => new(id, name, Active: true, permissions ?? []);
 
-    private static MembershipAccess Membership(string salonId, string name, string role) => new("membership-1", salonId, name, Active: true, role, Permissions: []);
+    private static MembershipAccess Membership(string salonId, string name, string role, IReadOnlyList<string>? permissions = null) => new("membership-1", salonId, name, Active: true, role, permissions ?? []);
 
     private static SpecialistAccess Specialist(string salonId, string name) => new("specialist-1", salonId, name, Active: true, Permissions: []);
 

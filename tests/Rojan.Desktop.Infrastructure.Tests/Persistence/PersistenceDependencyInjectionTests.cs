@@ -133,5 +133,7 @@ public sealed class PersistenceDependencyInjectionTests
         public string? CurrentBranchId => null;
 
         public WorkspaceRole CurrentRole => WorkspaceRole.OrganizationOwner;
+
+        public IReadOnlySet<string> BackendPermissions => new HashSet<string>();
     }
 }

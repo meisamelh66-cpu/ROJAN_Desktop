@@ -65,6 +65,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
     private List<string> _recentBranchIds = [];
     private List<string> _favoriteBranchIds = [];
     private DesktopContextState _contextState = DesktopContextState.NoBusinessContext;
+    private IReadOnlySet<string> _backendPermissions = new HashSet<string>();
 
     public CurrentSessionService(IOrganizationQueryService organizationQueryService, ISalonContextService salonContextService, ISalonSessionAdapter salonSessionAdapter, IDemoModeProvider demoModeProvider)
         : this(organizationQueryService, salonContextService, salonSessionAdapter, demoModeProvider, DefaultSettingsFilePath())
@@ -98,6 +99,8 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
     public WorkspaceRole CurrentRole { get; private set; } = WorkspaceRole.Support;
 
     public DesktopContextState ContextState => _contextState;
+
+    public IReadOnlySet<string> BackendPermissions => _backendPermissions;
 
     string? IEnterpriseContext.CurrentOrganizationId => CurrentOrganization?.Id;
 
@@ -155,6 +158,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         if (organizations.Count == 0)
         {
             _contextState = DesktopContextState.DemoContext;
+            _backendPermissions = new HashSet<string>();
             return;
         }
 
@@ -175,6 +179,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         _recentBranchIds = persisted?.RecentBranchIds ?? [];
         _favoriteBranchIds = persisted?.FavoriteBranchIds ?? [];
         _contextState = DesktopContextState.DemoContext;
+        _backendPermissions = new HashSet<string>();
     }
 
     /// <summary>
@@ -194,6 +199,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         _recentBranchIds = [];
         _favoriteBranchIds = [];
         _contextState = DesktopContextState.NoBusinessContext;
+        _backendPermissions = new HashSet<string>();
     }
 
     public async Task SwitchBranchAsync(string branchId, CancellationToken cancellationToken = default)
@@ -273,6 +279,7 @@ public sealed class CurrentSessionService : ICurrentSessionService, IEnterpriseC
         _recentBranchIds = [];
         _favoriteBranchIds = [];
         _contextState = salonContext.IsOwner ? DesktopContextState.OwnerContext : DesktopContextState.StaffContext;
+        _backendPermissions = salonContext.Permissions;
     }
 
     private SessionSettingsFile? ReadPersistedSelection()

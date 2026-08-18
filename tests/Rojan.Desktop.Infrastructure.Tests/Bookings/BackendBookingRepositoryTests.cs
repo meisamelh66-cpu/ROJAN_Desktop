@@ -281,6 +281,8 @@ public sealed class BackendBookingRepositoryTests
         public string? CurrentBranchId => "branch-1";
 
         public WorkspaceRole CurrentRole => WorkspaceRole.OrganizationOwner;
+
+        public IReadOnlySet<string> BackendPermissions => new HashSet<string>();
     }
 
     private sealed class StubApiClient : IApiClient

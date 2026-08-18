@@ -63,5 +63,15 @@ public interface ISalonContextService
         Task.FromResult<SalonContext?>(null);
 }
 
-/// <summary>See <see cref="ISalonContextService.GetCurrentContextAsync"/>. <see cref="IsOwner"/> true means <see cref="MembershipRole"/> is always null (an owner's role is never a <c>SalonRole</c> membership - see ROJAN_Backend's own <c>SalonRole</c> doc comment); false means <see cref="MembershipRole"/> carries the raw backend role string (<c>"MANAGER"</c>/<c>"RECEPTIONIST"</c>).</summary>
-public sealed record SalonContext(string SalonId, string SalonName, bool IsOwner, string? MembershipRole);
+/// <summary>
+/// See <see cref="ISalonContextService.GetCurrentContextAsync"/>. <see cref="IsOwner"/> true means <see cref="MembershipRole"/> is always null (an owner's role is never a <c>SalonRole</c> membership - see ROJAN_Backend's own <c>SalonRole</c> doc comment); false means <see cref="MembershipRole"/> carries the raw backend role string (<c>"MANAGER"</c>/<c>"RECEPTIONIST"</c>).
+///
+/// Phase 3A Permission Consumer Adapter: <see cref="Permissions"/> carries
+/// the backend's own already-computed permission strings for this salon
+/// (<c>SalonPermissionResolver</c>'s output, as returned by the matched
+/// entry in <c>GET /me/salon-access</c>) - opaque, unmapped, uninterpreted
+/// here. Empty when this context did not come from that endpoint (e.g. the
+/// local <c>IAcceptedMembershipStore</c> fallback, which has never carried
+/// permissions).
+/// </summary>
+public sealed record SalonContext(string SalonId, string SalonName, bool IsOwner, string? MembershipRole, IReadOnlySet<string> Permissions);

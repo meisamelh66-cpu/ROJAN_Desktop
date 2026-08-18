@@ -89,19 +89,22 @@ public sealed class BackendSalonContextService(IApiClient apiClient, IAcceptedMe
             if (response.Data.OwnedSalons.Count > 0)
             {
                 var owned = response.Data.OwnedSalons[0];
-                _resolvedContext = new SalonContext(owned.SalonId, owned.SalonName, IsOwner: true, MembershipRole: null);
+                _resolvedContext = new SalonContext(owned.SalonId, owned.SalonName, IsOwner: true, MembershipRole: null, owned.Permissions.ToHashSet());
             }
             else if (response.Data.Memberships.Count > 0)
             {
                 var membership = response.Data.Memberships[0];
-                _resolvedContext = new SalonContext(membership.SalonId, membership.SalonName, IsOwner: false, membership.Role);
+                _resolvedContext = new SalonContext(membership.SalonId, membership.SalonName, IsOwner: false, membership.Role, membership.Permissions.ToHashSet());
             }
             else
             {
                 var accepted = await acceptedMembershipStore.GetAsync(cancellationToken).ConfigureAwait(false);
                 _resolvedContext = accepted is null
                     ? null
-                    : new SalonContext(accepted.SalonId, accepted.SalonName, IsOwner: false, accepted.Role);
+                    // The local accepted-invite fallback has never carried permissions (it predates
+                    // /me/salon-access entirely) - empty, not null, so IEnterpriseContext.BackendPermissions
+                    // always has a set to query rather than a nullable one every consumer would need to guard.
+                    : new SalonContext(accepted.SalonId, accepted.SalonName, IsOwner: false, accepted.Role, new HashSet<string>());
             }
 
             _hasResolved = true;

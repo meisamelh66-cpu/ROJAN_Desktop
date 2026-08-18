@@ -183,6 +183,12 @@ public static class ServiceCollectionExtensions
         // PermissionEngine above.
         services.AddSingleton<IPermissionGate, PermissionGate>();
 
+        // Phase 3A: Permission Consumer Adapter - the sibling of
+        // PermissionGate above for backend-sourced permission strings
+        // (IEnterpriseContext.BackendPermissions), not a replacement. Same
+        // registration reasoning: pure Application-layer logic, no I/O.
+        services.AddSingleton<IBackendPermissionGate, BackendPermissionGate>();
+
         // Phase 25: Enterprise Identity & Secure Client Platform. Pure
         // timing/control-flow logic with no I/O of its own - same
         // reasoning PermissionEngine/PermissionGate above already

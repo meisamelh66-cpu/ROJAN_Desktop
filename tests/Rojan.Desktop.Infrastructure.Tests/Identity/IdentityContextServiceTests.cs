@@ -61,6 +61,8 @@ public sealed class IdentityContextServiceTests
         public string? CurrentBranchId { get; set; } = "branch-1";
 
         public WorkspaceRole CurrentRole { get; set; } = WorkspaceRole.PlatformOwner;
+
+        public IReadOnlySet<string> BackendPermissions { get; set; } = new HashSet<string>();
     }
 
     private sealed class StubDeviceRegistrationService : IDeviceRegistrationService

@@ -64,6 +64,7 @@ public sealed class CurrentSessionServiceTests : IDisposable
         Assert.Equal("branch-1", service.CurrentBranch?.Id);
         Assert.Equal(WorkspaceRole.PlatformOwner, service.CurrentRole);
         Assert.Equal(DesktopContextState.DemoContext, service.ContextState);
+        Assert.Empty(service.BackendPermissions);
     }
 
     [Fact]
@@ -213,7 +214,7 @@ public sealed class CurrentSessionServiceTests : IDisposable
     {
         // Demo Context is checked before real resolution is even attempted (see InitializeAsync's own
         // doc comment) - a deliberate developer choice, decoupled from what account is actually signed in.
-        _salonContextService.Context = new SalonContext("salon-1", "Glow Salon", IsOwner: true, MembershipRole: null);
+        _salonContextService.Context = new SalonContext("salon-1", "Glow Salon", IsOwner: true, MembershipRole: null, Permissions: new HashSet<string>());
         var service = CreateService();
 
         await service.InitializeAsync();
@@ -228,7 +229,7 @@ public sealed class CurrentSessionServiceTests : IDisposable
     public async Task InitializeAsync_OwnerSalonContext_ResolvesToOrganizationOwnerAndSkipsTheFakeOrganizationPath()
     {
         _demoModeProvider.IsEnabled = false;
-        _salonContextService.Context = new SalonContext("salon-1", "Glow Salon", IsOwner: true, MembershipRole: null);
+        _salonContextService.Context = new SalonContext("salon-1", "Glow Salon", IsOwner: true, MembershipRole: null, Permissions: new HashSet<string>());
         var service = CreateService();
 
         await service.InitializeAsync();
@@ -238,13 +239,14 @@ public sealed class CurrentSessionServiceTests : IDisposable
         Assert.Equal(WorkspaceRole.OrganizationOwner, service.CurrentRole);
         Assert.Null(service.CurrentBranch);
         Assert.Equal(DesktopContextState.OwnerContext, service.ContextState);
+        Assert.Empty(service.BackendPermissions);
     }
 
     [Fact]
     public async Task InitializeAsync_AcceptedReceptionistInvite_ResolvesToReceptionRole()
     {
         _demoModeProvider.IsEnabled = false;
-        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST");
+        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST", Permissions: new HashSet<string> { "MANAGE_BOOKINGS" });
         var service = CreateService();
 
         await service.InitializeAsync();
@@ -252,26 +254,45 @@ public sealed class CurrentSessionServiceTests : IDisposable
         Assert.Equal(WorkspaceRole.Reception, service.CurrentRole);
         Assert.Equal("salon-9", service.CurrentOrganization?.Id);
         Assert.Equal(DesktopContextState.StaffContext, service.ContextState);
+        Assert.Equal(new HashSet<string> { "MANAGE_BOOKINGS" }, service.BackendPermissions);
     }
 
     [Fact]
     public async Task InitializeAsync_AcceptedManagerInvite_ResolvesToOrganizationManagerRole()
     {
         _demoModeProvider.IsEnabled = false;
-        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "MANAGER");
+        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "MANAGER", Permissions: new HashSet<string> { "MANAGE_CATALOG", "MANAGE_STAFF", "MANAGE_BOOKINGS" });
         var service = CreateService();
 
         await service.InitializeAsync();
 
         Assert.Equal(WorkspaceRole.OrganizationManager, service.CurrentRole);
         Assert.Equal(DesktopContextState.StaffContext, service.ContextState);
+        Assert.Equal(new HashSet<string> { "MANAGE_CATALOG", "MANAGE_STAFF", "MANAGE_BOOKINGS" }, service.BackendPermissions);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_OwnerSalonContext_CarriesBackendPermissionsThroughUnchanged()
+    {
+        // Phase 3A Permission Consumer Adapter: the primary regression test for this phase's own reason
+        // to exist - SalonContext.Permissions must reach IEnterpriseContext.BackendPermissions unchanged,
+        // not filtered, mapped, or reinterpreted (this class does not compute permissions - it only carries
+        // what the backend already resolved).
+        _demoModeProvider.IsEnabled = false;
+        var ownerPermissions = new HashSet<string> { "MANAGE_SALON", "MANAGE_MEMBERSHIP", "MANAGE_CATALOG", "MANAGE_STAFF", "MANAGE_SCHEDULE_ALL", "MANAGE_SCHEDULE_OWN", "VIEW_CRM", "MANAGE_CRM", "MANAGE_BOOKINGS", "MANAGE_OWN_BOOKINGS" };
+        _salonContextService.Context = new SalonContext("salon-1", "Glow Salon", IsOwner: true, MembershipRole: null, ownerPermissions);
+        var service = CreateService();
+
+        await service.InitializeAsync();
+
+        Assert.Equal(ownerPermissions, service.BackendPermissions);
     }
 
     [Fact]
     public async Task SwitchRoleAsync_SessionIsOwnerContext_Throws()
     {
         _demoModeProvider.IsEnabled = false;
-        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST");
+        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST", Permissions: new HashSet<string> { "MANAGE_BOOKINGS" });
         var service = CreateService();
         await service.InitializeAsync();
 
@@ -283,7 +304,7 @@ public sealed class CurrentSessionServiceTests : IDisposable
     public async Task SwitchBranchAsync_SessionIsStaffContext_Throws()
     {
         _demoModeProvider.IsEnabled = false;
-        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST");
+        _salonContextService.Context = new SalonContext("salon-9", "Glow Salon", IsOwner: false, MembershipRole: "RECEPTIONIST", Permissions: new HashSet<string> { "MANAGE_BOOKINGS" });
         var service = CreateService();
         await service.InitializeAsync();
 
@@ -319,6 +340,7 @@ public sealed class CurrentSessionServiceTests : IDisposable
         Assert.Null(service.CurrentOrganization);
         Assert.Null(service.CurrentBranch);
         Assert.Empty(service.AvailableBranches);
+        Assert.Empty(service.BackendPermissions);
     }
 
     [Fact]
