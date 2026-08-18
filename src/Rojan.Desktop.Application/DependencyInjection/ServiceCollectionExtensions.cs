@@ -77,7 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBookingQueryService, BookingQueryService>();
         services.AddSingleton<BookingCommandService>();
         services.AddSingleton<IBookingCommandService>(sp =>
-            new BookingCommandServicePermissionGate(sp.GetRequiredService<BookingCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+            new BookingCommandServicePermissionGate(sp.GetRequiredService<BookingCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<ISpecialistQueryService, SpecialistQueryService>();
         services.AddSingleton<ISpecialistProfileQueryService, SpecialistProfileQueryService>();
         services.AddSingleton<SpecialistCommandService>();
@@ -99,10 +99,10 @@ public static class ServiceCollectionExtensions
         // swap-the-Domain-repository pattern.
         services.AddSingleton<CalendarCommandService>();
         services.AddSingleton<ICalendarCommandService>(sp =>
-            new CalendarCommandServicePermissionGate(sp.GetRequiredService<CalendarCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+            new CalendarCommandServicePermissionGate(sp.GetRequiredService<CalendarCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<BookingWorkflowService>();
         services.AddSingleton<IBookingWorkflowService>(sp =>
-            new BookingWorkflowServicePermissionGate(sp.GetRequiredService<BookingWorkflowService>(), sp.GetRequiredService<IPermissionGate>()));
+            new BookingWorkflowServicePermissionGate(sp.GetRequiredService<BookingWorkflowService>(), sp.GetRequiredService<IPermissionGate>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<IProductQueryService, ProductQueryService>();
         services.AddSingleton<IProductProfileQueryService, ProductProfileQueryService>();
         services.AddSingleton<IInventoryQueryService, InventoryQueryService>();

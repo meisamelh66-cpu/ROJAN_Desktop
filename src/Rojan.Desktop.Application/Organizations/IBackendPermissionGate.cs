@@ -14,4 +14,16 @@ public interface IBackendPermissionGate
 {
     /// <summary>Throws <see cref="UnauthorizedOperationException"/> if <paramref name="requiredPermission"/> is not present in <see cref="IEnterpriseContext.BackendPermissions"/>.</summary>
     public void EnsureBackend(string requiredPermission);
+
+    /// <summary>
+    /// Phase 3B Booking Permission Migration: throws <see cref="UnauthorizedOperationException"/>
+    /// unless at least one of <paramref name="anyOfPermissions"/> is present in
+    /// <see cref="IEnterpriseContext.BackendPermissions"/>. Still encodes no rule
+    /// of its own - a caller decides which permissions are alternatives for its
+    /// own action (e.g. <c>MANAGE_BOOKINGS</c> or <c>MANAGE_OWN_BOOKINGS</c> for
+    /// booking management); this only checks membership against the set,
+    /// exactly like <see cref="EnsureBackend"/>, just against more than one
+    /// candidate string.
+    /// </summary>
+    public void EnsureBackendAny(params string[] anyOfPermissions);
 }

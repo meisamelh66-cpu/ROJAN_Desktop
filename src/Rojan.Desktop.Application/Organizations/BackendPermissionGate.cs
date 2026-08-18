@@ -10,4 +10,12 @@ public sealed class BackendPermissionGate(IEnterpriseContext enterpriseContext) 
             throw new UnauthorizedOperationException($"The current session does not have the backend permission '{requiredPermission}' required for this operation.");
         }
     }
+
+    public void EnsureBackendAny(params string[] anyOfPermissions)
+    {
+        if (!anyOfPermissions.Any(enterpriseContext.BackendPermissions.Contains))
+        {
+            throw new UnauthorizedOperationException($"The current session does not have any of the required backend permissions: {string.Join(", ", anyOfPermissions)}.");
+        }
+    }
 }
