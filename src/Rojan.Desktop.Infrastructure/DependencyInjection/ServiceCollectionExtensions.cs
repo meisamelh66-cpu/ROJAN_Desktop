@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Membership;
@@ -91,6 +92,11 @@ public static class ServiceCollectionExtensions
         // for the vestigial Notes field/LastContactedAt) and for why
         // AddActivityAsync throws.
         services.AddSingleton<ICustomerRepository, BackendCustomerRepository>();
+
+        // Reception Permission Contract Alignment: the booking-time-only counterpart to
+        // ICustomerCommandService.CreateCustomerAsync above - see ICustomerIdentityService's own
+        // doc comment for why this is a separate registration, not a variant of the one above.
+        services.AddSingleton<ICustomerIdentityService, BackendCustomerIdentityService>();
 
         // Owner App Booking Integration: real GET/PATCH/PUT against
         // ROJAN_Backend's booking endpoints, replacing EfBookingRepository

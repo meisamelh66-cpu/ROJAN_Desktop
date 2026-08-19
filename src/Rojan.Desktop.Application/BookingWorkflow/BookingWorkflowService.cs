@@ -6,7 +6,7 @@ using AppSpecialists = Rojan.Desktop.Application.Specialists;
 
 namespace Rojan.Desktop.Application.BookingWorkflow;
 
-/// <summary>Default <see cref="IBookingWorkflowService"/> implementation - see the interface doc comment for why depending on six sibling Application services here is expected, not a layering violation (Reception Stabilization Sprint added <see cref="AppCustomers.ICustomerCommandService"/>, for <see cref="CreateGuestCustomerAsync"/>).</summary>
+/// <summary>Default <see cref="IBookingWorkflowService"/> implementation - see the interface doc comment for why depending on six sibling Application services here is expected, not a layering violation (Reception Stabilization Sprint added <see cref="AppCustomers.ICustomerIdentityService"/>, for <see cref="CreateGuestCustomerAsync"/> - Reception Permission Contract Alignment: rewired off <see cref="AppCustomers.ICustomerCommandService"/> onto this narrower, booking-time-only service).</summary>
 public sealed class BookingWorkflowService : IBookingWorkflowService
 {
     private readonly AppCustomers.ICustomerQueryService _customerQueryService;
@@ -16,7 +16,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
     private readonly AppCalendar.ICalendarCommandService _calendarCommandService;
     private readonly AppBookings.IBookingQueryService _bookingQueryService;
     private readonly AppBookings.IBookingCommandService _bookingCommandService;
-    private readonly AppCustomers.ICustomerCommandService _customerCommandService;
+    private readonly AppCustomers.ICustomerIdentityService _customerIdentityService;
 
     public BookingWorkflowService(
         AppCustomers.ICustomerQueryService customerQueryService,
@@ -26,7 +26,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         AppCalendar.ICalendarCommandService calendarCommandService,
         AppBookings.IBookingQueryService bookingQueryService,
         AppBookings.IBookingCommandService bookingCommandService,
-        AppCustomers.ICustomerCommandService customerCommandService)
+        AppCustomers.ICustomerIdentityService customerIdentityService)
     {
         _customerQueryService = customerQueryService;
         _serviceQueryService = serviceQueryService;
@@ -35,7 +35,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
         _calendarCommandService = calendarCommandService;
         _bookingQueryService = bookingQueryService;
         _bookingCommandService = bookingCommandService;
-        _customerCommandService = customerCommandService;
+        _customerIdentityService = customerIdentityService;
     }
 
     public async Task<BookingOptionsDto> GetBookingOptionsAsync(CancellationToken cancellationToken = default)
@@ -61,8 +61,7 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
 
     public async Task<WorkflowCustomerOptionDto> CreateGuestCustomerAsync(string fullName, string phone, CancellationToken cancellationToken = default)
     {
-        var request = new AppCustomers.CreateCustomerRequest(fullName, Company: string.Empty, Email: string.Empty, phone, Notes: string.Empty);
-        var created = await _customerCommandService.CreateCustomerAsync(request, cancellationToken).ConfigureAwait(true);
+        var created = await _customerIdentityService.CreateCustomerIdentityAsync(fullName, phone, email: null, cancellationToken).ConfigureAwait(true);
         return new WorkflowCustomerOptionDto(created.Id, created.FullName, IsLinkedToAccount: false);
     }
 

@@ -28,7 +28,7 @@ public sealed class BookingWorkflowServiceTests
         StubCalendarCommandService? calendarCommandService = null,
         StubBookingQueryService? bookingQueryService = null,
         StubBookingCommandService? bookingCommandService = null,
-        StubCustomerCommandService? customerCommandService = null) => new(
+        StubCustomerIdentityService? customerIdentityService = null) => new(
         customerQueryService ?? new StubCustomerQueryService([]),
         serviceQueryService ?? new StubServiceQueryService([]),
         specialistQueryService ?? new StubSpecialistQueryService([]),
@@ -36,7 +36,7 @@ public sealed class BookingWorkflowServiceTests
         calendarCommandService ?? new StubCalendarCommandService(),
         bookingQueryService ?? new StubBookingQueryService(),
         bookingCommandService ?? new StubBookingCommandService(),
-        customerCommandService ?? new StubCustomerCommandService());
+        customerIdentityService ?? new StubCustomerIdentityService());
 
     [Fact]
     public async Task GetBookingOptionsAsync_FiltersServicesAndSpecialistsToActiveOnly()
@@ -344,16 +344,16 @@ public sealed class BookingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task CreateGuestCustomerAsync_CreatesCustomerAndReturnsUnlinkedOption()
+    public async Task CreateGuestCustomerAsync_CreatesCustomerIdentityAndReturnsUnlinkedOption()
     {
-        var customerCommandService = new StubCustomerCommandService();
-        var sut = MakeSut(customerCommandService: customerCommandService);
+        var customerIdentityService = new StubCustomerIdentityService();
+        var sut = MakeSut(customerIdentityService: customerIdentityService);
 
         var option = await sut.CreateGuestCustomerAsync("Walk-in Guest", "555-0100");
 
-        var createRequest = Assert.Single(customerCommandService.CreateRequests);
+        var createRequest = Assert.Single(customerIdentityService.CreateRequests);
         Assert.Equal("Walk-in Guest", createRequest.FullName);
-        Assert.Equal("555-0100", createRequest.Phone);
+        Assert.Equal("555-0100", createRequest.PhoneNumber);
         Assert.False(option.IsLinkedToAccount);
         Assert.Equal("Walk-in Guest", option.FullName);
     }

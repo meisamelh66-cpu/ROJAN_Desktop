@@ -32,3 +32,9 @@ public sealed record CreateCustomerRequest(string FullName, string? PhoneNumber,
 
 /// <summary>The request body <c>PATCH {ApiVersion.BasePath()}/salons/{salonId}/customers/{id}</c> accepts - matches ROJAN_Backend's <c>UpdateCustomerRequest</c> field-for-field. Every field means "leave unchanged" when absent server-side, but <c>Infrastructure.Customers.BackendCustomerRepository.UpdateCustomerAsync</c> always sends every field, since <c>ICustomerCommandService.UpdateCustomerAsync</c> is itself a full-field replacement (see that method's own doc comment).</summary>
 public sealed record UpdateCustomerRequest(string? FullName, string? PhoneNumber, string? Email, string? Company, string? Status);
+
+/// <summary>The response body <c>POST/GET {ApiVersion.BasePath()}/salons/{salonId}/customers/identity</c> return - matches ROJAN_Backend's <c>CustomerIdentityResponse</c> field-for-field. Structurally narrower than <see cref="CustomerResponse"/>, not merely a subset in practice - there is no <c>Company</c>/tags/lifetime-value/status field to omit, because the type never carries one. See <c>Application.Customers.ICustomerIdentityService</c>.</summary>
+public sealed record CustomerIdentityResponse(string Id, string SalonId, string FullName, string? PhoneNumber, string? Email, bool Active);
+
+/// <summary>The request body <c>POST {ApiVersion.BasePath()}/salons/{salonId}/customers/identity</c> accepts - matches ROJAN_Backend's <c>CreateCustomerIdentityRequest</c> field-for-field. The Reception-safe counterpart to <see cref="CreateCustomerRequest"/> - no <c>Company</c> field to even omit.</summary>
+public sealed record CreateCustomerIdentityRequest(string FullName, string? PhoneNumber, string? Email);
