@@ -24,7 +24,7 @@ public interface ISalonSessionAdapter
     /// populated with honest defaults, not fabricated values standing in
     /// for real data that simply does not exist in this backend's model.
     /// </summary>
-    OrganizationDto ToOrganizationDto(SalonContext salonContext);
+    public OrganizationDto ToOrganizationDto(SalonContext salonContext);
 
     /// <summary>
     /// Maps a real Salon session's ownership/membership onto Desktop's
@@ -37,5 +37,5 @@ public interface ISalonSessionAdapter
     /// throwing - a real, backend-confirmed membership must never fail to
     /// resolve into *some* usable session.
     /// </summary>
-    WorkspaceRole ToWorkspaceRole(SalonContext salonContext);
+    public WorkspaceRole ToWorkspaceRole(SalonContext salonContext);
 }
