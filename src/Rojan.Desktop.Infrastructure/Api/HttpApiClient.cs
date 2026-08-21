@@ -130,6 +130,10 @@ public sealed class HttpApiClient : IApiClient, IDisposable
             },
             cancellationToken);
 
+    /// <summary>Desktop Productionization Sprint 1: see <see cref="IApiClient.GetBytesAsync"/> - same pipeline as every JSON method above, routed through <see cref="SendBytesAsync"/> instead of the generic <see cref="SendAsync{TResponse}"/> since a PNG body must never go through <see cref="JsonSerializer"/>.</summary>
+    public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default) =>
+        SendBytesAsync(() => new HttpRequestMessage(HttpMethod.Get, path), cancellationToken);
+
     public void Dispose() => _httpClient.Dispose();
 
     private async Task<ApiResponse<TResponse>> SendAsync<TResponse>(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)
@@ -144,6 +148,26 @@ public sealed class HttpApiClient : IApiClient, IDisposable
                 .ConfigureAwait(false);
 
             return await EnsureAuthenticatedAsync(response, requestFactory, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException and not ApiException)
+        {
+            throw MapException(exception);
+        }
+    }
+
+    /// <summary>Desktop Productionization Sprint 1: the <c>byte[]</c> counterpart to <see cref="SendAsync{TResponse}"/> - identical connectivity/retry/401-refresh/exception-mapping shell, routed through <see cref="SendOnceBytesAsync"/> instead of the JSON-decoding <see cref="SendOnceAsync{TResponse}"/>.</summary>
+    private async Task<ApiResponse<byte[]>> SendBytesAsync(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)
+    {
+        EnsureConnectivity();
+        EnsureBaseAddressConfigured();
+
+        try
+        {
+            var response = await _retryPolicy
+                .ExecuteAsync(ct => SendOnceBytesAsync(requestFactory, ct), cancellationToken)
+                .ConfigureAwait(false);
+
+            return await EnsureAuthenticatedBytesAsync(response, requestFactory, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException and not ApiException)
         {
@@ -198,6 +222,36 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         return retried;
     }
 
+    /// <summary>Desktop Productionization Sprint 1: the <c>byte[]</c> counterpart to <see cref="EnsureAuthenticatedAsync{TResponse}"/> - identical 403-throws-immediately/401-refresh-and-retry-once semantics, see that method's own doc comment for the full reasoning.</summary>
+    private async Task<ApiResponse<byte[]>> EnsureAuthenticatedBytesAsync(
+        ApiResponse<byte[]> response,
+        Func<HttpRequestMessage> requestFactory,
+        CancellationToken cancellationToken)
+    {
+        if (response.StatusCode == (int)HttpStatusCode.Forbidden)
+        {
+            throw new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+        }
+
+        if (response.StatusCode != (int)HttpStatusCode.Unauthorized)
+        {
+            return response;
+        }
+
+        await RefreshSessionOrThrowAsync(cancellationToken).ConfigureAwait(false);
+
+        var retried = await _retryPolicy
+            .ExecuteAsync(ct => SendOnceBytesAsync(requestFactory, ct), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (retried.StatusCode is (int)HttpStatusCode.Unauthorized or (int)HttpStatusCode.Forbidden)
+        {
+            throw new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+        }
+
+        return retried;
+    }
+
     private async Task RefreshSessionOrThrowAsync(CancellationToken cancellationToken)
     {
         try
@@ -211,6 +265,43 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     }
 
     private async Task<ApiResponse<TResponse>> SendOnceAsync<TResponse>(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)
+    {
+        var (isSuccess, statusCode, bytes) = await SendOnceRawAsync(requestFactory, cancellationToken).ConfigureAwait(false);
+        var body = bytes.Length == 0 ? string.Empty : Encoding.UTF8.GetString(bytes);
+
+        if (!isSuccess)
+        {
+            return ApiResponseFactory.Failure<TResponse>(statusCode, body);
+        }
+
+        var data = string.IsNullOrWhiteSpace(body)
+            ? default
+            : JsonSerializer.Deserialize<TResponse>(body, SerializerOptions);
+
+        return ApiResponseFactory.Success(data!, statusCode);
+    }
+
+    /// <summary>Desktop Productionization Sprint 1: the <c>byte[]</c> counterpart to <see cref="SendOnceAsync{TResponse}"/> - shares <see cref="SendOnceRawAsync"/>'s connectivity/timeout/auth-header/send core, skips the JSON decode step entirely (a PNG body is not UTF-8 text).</summary>
+    private async Task<ApiResponse<byte[]>> SendOnceBytesAsync(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)
+    {
+        var (isSuccess, statusCode, bytes) = await SendOnceRawAsync(requestFactory, cancellationToken).ConfigureAwait(false);
+
+        return isSuccess
+            ? ApiResponseFactory.Success(bytes, statusCode)
+            : ApiResponseFactory.Failure<byte[]>(statusCode, bytes.Length == 0 ? string.Empty : Encoding.UTF8.GetString(bytes));
+    }
+
+    /// <summary>
+    /// Desktop Productionization Sprint 1: the one HTTP-send core every
+    /// <c>SendOnce*</c> variant shares - timeout-wrapped cancellation,
+    /// auth header attachment, the actual <see cref="HttpClient.SendAsync(HttpRequestMessage, CancellationToken)"/>
+    /// call, and reading the raw response bytes. Extracted from what used
+    /// to be <see cref="SendOnceAsync{TResponse}"/>'s own body so the QR
+    /// Ecosystem feature's raw-<c>byte[]</c> path
+    /// (<see cref="SendOnceBytesAsync"/>) doesn't duplicate it - only the
+    /// final "decode as JSON vs. return raw" step differs between callers.
+    /// </summary>
+    private async Task<(bool IsSuccess, int StatusCode, byte[] Bytes)> SendOnceRawAsync(Func<HttpRequestMessage> requestFactory, CancellationToken cancellationToken)
     {
         using var timeoutCts = new CancellationTokenSource(TimeoutSeconds);
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
@@ -230,18 +321,8 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
         using (response)
         {
-            var body = await response.Content.ReadAsStringAsync(linkedCts.Token).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return ApiResponseFactory.Failure<TResponse>((int)response.StatusCode, body);
-            }
-
-            var data = string.IsNullOrWhiteSpace(body)
-                ? default
-                : JsonSerializer.Deserialize<TResponse>(body, SerializerOptions);
-
-            return ApiResponseFactory.Success(data!, (int)response.StatusCode);
+            var bytes = await response.Content.ReadAsByteArrayAsync(linkedCts.Token).ConfigureAwait(false);
+            return (response.IsSuccessStatusCode, (int)response.StatusCode, bytes);
         }
     }
 

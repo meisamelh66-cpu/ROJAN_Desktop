@@ -354,5 +354,8 @@ public sealed class BackendBookingRepositoryTests
 
         public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendBookingRepository never sends a PATCH with a body.");
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("BackendBookingRepository never fetches raw bytes.");
     }
 }

@@ -55,15 +55,51 @@ public sealed class SalonInviteServiceTests
         Assert.Equal("Glow Salon", repository.LastAcceptSalonName);
     }
 
+    [Fact]
+    public async Task CreateReceptionInviteAsync_CreatesAReceptionistRoleInviteAndMapsTheResult()
+    {
+        var repository = new StubSalonInviteRepository { CreateResult = new DomainMembership.CreatedSalonInvite("invite-1", "tok-abc") };
+        var sut = new SalonInviteService(repository, new StubAcceptedMembershipStore());
+
+        var result = await sut.CreateReceptionInviteAsync("salon-1");
+
+        Assert.Equal("invite-1", result.InviteId);
+        Assert.Equal("tok-abc", result.Token);
+        Assert.Equal("salon-1", repository.LastCreateSalonId);
+        Assert.Equal(DomainMembership.SalonRole.Receptionist, repository.LastCreateRole);
+    }
+
+    [Fact]
+    public async Task GetInviteQrCodeAsync_ForwardsToTheRepositoryAndReturnsTheBytes()
+    {
+        var repository = new StubSalonInviteRepository { QrCodeBytes = [4, 5, 6] };
+        var sut = new SalonInviteService(repository, new StubAcceptedMembershipStore());
+
+        var bytes = await sut.GetInviteQrCodeAsync("salon-1", "invite-1", 512);
+
+        Assert.Equal(new byte[] { 4, 5, 6 }, bytes);
+        Assert.Equal(("salon-1", "invite-1", 512), repository.LastQrCodeCall);
+    }
+
     private sealed class StubSalonInviteRepository : DomainMembership.ISalonInviteRepository
     {
         public DomainMembership.SalonInviteDetails? DetailsResult { get; set; }
 
         public DomainMembership.AcceptedMembership? AcceptResult { get; set; }
 
+        public DomainMembership.CreatedSalonInvite? CreateResult { get; set; }
+
+        public byte[] QrCodeBytes { get; set; } = [1, 2, 3];
+
         public string? LastAcceptToken { get; private set; }
 
         public string? LastAcceptSalonName { get; private set; }
+
+        public string? LastCreateSalonId { get; private set; }
+
+        public DomainMembership.SalonRole? LastCreateRole { get; private set; }
+
+        public (string SalonId, string InviteId, int SizePx)? LastQrCodeCall { get; private set; }
 
         public Task<DomainMembership.SalonInviteDetails> GetDetailsAsync(string token, CancellationToken cancellationToken = default) =>
             Task.FromResult(DetailsResult!);
@@ -73,6 +109,19 @@ public sealed class SalonInviteServiceTests
             LastAcceptToken = token;
             LastAcceptSalonName = salonName;
             return Task.FromResult(AcceptResult!);
+        }
+
+        public Task<DomainMembership.CreatedSalonInvite> CreateAsync(string salonId, DomainMembership.SalonRole role, CancellationToken cancellationToken = default)
+        {
+            LastCreateSalonId = salonId;
+            LastCreateRole = role;
+            return Task.FromResult(CreateResult!);
+        }
+
+        public Task<byte[]> GetInviteQrCodeAsync(string salonId, string inviteId, int sizePx, CancellationToken cancellationToken = default)
+        {
+            LastQrCodeCall = (salonId, inviteId, sizePx);
+            return Task.FromResult(QrCodeBytes);
         }
     }
 

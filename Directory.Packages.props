@@ -38,6 +38,12 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <!-- QR Ecosystem (Desktop Productionization Sprint 1): the one QR code
+         this app generates client-side rather than via a ROJAN_Backend
+         endpoint (the Manager app's static download-page URL - not
+         salon/invite-specific, so there is no backend resource to ask).
+         MIT-licensed, pure C#, zero further dependencies. -->
+    <PackageVersion Include="QRCoder" Version="1.6.0" />
     <!-- Phase 25: Security Foundation - Windows DPAPI (CurrentUser-scoped
          encryption at rest for secure storage/key material), factored out
          of the shared framework into its own package since .NET Core. -->

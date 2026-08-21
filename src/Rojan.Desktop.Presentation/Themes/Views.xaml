@@ -45,7 +45,11 @@
                     xmlns:automationVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Automation"
                     xmlns:automationView="clr-namespace:Rojan.Desktop.Presentation.Views.Automation"
                     xmlns:supportVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Support"
-                    xmlns:supportView="clr-namespace:Rojan.Desktop.Presentation.Views.Support">
+                    xmlns:supportView="clr-namespace:Rojan.Desktop.Presentation.Views.Support"
+                    xmlns:membershipVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Membership"
+                    xmlns:membershipView="clr-namespace:Rojan.Desktop.Presentation.Views.Membership"
+                    xmlns:qrCodesVm="clr-namespace:Rojan.Desktop.Presentation.ViewModels.QrCodes"
+                    xmlns:qrCodesView="clr-namespace:Rojan.Desktop.Presentation.Views.QrCodes">
 
   <!--
     ViewModel-to-View mapping (implicit DataTemplate, keyed by DataType,
@@ -129,6 +133,14 @@
 
   <DataTemplate DataType="{x:Type organizationsVm:OrganizationPageViewModel}">
     <organizationsView:OrganizationPage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type membershipVm:AcceptInviteViewModel}">
+    <membershipView:AcceptInvitePage />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type qrCodesVm:QrCodesPageViewModel}">
+    <qrCodesView:QrCodesPage />
   </DataTemplate>
 
   <DataTemplate DataType="{x:Type helpVm:HelpDialogViewModel}">

@@ -11,7 +11,7 @@
         xmlns:workspacesView="clr-namespace:Rojan.Desktop.Presentation.Views.Workspaces;assembly=Rojan.Desktop.Presentation"
         xmlns:converters="clr-namespace:Rojan.Desktop.Presentation.Converters;assembly=Rojan.Desktop.Presentation"
         xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared;assembly=Rojan.Desktop.Presentation"
-        Title="ROJAN Desktop"
+        Title="ROJAN Reception"
         Width="1280"
         Height="800"
         MinWidth="1024"
@@ -249,7 +249,7 @@
                 <!-- Brand -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse Width="8" Height="8" Fill="{StaticResource Rojan.Brush.Accent}" VerticalAlignment="Center" />
-                    <TextBlock Text="ROJAN Desktop"
+                    <TextBlock Text="ROJAN Reception"
                                Style="{StaticResource Rojan.TextStyle.WindowTitle}"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center" />

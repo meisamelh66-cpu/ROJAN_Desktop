@@ -1,6 +1,7 @@
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Api.Contracts;
 using Rojan.Desktop.Infrastructure.Membership;
+using DomainMembership = Rojan.Desktop.Domain.Membership;
 
 namespace Rojan.Desktop.Infrastructure.Tests.Membership;
 
@@ -66,6 +67,55 @@ public sealed class BackendSalonInviteRepositoryTests
         await Assert.ThrowsAsync<ApiException>(() => repository.AcceptAsync("tok-123", "Glow Salon"));
     }
 
+    [Fact]
+    public async Task CreateAsync_SendsTheRoleAsTheBackendEnumNameAndMapsTheResponse()
+    {
+        var apiClient = new StubApiClient
+        {
+            PostResponse = new CreateSalonInviteResponse("invite-1", "tok-abc"),
+        };
+        var repository = new BackendSalonInviteRepository(apiClient);
+
+        var created = await repository.CreateAsync("salon-1", DomainMembership.SalonRole.Receptionist);
+
+        Assert.Equal("invite-1", created.InviteId);
+        Assert.Equal("tok-abc", created.Token);
+        Assert.Equal("/api/v1/salons/salon-1/invites", apiClient.LastPostCall?.Path);
+        var body = (CreateSalonInviteRequest)apiClient.LastPostCall!.Value.Body!;
+        Assert.Equal("RECEPTIONIST", body.Role);
+    }
+
+    [Fact]
+    public async Task CreateAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient { PostFailure = (403, "Forbidden") };
+        var repository = new BackendSalonInviteRepository(apiClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.CreateAsync("salon-1", DomainMembership.SalonRole.Receptionist));
+    }
+
+    [Fact]
+    public async Task GetInviteQrCodeAsync_ReturnsThePngBytes()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetBytesResponses["/api/v1/salons/salon-1/invites/invite-1/qr-code?size=512"] = [7, 8, 9];
+        var repository = new BackendSalonInviteRepository(apiClient);
+
+        var bytes = await repository.GetInviteQrCodeAsync("salon-1", "invite-1", 512);
+
+        Assert.Equal(new byte[] { 7, 8, 9 }, bytes);
+    }
+
+    [Fact]
+    public async Task GetInviteQrCodeAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetBytesFailures["/api/v1/salons/salon-1/invites/invite-1/qr-code?size=512"] = (404, "Not found");
+        var repository = new BackendSalonInviteRepository(apiClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.GetInviteQrCodeAsync("salon-1", "invite-1", 512));
+    }
+
     private sealed class StubApiClient : IApiClient
     {
         public Dictionary<string, object> GetResponses { get; } = [];
@@ -73,6 +123,10 @@ public sealed class BackendSalonInviteRepositoryTests
         public Dictionary<string, (int? Status, string Message)> GetFailures { get; } = [];
 
         public List<string> GetCallPaths { get; } = [];
+
+        public Dictionary<string, byte[]> GetBytesResponses { get; } = [];
+
+        public Dictionary<string, (int? Status, string Message)> GetBytesFailures { get; } = [];
 
         public object? PostResponse { get; set; }
 
@@ -120,5 +174,22 @@ public sealed class BackendSalonInviteRepositoryTests
 
         public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendSalonInviteRepository never patches.");
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default)
+        {
+            GetCallPaths.Add(path);
+
+            if (GetBytesFailures.TryGetValue(path, out var failure))
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<byte[]>(failure.Status, failure.Message));
+            }
+
+            if (GetBytesResponses.TryGetValue(path, out var response))
+            {
+                return Task.FromResult(ApiResponseFactory.Success(response, 200));
+            }
+
+            throw new InvalidOperationException($"Unexpected GET (bytes) '{path}' - not configured by this test.");
+        }
     }
 }

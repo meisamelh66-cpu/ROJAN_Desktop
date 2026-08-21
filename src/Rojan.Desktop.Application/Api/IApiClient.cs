@@ -59,4 +59,15 @@ public interface IApiClient
     /// addition.
     /// </summary>
     public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Desktop Productionization Sprint 1: every method above JSON-decodes
+    /// its response body into <c>TResponse</c> - the QR Ecosystem feature's
+    /// backend endpoints (<c>GET .../qr-code</c>) return a raw
+    /// <c>image/png</c> body instead, which JSON decoding would corrupt.
+    /// Same pipeline (connectivity, auth header, retry, timeout,
+    /// 401-refresh-and-retry-once, exception mapping) as every other
+    /// method here - only the final decode step differs.
+    /// </summary>
+    public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default);
 }

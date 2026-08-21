@@ -24,7 +24,14 @@
 
   <PropertyGroup>
     <Company>ROJAN</Company>
-    <Product>ROJAN Desktop</Product>
+    <!-- Desktop Productionization Sprint 2 (Production Branding): the
+         user-facing Product name is "ROJAN Reception" (matches the
+         installer's AppName, the Start Menu group, and every marketing
+         surface). The solution/project/namespace names stay
+         RojanDesktop/Rojan.Desktop.* unchanged - renaming those would
+         ripple through every file in the repo for a purely cosmetic
+         metadata field with zero functional benefit. -->
+    <Product>ROJAN Reception</Product>
     <Copyright>Copyright © ROJAN $([System.DateTime]::Now.Year)</Copyright>
   </PropertyGroup>
 
@@ -32,10 +39,18 @@
     Versioning: single source of truth for the whole solution, per
     docs/standards/versioning.md. Every project inherits this unless a
     packaging step later needs to override it for a specific artifact.
+
+    Desktop Productionization Sprint 2: bumped to 1.0.0, a deliberate
+    judgment call made explicitly in this sprint (see that doc's own §4 -
+    "1.0.0 only once the first genuinely usable release goes out ... made
+    explicitly at that time, not automatically"). This is a version
+    label, not a claim that every gap is closed - see
+    docs/RojanReception_v1.0_Production_Checklist.md for what's real and
+    what still isn't (unsigned installer, no live-tested login, POS still
+    intentionally out of scope).
   -->
   <PropertyGroup>
-    <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionPrefix>1.0.0</VersionPrefix>
   </PropertyGroup>
 
 </Project>

@@ -3007,6 +3007,42 @@
   <data name="Nav_AcceptInvite" xml:space="preserve">
     <value>قبول الدعوة</value>
   </data>
+  <data name="Nav_QrCodes" xml:space="preserve">
+    <value>رموز QR</value>
+  </data>
+  <data name="QrCodes_Title" xml:space="preserve">
+    <value>رموز QR</value>
+  </data>
+  <data name="QrCodes_Subtitle" xml:space="preserve">
+    <value>رموز QR قابلة للطباعة للترويج لصالونك ودعوة الموظفين.</value>
+  </data>
+  <data name="QrCodes_ManagerCardTitle" xml:space="preserve">
+    <value>تنزيل تطبيق المدير</value>
+  </data>
+  <data name="QrCodes_ManagerCardDescription" xml:space="preserve">
+    <value>امسح هذا الرمز لتنزيل تطبيق روژان للمدير.</value>
+  </data>
+  <data name="QrCodes_CustomerCardTitle" xml:space="preserve">
+    <value>الحجز عبر الإنترنت</value>
+  </data>
+  <data name="QrCodes_CustomerCardDescription" xml:space="preserve">
+    <value>يمكن للعملاء مسح هذا الرمز لعرض خدمات صالونك وحجزها.</value>
+  </data>
+  <data name="QrCodes_ReceptionCardTitle" xml:space="preserve">
+    <value>دعوة موظف استقبال</value>
+  </data>
+  <data name="QrCodes_ReceptionCardDescription" xml:space="preserve">
+    <value>هذا الرمز للاستخدام مرة واحدة فقط - يُستخدم فقط لدعوة موظف استقبال جديد.</value>
+  </data>
+  <data name="QrCodes_GenerateInvite" xml:space="preserve">
+    <value>إنشاء دعوة</value>
+  </data>
+  <data name="QrCodes_NoInviteYet" xml:space="preserve">
+    <value>لم يتم إنشاء أي دعوة بعد.</value>
+  </data>
+  <data name="QrCodes_Print" xml:space="preserve">
+    <value>طباعة</value>
+  </data>
   <data name="AcceptInvite_Title" xml:space="preserve">
     <value>قبول دعوة الصالون</value>
   </data>

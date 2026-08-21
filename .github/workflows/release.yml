@@ -65,11 +65,64 @@ jobs:
         shell: pwsh
         run: ./build/publish.ps1 -Version "${{ steps.version.outputs.version }}"
 
-      - name: Upload release artifact
+      # Desktop Productionization Sprint 2 (Release Pipeline): Inno Setup
+      # isn't preinstalled on windows-latest - Chocolatey is (same
+      # "preinstalled on GitHub-hosted runners" reasoning this workflow
+      # already relies on for gh below).
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      # Desktop Productionization Sprint 2 (Code Signing Preparation):
+      # signs only if both secrets are configured - see
+      # docs/standards/code-signing.md for exactly what they contain and
+      # how to obtain a certificate. Absent secrets = unsigned build,
+      # identical to every release before a certificate exists, same
+      # "no separate flag to toggle" behavior publish-installer.ps1
+      # itself already implements.
+      - name: Publish and package (installer)
+        shell: pwsh
+        env:
+          CODE_SIGNING_CERT_BASE64: ${{ secrets.CODE_SIGNING_CERT_BASE64 }}
+          CODE_SIGNING_CERT_PASSWORD: ${{ secrets.CODE_SIGNING_CERT_PASSWORD }}
+        run: |
+          $signingArgs = @{}
+          if ($env:CODE_SIGNING_CERT_BASE64) {
+            $certPath = Join-Path $env:RUNNER_TEMP 'rojan-reception-signing.pfx'
+            [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:CODE_SIGNING_CERT_BASE64))
+            $signingArgs = @{
+              CertificatePath     = $certPath
+              CertificatePassword = $env:CODE_SIGNING_CERT_PASSWORD
+            }
+          }
+
+          ./build/publish-installer.ps1 -Version "${{ steps.version.outputs.version }}" @signingArgs
+
+          if ($signingArgs.ContainsKey('CertificatePath')) {
+            Remove-Item $signingArgs.CertificatePath -Force
+          }
+
+      # Desktop Productionization Sprint 2 (Release Pipeline): the
+      # checksum ROJAN_Web's release-registry.ts records (see
+      # docs/standards/release-process.md §4) - generated here, once,
+      # against the exact artifact this workflow is about to publish,
+      # rather than recomputed by hand later against a possibly-different
+      # download.
+      - name: Generate installer checksum
+        shell: pwsh
+        run: |
+          $installer = Get-Item "artifacts/ROJAN Reception Setup.exe"
+          $hash = Get-FileHash $installer.FullName -Algorithm SHA256
+          "$($hash.Hash.ToLower())  $($installer.Name)" | Set-Content "artifacts/ROJAN Reception Setup.exe.sha256"
+
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: RojanDesktop-${{ steps.version.outputs.version }}-win-x64
-          path: artifacts/*.zip
+          path: |
+            artifacts/*.zip
+            artifacts/*.exe
+            artifacts/*.sha256
 
       # gh is preinstalled on GitHub-hosted runners - no third-party
       # marketplace action needed to publish the release.
@@ -78,5 +131,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $zip = Get-ChildItem artifacts/*.zip | Select-Object -First 1
-          gh release create "${{ github.ref_name }}" $zip.FullName --title "${{ github.ref_name }}" --generate-notes
+          $assets = Get-ChildItem artifacts/*.zip, "artifacts/*.exe", artifacts/*.sha256
+          gh release create "${{ github.ref_name }}" $assets.FullName --title "${{ github.ref_name }}" --generate-notes
+
+      # Desktop Productionization Sprint 2 (Release Pipeline): updating
+      # ROJAN_Web's release registry is a deliberate manual, cross-repo
+      # step - see docs/standards/release-process.md §3-4 for why this
+      # workflow doesn't attempt it automatically (this session has no
+      # way to test a cross-repo trigger end-to-end, and a fabricated one
+      # would be worse than an honest manual runbook).
+      - name: Next step reminder
+        shell: pwsh
+        run: |
+          Write-Output "Release ${{ github.ref_name }} published. Next: update ROJAN_Web's release registry - see docs/standards/release-process.md §4."

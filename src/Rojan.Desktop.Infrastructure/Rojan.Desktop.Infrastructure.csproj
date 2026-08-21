@@ -15,6 +15,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <!-- Phase 25: Security Foundation - DPAPI-backed secure storage/key provider. -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <!-- QR Ecosystem (Desktop Productionization Sprint 1) - see Directory.Packages.props's own comment. -->
+    <PackageReference Include="QRCoder" />
   </ItemGroup>
 
   <ItemGroup>

@@ -109,11 +109,37 @@ public sealed class BackendSalonRepositoryTests
         await Assert.ThrowsAsync<ApiException>(() => repository.CreateAsync(salon));
     }
 
+    [Fact]
+    public async Task GetQrCodeAsync_ReturnsThePngBytesFromTheQrCodeEndpoint()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetBytesResponses["/api/v1/salons/salon-1/qr-code?size=512"] = [1, 2, 3, 4];
+        var repository = new BackendSalonRepository(apiClient);
+
+        var bytes = await repository.GetQrCodeAsync("salon-1", 512);
+
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, bytes);
+    }
+
+    [Fact]
+    public async Task GetQrCodeAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetBytesFailures["/api/v1/salons/salon-1/qr-code?size=512"] = (403, "Forbidden");
+        var repository = new BackendSalonRepository(apiClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.GetQrCodeAsync("salon-1", 512));
+    }
+
     private sealed class StubApiClient : IApiClient
     {
         public Dictionary<string, object> GetResponses { get; } = [];
 
         public Dictionary<string, (int? Status, string Message)> GetFailures { get; } = [];
+
+        public Dictionary<string, byte[]> GetBytesResponses { get; } = [];
+
+        public Dictionary<string, (int? Status, string Message)> GetBytesFailures { get; } = [];
 
         public object? PostResponse { get; set; }
 
@@ -159,5 +185,20 @@ public sealed class BackendSalonRepositoryTests
 
         public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendSalonRepository never patches.");
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default)
+        {
+            if (GetBytesFailures.TryGetValue(path, out var failure))
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<byte[]>(failure.Status, failure.Message));
+            }
+
+            if (GetBytesResponses.TryGetValue(path, out var response))
+            {
+                return Task.FromResult(ApiResponseFactory.Success(response, 200));
+            }
+
+            throw new InvalidOperationException($"Unexpected GET (bytes) '{path}' - not configured by this test.");
+        }
     }
 }

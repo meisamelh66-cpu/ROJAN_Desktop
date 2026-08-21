@@ -15,4 +15,17 @@ public interface ISalonRepository
     public Task<IReadOnlyList<Salon>> GetMineAsync(CancellationToken cancellationToken = default);
 
     public Task<Salon> CreateAsync(Salon salon, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// QR Ecosystem (Desktop Productionization Sprint 1): a scannable PNG
+    /// encoding this salon's real public booking link
+    /// (<c>{ROJAN_PUBLIC_BASE_URL}/s/{salon.slug}</c> - ROJAN_Backend's own
+    /// <c>GenerateSalonQrCodeUseCase</c> builds the URL, this repository
+    /// never needs to know the slug or construct it client-side). Unlike
+    /// every other method here, this one *is* salon-scoped by id - the
+    /// caller already knows which salon (from <see cref="GetMineAsync"/>
+    /// or <c>Application.Salons.ISalonContextService</c>), there is
+    /// nothing to discover.
+    /// </summary>
+    public Task<byte[]> GetQrCodeAsync(string salonId, int sizePx, CancellationToken cancellationToken = default);
 }

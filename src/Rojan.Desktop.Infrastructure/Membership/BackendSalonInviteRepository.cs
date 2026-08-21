@@ -38,7 +38,47 @@ public sealed class BackendSalonInviteRepository(IApiClient apiClient) : DomainM
         return new DomainMembership.AcceptedMembership(response.Data.SalonId, salonName, response.Data.Role);
     }
 
+    /// <summary>QR Ecosystem: creates a new staff invite via <c>POST /api/v1/salons/{salonId}/invites</c> - salon-scoped, unlike <see cref="GetDetailsAsync"/>/<see cref="AcceptAsync"/> above (see this interface's own doc comment for why).</summary>
+    public async Task<DomainMembership.CreatedSalonInvite> CreateAsync(string salonId, DomainMembership.SalonRole role, CancellationToken cancellationToken = default)
+    {
+        var request = new CreateSalonInviteRequest(MapRole(role));
+
+        var response = await apiClient
+            .PostAsync<CreateSalonInviteRequest, CreateSalonInviteResponse>(InvitesPath(salonId), request, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to create invite (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return new DomainMembership.CreatedSalonInvite(response.Data.Id, response.Data.Token);
+    }
+
+    /// <summary>QR Ecosystem: fetches the invite's accept-link PNG via <c>GET /api/v1/salons/{salonId}/invites/{inviteId}/qr-code</c> - the same <see cref="IApiClient.GetBytesAsync"/> raw-bytes path <c>Salons.BackendSalonRepository.GetQrCodeAsync</c> uses, so the URL itself is never constructed client-side.</summary>
+    public async Task<byte[]> GetInviteQrCodeAsync(string salonId, string inviteId, int sizePx, CancellationToken cancellationToken = default)
+    {
+        var response = await apiClient.GetBytesAsync(QrCodePath(salonId, inviteId, sizePx), cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to generate invite QR code (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return response.Data;
+    }
+
+    private static string MapRole(DomainMembership.SalonRole role) => role switch
+    {
+        DomainMembership.SalonRole.Manager => "MANAGER",
+        DomainMembership.SalonRole.Receptionist => "RECEPTIONIST",
+        _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown salon role."),
+    };
+
     private static string DetailsPath(string token) => $"/api/v1/invites/{token}";
 
     private static string AcceptPath(string token) => $"/api/v1/invites/{token}/accept";
+
+    private static string InvitesPath(string salonId) => $"/api/v1/salons/{salonId}/invites";
+
+    private static string QrCodePath(string salonId, string inviteId, int sizePx) => $"/api/v1/salons/{salonId}/invites/{inviteId}/qr-code?size={sizePx}";
 }

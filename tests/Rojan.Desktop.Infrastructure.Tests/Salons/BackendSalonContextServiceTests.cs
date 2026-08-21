@@ -369,5 +369,8 @@ public sealed class BackendSalonContextServiceTests
 
         public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendSalonContextService never patches.");
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("BackendSalonContextService never fetches raw bytes.");
     }
 }

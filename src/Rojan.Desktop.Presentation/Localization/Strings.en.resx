@@ -3007,6 +3007,42 @@ Use the action buttons in the detail panel to make changes.</value>
   <data name="Nav_AcceptInvite" xml:space="preserve">
     <value>Accept Invite</value>
   </data>
+  <data name="Nav_QrCodes" xml:space="preserve">
+    <value>QR Codes</value>
+  </data>
+  <data name="QrCodes_Title" xml:space="preserve">
+    <value>QR Codes</value>
+  </data>
+  <data name="QrCodes_Subtitle" xml:space="preserve">
+    <value>Printable QR codes for promoting your salon and inviting staff.</value>
+  </data>
+  <data name="QrCodes_ManagerCardTitle" xml:space="preserve">
+    <value>Download the Manager App</value>
+  </data>
+  <data name="QrCodes_ManagerCardDescription" xml:space="preserve">
+    <value>Scan this code to download the ROJAN Manager app.</value>
+  </data>
+  <data name="QrCodes_CustomerCardTitle" xml:space="preserve">
+    <value>Book Online</value>
+  </data>
+  <data name="QrCodes_CustomerCardDescription" xml:space="preserve">
+    <value>Customers can scan this code to view and book your salon's services.</value>
+  </data>
+  <data name="QrCodes_ReceptionCardTitle" xml:space="preserve">
+    <value>Invite a Reception Staff Member</value>
+  </data>
+  <data name="QrCodes_ReceptionCardDescription" xml:space="preserve">
+    <value>This code is single-use - only scan it to invite one new reception staff member.</value>
+  </data>
+  <data name="QrCodes_GenerateInvite" xml:space="preserve">
+    <value>Generate Invite</value>
+  </data>
+  <data name="QrCodes_NoInviteYet" xml:space="preserve">
+    <value>No invite generated yet.</value>
+  </data>
+  <data name="QrCodes_Print" xml:space="preserve">
+    <value>Print</value>
+  </data>
   <data name="AcceptInvite_Title" xml:space="preserve">
     <value>Accept Salon Invite</value>
   </data>

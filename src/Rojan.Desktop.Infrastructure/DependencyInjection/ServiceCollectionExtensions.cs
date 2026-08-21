@@ -7,6 +7,7 @@ using Rojan.Desktop.Application.Help;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Notifications;
+using Rojan.Desktop.Application.QrCodes;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Support;
@@ -47,6 +48,7 @@ using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
 using Rojan.Desktop.Infrastructure.Persistence.Calendar;
+using Rojan.Desktop.Infrastructure.QrCodes;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Salons;
 using Rojan.Desktop.Infrastructure.Search;
@@ -124,6 +126,12 @@ public static class ServiceCollectionExtensions
         // new persistence mechanism - see its own doc comment.
         services.AddSingleton<ISalonInviteRepository, BackendSalonInviteRepository>();
         services.AddSingleton<IAcceptedMembershipStore, AcceptedMembershipStore>();
+
+        // QR Ecosystem (Desktop Productionization Sprint 1): the one QR
+        // type with no backend resource to ask (the Manager app's static
+        // download-page link) - see IStaticQrCodeGenerator's own doc
+        // comment for why this is Infrastructure-only, never Domain/Application.
+        services.AddSingleton<IStaticQrCodeGenerator, QrCoderStaticQrCodeGenerator>();
         services.AddSingleton<IBookingRepository, BackendBookingRepository>();
 
         // Reception Booking Integration Phase 2 (Specialist Integration):

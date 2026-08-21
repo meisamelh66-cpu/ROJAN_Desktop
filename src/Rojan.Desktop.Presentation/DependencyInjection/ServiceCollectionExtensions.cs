@@ -14,6 +14,7 @@ using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 using Rojan.Desktop.Presentation.ViewModels.Membership;
 using Rojan.Desktop.Presentation.ViewModels.Organizations;
+using Rojan.Desktop.Presentation.ViewModels.QrCodes;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 using Rojan.Desktop.Presentation.ViewModels.Salons;
 using Rojan.Desktop.Presentation.ViewModels.Services;
@@ -56,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<DashboardPageViewModel>();
         services.AddTransient<SalonPageViewModel>();
         services.AddTransient<AcceptInviteViewModel>();
+        services.AddTransient<QrCodesPageViewModel>();
         services.AddTransient<CustomerPageViewModel>();
         services.AddTransient<BookingPageViewModel>();
         services.AddTransient<SpecialistPageViewModel>();

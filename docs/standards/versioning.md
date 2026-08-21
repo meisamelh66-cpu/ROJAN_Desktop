@@ -27,20 +27,30 @@ Shell and every library ship together as one product).
 
 ## 3. Current version
 
-`0.1.0-alpha` — set in `Directory.Build.props` at repo creation. This is
-correct SemVer for "structure exists, nothing functional yet" and will
-move to `0.x.y` MINOR bumps as each phase lands, `1.0.0` only once the
-first genuinely usable release goes out (a judgment call made
-explicitly at that time, not automatically).
+`1.0.0`, set in Desktop Productionization Sprint 2 — the deliberate,
+explicit judgment call §4 always said this bump would require. Reached
+after: a real installer (Sprint 1), production API connectivity baked in
+and live-verified (Sprint 2), real branding/icon (Sprint 2), and a
+documented release pipeline (Sprint 2). `1.0.0` is a version label, not
+a certification that every gap is closed — see
+`docs/RojanReception_v1.0_Production_Checklist.md` for exactly what's
+verified and what still isn't (installer is unsigned - no certificate
+purchased, signing hooks only; a live end-user login was not exercised,
+only read-only/code-level verification; POS/Checkout remains
+intentionally out of scope, unchanged).
 
-## 4. Why start at `0.1.0`, not `1.0.0`
+Prior to this: `0.1.0-alpha`, set at repo creation, correct SemVer for
+"structure exists, nothing functional yet."
+
+## 4. Why this project started at `0.1.0`, not `1.0.0`
 
 Per SemVer's own spec: "Major version zero (0.y.z) is for initial
-development. Anything MAY change at any time." That's an accurate
-description of this project's current state — the architecture itself is
-still pending approval. Jumping to `1.0.0` before there's a real,
-stable, shipped product overstates the project's maturity to anyone
-reading the version number.
+development. Anything MAY change at any time." That was an accurate
+description of this project's state at repo creation — the architecture
+itself was still pending approval. Jumping to `1.0.0` before there was a
+real, stable, shipped product would have overstated the project's
+maturity to anyone reading the version number. §3 above records when
+that stopped being true.
 
 ## 5. What bumps the version, and when
 

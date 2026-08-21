@@ -194,5 +194,8 @@ public sealed class BackendCalendarAvailabilityRepositoryTests
 
         public Task<ApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendCalendarAvailabilityRepository never patches.");
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("BackendCalendarAvailabilityRepository never fetches raw bytes.");
     }
 }

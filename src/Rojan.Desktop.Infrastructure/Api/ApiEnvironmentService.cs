@@ -12,11 +12,26 @@ namespace Rojan.Desktop.Infrastructure.Api;
 /// Development is always the first-launch default (no settings file yet
 /// -&gt; Development), so a fresh install never accidentally points at a
 /// misconfigured or unset Production address.
+///
+/// Desktop Productionization Sprint 1: <see cref="ProductionUrl"/> now
+/// falls back to <see cref="ProductionUrlDefault"/> - matching
+/// <c>Support.RojanBrandConfiguration.ApiBaseUrl</c>'s already-documented
+/// intended value and ROJAN_Backend's own prod compose file
+/// (<c>MEDIA_PUBLIC_BASE_URL</c>/<c>ROJAN_PUBLIC_BASE_URL</c> both resolve
+/// under the same <c>rojanai.ir</c> domain in
+/// <c>docker-compose.prod.yml</c>) - instead of resolving to <c>null</c>
+/// until an operator manually sets it via Settings. Switching to
+/// Production is still an explicit user action (Development stays the
+/// first-launch default per the doc comment above); this only fixes what
+/// that switch resolves to on a fresh install with no persisted override.
 /// </summary>
 public sealed class ApiEnvironmentService : IApiEnvironmentService
 {
     private const string EnvironmentVariable = "ROJAN_API_BASE_URL";
     private const string DevelopmentUrl = "http://localhost:8080";
+
+    /// <summary>The real production API address, baked in so a fresh install's Production toggle resolves to something reachable without a manual Settings step. A user-supplied override (via <see cref="SetEnvironmentAsync"/> or the <see cref="EnvironmentVariable"/> env var) always takes precedence - this is a fallback, not a hardcoded lock-in.</summary>
+    public const string ProductionUrlDefault = "https://api.rojanai.ir";
 
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
@@ -48,7 +63,9 @@ public sealed class ApiEnvironmentService : IApiEnvironmentService
                 return new Uri(overrideAddress, UriKind.Absolute);
             }
 
-            var configuredUrl = SelectedEnvironment == ApiEnvironment.Development ? DevelopmentUrl : ProductionUrl;
+            var configuredUrl = SelectedEnvironment == ApiEnvironment.Development
+                ? DevelopmentUrl
+                : (string.IsNullOrWhiteSpace(ProductionUrl) ? ProductionUrlDefault : ProductionUrl);
             return string.IsNullOrWhiteSpace(configuredUrl) ? null : new Uri(configuredUrl, UriKind.Absolute);
         }
     }

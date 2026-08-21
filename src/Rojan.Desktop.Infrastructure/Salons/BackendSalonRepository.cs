@@ -46,6 +46,18 @@ public sealed class BackendSalonRepository(IApiClient apiClient) : DomainSalons.
         return Map(response.Data);
     }
 
+    /// <summary>QR Ecosystem (Desktop Productionization Sprint 1): fetches the salon's public-booking-link PNG via <c>GET /api/v1/salons/{salonId}/qr-code</c> - the raw-bytes path (<see cref="IApiClient.GetBytesAsync"/>), never JSON.</summary>
+    public async Task<byte[]> GetQrCodeAsync(string salonId, int sizePx, CancellationToken cancellationToken = default)
+    {
+        var response = await apiClient.GetBytesAsync($"{SalonsPath}/{salonId}/qr-code?size={sizePx}", cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to generate salon QR code (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return response.Data;
+    }
+
     private static DomainSalons.Salon Map(SalonResponse response) => new(
         response.Id,
         response.Name,

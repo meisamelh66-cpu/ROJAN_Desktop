@@ -3,6 +3,14 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <!-- Desktop Productionization Sprint 2 (Production Branding): the real
+         ROJAN brand mark (see build/generate-icon.ps1's own doc comment
+         for provenance) - drives the .exe's own icon, its taskbar entry,
+         and (via the installer's existing UninstallDisplayIcon binding to
+         this same .exe) the Add/Remove Programs entry too. Start Menu/
+         desktop shortcuts inherit it automatically since they already
+         point at this .exe. -->
+    <ApplicationIcon>Assets\RojanReception.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

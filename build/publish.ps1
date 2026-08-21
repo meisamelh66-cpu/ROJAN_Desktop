@@ -5,11 +5,14 @@
 
 .DESCRIPTION
     Per the approved Phase 09 Release Engineering plan §7/§8: ZIP-of-a-
-    published-build only, no installer (MSIX/MSI/WiX/Squirrel) - that
-    remains a distinct future decision requiring its own approval, since
-    every installer option costs a new dependency this phase deliberately
-    avoids. Self-contained + single-file so the app runs on a machine
-    without the .NET 8 runtime preinstalled.
+    published-build only, no installer. Self-contained + single-file so
+    the app runs on a machine without the .NET 8 runtime preinstalled.
+
+    Desktop Productionization Sprint 1: the "distinct future decision"
+    this comment used to defer has now been made - see
+    publish-installer.ps1, which wraps this same script's output into a
+    real Inno Setup installer. This script itself is unchanged and still
+    the right choice for a raw ZIP artifact (e.g. CI's own release.yml).
 
 .PARAMETER Version
     Version string (without a leading "v") used to name the output ZIP,

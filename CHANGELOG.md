@@ -9,6 +9,94 @@ see `docs/standards/versioning.md`.
 ## [Unreleased]
 
 ### Added
+- Desktop Productionization Sprint 2 (Production Hardening) — turns
+  Sprint 1's remaining open items into verified, documented status. Full
+  detail in `docs/RojanReception_v1.0_Production_Checklist.md`; summary:
+  **Code signing**: hooks only, no certificate purchased —
+  `build/publish-installer.ps1` gains optional `-CertificatePath`/
+  `-CertificatePassword`/`-TimestampUrl` (signs the exe via `signtool.exe`
+  before packaging, and Inno Setup signs the installer/uninstaller too,
+  gated behind a new `SignInstaller` preprocessor flag in
+  `RojanReception.iss`); omitting them is the unchanged unsigned default.
+  New `docs/standards/code-signing.md` documents the certificate
+  requirements and CI secret names for a future purchase. **Production
+  API verification**: `https://api.rojanai.ir` confirmed genuinely live
+  (health, TLS/security headers, JWT-filter enforcement, public-routing
+  404 contract, OTP/refresh endpoint validation) via safe, non-mutating
+  probes — no real OTP SMS sent, no production data written, per an
+  explicit scope decision this sprint. **Branding**: a real multi-
+  resolution `.ico` (`build/generate-icon.ps1`, reused from
+  `ROJAN_DesignLab`'s own Play Store master icon — the same mark already
+  used across the Manager/Customer apps) wired into
+  `Rojan.Desktop.Shell.csproj`'s `<ApplicationIcon>`, confirmed present
+  on the built exe, the installer, and (inherited) every shortcut and
+  the installer wizard itself. `Directory.Build.props`: `Product` is now
+  "ROJAN Reception", version bumped `0.1.0-alpha` → **`1.0.0`** — a
+  deliberate call per `docs/standards/versioning.md` §4, not an automatic
+  one; that doc's own rationale section was updated to record it.
+  **Release pipeline**: `.github/workflows/release.yml` extended to the
+  full Build→Test→Publish→Installer→Checksum chain (Inno Setup installed
+  via Chocolatey on the runner, signing wired to two optional secrets,
+  SHA-256 checksum generated and uploaded alongside the installer) — not
+  executed via a real tag push this sprint. New
+  `docs/standards/release-process.md` documents the full chain including
+  the one deliberately-manual, cross-repo step (updating `ROJAN_Web`'s
+  release registry). **Website**: `release-registry.ts`/`app-showcase.ts`
+  updated to the real rebuilt `1.0.0` binary (new filename, new SHA-256 —
+  the icon/version change produced a different file than Sprint 1's),
+  full test suite + build re-verified. **Clean install test**: not
+  literally performed (no clean VM in this environment) — self-
+  containment verified instead via `runtimeconfig.json`'s
+  `"includedFrameworks"` (bundled, not a shared-framework requirement),
+  plus a real install/verify/uninstall/verify cycle on this machine
+  (twice this sprint). Full solution: 2,280 tests, 0 failures, unchanged
+  from Sprint 1's baseline (one native-SQLite test flake observed under
+  parallel execution, confirmed passing in isolation, unrelated to any
+  change this sprint).
+- Desktop Productionization Sprint 1 — moves the app from an alpha ZIP
+  build toward a distributable production package. **Installer**: a real
+  Inno Setup installer (`build/installer/RojanReception.iss`,
+  `build/publish-installer.ps1`), producing `ROJAN Reception Setup.exe`
+  (versioned from `Directory.Build.props`, per-user install, Start Menu +
+  optional desktop shortcut, clean uninstall including LocalAppData
+  settings) — verified with a real silent install/uninstall cycle, not
+  just a successful compile. Unsigned (no code-signing certificate
+  available) — a real, flagged gap, not silently accepted. **Production
+  backend connection**: `ApiEnvironmentService.ProductionUrlDefault`
+  (`https://api.rojanai.ir`) closes the "fresh install resolves Production
+  to `null`" gap the prior `ROJAN_Public_Launch_Readiness_Audit_v1.md`
+  flagged — a fresh install's Production toggle now resolves to the real,
+  already-documented backend domain instead of requiring a manual
+  Settings step; an explicit override still always wins. **QR Ecosystem**:
+  a new owner-only "QR Codes" module/page (`Permission.ManageUsers`) with
+  three printable QR codes — Manager (client-generated via the new
+  QRCoder dependency, linking to the real, if not-yet-`available`,
+  `rojanai.ir/download/manager` marketing page), Customer (real backend
+  link to this salon's public booking page via the already-existing
+  `GET /salons/{id}/qr-code`), and a Reception staff-invite QR (repurposed
+  from the original brief's "Specialist QR", which corresponded to no
+  real product or backend role — see the sprint's own plan for the full
+  reasoning; uses the already-existing `POST /salons/{id}/invites` +
+  `GET .../invites/{id}/qr-code`). New `IApiClient.GetBytesAsync` raw-PNG
+  pipeline alongside the existing JSON one. Print preview/A4 export via
+  native WPF `FixedDocument`/`PrintDialog` (no new dependency) — the
+  app's first real print feature (`Reporting`'s own Export dialog still
+  honestly stubs `Print` as not-yet-implemented, untouched by this
+  phase). Full Clean Architecture vertical slice (Domain/Application/
+  Infrastructure/Presentation), new/extended tests at every layer, all
+  passing alongside the full existing suite (2,280 tests, 0 failures) and
+  `ArchitectureTests` (dependency-direction enforcement caught and fixed
+  one real boundary violation during development — `IStaticQrCodeGenerator`
+  moved from Infrastructure to Application before Presentation could
+  depend on it, same class of mistake the Reception Production
+  Integration phase's own "mid-phase correction" already documents).
+  **Website coordination** (`ROJAN_Web`): new additive `/download/[appId]`
+  route (Manager/Customer/Reception each get a stable, focused URL for
+  QR codes to point at) and the first real Reception release wired into
+  the existing `release-registry.ts`/`app-showcase.ts` scaffolding
+  (`available: true`, real `downloadHref`, real SHA-256 checksum) — a
+  data-only change, exactly as that scaffolding's own prior comments
+  predicted.
 - Repository initialized as a standalone git repo, independent from
   `ROJAN_DesignLab`.
 - Phase 01 foundation: solution shell (`RojanDesktop.sln`), folder

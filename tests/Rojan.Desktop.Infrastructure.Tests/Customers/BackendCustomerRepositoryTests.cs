@@ -365,5 +365,8 @@ public sealed class BackendCustomerRepositoryTests
             LastPatchCall = (path, body);
             return Task.FromResult(ApiResponseFactory.Success((TResponse)PatchResponse!, 200));
         }
+
+        public Task<ApiResponse<byte[]>> GetBytesAsync(string path, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("BackendCustomerRepository never fetches raw bytes.");
     }
 }

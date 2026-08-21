@@ -3019,6 +3019,42 @@
   <data name="Nav_AcceptInvite" xml:space="preserve">
     <value>پذیرش دعوت</value>
   </data>
+  <data name="Nav_QrCodes" xml:space="preserve">
+    <value>کدهای QR</value>
+  </data>
+  <data name="QrCodes_Title" xml:space="preserve">
+    <value>کدهای QR</value>
+  </data>
+  <data name="QrCodes_Subtitle" xml:space="preserve">
+    <value>کدهای QR قابل چاپ برای معرفی سالن و دعوت از کارکنان.</value>
+  </data>
+  <data name="QrCodes_ManagerCardTitle" xml:space="preserve">
+    <value>دانلود اپ مدیر</value>
+  </data>
+  <data name="QrCodes_ManagerCardDescription" xml:space="preserve">
+    <value>برای دانلود اپلیکیشن مدیر روژان، این کد را اسکن کنید.</value>
+  </data>
+  <data name="QrCodes_CustomerCardTitle" xml:space="preserve">
+    <value>رزرو آنلاین سالن</value>
+  </data>
+  <data name="QrCodes_CustomerCardDescription" xml:space="preserve">
+    <value>مشتریان با اسکن این کد می‌توانند خدمات سالن را مشاهده و رزرو کنند.</value>
+  </data>
+  <data name="QrCodes_ReceptionCardTitle" xml:space="preserve">
+    <value>دعوت کارمند پذیرش</value>
+  </data>
+  <data name="QrCodes_ReceptionCardDescription" xml:space="preserve">
+    <value>این کد یک‌بار مصرف است - فقط برای دعوت یک کارمند پذیرش جدید اسکن شود.</value>
+  </data>
+  <data name="QrCodes_GenerateInvite" xml:space="preserve">
+    <value>ایجاد دعوت‌نامه</value>
+  </data>
+  <data name="QrCodes_NoInviteYet" xml:space="preserve">
+    <value>هنوز دعوت‌نامه‌ای ایجاد نشده است.</value>
+  </data>
+  <data name="QrCodes_Print" xml:space="preserve">
+    <value>چاپ</value>
+  </data>
   <data name="AcceptInvite_Title" xml:space="preserve">
     <value>پذیرش دعوت سالن</value>
   </data>

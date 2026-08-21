@@ -9,11 +9,15 @@ namespace Rojan.Desktop.Application.Api;
 /// before this feature, so an ops/CI override still always wins.</item>
 /// <item>The persisted <see cref="SelectedEnvironment"/> choice's
 /// configured URL (Development defaults to <c>http://localhost:8080</c>,
-/// matching ROJAN_Backend's own dev-profile default port; Production has
-/// no built-in default - it must be set explicitly via
-/// <see cref="SetEnvironmentAsync"/> before selecting it resolves to
-/// anything, so the app can never silently send real credentials to a
-/// guessed domain).</item>
+/// matching ROJAN_Backend's own dev-profile default port; Production
+/// falls back to <c>Infrastructure.Api.ApiEnvironmentService.ProductionUrlDefault</c>
+/// - Desktop Productionization Sprint 1: this is the one real,
+/// already-documented production domain (matches
+/// <c>Support.RojanBrandConfiguration.ApiBaseUrl</c> and ROJAN_Backend's
+/// own prod compose file), not a guess, so baking it in doesn't reintroduce
+/// the "silently send real credentials to a guessed domain" risk this
+/// resolution order was originally written to avoid - an explicit
+/// <see cref="SetEnvironmentAsync"/> override still always wins over it).</item>
 /// </list>
 /// Same "persist + flag IsRestartRequired, never apply live" shape
 /// <c>Shell.Theming.IThemeService</c>/<c>ILocalizationService</c> already
@@ -25,7 +29,7 @@ public interface IApiEnvironmentService
 {
     public ApiEnvironment SelectedEnvironment { get; }
 
-    /// <summary>The effective base address after applying the resolution order above - <see langword="null"/> only if Production is selected but no URL has ever been configured for it.</summary>
+    /// <summary>The effective base address after applying the resolution order above. Never <see langword="null"/> for Production since Desktop Productionization Sprint 1 (falls back to the real production default); still <see langword="null"/> for Development only in the theoretical case <see cref="ApiEnvironment.Development"/>'s own hardcoded URL is somehow blank, which cannot happen today.</summary>
     public Uri? ResolvedBaseAddress { get; }
 
     public string? ProductionUrl { get; }

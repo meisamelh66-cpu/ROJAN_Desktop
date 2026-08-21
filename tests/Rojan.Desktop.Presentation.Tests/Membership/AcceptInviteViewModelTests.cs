@@ -157,6 +157,12 @@ public sealed class AcceptInviteViewModelTests
             LastAcceptSalonName = salonName;
             return AcceptException is not null ? Task.FromException<AcceptedMembershipDto>(AcceptException) : Task.FromResult(AcceptResult!);
         }
+
+        public Task<CreatedInviteDto> CreateReceptionInviteAsync(string salonId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("AcceptInviteViewModel never creates invites - it only accepts them.");
+
+        public Task<byte[]> GetInviteQrCodeAsync(string salonId, string inviteId, int sizePx, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("AcceptInviteViewModel never fetches invite QR codes.");
     }
 
     private sealed class StubSalonContextService : ISalonContextService

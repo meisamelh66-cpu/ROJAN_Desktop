@@ -185,6 +185,30 @@ public static class Strings
 
     public static string Nav_AcceptInvite => Get(nameof(Nav_AcceptInvite));
 
+    public static string Nav_QrCodes => Get(nameof(Nav_QrCodes));
+
+    public static string QrCodes_Title => Get(nameof(QrCodes_Title));
+
+    public static string QrCodes_Subtitle => Get(nameof(QrCodes_Subtitle));
+
+    public static string QrCodes_ManagerCardTitle => Get(nameof(QrCodes_ManagerCardTitle));
+
+    public static string QrCodes_ManagerCardDescription => Get(nameof(QrCodes_ManagerCardDescription));
+
+    public static string QrCodes_CustomerCardTitle => Get(nameof(QrCodes_CustomerCardTitle));
+
+    public static string QrCodes_CustomerCardDescription => Get(nameof(QrCodes_CustomerCardDescription));
+
+    public static string QrCodes_ReceptionCardTitle => Get(nameof(QrCodes_ReceptionCardTitle));
+
+    public static string QrCodes_ReceptionCardDescription => Get(nameof(QrCodes_ReceptionCardDescription));
+
+    public static string QrCodes_GenerateInvite => Get(nameof(QrCodes_GenerateInvite));
+
+    public static string QrCodes_NoInviteYet => Get(nameof(QrCodes_NoInviteYet));
+
+    public static string QrCodes_Print => Get(nameof(QrCodes_Print));
+
     public static string AcceptInvite_Title => Get(nameof(AcceptInvite_Title));
 
     public static string AcceptInvite_Subtitle => Get(nameof(AcceptInvite_Subtitle));
