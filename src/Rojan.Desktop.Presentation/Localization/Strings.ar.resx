@@ -732,6 +732,12 @@
   <data name="Services_Assign" xml:space="preserve">
     <value>تعيين</value>
   </data>
+  <data name="Services_AddService" xml:space="preserve">
+    <value>إضافة خدمة</value>
+  </data>
+  <data name="Services_Deactivate" xml:space="preserve">
+    <value>إلغاء التفعيل</value>
+  </data>
   <data name="Services_SearchAndFilter" xml:space="preserve">
     <value>بحث وتصفية</value>
   </data>

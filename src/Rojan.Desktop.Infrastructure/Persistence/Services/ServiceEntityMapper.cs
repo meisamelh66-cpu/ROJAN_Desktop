@@ -12,7 +12,9 @@ internal static class ServiceEntityMapper
         entity.Status,
         entity.DurationMinutes,
         entity.Price,
-        entity.Description);
+        entity.Description,
+        CategoryName: null,
+        CategoryId: string.Empty);
 
     public static ServiceEntity MapToEntity(DomainServices.Service service) => new()
     {

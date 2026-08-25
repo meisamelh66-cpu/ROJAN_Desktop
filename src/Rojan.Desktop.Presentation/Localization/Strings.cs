@@ -603,6 +603,10 @@ public static class Strings
 
     public static string Services_Assign => Get(nameof(Services_Assign));
 
+    public static string Services_AddService => Get(nameof(Services_AddService));
+
+    public static string Services_Deactivate => Get(nameof(Services_Deactivate));
+
     public static string Services_SearchAndFilter => Get(nameof(Services_SearchAndFilter));
 
     public static string Services_AllCategories => Get(nameof(Services_AllCategories));

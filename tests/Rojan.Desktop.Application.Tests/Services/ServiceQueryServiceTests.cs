@@ -37,6 +37,20 @@ public sealed class ServiceQueryServiceTests
         Assert.Empty(result);
     }
 
+    [Fact]
+    public async Task GetCategoriesAsync_RepositoryReturnsCategories_MapsToDto()
+    {
+        var repository = new StubServiceRepository();
+        repository.Categories.Add(new DomainServices.ServiceCategoryOption("category-1", "Hair"));
+        var sut = new ServiceQueryService(repository);
+
+        var result = await sut.GetCategoriesAsync();
+
+        var category = Assert.Single(result);
+        Assert.Equal("category-1", category.Id);
+        Assert.Equal("Hair", category.Name);
+    }
+
     [Theory]
     [InlineData(DomainServices.ServiceStatus.Active, ServiceStatus.Active)]
     [InlineData(DomainServices.ServiceStatus.Seasonal, ServiceStatus.Seasonal)]

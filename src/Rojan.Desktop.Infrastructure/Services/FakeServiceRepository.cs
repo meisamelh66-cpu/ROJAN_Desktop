@@ -89,4 +89,45 @@ public sealed class FakeServiceRepository : IServiceRepository
         await Task.Delay(200, cancellationToken).ConfigureAwait(true);
         _assignments.RemoveAll(assignment => assignment.ServiceId == serviceId && assignment.Id == assignmentId);
     }
+
+    public async Task<IReadOnlyList<ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        return Enum.GetValues<ServiceCategory>()
+            .Select(category => new ServiceCategoryOption(category.ToString(), category.ToString()))
+            .ToList();
+    }
+
+    public async Task<Service> CreateServiceAsync(Service service, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var created = service with { Id = Guid.NewGuid().ToString() };
+        _services.Add(created);
+        return created;
+    }
+
+    public async Task<Service> UpdateServiceAsync(Service service, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var index = _services.FindIndex(existing => existing.Id == service.Id);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Service '{service.Id}' was not found.");
+        }
+
+        _services[index] = service;
+        return service;
+    }
+
+    public async Task DeactivateServiceAsync(string categoryId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var index = _services.FindIndex(existing => existing.Id == serviceId);
+        if (index < 0)
+        {
+            return;
+        }
+
+        _services[index] = _services[index] with { Status = ServiceStatus.Discontinued };
+    }
 }

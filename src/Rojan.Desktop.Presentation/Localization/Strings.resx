@@ -744,6 +744,12 @@
   <data name="Services_Assign" xml:space="preserve">
     <value>تخصیص</value>
   </data>
+  <data name="Services_AddService" xml:space="preserve">
+    <value>افزودن خدمت</value>
+  </data>
+  <data name="Services_Deactivate" xml:space="preserve">
+    <value>غیرفعال کردن</value>
+  </data>
   <data name="Services_SearchAndFilter" xml:space="preserve">
     <value>جستجو و فیلتر</value>
   </data>

@@ -20,4 +20,7 @@ internal sealed class StubServiceQueryService : IServiceQueryService
 
     public Task<IReadOnlyList<ServiceDto>> SearchServicesAsync(ServiceSearchFilter filter, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by IntelligenceEngineTests.");
+
+    public Task<IReadOnlyList<ServiceCategoryDto>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by IntelligenceEngineTests.");
 }

@@ -35,6 +35,7 @@ public sealed class BackendServiceRepositoryTests
         var service = Assert.Single(services);
         Assert.Equal(ServiceCategory.Hair, service.Category);
         Assert.Equal("Hair", service.CategoryName);
+        Assert.Equal("cat-1", service.CategoryId);
         Assert.Equal(ServiceStatus.Active, service.Status);
         Assert.Equal("1,200,000 تومان", service.Price);
         Assert.Equal(30, service.DurationMinutes);
@@ -201,6 +202,116 @@ public sealed class BackendServiceRepositoryTests
         await Assert.ThrowsAsync<NotSupportedException>(() => repository.UnassignSpecialistAsync("service-1", "assignment-1"));
     }
 
+    [Fact]
+    public async Task CreateServiceAsync_ValidService_PostsToCategoryRouteAndReturnsMappedResult()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse> { new("cat-1", SalonId, "Hair", null, true) };
+        apiClient.PostResponses[$"/api/v1/salons/{SalonId}/categories/cat-1/services"] =
+            new ServiceResponse("service-new", SalonId, "cat-1", "Blow-dry", "A quick blow-dry.", 30, 350000m, true);
+
+        var repository = CreateRepository(apiClient, SalonId);
+        var toCreate = new Service("ignored-id", "Blow-dry", ServiceCategory.Other, ServiceStatus.Active, 30, "350000", "A quick blow-dry.", CategoryId: "cat-1");
+
+        var created = await repository.CreateServiceAsync(toCreate);
+
+        Assert.Equal("service-new", created.Id);
+        Assert.Equal("cat-1", created.CategoryId);
+        Assert.Equal("Hair", created.CategoryName);
+        var request = Assert.IsType<Application.Api.Contracts.CreateServiceRequest>(
+            apiClient.PostRequests[$"/api/v1/salons/{SalonId}/categories/cat-1/services"]);
+        Assert.Equal("Blow-dry", request.Name);
+        Assert.Equal(350000m, request.Price);
+        Assert.Equal(30, request.DurationMinutes);
+    }
+
+    [Fact]
+    public async Task CreateServiceAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.PostFailures[$"/api/v1/salons/{SalonId}/categories/cat-1/services"] = (400, "Invalid price");
+
+        var repository = CreateRepository(apiClient, SalonId);
+        var toCreate = new Service("id", "Name", ServiceCategory.Other, ServiceStatus.Active, 30, "0", "", CategoryId: "cat-1");
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.CreateServiceAsync(toCreate));
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_ValidService_PutsToServiceRouteAndReturnsMappedResult()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse> { new("cat-1", SalonId, "Hair", null, true) };
+        apiClient.PutResponses[$"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1"] =
+            new ServiceResponse("service-1", SalonId, "cat-1", "Haircut (updated)", null, 45, 500000m, true);
+
+        var repository = CreateRepository(apiClient, SalonId);
+        var toUpdate = new Service("service-1", "Haircut (updated)", ServiceCategory.Other, ServiceStatus.Active, 45, "500000", "", CategoryId: "cat-1");
+
+        var updated = await repository.UpdateServiceAsync(toUpdate);
+
+        Assert.Equal("Haircut (updated)", updated.Name);
+        Assert.Equal(45, updated.DurationMinutes);
+        var request = Assert.IsType<Application.Api.Contracts.UpdateServiceRequest>(
+            apiClient.PutRequests[$"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1"]);
+        Assert.Equal(500000m, request.Price);
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.PutFailures[$"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1"] = (404, "Not found");
+
+        var repository = CreateRepository(apiClient, SalonId);
+        var toUpdate = new Service("service-1", "Name", ServiceCategory.Other, ServiceStatus.Active, 30, "0", "", CategoryId: "cat-1");
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.UpdateServiceAsync(toUpdate));
+    }
+
+    [Fact]
+    public async Task DeactivateServiceAsync_ValidIds_DeletesTheServiceRoute()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.DeleteSuccessPaths.Add($"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1");
+
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await repository.DeactivateServiceAsync("cat-1", "service-1");
+
+        Assert.Contains($"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1", apiClient.DeleteCalls);
+    }
+
+    [Fact]
+    public async Task DeactivateServiceAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.DeleteFailures[$"/api/v1/salons/{SalonId}/categories/cat-1/services/service-1"] = (404, "Not found");
+
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.DeactivateServiceAsync("cat-1", "service-1"));
+    }
+
+    [Fact]
+    public async Task GetCategoriesAsync_ReturnsEveryRealCategory()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse>
+        {
+            new("cat-1", SalonId, "Hair", null, true),
+            new("cat-2", SalonId, "Nails", null, true),
+        };
+
+        var repository = CreateRepository(apiClient, SalonId);
+
+        var categories = await repository.GetCategoriesAsync();
+
+        Assert.Equal(2, categories.Count);
+        Assert.Contains(categories, category => category.Id == "cat-1" && category.Name == "Hair");
+        Assert.Contains(categories, category => category.Id == "cat-2" && category.Name == "Nails");
+    }
+
     private static BackendServiceRepository CreateRepository(StubApiClient apiClient, string? salonId) =>
         new(apiClient, new StubSalonContextService(salonId));
 
@@ -209,11 +320,30 @@ public sealed class BackendServiceRepositoryTests
         public Task<string?> GetSalonIdAsync(CancellationToken cancellationToken = default) => Task.FromResult(salonId);
     }
 
+    /// <summary>Service Catalog Management: Post/Put/Delete are now real (Create/Update/Deactivate), unlike every earlier pass of this stub - request bodies/paths are recorded for assertions, matching the same GetResponses/GetFailures configurable-by-path shape already established for GetAsync.</summary>
     private sealed class StubApiClient : IApiClient
     {
         public Dictionary<string, object> GetResponses { get; } = [];
 
         public Dictionary<string, (int? Status, string Message)> GetFailures { get; } = [];
+
+        public Dictionary<string, object> PostResponses { get; } = [];
+
+        public Dictionary<string, (int? Status, string Message)> PostFailures { get; } = [];
+
+        public Dictionary<string, object> PostRequests { get; } = [];
+
+        public Dictionary<string, object> PutResponses { get; } = [];
+
+        public Dictionary<string, (int? Status, string Message)> PutFailures { get; } = [];
+
+        public Dictionary<string, object> PutRequests { get; } = [];
+
+        public List<string> DeleteSuccessPaths { get; } = [];
+
+        public Dictionary<string, (int? Status, string Message)> DeleteFailures { get; } = [];
+
+        public List<string> DeleteCalls { get; } = [];
 
         public Task<ApiResponse<TResponse>> GetAsync<TResponse>(string path, CancellationToken cancellationToken = default)
         {
@@ -230,14 +360,56 @@ public sealed class BackendServiceRepositoryTests
             throw new InvalidOperationException($"Unexpected GET '{path}' - not configured by this test.");
         }
 
-        public Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException("BackendServiceRepository never posts.");
+        public Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
+        {
+            PostRequests[path] = body!;
 
-        public Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException("BackendServiceRepository never puts.");
+            if (PostFailures.TryGetValue(path, out var failure))
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
 
-        public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException("BackendServiceRepository never deletes.");
+            if (PostResponses.TryGetValue(path, out var response))
+            {
+                return Task.FromResult(ApiResponseFactory.Success((TResponse)response, 201));
+            }
+
+            throw new InvalidOperationException($"Unexpected POST '{path}' - not configured by this test.");
+        }
+
+        public Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
+        {
+            PutRequests[path] = body!;
+
+            if (PutFailures.TryGetValue(path, out var failure))
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
+
+            if (PutResponses.TryGetValue(path, out var response))
+            {
+                return Task.FromResult(ApiResponseFactory.Success((TResponse)response, 200));
+            }
+
+            throw new InvalidOperationException($"Unexpected PUT '{path}' - not configured by this test.");
+        }
+
+        public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default)
+        {
+            DeleteCalls.Add(path);
+
+            if (DeleteFailures.TryGetValue(path, out var failure))
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
+
+            if (DeleteSuccessPaths.Contains(path))
+            {
+                return Task.FromResult(ApiResponseFactory.Success(default(TResponse)!, 204));
+            }
+
+            throw new InvalidOperationException($"Unexpected DELETE '{path}' - not configured by this test.");
+        }
 
         public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendServiceRepository never patches.");

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Api.Contracts;
 using Rojan.Desktop.Application.Salons;
@@ -47,8 +48,31 @@ namespace Rojan.Desktop.Infrastructure.Services;
 /// are fully independent there). <see cref="AssignSpecialistAsync"/>/<see cref="UnassignSpecialistAsync"/>
 /// throw rather than silently no-op, since there is no backend call that
 /// could ever make either one real - same reasoning as
-/// <c>BackendBookingRepository.CreateBookingAsync</c>.</item>
+/// <c>BackendBookingRepository.CreateBookingAsync</c>. <b>Note (Service
+/// Catalog Management pass):</b> a real <c>PUT</c>/<c>DELETE
+/// /specialists/{id}/services/{serviceId}</c> pair was found to exist on
+/// <c>SpecialistController</c> during this pass's verification - this
+/// doc-comment claim is now known stale, but wiring it is Specialist-Service
+/// Assignment work, explicitly out of scope for this change; left
+/// unmodified, not silently "fixed while in here."</item>
 /// </list>
+///
+/// Service Catalog Management: <see cref="CreateServiceAsync"/>/<see cref="UpdateServiceAsync"/>/
+/// <see cref="DeactivateServiceAsync"/> are real, against
+/// <c>ServiceController</c>'s <c>POST</c>/<c>PUT {serviceId}</c>/<c>DELETE
+/// {serviceId}</c> - all three already existed on ROJAN_Backend, verified
+/// directly this pass; no new backend contract was needed. <see cref="MapService"/>
+/// now captures <see cref="ServiceResponse.CategoryId"/> into
+/// <see cref="DomainServices.Service.CategoryId"/> - previously dropped
+/// entirely, the exact gap this pass's own plan named as the required fix,
+/// without which Update/Deactivate could never address the real
+/// <c>/categories/{categoryId}/services/{serviceId}</c> route. There is
+/// deliberately no "reactivate" method - ROJAN_Backend's <c>ServiceController</c>
+/// has <c>create</c>/<c>list</c>/<c>get</c>/<c>update</c>/<c>deactivate</c>
+/// only, no endpoint anywhere sets <c>active</c> back to <see langword="true"/>;
+/// this is a real, reported gap (documented as BLOCKED / BACKEND CONTRACT
+/// REQUIRED in this pass's implementation report), not one this class works
+/// around or fabricates a client-side answer for.
 /// </summary>
 public sealed class BackendServiceRepository(
     IApiClient apiClient,
@@ -81,6 +105,72 @@ public sealed class BackendServiceRepository(
             "ROJAN_Backend has no specialist-to-service assignment concept - Service and Specialist are fully " +
             "independent there. See BackendServiceRepository's own doc comment.");
 
+    public async Task<IReadOnlyList<DomainServices.ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+        var categories = await FetchCategoriesAsync(salonId, cancellationToken).ConfigureAwait(false);
+        return categories.Select(category => new DomainServices.ServiceCategoryOption(category.Id, category.Name)).ToList();
+    }
+
+    public async Task<DomainServices.Service> CreateServiceAsync(DomainServices.Service service, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+        var request = new CreateServiceRequest(service.Name, NullIfEmpty(service.Description), service.DurationMinutes, ParsePrice(service.Price));
+
+        var response = await apiClient
+            .PostAsync<CreateServiceRequest, ServiceResponse>($"/api/v1/salons/{salonId}/categories/{service.CategoryId}/services", request, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to create service (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        var categoryName = await ResolveCategoryNameAsync(salonId, response.Data.CategoryId, cancellationToken).ConfigureAwait(false);
+        return MapService(response.Data, categoryName);
+    }
+
+    public async Task<DomainServices.Service> UpdateServiceAsync(DomainServices.Service service, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+        var request = new UpdateServiceRequest(service.Name, NullIfEmpty(service.Description), service.DurationMinutes, ParsePrice(service.Price));
+
+        var response = await apiClient
+            .PutAsync<UpdateServiceRequest, ServiceResponse>(
+                $"/api/v1/salons/{salonId}/categories/{service.CategoryId}/services/{service.Id}", request, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to update service '{service.Id}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        var categoryName = await ResolveCategoryNameAsync(salonId, response.Data.CategoryId, cancellationToken).ConfigureAwait(false);
+        return MapService(response.Data, categoryName);
+    }
+
+    /// <summary>
+    /// The only activate/deactivate operation ROJAN_Backend actually exposes for a service
+    /// (<c>DELETE .../services/{serviceId}</c>, <c>@Operation(summary = "Deactivate a service")</c>
+    /// on <c>ServiceController</c>) - there is no endpoint anywhere that sets <c>active</c> back
+    /// to <see langword="true"/>, confirmed by reading every route on that controller. A
+    /// "reactivate" capability would need a new Backend endpoint - Team 1/Backend approval
+    /// required, not something this class can invent.
+    /// </summary>
+    public async Task DeactivateServiceAsync(string categoryId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+
+        var response = await apiClient
+            .DeleteAsync<object?>($"/api/v1/salons/{salonId}/categories/{categoryId}/services/{serviceId}", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess)
+        {
+            throw new ApiException($"Failed to deactivate service '{serviceId}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+    }
+
     private async Task<string> ResolveSalonIdAsync(CancellationToken cancellationToken)
     {
         var salonId = await salonContextService.GetSalonIdAsync(cancellationToken).ConfigureAwait(false);
@@ -89,17 +179,10 @@ public sealed class BackendServiceRepository(
 
     private async Task<List<DomainServices.Service>> FetchAllServicesAsync(string salonId, CancellationToken cancellationToken)
     {
-        var categoriesResponse = await apiClient
-            .GetAsync<List<ServiceCategoryResponse>>($"/api/v1/salons/{salonId}/categories", cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!categoriesResponse.IsSuccess || categoriesResponse.Data is null)
-        {
-            throw new ApiException($"Failed to load service categories (status {categoriesResponse.StatusCode}): {categoriesResponse.ErrorMessage}");
-        }
+        var categories = await FetchCategoriesAsync(salonId, cancellationToken).ConfigureAwait(false);
 
         var services = new List<DomainServices.Service>();
-        foreach (var category in categoriesResponse.Data)
+        foreach (var category in categories)
         {
             var servicesResponse = await apiClient
                 .GetAsync<List<ServiceResponse>>($"/api/v1/salons/{salonId}/categories/{category.Id}/services", cancellationToken)
@@ -117,6 +200,33 @@ public sealed class BackendServiceRepository(
         return services;
     }
 
+    private async Task<List<ServiceCategoryResponse>> FetchCategoriesAsync(string salonId, CancellationToken cancellationToken)
+    {
+        var categoriesResponse = await apiClient
+            .GetAsync<List<ServiceCategoryResponse>>($"/api/v1/salons/{salonId}/categories", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!categoriesResponse.IsSuccess || categoriesResponse.Data is null)
+        {
+            throw new ApiException($"Failed to load service categories (status {categoriesResponse.StatusCode}): {categoriesResponse.ErrorMessage}");
+        }
+
+        return categoriesResponse.Data;
+    }
+
+    /// <summary>Resolves the owning category's real name for a single service response (Create/Update return one <see cref="ServiceResponse"/>, not the whole catalog) - re-enumerates categories rather than caching, matching this class's existing "reload everything fresh" convention (see <see cref="ServiceResponse"/>'s own doc comment). Falls back to the raw id on a failed lookup rather than failing an otherwise-successful create/update, same best-effort reasoning as <c>BackendBookingRepository.ResolveSpecialistNameAsync</c>.</summary>
+    private async Task<string> ResolveCategoryNameAsync(string salonId, string categoryId, CancellationToken cancellationToken)
+    {
+        var categories = await FetchCategoriesAsync(salonId, cancellationToken).ConfigureAwait(false);
+        return categories.FirstOrDefault(category => category.Id == categoryId)?.Name ?? categoryId;
+    }
+
+    /// <summary>Parses the exact invariant-culture decimal string <see cref="Application.Services.ServiceCommandService"/> produces for a write payload - never the free-text, currency-symbol-decorated display string <c>ServicePriceParser</c> handles, so no currency-symbol stripping is needed or attempted here.</summary>
+    private static decimal ParsePrice(string price) =>
+        decimal.TryParse(price, System.Globalization.NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : 0m;
+
+    private static string? NullIfEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
     private static DomainServices.Service MapService(ServiceResponse response, string categoryName) => new(
         response.Id,
         response.Name,
@@ -125,7 +235,8 @@ public sealed class BackendServiceRepository(
         response.DurationMinutes,
         FormatToman(response.Price),
         response.Description ?? string.Empty,
-        categoryName);
+        categoryName,
+        response.CategoryId);
 
     private static DomainServices.ServiceCategory MapCategory(string categoryName) => categoryName.Trim().ToLowerInvariant() switch
     {

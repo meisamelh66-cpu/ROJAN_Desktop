@@ -38,6 +38,10 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private ServiceDto? _service;
+    private string _editableName = string.Empty;
+    private string _editableDescription = string.Empty;
+    private int _editableDurationMinutes;
+    private decimal _editablePrice;
     private string _newSpecialistName = string.Empty;
     private bool _hasIntelligence;
     private int _popularityScore;
@@ -62,6 +66,8 @@ public sealed class ServiceProfileViewModel : ViewModelBase
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AssignSpecialistCommand = new AsyncRelayCommand(_ => AssignSpecialistAsync(), _ => !string.IsNullOrWhiteSpace(NewSpecialistName));
         UnassignSpecialistCommand = new AsyncRelayCommand(parameter => UnassignSpecialistAsync(parameter as AssignedSpecialistDto));
+        SaveChangesCommand = new AsyncRelayCommand(_ => SaveChangesAsync(), _ => !string.IsNullOrWhiteSpace(EditableName));
+        DeactivateCommand = new AsyncRelayCommand(_ => DeactivateAsync(), _ => Service?.Status == ServiceStatus.Active);
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, same pattern as every
@@ -76,6 +82,20 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     public ICommand AssignSpecialistCommand { get; }
 
     public ICommand UnassignSpecialistCommand { get; }
+
+    /// <summary>Service Catalog Management: the one Presentation entry point for <see cref="IServiceCommandService.UpdateServiceAsync"/> - mirrors <c>Specialists.SpecialistProfileViewModel.SaveChangesCommand</c>'s shape.</summary>
+    public ICommand SaveChangesCommand { get; }
+
+    /// <summary>
+    /// The only activate/deactivate action offered - deliberately not a
+    /// status-editing ComboBox like <c>Specialists.SpecialistProfileViewModel.EditableStatus</c>,
+    /// since ROJAN_Backend has no endpoint to reverse a deactivation (see
+    /// <c>Infrastructure.Services.BackendServiceRepository.DeactivateServiceAsync</c>'s
+    /// own doc comment) - offering a two-way status control here would
+    /// silently fail on the "back to Active" direction. Only enabled while
+    /// <see cref="Service"/> is <see cref="ServiceStatus.Active"/>.
+    /// </summary>
+    public ICommand DeactivateCommand { get; }
 
     public DashboardState State
     {
@@ -99,6 +119,31 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     {
         get => _newSpecialistName;
         set => SetProperty(ref _newSpecialistName, value);
+    }
+
+    /// <summary>Bound by the edit form - a local edit buffer, synced from <see cref="Service"/> on every load so it always starts matching the persisted value, same pattern <c>Specialists.SpecialistProfileViewModel.EditableStatus</c> establishes.</summary>
+    public string EditableName
+    {
+        get => _editableName;
+        set => SetProperty(ref _editableName, value);
+    }
+
+    public string EditableDescription
+    {
+        get => _editableDescription;
+        set => SetProperty(ref _editableDescription, value);
+    }
+
+    public int EditableDurationMinutes
+    {
+        get => _editableDurationMinutes;
+        set => SetProperty(ref _editableDurationMinutes, value);
+    }
+
+    public decimal EditablePrice
+    {
+        get => _editablePrice;
+        set => SetProperty(ref _editablePrice, value);
     }
 
     /// <summary>False until an <see cref="IIntelligenceEngine.GetServiceIntelligenceAsync"/> result matching <see cref="_serviceId"/> has loaded - lets the view distinguish "not loaded yet"/"no data" from a genuine zero score.</summary>
@@ -149,6 +194,10 @@ public sealed class ServiceProfileViewModel : ViewModelBase
             var profile = await _profileQueryService.GetProfileAsync(_serviceId).ConfigureAwait(true);
 
             Service = profile.Service;
+            EditableName = profile.Service.Name;
+            EditableDescription = profile.Service.Description;
+            EditableDurationMinutes = profile.Service.DurationMinutes;
+            EditablePrice = ParseDisplayPrice(profile.Service.Price);
 
             AssignedSpecialists.Clear();
             foreach (var assignment in profile.AssignedSpecialists)
@@ -193,5 +242,30 @@ public sealed class ServiceProfileViewModel : ViewModelBase
 
         await _commandService.UnassignSpecialistAsync(_serviceId, assignment.Id).ConfigureAwait(true);
         await LoadAsync().ConfigureAwait(true);
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        var request = new UpdateServiceRequest(_serviceId, EditableName, EditableDurationMinutes, EditablePrice, EditableDescription);
+        await _commandService.UpdateServiceAsync(request).ConfigureAwait(true);
+        await LoadAsync().ConfigureAwait(true);
+    }
+
+    private async Task DeactivateAsync()
+    {
+        await _commandService.DeactivateServiceAsync(_serviceId).ConfigureAwait(true);
+        await LoadAsync().ConfigureAwait(true);
+    }
+
+    /// <summary>Presentation's own small copy of the string-money parsing <c>Application.Services.ServicePriceParser</c> performs - that class is internal to the Application assembly, and this is a deliberate, documented per-vertical-slice duplicate rather than a cross-assembly accessibility change, same reasoning that parser's own doc comment already establishes for its Reporting/Accounting counterparts. Only used to seed <see cref="EditablePrice"/>'s edit buffer from the display string on load.</summary>
+    private static decimal ParseDisplayPrice(string value)
+    {
+        if (value.Contains("رایگان", StringComparison.Ordinal))
+        {
+            return 0m;
+        }
+
+        var trimmed = value.TrimStart('$').Replace("تومان", string.Empty, StringComparison.Ordinal).Replace("﷼", string.Empty, StringComparison.Ordinal).Trim();
+        return decimal.TryParse(trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : 0m;
     }
 }

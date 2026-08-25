@@ -25,6 +25,9 @@ internal sealed class StubServiceQueryService : IServiceQueryService
     /// <summary>Every filter this stub was asked to search with, in call order.</summary>
     public List<ServiceSearchFilter> SearchCalls { get; } = [];
 
+    /// <summary>Categories <see cref="GetCategoriesAsync"/> returns - empty by default, settable by tests that need a New Service category picker populated.</summary>
+    public List<ServiceCategoryDto> Categories { get; } = [];
+
     public StubServiceQueryService(
         Func<CancellationToken, Task<IReadOnlyList<ServiceDto>>> getServices,
         Func<string, CancellationToken, Task<IReadOnlyList<ServiceDto>>>? searchServices = null,
@@ -64,4 +67,7 @@ internal sealed class StubServiceQueryService : IServiceQueryService
         SearchCalls.Add(filter);
         return _searchServicesByFilter(filter, cancellationToken);
     }
+
+    public Task<IReadOnlyList<ServiceCategoryDto>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<ServiceCategoryDto>>(Categories.ToList());
 }

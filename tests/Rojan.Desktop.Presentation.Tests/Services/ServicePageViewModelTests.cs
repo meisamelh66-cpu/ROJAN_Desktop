@@ -268,6 +268,61 @@ public sealed class ServicePageViewModelTests
     }
 
     [Fact]
+    public void Constructor_LoadsAvailableCategoriesFromQueryService()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        queryService.Categories.Add(new ServiceCategoryDto("category-1", "Hair"));
+
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        var category = Assert.Single(sut.AvailableCategories);
+        Assert.Equal("category-1", category.Id);
+    }
+
+    [Fact]
+    public void CreateServiceCommand_NameOrCategoryMissing_CanExecuteIsFalse()
+    {
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
+        queryService.Categories.Add(new ServiceCategoryDto("category-1", "Hair"));
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        Assert.False(sut.CreateServiceCommand.CanExecute(null));
+
+        sut.NewServiceName = "Manicure";
+        Assert.False(sut.CreateServiceCommand.CanExecute(null));
+
+        sut.NewServiceCategory = sut.AvailableCategories[0];
+        Assert.True(sut.CreateServiceCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void CreateServiceCommand_Executed_CallsCommandServiceWithCategoryIdThenClearsInputAndSelectsCreated()
+    {
+        var services = new List<ServiceDto> { MakeService("service-1", "Haircut & Style") };
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
+        queryService.Categories.Add(new ServiceCategoryDto("category-1", "Hair"));
+        var commandService = new StubServiceCommandService();
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), commandService, new StubIntelligenceEngine())
+        {
+            NewServiceName = "Manicure",
+            NewServiceDescription = "Classic manicure.",
+            NewServiceDurationMinutes = 45,
+            NewServicePrice = 400000m,
+            NewServiceCategory = new ServiceCategoryDto("category-1", "Hair"),
+        };
+
+        sut.CreateServiceCommand.Execute(null);
+
+        var call = Assert.Single(commandService.CreateCalls);
+        Assert.Equal("Manicure", call.Name);
+        Assert.Equal("category-1", call.CategoryId);
+        Assert.Equal(45, call.DurationMinutes);
+        Assert.Equal(400000m, call.Price);
+        Assert.Equal(string.Empty, sut.NewServiceName);
+        Assert.Null(sut.NewServiceCategory);
+    }
+
+    [Fact]
     public void LoadCommand_ExecutedAfterFailure_RecoversToLoadedState()
     {
         var shouldFail = true;

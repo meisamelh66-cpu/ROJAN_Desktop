@@ -12,20 +12,20 @@ namespace Rojan.Desktop.Infrastructure.Persistence.Services;
 /// <see cref="IDbContextFactory{TContext}"/>, registered as a DI
 /// singleton).
 ///
-/// Unlike Customers/Specialists, <see cref="DomainServices.IServiceRepository"/>
-/// has no create/update-service methods at all (see its own doc comment -
-/// Phase 13 scoped this module to browse-catalog-plus-specialist-
-/// assignment, not catalog authoring), so this repository has no
-/// corresponding <c>CreateServiceAsync</c>/<c>UpdateServiceAsync</c>
-/// either - matching the interface shape exactly, nothing invented. A
-/// real, known consequence: a fresh SQLite database has an empty Services
-/// table, and - unlike Customers/Specialists, which grow from normal use
-/// through their own create commands - there is currently no way for the
-/// running app to populate it, since no command exists to create a
-/// service. That gap is pre-existing (Fake*Repository's catalog was
-/// always just hardcoded seed data, never truly "created" through the
-/// app either) and is not something this commit's scope - matching the
-/// existing repository contract exactly - can or should invent a fix for.
+/// Service Catalog Management: <see cref="CreateServiceAsync"/>/<see cref="UpdateServiceAsync"/>/
+/// <see cref="DeactivateServiceAsync"/>/<see cref="GetCategoriesAsync"/> now
+/// exist on <see cref="DomainServices.IServiceRepository"/>, implemented
+/// here against <see cref="ServiceEntity"/>'s existing columns only - no
+/// schema change accompanies this (this class is unreferenced in DI,
+/// <c>BackendServiceRepository</c> is always resolved, confirmed by
+/// <c>PersistenceDependencyInjectionTests.AddInfrastructure_RegistersBackendServiceRepository</c>).
+/// <see cref="ServiceEntity"/> has no category-id column - local/EF-backed
+/// data has no such routing concept at all, same "the gap is a value
+/// that's never produced, not a crash" reasoning <see cref="DomainServices.Service.CategoryName"/>
+/// already established - so <see cref="GetCategoriesAsync"/> returns empty
+/// here, and a create/update's <see cref="DomainServices.Service.CategoryId"/>
+/// is silently ignored rather than persisted, since there is nowhere to put
+/// it.
 ///
 /// <see cref="GetAssignedSpecialistsAsync"/> returns assignments in
 /// whatever order the store returns them - <c>FakeServiceRepository</c>
@@ -97,6 +97,56 @@ public sealed class EfServiceRepository : DomainServices.IServiceRepository
         }
 
         context.SpecialistServices.Remove(entity);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Always empty - see this class's own doc comment for why local/EF-backed data has no category-id concept to enumerate.</summary>
+    public Task<IReadOnlyList<DomainServices.ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<DomainServices.ServiceCategoryOption>>([]);
+
+    public async Task<DomainServices.Service> CreateServiceAsync(DomainServices.Service service, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = ServiceEntityMapper.MapToEntity(service with { Id = Guid.NewGuid().ToString() });
+        context.Services.Add(entity);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return ServiceEntityMapper.MapToDomain(entity);
+    }
+
+    public async Task<DomainServices.Service> UpdateServiceAsync(DomainServices.Service service, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = await context.Services
+            .FirstOrDefaultAsync(existing => existing.Id == service.Id, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Service '{service.Id}' was not found.");
+
+        entity.Name = service.Name;
+        entity.DurationMinutes = service.DurationMinutes;
+        entity.Price = service.Price;
+        entity.Description = service.Description;
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return ServiceEntityMapper.MapToDomain(entity);
+    }
+
+    public async Task DeactivateServiceAsync(string categoryId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = await context.Services
+            .FirstOrDefaultAsync(existing => existing.Id == serviceId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            return;
+        }
+
+        entity.Status = DomainServices.ServiceStatus.Discontinued;
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

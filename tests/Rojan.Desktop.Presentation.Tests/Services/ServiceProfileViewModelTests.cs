@@ -99,6 +99,85 @@ public sealed class ServiceProfileViewModelTests
         Assert.Equal("assignment-1", call.AssignmentId);
     }
 
+    [Fact]
+    public void Constructor_PopulatesEditableFieldsFromLoadedService()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        Assert.Equal("Haircut & Style", sut.EditableName);
+        Assert.Equal("Classic cut and blow-dry finish.", sut.EditableDescription);
+        Assert.Equal(60, sut.EditableDurationMinutes);
+        Assert.Equal(65m, sut.EditablePrice);
+    }
+
+    [Fact]
+    public void SaveChangesCommand_NameIsEmpty_CanExecuteIsFalse()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine())
+        {
+            EditableName = string.Empty,
+        };
+
+        Assert.False(sut.SaveChangesCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void SaveChangesCommand_Executed_CallsUpdateServiceAsyncWithEditableFields()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService();
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine())
+        {
+            EditableName = "Haircut & Style (updated)",
+            EditableDurationMinutes = 75,
+            EditablePrice = 700000m,
+            EditableDescription = "Updated description.",
+        };
+
+        sut.SaveChangesCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateCalls);
+        Assert.Equal("service-1", call.Id);
+        Assert.Equal("Haircut & Style (updated)", call.Name);
+        Assert.Equal(75, call.DurationMinutes);
+        Assert.Equal(700000m, call.Price);
+    }
+
+    [Fact]
+    public void DeactivateCommand_ServiceIsActive_CanExecuteIsTrue()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        Assert.True(sut.DeactivateCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void DeactivateCommand_ServiceIsAlreadyDiscontinued_CanExecuteIsFalse()
+    {
+        var profile = new ServiceProfileDto(
+            new ServiceDto("service-1", "Old Service", ServiceCategory.Hair, ServiceStatus.Discontinued, 60, "$65", ""), []);
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(profile));
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        Assert.False(sut.DeactivateCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void DeactivateCommand_Executed_CallsDeactivateServiceAsyncWithServiceId()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService();
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine());
+
+        sut.DeactivateCommand.Execute(null);
+
+        var call = Assert.Single(commandService.DeactivateCalls);
+        Assert.Equal("service-1", call);
+    }
+
     // Sprint 5 Commit 5C: Intelligence integration. IntelligenceEngineTests (Application.Tests)
     // already covers every score/level/signal calculation - these tests only assert the
     // ViewModel requests IIntelligenceEngine, picks out the matching entry, and exposes it

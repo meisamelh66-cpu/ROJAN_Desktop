@@ -10,4 +10,7 @@ public interface IServiceQueryService
 
     /// <summary>Returns services matching every non-null/non-empty criterion in <paramref name="filter"/> (ANDed) - an all-default <see cref="ServiceSearchFilter"/> returns every service, identical to <see cref="GetServicesAsync"/>.</summary>
     public Task<IReadOnlyList<ServiceDto>> SearchServicesAsync(ServiceSearchFilter filter, CancellationToken cancellationToken = default);
+
+    /// <summary>Service Catalog Management: every real category for the current salon, needed to populate a Create-Service category picker - a read, not a command, same reasoning every other read-only lookup in this app lives on the query service.</summary>
+    public Task<IReadOnlyList<ServiceCategoryDto>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 }

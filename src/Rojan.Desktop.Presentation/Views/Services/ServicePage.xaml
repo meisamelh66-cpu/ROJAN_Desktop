@@ -85,9 +85,10 @@
             <ColumnDefinition Width="380" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: header, search &amp; filter, service catalog -->
+        <!-- Left: header, add service, search &amp; filter, service catalog -->
         <Grid Grid.Column="0" Margin="0,0,24,0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -100,8 +101,57 @@
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
+            <!-- Service Catalog Management: the Create command's one Presentation entry point -->
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Services_AddService}" Margin="0,24,0,0">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServiceName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                      SelectedItem="{Binding NewServiceCategory, Mode=TwoWay}"
+                                      DisplayMemberPath="Name"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Duration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServiceDurationMinutes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Price}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServicePrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,12,0,0">
+                        <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <TextBox Text="{Binding NewServiceDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Button Content="{x:Static loc:Strings.Services_AddService}"
+                            Command="{Binding CreateServiceCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
             <!-- Search & Filter: free text plus category/status/duration/price, combined by the ViewModel into one ServiceSearchFilter -->
-            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Services_SearchAndFilter}" Margin="0,24,0,0">
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Services_SearchAndFilter}" Margin="0,24,0,0">
                 <StackPanel>
                     <StackPanel>
                         <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -206,7 +256,7 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
-            <dashboardControls:DashboardWidget Grid.Row="2"
+            <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Services_AllServices}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
@@ -293,6 +343,44 @@
                                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                                        TextWrapping="Wrap"
                                        Margin="0,12,0,0" />
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Service Catalog Management: edit form + the one activate/deactivate action ROJAN_Backend actually supports (no reactivate endpoint exists - see ServiceProfileViewModel.DeactivateCommand's own doc comment) -->
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Services_Details}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding EditableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Duration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding EditableDurationMinutes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Common_Price}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding EditablePrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding EditableDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button Content="{x:Static loc:Strings.Common_SaveChanges}"
+                                        Command="{Binding SaveChangesCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}" />
+                                <Button Content="{x:Static loc:Strings.Services_Deactivate}"
+                                        Command="{Binding DeactivateCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                        Margin="12,0,0,0" />
+                            </StackPanel>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 

@@ -33,4 +33,73 @@ public sealed class ServiceCommandServiceTests
 
         Assert.Empty(repository.Assignments);
     }
+
+    [Fact]
+    public async Task CreateServiceAsync_ValidRequest_PassesCategoryIdAndInvariantPriceToRepository()
+    {
+        var repository = new StubServiceRepository();
+        var sut = new ServiceCommandService(repository);
+        var request = new CreateServiceRequest("Manicure", "category-1", 45, 400000m, "Classic manicure.");
+
+        var created = await sut.CreateServiceAsync(request);
+
+        Assert.Equal("service-new", created.Id);
+        Assert.Equal("Manicure", created.Name);
+        var call = Assert.Single(repository.CreateCalls);
+        Assert.Equal("category-1", call.CategoryId);
+        Assert.Equal("400000", call.Price);
+        Assert.Equal(DomainServices.ServiceStatus.Active, call.Status);
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_ExistingService_PreservesCategoryIdFromExisting()
+    {
+        var repository = new StubServiceRepository([MakeService() with { CategoryId = "category-9" }]);
+        var sut = new ServiceCommandService(repository);
+        var request = new UpdateServiceRequest("service-1", "Haircut & Style (updated)", 75, 700000m, "Updated description.");
+
+        var updated = await sut.UpdateServiceAsync(request);
+
+        Assert.Equal("Haircut & Style (updated)", updated.Name);
+        var call = Assert.Single(repository.UpdateCalls);
+        Assert.Equal("category-9", call.CategoryId);
+        Assert.Equal(75, call.DurationMinutes);
+        Assert.Equal("700000", call.Price);
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_UnknownId_ThrowsInvalidOperationException()
+    {
+        var repository = new StubServiceRepository();
+        var sut = new ServiceCommandService(repository);
+        var request = new UpdateServiceRequest("no-such-service", "Name", 30, 100m, "Description");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateServiceAsync(request));
+
+        Assert.Empty(repository.UpdateCalls);
+    }
+
+    [Fact]
+    public async Task DeactivateServiceAsync_ExistingService_PassesResolvedCategoryIdToRepository()
+    {
+        var repository = new StubServiceRepository([MakeService() with { CategoryId = "category-9" }]);
+        var sut = new ServiceCommandService(repository);
+
+        await sut.DeactivateServiceAsync("service-1");
+
+        var call = Assert.Single(repository.DeactivateCalls);
+        Assert.Equal("category-9", call.CategoryId);
+        Assert.Equal("service-1", call.ServiceId);
+    }
+
+    [Fact]
+    public async Task DeactivateServiceAsync_UnknownId_ThrowsInvalidOperationException()
+    {
+        var repository = new StubServiceRepository();
+        var sut = new ServiceCommandService(repository);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.DeactivateServiceAsync("no-such-service"));
+
+        Assert.Empty(repository.DeactivateCalls);
+    }
 }

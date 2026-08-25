@@ -55,6 +55,11 @@ public sealed class ServicePageViewModel : ViewModelBase
     private int _resultCount;
     private ServiceDto? _selectedService;
     private ServiceProfileViewModel? _profile;
+    private string _newServiceName = string.Empty;
+    private string _newServiceDescription = string.Empty;
+    private int _newServiceDurationMinutes;
+    private decimal _newServicePrice;
+    private ServiceCategoryDto? _newServiceCategory;
 
     /// <summary>Incremented on every filter/load-triggering change - see <c>Bookings.BookingPageViewModel</c>'s field of the same name for the full reasoning.</summary>
     private int _filterVersion;
@@ -71,18 +76,29 @@ public sealed class ServicePageViewModel : ViewModelBase
         _intelligenceEngine = intelligenceEngine;
 
         Services = new ObservableCollection<ServiceDto>();
+        AvailableCategories = new ObservableCollection<ServiceCategoryDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         SearchCommand = new AsyncRelayCommand(_ => LoadAsync());
         ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
+        CreateServiceCommand = new AsyncRelayCommand(
+            _ => CreateServiceAsync(),
+            _ => !string.IsNullOrWhiteSpace(NewServiceName) && NewServiceCategory is not null);
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, so there is nothing
-        // left that could become an unobserved task exception.
+        // left that could become an unobserved task exception. Same
+        // reasoning for the one-time category load below - a failed load
+        // just leaves the picker empty (CreateServiceCommand's CanExecute
+        // already requires a selection), not a crash.
         _ = LoadAsync();
+        _ = LoadCategoriesAsync();
     }
 
     public ObservableCollection<ServiceDto> Services { get; }
+
+    /// <summary>Real salon categories for the New Service picker - loaded once, not re-run on every filter change (unlike <see cref="Services"/>).</summary>
+    public ObservableCollection<ServiceCategoryDto> AvailableCategories { get; }
 
     /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
     public ICommand LoadCommand { get; }
@@ -92,6 +108,9 @@ public sealed class ServicePageViewModel : ViewModelBase
 
     /// <summary>Resets every filter property to its default (empty/null) and reloads - equivalent to a freshly-opened, unfiltered catalog view.</summary>
     public ICommand ClearFiltersCommand { get; }
+
+    /// <summary>Service Catalog Management: the one Presentation entry point for <see cref="IServiceCommandService.CreateServiceAsync"/> - mirrors <c>Specialists.SpecialistPageViewModel.CreateSpecialistCommand</c>'s shape.</summary>
+    public ICommand CreateServiceCommand { get; }
 
     public DashboardState State
     {
@@ -225,6 +244,68 @@ public sealed class ServicePageViewModel : ViewModelBase
     {
         get => _profile;
         private set => SetProperty(ref _profile, value);
+    }
+
+    public string NewServiceName
+    {
+        get => _newServiceName;
+        set => SetProperty(ref _newServiceName, value);
+    }
+
+    public string NewServiceDescription
+    {
+        get => _newServiceDescription;
+        set => SetProperty(ref _newServiceDescription, value);
+    }
+
+    public int NewServiceDurationMinutes
+    {
+        get => _newServiceDurationMinutes;
+        set => SetProperty(ref _newServiceDurationMinutes, value);
+    }
+
+    public decimal NewServicePrice
+    {
+        get => _newServicePrice;
+        set => SetProperty(ref _newServicePrice, value);
+    }
+
+    /// <summary>Bound by the New Service category ComboBox - a real salon category from <see cref="AvailableCategories"/>, never the fixed <see cref="ServiceCategory"/> classification enum, since Backend routes a create by real category id.</summary>
+    public ServiceCategoryDto? NewServiceCategory
+    {
+        get => _newServiceCategory;
+        set => SetProperty(ref _newServiceCategory, value);
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        var categories = await _queryService.GetCategoriesAsync().ConfigureAwait(true);
+
+        AvailableCategories.Clear();
+        foreach (var category in categories)
+        {
+            AvailableCategories.Add(category);
+        }
+    }
+
+    private async Task CreateServiceAsync()
+    {
+        if (NewServiceCategory is null)
+        {
+            return;
+        }
+
+        var request = new CreateServiceRequest(NewServiceName, NewServiceCategory.Id, NewServiceDurationMinutes, NewServicePrice, NewServiceDescription);
+        var created = await _commandService.CreateServiceAsync(request).ConfigureAwait(true);
+
+        NewServiceName = string.Empty;
+        NewServiceDescription = string.Empty;
+        NewServiceDurationMinutes = 0;
+        NewServicePrice = 0m;
+        NewServiceCategory = null;
+
+        await LoadAsync().ConfigureAwait(true);
+        SelectedService = Services.FirstOrDefault(service => service.Id == created.Id);
     }
 
     private async Task LoadAsync()
