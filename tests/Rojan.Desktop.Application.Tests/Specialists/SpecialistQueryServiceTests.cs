@@ -275,4 +275,32 @@ public sealed class SpecialistQueryServiceTests
 
         Assert.Equal(["specialist-1", "specialist-2", "specialist-3"], result.Select(specialist => specialist.Id));
     }
+
+    // Booking Eligibility Filter.
+
+    [Fact]
+    public async Task GetAssignedServiceIdsAsync_DelegatesDirectlyToRepository()
+    {
+        var repository = new StubSpecialistRepository([]);
+        repository.ServiceAssignments.Add(("specialist-1", "service-1"));
+        repository.ServiceAssignments.Add(("specialist-1", "service-2"));
+        var sut = new SpecialistQueryService(repository);
+
+        var result = await sut.GetAssignedServiceIdsAsync("specialist-1");
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains("service-1", result);
+        Assert.Contains("service-2", result);
+    }
+
+    [Fact]
+    public async Task GetAssignedServiceIdsAsync_NoAssignments_ReturnsEmptyList()
+    {
+        var repository = new StubSpecialistRepository([]);
+        var sut = new SpecialistQueryService(repository);
+
+        var result = await sut.GetAssignedServiceIdsAsync("specialist-1");
+
+        Assert.Empty(result);
+    }
 }

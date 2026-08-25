@@ -13,7 +13,9 @@ public sealed class BookingWizardViewModelTests
 
     private static WorkflowServiceOptionDto MakeService() => new("service-1", "Haircut & Style", 60, "$65");
 
-    private static WorkflowSpecialistOptionDto MakeSpecialist() => new("specialist-1", "Jordan Lee");
+    /// <summary>Empty AssignedServiceIds - ROJAN_Backend's own "unrestricted, eligible for everything" default (Booking Eligibility Filter), preserving every existing test in this file unchanged.</summary>
+    private static WorkflowSpecialistOptionDto MakeSpecialist(IReadOnlyList<string>? assignedServiceIds = null) =>
+        new("specialist-1", "Jordan Lee", assignedServiceIds ?? []);
 
     private static BookingOptionsDto MakeOptions() =>
         new([MakeCustomer()], [MakeService()], [MakeSpecialist()]);
@@ -240,5 +242,107 @@ public sealed class BookingWizardViewModelTests
         Assert.Equal("guest-1", sut.SelectedCustomer?.Id);
         Assert.False(sut.SelectedCustomer?.IsLinkedToAccount);
         Assert.Equal(string.Empty, sut.GuestFullName);
+    }
+
+    // ---- Booking Eligibility Filter ----
+
+    [Fact]
+    public void SelectedService_SpecialistHasNoAssignments_IsEligibleForEveryService()
+    {
+        // The single most important case: ROJAN_Backend's own "unrestricted, eligible for
+        // everything" default - a naive "is this service in the list" filter would get this
+        // backwards, hiding every specialist who hasn't been assigned anything yet.
+        var options = new BookingOptionsDto([MakeCustomer()], [MakeService()], [MakeSpecialist()]);
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        sut.SelectedService = MakeService();
+
+        Assert.Single(sut.EligibleSpecialists);
+        Assert.False(sut.HasNoEligibleSpecialists);
+    }
+
+    [Fact]
+    public void SelectedService_SpecialistHasAssignments_OnlyEligibleForAssignedService()
+    {
+        var eligibleSpecialist = MakeSpecialist(["service-1"]);
+        var ineligibleSpecialist = new WorkflowSpecialistOptionDto("specialist-2", "Priya Nair", ["service-9"]);
+        var options = new BookingOptionsDto([MakeCustomer()], [MakeService()], [eligibleSpecialist, ineligibleSpecialist]);
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        sut.SelectedService = MakeService(); // Id = "service-1"
+
+        var eligible = Assert.Single(sut.EligibleSpecialists);
+        Assert.Equal("specialist-1", eligible.Id);
+    }
+
+    [Fact]
+    public void SelectedService_Changed_RecomputesEligibleSpecialists()
+    {
+        var specialistForServiceA = new WorkflowSpecialistOptionDto("specialist-1", "Jordan Lee", ["service-a"]);
+        var specialistForServiceB = new WorkflowSpecialistOptionDto("specialist-2", "Priya Nair", ["service-b"]);
+        var serviceA = new WorkflowServiceOptionDto("service-a", "Service A", 60, "$10");
+        var serviceB = new WorkflowServiceOptionDto("service-b", "Service B", 60, "$10");
+        var options = new BookingOptionsDto([MakeCustomer()], [serviceA, serviceB], [specialistForServiceA, specialistForServiceB]);
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        sut.SelectedService = serviceA;
+        Assert.Equal("specialist-1", Assert.Single(sut.EligibleSpecialists).Id);
+
+        sut.SelectedService = serviceB;
+        Assert.Equal("specialist-2", Assert.Single(sut.EligibleSpecialists).Id);
+    }
+
+    [Fact]
+    public void SelectedService_NoEligibleSpecialists_SetsExplicitMessageInsteadOfSilentEmptyList()
+    {
+        var ineligibleSpecialist = new WorkflowSpecialistOptionDto("specialist-1", "Jordan Lee", ["service-9"]);
+        var options = new BookingOptionsDto([MakeCustomer()], [MakeService()], [ineligibleSpecialist]);
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        sut.SelectedService = MakeService(); // Id = "service-1" - not in the specialist's list
+
+        Assert.True(sut.HasNoEligibleSpecialists);
+        Assert.False(string.IsNullOrEmpty(sut.NoEligibleSpecialistsMessage));
+        Assert.Empty(sut.EligibleSpecialists);
+    }
+
+    [Fact]
+    public void SelectedService_Changed_NeverMutatesUnderlyingSpecialistsCollection()
+    {
+        // Filtering is presentation-only - the source data (Specialists) is never touched, same
+        // "no local corruption" proof shape as the Specialist Deactivation/Assignment tests.
+        var options = MakeOptions();
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+        var originalCount = sut.Specialists.Count;
+
+        sut.SelectedService = MakeService();
+
+        Assert.Equal(originalCount, sut.Specialists.Count);
+    }
+
+    [Fact]
+    public void SelectedService_ChangedToOneSelectedSpecialistIsNotEligibleFor_ClearsSelectedSpecialist()
+    {
+        // If Reception goes back and changes the service, a since-invalidated pairing must never
+        // silently ride through to Date/TimeSlot.
+        var specialistForServiceA = new WorkflowSpecialistOptionDto("specialist-1", "Jordan Lee", ["service-a"]);
+        var serviceA = new WorkflowServiceOptionDto("service-a", "Service A", 60, "$10");
+        var serviceB = new WorkflowServiceOptionDto("service-b", "Service B", 60, "$10");
+        var options = new BookingOptionsDto([MakeCustomer()], [serviceA, serviceB], [specialistForServiceA]);
+        var workflowService = new StubBookingWorkflowService(getOptions: _ => Task.FromResult(options));
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService())
+        {
+            SelectedService = serviceA,
+        };
+        sut.SelectedSpecialist = specialistForServiceA;
+
+        sut.SelectedService = serviceB;
+
+        Assert.Null(sut.SelectedSpecialist);
     }
 }

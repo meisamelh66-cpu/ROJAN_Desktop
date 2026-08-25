@@ -31,6 +31,8 @@ public sealed class BookingWizardViewModel : ViewModelBase
     private WorkflowCustomerOptionDto? _selectedCustomer;
     private WorkflowServiceOptionDto? _selectedService;
     private WorkflowSpecialistOptionDto? _selectedSpecialist;
+    private bool _hasNoEligibleSpecialists;
+    private string? _noEligibleSpecialistsMessage;
     private DateTime _selectedDate = DateTime.Today.AddDays(1);
     private WorkflowSlotDto? _selectedSlot;
     private string _notes = string.Empty;
@@ -48,6 +50,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         Customers = new ObservableCollection<WorkflowCustomerOptionDto>();
         Services = new ObservableCollection<WorkflowServiceOptionDto>();
         Specialists = new ObservableCollection<WorkflowSpecialistOptionDto>();
+        EligibleSpecialists = new ObservableCollection<WorkflowSpecialistOptionDto>();
         AvailableSlots = new ObservableCollection<WorkflowSlotDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadOptionsAsync());
@@ -69,6 +72,19 @@ public sealed class BookingWizardViewModel : ViewModelBase
     public ObservableCollection<WorkflowServiceOptionDto> Services { get; }
 
     public ObservableCollection<WorkflowSpecialistOptionDto> Specialists { get; }
+
+    /// <summary>
+    /// Booking Eligibility Filter: the Specialist step's picker binds to
+    /// this, not <see cref="Specialists"/> directly - every specialist
+    /// eligible for <see cref="SelectedService"/>, per ROJAN_Backend's own
+    /// eligibility rule (<see cref="WorkflowSpecialistOptionDto.AssignedServiceIds"/>
+    /// empty means unrestricted). Recomputed by <see cref="RefreshEligibleSpecialists"/>
+    /// whenever <see cref="SelectedService"/> changes or the option list
+    /// reloads - a UX filter only, never a substitute for ROJAN_Backend's
+    /// own authoritative check (still enforced, unchanged, inside the
+    /// availability/booking-creation endpoints this wizard already calls).
+    /// </summary>
+    public ObservableCollection<WorkflowSpecialistOptionDto> EligibleSpecialists { get; }
 
     public ObservableCollection<WorkflowSlotDto> AvailableSlots { get; }
 
@@ -132,13 +148,33 @@ public sealed class BookingWizardViewModel : ViewModelBase
     public WorkflowServiceOptionDto? SelectedService
     {
         get => _selectedService;
-        set => SetProperty(ref _selectedService, value);
+        set
+        {
+            if (SetProperty(ref _selectedService, value))
+            {
+                RefreshEligibleSpecialists();
+            }
+        }
     }
 
     public WorkflowSpecialistOptionDto? SelectedSpecialist
     {
         get => _selectedSpecialist;
         set => SetProperty(ref _selectedSpecialist, value);
+    }
+
+    /// <summary>Booking Eligibility Filter: true when <see cref="SelectedService"/> is set but no specialist is eligible for it - backs the empty-state message's visibility.</summary>
+    public bool HasNoEligibleSpecialists
+    {
+        get => _hasNoEligibleSpecialists;
+        private set => SetProperty(ref _hasNoEligibleSpecialists, value);
+    }
+
+    /// <summary>Non-destructive, never a dead end: explains why the Specialist step's picker is empty rather than leaving Reception guessing (same reasoning as <c>Specialists.SpecialistProfileViewModel</c>'s own inline error messages).</summary>
+    public string? NoEligibleSpecialistsMessage
+    {
+        get => _noEligibleSpecialistsMessage;
+        private set => SetProperty(ref _noEligibleSpecialistsMessage, value);
     }
 
     public DateTime SelectedDate
@@ -192,6 +228,8 @@ public sealed class BookingWizardViewModel : ViewModelBase
                 Specialists.Add(specialist);
             }
 
+            RefreshEligibleSpecialists();
+
             State = Customers.Count == 0 || Services.Count == 0 || Specialists.Count == 0
                 ? DashboardState.Empty
                 : DashboardState.Loaded;
@@ -204,6 +242,45 @@ public sealed class BookingWizardViewModel : ViewModelBase
             State = DashboardState.Error;
         }
     }
+
+    /// <summary>
+    /// Booking Eligibility Filter: recomputes <see cref="EligibleSpecialists"/>
+    /// as every entry in <see cref="Specialists"/> eligible for
+    /// <see cref="SelectedService"/>, mirroring ROJAN_Backend's own
+    /// <c>isSpecialistEligibleForService</c> rule exactly - an empty
+    /// <see cref="WorkflowSpecialistOptionDto.AssignedServiceIds"/> means
+    /// unrestricted (eligible for everything), not "eligible for nothing".
+    /// If <see cref="SelectedSpecialist"/> is no longer eligible after this
+    /// recompute (e.g. the user went back and changed <see cref="SelectedService"/>),
+    /// it is cleared - the wizard must never let a since-invalidated pair
+    /// silently ride through to Date/TimeSlot. This is a UX filter only;
+    /// ROJAN_Backend's own check inside the availability/booking-creation
+    /// endpoints remains the sole authority and is unaffected by anything
+    /// here.
+    /// </summary>
+    private void RefreshEligibleSpecialists()
+    {
+        EligibleSpecialists.Clear();
+
+        if (SelectedService is not null)
+        {
+            foreach (var specialist in Specialists.Where(specialist => IsEligibleForSelectedService(specialist, SelectedService.Id)))
+            {
+                EligibleSpecialists.Add(specialist);
+            }
+        }
+
+        if (SelectedSpecialist is not null && !EligibleSpecialists.Contains(SelectedSpecialist))
+        {
+            SelectedSpecialist = null;
+        }
+
+        HasNoEligibleSpecialists = SelectedService is not null && EligibleSpecialists.Count == 0;
+        NoEligibleSpecialistsMessage = HasNoEligibleSpecialists ? Strings.BookingWizard_NoEligibleSpecialistsMessage : null;
+    }
+
+    private static bool IsEligibleForSelectedService(WorkflowSpecialistOptionDto specialist, string serviceId) =>
+        specialist.AssignedServiceIds.Count == 0 || specialist.AssignedServiceIds.Contains(serviceId);
 
     private bool CanGoNext() => CurrentStep switch
     {

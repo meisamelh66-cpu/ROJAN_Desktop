@@ -642,6 +642,9 @@
   <data name="BookingWizard_NoSlots" xml:space="preserve">
     <value>هیچ بازه زمانی در دسترسی برای این متخصص در این تاریخ وجود ندارد.</value>
   </data>
+  <data name="BookingWizard_NoEligibleSpecialistsMessage" xml:space="preserve">
+    <value>هیچ متخصصی برای این خدمت واجد شرایط نیست.</value>
+  </data>
   <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
     <value>تأیید رزرو</value>
   </data>

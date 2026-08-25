@@ -98,4 +98,8 @@ public sealed class SpecialistQueryService : ISpecialistQueryService
 
         return specialists.Select(SpecialistMapper.MapSpecialist).ToList();
     }
+
+    /// <summary>Booking Eligibility Filter: direct passthrough - see this method's own interface doc comment for the "empty means no restriction" reasoning callers must respect.</summary>
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default) =>
+        _repository.GetAssignedServiceIdsAsync(specialistId, cancellationToken);
 }

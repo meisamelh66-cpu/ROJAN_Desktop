@@ -48,10 +48,15 @@ public sealed class BookingWorkflowService : IBookingWorkflowService
             .Where(service => service.Status == AppServices.ServiceStatus.Active)
             .Select(service => new WorkflowServiceOptionDto(service.Id, service.Name, service.DurationMinutes, service.Price))
             .ToList();
-        var specialistOptions = specialists
-            .Where(specialist => specialist.Status == AppSpecialists.SpecialistStatus.Active)
-            .Select(specialist => new WorkflowSpecialistOptionDto(specialist.Id, specialist.FullName))
-            .ToList();
+        var specialistOptions = new List<WorkflowSpecialistOptionDto>();
+        foreach (var specialist in specialists.Where(specialist => specialist.Status == AppSpecialists.SpecialistStatus.Active))
+        {
+            // Booking Eligibility Filter: same per-specialist fan-out shape
+            // Specialists.SpecialistQueryService.SearchSpecialistsAsync(SpecialistSearchFilter)
+            // already uses for its own Skill filter - not a new technique.
+            var assignedServiceIds = await _specialistQueryService.GetAssignedServiceIdsAsync(specialist.Id, cancellationToken).ConfigureAwait(true);
+            specialistOptions.Add(new WorkflowSpecialistOptionDto(specialist.Id, specialist.FullName, assignedServiceIds));
+        }
 
         return new BookingOptionsDto(customerOptions, serviceOptions, specialistOptions);
     }

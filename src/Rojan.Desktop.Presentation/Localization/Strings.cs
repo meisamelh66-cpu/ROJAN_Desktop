@@ -535,6 +535,9 @@ public static class Strings
 
     public static string BookingWizard_NoSlots => Get(nameof(BookingWizard_NoSlots));
 
+    /// <summary>Booking Eligibility Filter - shown at the Specialist step when no specialist is eligible for the already-selected service.</summary>
+    public static string BookingWizard_NoEligibleSpecialistsMessage => Get(nameof(BookingWizard_NoEligibleSpecialistsMessage));
+
     public static string BookingWizard_ConfirmBooking => Get(nameof(BookingWizard_ConfirmBooking));
 
     public static string BookingWizard_CustomerNotLinkedToAccountMessage => Get(nameof(BookingWizard_CustomerNotLinkedToAccountMessage));

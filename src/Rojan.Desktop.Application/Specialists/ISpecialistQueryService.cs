@@ -10,4 +10,18 @@ public interface ISpecialistQueryService
 
     /// <summary>Returns specialists matching every non-null/non-empty criterion in <paramref name="filter"/> (ANDed) - an all-default <see cref="SpecialistSearchFilter"/> returns every specialist, identical to <see cref="GetSpecialistsAsync"/>.</summary>
     public Task<IReadOnlyList<SpecialistDto>> SearchSpecialistsAsync(SpecialistSearchFilter filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Booking Eligibility Filter: the real, backend-owned service ids this
+    /// specialist is eligible to perform - a thin passthrough to
+    /// <see cref="Domain.Specialists.ISpecialistRepository.GetAssignedServiceIdsAsync"/>,
+    /// the same capability Specialist-Service Assignment already built.
+    /// An empty list is not "eligible for nothing" - it is ROJAN_Backend's
+    /// own opt-in default, meaning "no restriction, eligible for every
+    /// service" (see <c>ai.rojan.backend.domain.salon.isSpecialistEligibleForService</c>'s
+    /// own doc comment on the backend side). Callers filtering by
+    /// eligibility must branch on emptiness explicitly, never treat an
+    /// empty list as "no matches".
+    /// </summary>
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default);
 }

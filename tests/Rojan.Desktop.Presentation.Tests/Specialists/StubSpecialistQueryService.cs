@@ -64,4 +64,8 @@ internal sealed class StubSpecialistQueryService : ISpecialistQueryService
         SearchCalls.Add(filter);
         return _searchSpecialistsByFilter(filter, cancellationToken);
     }
+
+    /// <summary>Booking Eligibility Filter: not exercised by anything in this test project - the empty/unrestricted default is a safe, harmless value regardless.</summary>
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>([]);
 }

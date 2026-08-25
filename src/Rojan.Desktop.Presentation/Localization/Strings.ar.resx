@@ -630,6 +630,9 @@
   <data name="BookingWizard_NoSlots" xml:space="preserve">
     <value>لا توجد فترات زمنية متاحة لهذا المتخصص في هذا التاريخ.</value>
   </data>
+  <data name="BookingWizard_NoEligibleSpecialistsMessage" xml:space="preserve">
+    <value>لا يوجد أخصائي مؤهل لهذه الخدمة.</value>
+  </data>
   <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
     <value>تأكيد الحجز</value>
   </data>

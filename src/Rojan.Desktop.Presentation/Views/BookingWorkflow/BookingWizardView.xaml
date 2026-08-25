@@ -315,7 +315,26 @@
                             </Style>
                         </StackPanel.Style>
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepChooseSpecialist}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
-                        <ListBox ItemsSource="{Binding Specialists}"
+                        <!-- Booking Eligibility Filter: EligibleSpecialists, not Specialists - every specialist
+                             eligible for the already-selected service, per ROJAN_Backend's own eligibility rule
+                             (see BookingWizardViewModel.RefreshEligibleSpecialists' own doc comment). A UX filter
+                             only - ROJAN_Backend's own check inside available-slots/booking-creation remains the
+                             sole authority, unaffected by this. -->
+                        <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Calendar}"
+                                                Message="{Binding NoEligibleSpecialistsMessage}"
+                                                Margin="0,0,0,8">
+                            <shared:EmptyStateCard.Style>
+                                <Style TargetType="{x:Type shared:EmptyStateCard}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasNoEligibleSpecialists}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </shared:EmptyStateCard.Style>
+                        </shared:EmptyStateCard>
+                        <ListBox ItemsSource="{Binding EligibleSpecialists}"
                                  SelectedItem="{Binding SelectedSpecialist, Mode=TwoWay}"
                                  Background="Transparent"
                                  BorderThickness="0"

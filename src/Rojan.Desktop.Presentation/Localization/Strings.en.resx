@@ -630,6 +630,9 @@
   <data name="BookingWizard_NoSlots" xml:space="preserve">
     <value>No available slots for this specialist on this date.</value>
   </data>
+  <data name="BookingWizard_NoEligibleSpecialistsMessage" xml:space="preserve">
+    <value>No specialists are eligible for this service.</value>
+  </data>
   <data name="BookingWizard_ConfirmBooking" xml:space="preserve">
     <value>Confirm Booking</value>
   </data>

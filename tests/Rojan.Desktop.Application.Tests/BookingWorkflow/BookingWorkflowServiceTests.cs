@@ -59,6 +59,54 @@ public sealed class BookingWorkflowServiceTests
         Assert.Equal("specialist-1", options.Specialists[0].Id);
     }
 
+    // Booking Eligibility Filter.
+
+    [Fact]
+    public async Task GetBookingOptionsAsync_SpecialistWithNoAssignments_PopulatesEmptyAssignedServiceIds()
+    {
+        // ROJAN_Backend's own "unrestricted, eligible for everything" default - must be populated as
+        // an empty list, never omitted or null, so Presentation can apply the correct filter rule.
+        var specialistQueryService = new StubSpecialistQueryService(
+            [MakeSpecialist("specialist-1", "Jordan Lee", AppSpecialists.SpecialistStatus.Active)]);
+        var sut = MakeSut(specialistQueryService: specialistQueryService);
+
+        var options = await sut.GetBookingOptionsAsync();
+
+        Assert.Empty(options.Specialists[0].AssignedServiceIds);
+    }
+
+    [Fact]
+    public async Task GetBookingOptionsAsync_SpecialistWithAssignments_PopulatesRealAssignedServiceIds()
+    {
+        var specialistQueryService = new StubSpecialistQueryService(
+            [MakeSpecialist("specialist-1", "Jordan Lee", AppSpecialists.SpecialistStatus.Active)],
+            new Dictionary<string, IReadOnlyList<string>> { ["specialist-1"] = ["service-1", "service-2"] });
+        var sut = MakeSut(specialistQueryService: specialistQueryService);
+
+        var options = await sut.GetBookingOptionsAsync();
+
+        Assert.Equal(["service-1", "service-2"], options.Specialists[0].AssignedServiceIds);
+    }
+
+    [Fact]
+    public async Task GetBookingOptionsAsync_MultipleSpecialists_EachGetsItsOwnAssignedServiceIds()
+    {
+        var specialistQueryService = new StubSpecialistQueryService(
+            [
+                MakeSpecialist("specialist-1", "Jordan Lee", AppSpecialists.SpecialistStatus.Active),
+                MakeSpecialist("specialist-2", "Priya Nair", AppSpecialists.SpecialistStatus.Active),
+            ],
+            new Dictionary<string, IReadOnlyList<string>> { ["specialist-1"] = ["service-1"] });
+        var sut = MakeSut(specialistQueryService: specialistQueryService);
+
+        var options = await sut.GetBookingOptionsAsync();
+
+        var specialist1 = Assert.Single(options.Specialists, specialist => specialist.Id == "specialist-1");
+        var specialist2 = Assert.Single(options.Specialists, specialist => specialist.Id == "specialist-2");
+        Assert.Equal(["service-1"], specialist1.AssignedServiceIds);
+        Assert.Empty(specialist2.AssignedServiceIds);
+    }
+
     [Fact]
     public async Task GetAvailableSlotsAsync_FiltersToAvailableOnly()
     {

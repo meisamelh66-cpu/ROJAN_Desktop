@@ -57,6 +57,9 @@ internal sealed class StubSpecialistQueryService(IReadOnlyList<AppSpecialists.Sp
 
     public Task<IReadOnlyList<AppSpecialists.SpecialistDto>> SearchSpecialistsAsync(AppSpecialists.SpecialistSearchFilter filter, CancellationToken cancellationToken = default) =>
         Task.FromResult(specialists);
+
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>([]);
 }
 
 internal sealed class StubProductQueryService(

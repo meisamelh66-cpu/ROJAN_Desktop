@@ -20,4 +20,7 @@ internal sealed class StubSpecialistQueryService : ISpecialistQueryService
 
     public Task<IReadOnlyList<SpecialistDto>> SearchSpecialistsAsync(SpecialistSearchFilter filter, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Not used by IntelligenceEngineTests.");
+
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Not used by IntelligenceEngineTests.");
 }
