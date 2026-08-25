@@ -550,6 +550,24 @@ public static class Strings
 
     public static string BookingWizard_UnlinkedCustomerBadge => Get(nameof(BookingWizard_UnlinkedCustomerBadge));
 
+    /// <summary>Booking Intelligence Phase 1: shown for a caught <see cref="Rojan.Desktop.Application.Api.ApiTimeoutException"/>/<see cref="Rojan.Desktop.Application.Api.ApiConnectivityException"/> - "could not reach ROJAN_Backend," never the raw exception text.</summary>
+    public static string BookingWizard_Error_Network => Get(nameof(BookingWizard_Error_Network));
+
+    /// <summary>Booking Intelligence Phase 1: shown for any other caught exception (a real backend rejection, or anything unexpected) - the same generic, never-raw-exception-text fallback used throughout this app.</summary>
+    public static string BookingWizard_Error_Generic => Get(nameof(BookingWizard_Error_Generic));
+
+    /// <summary>Booking Intelligence Phase 1: shown at the Customer step when the salon has no bookable Customers/Services/Specialists at all yet.</summary>
+    public static string BookingWizard_NoBookableData => Get(nameof(BookingWizard_NoBookableData));
+
+    /// <summary>Booking Intelligence Phase 1: caption shown while <c>SearchNextAvailableDateAsync</c> probes forward for the next open day.</summary>
+    public static string BookingWizard_SearchingNextAvailableDate => Get(nameof(BookingWizard_SearchingNextAvailableDate));
+
+    /// <summary>Booking Intelligence Phase 1: the "Try &lt;date&gt;" suggestion button's label prefix, paired with the found date itself.</summary>
+    public static string BookingWizard_TryNextAvailableDate => Get(nameof(BookingWizard_TryNextAvailableDate));
+
+    /// <summary>Booking Intelligence Phase 1: badge shown next to a specialist explicitly assigned to the selected service (Smart Specialist Ordering).</summary>
+    public static string BookingWizard_AssignedBadge => Get(nameof(BookingWizard_AssignedBadge));
+
     public static string Specialists_Title => Get(nameof(Specialists_Title));
 
     public static string Specialists_Subtitle => Get(nameof(Specialists_Subtitle));

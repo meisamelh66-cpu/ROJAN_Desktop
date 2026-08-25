@@ -42,6 +42,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:EnumAtLeastConverter x:Key="EnumAtLeastConverter" />
+            <!-- Booking Intelligence Phase 1 (Smart Specialist Ordering): backs the "Assigned" badge on the Specialist step - see the converter's own doc comment. -->
+            <converters:SpecialistAssignedToServiceConverter x:Key="SpecialistAssignedToServiceConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -215,6 +217,26 @@
                             </Style>
                         </StackPanel.Style>
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepWhoFor}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
+
+                        <!-- Booking Intelligence Phase 1: distinct from the shared error banner - explains a wizard opened
+                             against a salon with no Customers/Services/Specialists at all yet, rather than showing an
+                             empty picker with no explanation. Bound to the dedicated HasNoBookableData flag, not the
+                             shared State, so it cannot be spuriously re-triggered by the TimeSlot step's own Empty state. -->
+                        <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Calendar}"
+                                                Message="{x:Static loc:Strings.BookingWizard_NoBookableData}"
+                                                Margin="0,0,0,8">
+                            <shared:EmptyStateCard.Style>
+                                <Style TargetType="{x:Type shared:EmptyStateCard}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasNoBookableData}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </shared:EmptyStateCard.Style>
+                        </shared:EmptyStateCard>
+
                         <ListBox ItemsSource="{Binding Customers}"
                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                                  Background="Transparent"
@@ -345,6 +367,32 @@
                                     <StackPanel Orientation="Horizontal">
                                         <shared:EntityAvatar EntityName="{Binding FullName}" Size="28" Margin="0,0,10,0" />
                                         <TextBlock Text="{Binding FullName}" Style="{StaticResource Rojan.TextStyle.Body}" VerticalAlignment="Center" />
+                                        <!-- Booking Intelligence Phase 1 (Smart Specialist Ordering): a static, data-driven
+                                             badge - true only for a specialist explicitly assigned to the selected service
+                                             (see SpecialistAssignedToServiceConverter's own doc comment). EligibleSpecialists
+                                             is already sorted assigned-first by the ViewModel; this badge just makes the
+                                             reason visible, it does not itself reorder anything. -->
+                                        <TextBlock Text="{x:Static loc:Strings.BookingWizard_AssignedBadge}"
+                                                   Foreground="{StaticResource Rojan.Brush.Accent}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Value="True">
+                                                            <DataTrigger.Binding>
+                                                                <MultiBinding Converter="{StaticResource SpecialistAssignedToServiceConverter}">
+                                                                    <Binding Path="." />
+                                                                    <Binding Path="DataContext.SelectedService" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                                </MultiBinding>
+                                                            </DataTrigger.Binding>
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -380,6 +428,25 @@
                             </Style>
                         </StackPanel.Style>
                         <TextBlock Text="{x:Static loc:Strings.BookingWizard_StepChooseTime}" Style="{StaticResource Rojan.TextStyle.Subtitle}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" Margin="0,0,0,8" />
+
+                        <!-- Booking Intelligence Phase 1 (Booking Availability UX Improvement): slot-loading feedback -
+                             same Common_Loading caption convention DashboardWidget's own Loading template already
+                             establishes, reused here since this step is plain StackPanels, not a DashboardWidget. -->
+                        <TextBlock Text="{x:Static loc:Strings.Common_Loading}"
+                                   Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                   Margin="0,0,0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State}" Value="Loading">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
                         <shared:EmptyStateCard Icon="{StaticResource Rojan.Icon.Calendar}"
                                                 Message="{x:Static loc:Strings.BookingWizard_NoSlots}"
                                                 Margin="0,0,0,8">
@@ -394,6 +461,58 @@
                                 </Style>
                             </shared:EmptyStateCard.Style>
                         </shared:EmptyStateCard>
+
+                        <!-- Booking Intelligence Phase 1 (Smart Availability Presentation): "next available day"
+                             suggestion - both the caption and the button are Backend's own answer (see
+                             BookingWizardViewModel.SearchNextAvailableDateAsync's own doc comment), never a
+                             client-side guess. Nested inside the same State==Empty gate as the card above so
+                             this never shows outside the empty-slots case. -->
+                        <StackPanel Margin="0,0,0,8">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State}" Value="Empty">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <TextBlock Text="{x:Static loc:Strings.BookingWizard_SearchingNextAvailableDate}"
+                                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                                       Margin="0,0,0,4">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSearchingNextAvailableDate}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <Button HorizontalAlignment="Left" Command="{Binding TryNextAvailableDateCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSuggestedNextAvailableDate}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <TextBlock>
+                                    <Run Text="{x:Static loc:Strings.BookingWizard_TryNextAvailableDate}" />
+                                    <Run Text=" " />
+                                    <Run Text="{Binding SuggestedNextAvailableDate, StringFormat={}{0:MMM d}}" />
+                                </TextBlock>
+                            </Button>
+                        </StackPanel>
+
                         <ListBox ItemsSource="{Binding AvailableSlots}"
                                  SelectedItem="{Binding SelectedSlot, Mode=TwoWay}"
                                  Background="Transparent"

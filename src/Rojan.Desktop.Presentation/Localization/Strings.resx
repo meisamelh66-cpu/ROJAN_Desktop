@@ -663,6 +663,24 @@
   <data name="BookingWizard_UnlinkedCustomerBadge" xml:space="preserve">
     <value>بدون حساب کاربری - غیرقابل رزرو</value>
   </data>
+  <data name="BookingWizard_Error_Network" xml:space="preserve">
+    <value>خطا در اتصال به سرور. اتصال اینترنت خود را بررسی کنید.</value>
+  </data>
+  <data name="BookingWizard_Error_Generic" xml:space="preserve">
+    <value>مشکلی پیش آمد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="BookingWizard_NoBookableData" xml:space="preserve">
+    <value>هنوز مشتری، خدمت یا متخصصی برای رزرو ثبت نشده است.</value>
+  </data>
+  <data name="BookingWizard_SearchingNextAvailableDate" xml:space="preserve">
+    <value>در حال جستجوی نزدیک‌ترین روز خالی…</value>
+  </data>
+  <data name="BookingWizard_TryNextAvailableDate" xml:space="preserve">
+    <value>امتحان کردن</value>
+  </data>
+  <data name="BookingWizard_AssignedBadge" xml:space="preserve">
+    <value>تخصیص‌یافته</value>
+  </data>
   <data name="Specialists_Title" xml:space="preserve">
     <value>متخصصان</value>
   </data>

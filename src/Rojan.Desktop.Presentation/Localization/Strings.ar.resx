@@ -651,6 +651,24 @@
   <data name="BookingWizard_UnlinkedCustomerBadge" xml:space="preserve">
     <value>بدون حساب - غير قابل للحجز</value>
   </data>
+  <data name="BookingWizard_Error_Network" xml:space="preserve">
+    <value>تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.</value>
+  </data>
+  <data name="BookingWizard_Error_Generic" xml:space="preserve">
+    <value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="BookingWizard_NoBookableData" xml:space="preserve">
+    <value>لم يتم إعداد أي عملاء أو خدمات أو أخصائيين للحجز بعد.</value>
+  </data>
+  <data name="BookingWizard_SearchingNextAvailableDate" xml:space="preserve">
+    <value>جارٍ البحث عن أقرب يوم متاح…</value>
+  </data>
+  <data name="BookingWizard_TryNextAvailableDate" xml:space="preserve">
+    <value>تجربة</value>
+  </data>
+  <data name="BookingWizard_AssignedBadge" xml:space="preserve">
+    <value>مخصص</value>
+  </data>
   <data name="Specialists_Title" xml:space="preserve">
     <value>المتخصصون</value>
   </data>

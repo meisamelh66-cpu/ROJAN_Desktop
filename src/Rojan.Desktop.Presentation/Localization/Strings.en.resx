@@ -651,6 +651,24 @@
   <data name="BookingWizard_UnlinkedCustomerBadge" xml:space="preserve">
     <value>No account - not bookable</value>
   </data>
+  <data name="BookingWizard_Error_Network" xml:space="preserve">
+    <value>Could not reach the server. Check your internet connection.</value>
+  </data>
+  <data name="BookingWizard_Error_Generic" xml:space="preserve">
+    <value>Something went wrong. Please try again.</value>
+  </data>
+  <data name="BookingWizard_NoBookableData" xml:space="preserve">
+    <value>No customers, services, or specialists have been set up to book yet.</value>
+  </data>
+  <data name="BookingWizard_SearchingNextAvailableDate" xml:space="preserve">
+    <value>Looking for the next available day…</value>
+  </data>
+  <data name="BookingWizard_TryNextAvailableDate" xml:space="preserve">
+    <value>Try</value>
+  </data>
+  <data name="BookingWizard_AssignedBadge" xml:space="preserve">
+    <value>Assigned</value>
+  </data>
   <data name="Specialists_Title" xml:space="preserve">
     <value>Specialists</value>
   </data>

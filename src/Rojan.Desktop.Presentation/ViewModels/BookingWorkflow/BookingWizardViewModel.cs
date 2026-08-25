@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Localization;
@@ -40,6 +41,10 @@ public sealed class BookingWizardViewModel : ViewModelBase
     private string _guestFullName = string.Empty;
     private string _guestPhone = string.Empty;
     private bool _isAddingGuestCustomer;
+    private bool _hasNoBookableData;
+    private DateOnly? _suggestedNextAvailableDate;
+    private bool _isSearchingNextAvailableDate;
+    private CancellationTokenSource? _nextAvailableDateSearchCts;
 
     public BookingWizardViewModel(IBookingWorkflowService workflowService, IDialogService dialogService, Action? onBookingCreated = null)
     {
@@ -60,6 +65,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         ConfirmBookingCommand = new AsyncRelayCommand(_ => ConfirmBookingAsync(), _ => CurrentStep == BookingWizardStep.Review);
         DoneCommand = new RelayCommand(_ => _dialogService.CloseDialog());
         AddGuestCustomerCommand = new AsyncRelayCommand(_ => AddGuestCustomerAsync(), _ => CanAddGuestCustomer());
+        TryNextAvailableDateCommand = new AsyncRelayCommand(_ => TryNextAvailableDateAsync(), _ => SuggestedNextAvailableDate is not null);
 
         // Safe fire-and-forget: LoadOptionsAsync catches every failure
         // internally and represents it via State/ErrorMessage, same
@@ -102,6 +108,9 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
     public ICommand AddGuestCustomerCommand { get; }
 
+    /// <summary>Booking Intelligence Phase 1: accepts <see cref="SuggestedNextAvailableDate"/> - sets <see cref="SelectedDate"/> to it and reloads <see cref="AvailableSlots"/> for that date. A single explicit user click; never auto-applied.</summary>
+    public ICommand TryNextAvailableDateCommand { get; }
+
     public DashboardState State
     {
         get => _state;
@@ -143,6 +152,20 @@ public sealed class BookingWizardViewModel : ViewModelBase
     {
         get => _isAddingGuestCustomer;
         private set => SetProperty(ref _isAddingGuestCustomer, value);
+    }
+
+    /// <summary>
+    /// Booking Intelligence Phase 1: true when <see cref="LoadOptionsAsync"/>
+    /// found no Customers, Services, or Specialists at all - a distinct,
+    /// dedicated signal from the shared <see cref="State"/> so it cannot be
+    /// spuriously re-triggered by an unrelated later Empty state (e.g. the
+    /// TimeSlot step finding no slots on a given day). Backs the Customer
+    /// step's own "nothing to book yet" empty-state message.
+    /// </summary>
+    public bool HasNoBookableData
+    {
+        get => _hasNoBookableData;
+        private set => SetProperty(ref _hasNoBookableData, value);
     }
 
     public WorkflowServiceOptionDto? SelectedService
@@ -189,6 +212,38 @@ public sealed class BookingWizardViewModel : ViewModelBase
         set => SetProperty(ref _selectedSlot, value);
     }
 
+    /// <summary>
+    /// Booking Intelligence Phase 1: the first date, strictly after
+    /// <see cref="SelectedDate"/>, within a small bounded window that
+    /// <see cref="SearchNextAvailableDateAsync"/> found at least one open
+    /// slot for - null while unsearched, while searching, or when the
+    /// window was exhausted with nothing found. This is Backend's own
+    /// answer, read <see cref="NextAvailableDateSearchWindowDays"/> times
+    /// at most via the same <see cref="IBookingWorkflowService.GetAvailableSlotsAsync"/>
+    /// call already used for the originally-picked date - never a locally
+    /// computed or inferred slot.
+    /// </summary>
+    public DateOnly? SuggestedNextAvailableDate
+    {
+        get => _suggestedNextAvailableDate;
+        private set
+        {
+            if (SetProperty(ref _suggestedNextAvailableDate, value))
+            {
+                OnPropertyChanged(nameof(HasSuggestedNextAvailableDate));
+            }
+        }
+    }
+
+    public bool HasSuggestedNextAvailableDate => SuggestedNextAvailableDate is not null;
+
+    /// <summary>Backs a "looking for the next available day..." caption - a distinct signal from <see cref="State"/> so it can be shown alongside the existing empty-slots message rather than replacing it.</summary>
+    public bool IsSearchingNextAvailableDate
+    {
+        get => _isSearchingNextAvailableDate;
+        private set => SetProperty(ref _isSearchingNextAvailableDate, value);
+    }
+
     public string Notes
     {
         get => _notes;
@@ -230,15 +285,14 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
             RefreshEligibleSpecialists();
 
-            State = Customers.Count == 0 || Services.Count == 0 || Specialists.Count == 0
-                ? DashboardState.Empty
-                : DashboardState.Loaded;
+            HasNoBookableData = Customers.Count == 0 || Services.Count == 0 || Specialists.Count == 0;
+            State = HasNoBookableData ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
         }
     }
@@ -257,6 +311,19 @@ public sealed class BookingWizardViewModel : ViewModelBase
     /// ROJAN_Backend's own check inside the availability/booking-creation
     /// endpoints remains the sole authority and is unaffected by anything
     /// here.
+    ///
+    /// Booking Intelligence Phase 1 (Smart Specialist Ordering):
+    /// <see cref="EligibleSpecialists"/> is additionally sorted -
+    /// specialists explicitly assigned to <see cref="SelectedService"/>
+    /// (<see cref="IsExplicitlyAssignedToSelectedService"/>) first, every
+    /// other eligible (unassigned/generalist) specialist after, each group
+    /// alphabetical by <see cref="WorkflowSpecialistOptionDto.FullName"/>.
+    /// This is a fixed, explainable rule over data already fetched (the
+    /// same <see cref="WorkflowSpecialistOptionDto.AssignedServiceIds"/>
+    /// the eligibility filter itself uses) - no scoring, no weighting, no
+    /// inferred/learned ranking, not an AI recommendation. Unassigned
+    /// specialists are never removed or hidden by this - they remain fully
+    /// eligible and pickable, only ordered after the explicit matches.
     /// </summary>
     private void RefreshEligibleSpecialists()
     {
@@ -264,7 +331,12 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
         if (SelectedService is not null)
         {
-            foreach (var specialist in Specialists.Where(specialist => IsEligibleForSelectedService(specialist, SelectedService.Id)))
+            var ordered = Specialists
+                .Where(specialist => IsEligibleForSelectedService(specialist, SelectedService.Id))
+                .OrderByDescending(specialist => IsExplicitlyAssignedToSelectedService(specialist, SelectedService.Id))
+                .ThenBy(specialist => specialist.FullName, StringComparer.Ordinal);
+
+            foreach (var specialist in ordered)
             {
                 EligibleSpecialists.Add(specialist);
             }
@@ -281,6 +353,10 @@ public sealed class BookingWizardViewModel : ViewModelBase
 
     private static bool IsEligibleForSelectedService(WorkflowSpecialistOptionDto specialist, string serviceId) =>
         specialist.AssignedServiceIds.Count == 0 || specialist.AssignedServiceIds.Contains(serviceId);
+
+    /// <summary>Booking Intelligence Phase 1 (Smart Specialist Ordering): true only for a specialist with a real, explicit assignment to <paramref name="serviceId"/> - distinct from the broader eligibility check above, which also admits unrestricted/generalist specialists with an empty <see cref="WorkflowSpecialistOptionDto.AssignedServiceIds"/>.</summary>
+    private static bool IsExplicitlyAssignedToSelectedService(WorkflowSpecialistOptionDto specialist, string serviceId) =>
+        specialist.AssignedServiceIds.Count > 0 && specialist.AssignedServiceIds.Contains(serviceId);
 
     private bool CanGoNext() => CurrentStep switch
     {
@@ -307,6 +383,11 @@ public sealed class BookingWizardViewModel : ViewModelBase
             SelectedCustomer = guest;
             GuestFullName = string.Empty;
             GuestPhone = string.Empty;
+
+            // Booking Intelligence Phase 1: a wizard opened against a salon with services/specialists
+            // but zero customers could only reach this command from the Customer step's own
+            // HasNoBookableData empty-state - re-check now in case this guest was the missing piece.
+            HasNoBookableData = Customers.Count == 0 || Services.Count == 0 || Specialists.Count == 0;
             State = DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level command boundary: any failure must surface via ErrorMessage, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
@@ -317,7 +398,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
             // Row 2) and the TimeSlot step's empty-state card - none of the 7 step panels
             // (including this one, Customer) gate their own visibility on State, so this does not
             // hide the picker the way it would on a full-page ViewModel.
-            ErrorMessage = exception.Message;
+            ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
         }
         finally
@@ -369,6 +450,11 @@ public sealed class BookingWizardViewModel : ViewModelBase
             return;
         }
 
+        // Booking Intelligence Phase 1: a new date load obsoletes any in-flight next-available-date
+        // probe from a previous empty result - cancel it before starting this one.
+        CancelNextAvailableDateSearch();
+        SuggestedNextAvailableDate = null;
+
         State = DashboardState.Loading;
         ErrorMessage = null;
         SelectedSlot = null;
@@ -386,14 +472,105 @@ public sealed class BookingWizardViewModel : ViewModelBase
             }
 
             State = AvailableSlots.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
+
+            if (State == DashboardState.Empty)
+            {
+                // Booking Intelligence Phase 1 (Smart Availability Presentation): safe fire-and-forget -
+                // SearchNextAvailableDateAsync catches every failure internally (best-effort, never
+                // surfaces as the page-level ErrorMessage) and is cancellable via _nextAvailableDateSearchCts.
+                _ = SearchNextAvailableDateAsync();
+            }
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
         }
+    }
+
+    /// <summary>
+    /// Booking Intelligence Phase 1 (Smart Availability Presentation): when
+    /// <see cref="SelectedDate"/> has no slots, probes forward a small,
+    /// fixed, bounded window (<see cref="NextAvailableDateSearchWindowDays"/>
+    /// days) by calling the exact same, already-existing, Backend-authoritative
+    /// <see cref="IBookingWorkflowService.GetAvailableSlotsAsync"/> once per
+    /// candidate day, stopping at the first day with at least one slot.
+    /// Nothing is computed, reserved, or decided client-side - every answer
+    /// is Backend's own. Cancellable (a new date pick or a fresh probe
+    /// supersedes an in-flight one via <see cref="CancelNextAvailableDateSearch"/>);
+    /// any failure (including cancellation) is swallowed - this is a
+    /// best-effort suggestion, never a substitute for the primary
+    /// <see cref="ErrorMessage"/>/<see cref="State"/> the failed original
+    /// load already surfaced.
+    /// </summary>
+    private async Task SearchNextAvailableDateAsync()
+    {
+        if (SelectedSpecialist is null || SelectedService is null)
+        {
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _nextAvailableDateSearchCts = cts;
+
+        IsSearchingNextAvailableDate = true;
+
+        try
+        {
+            for (var offset = 1; offset <= NextAvailableDateSearchWindowDays; offset++)
+            {
+                cts.Token.ThrowIfCancellationRequested();
+
+                var candidateDate = DateOnly.FromDateTime(SelectedDate).AddDays(offset);
+                var slots = await _workflowService
+                    .GetAvailableSlotsAsync(SelectedSpecialist.Id, SelectedService.Id, candidateDate, cts.Token)
+                    .ConfigureAwait(true);
+
+                if (slots.Count > 0)
+                {
+                    SuggestedNextAvailableDate = candidateDate;
+                    return;
+                }
+            }
+        }
+#pragma warning disable CA1031 // Best-effort, swallowed by design - see this method's own doc comment. A stale/cancelled probe must never surface as the page-level ErrorMessage.
+        catch (Exception)
+        {
+            // Swallowed by design - see this method's own doc comment.
+        }
+#pragma warning restore CA1031
+        finally
+        {
+            if (ReferenceEquals(_nextAvailableDateSearchCts, cts))
+            {
+                IsSearchingNextAvailableDate = false;
+            }
+        }
+    }
+
+    private void CancelNextAvailableDateSearch()
+    {
+        _nextAvailableDateSearchCts?.Cancel();
+        _nextAvailableDateSearchCts?.Dispose();
+        _nextAvailableDateSearchCts = null;
+        IsSearchingNextAvailableDate = false;
+    }
+
+    /// <summary>Booking Intelligence Phase 1: how many days forward <see cref="SearchNextAvailableDateAsync"/> probes before giving up - deliberately small and fixed, to bound the extra Backend load a single empty-date event can cause.</summary>
+    private const int NextAvailableDateSearchWindowDays = 7;
+
+    /// <summary>Booking Intelligence Phase 1: accepts the suggestion found by <see cref="SearchNextAvailableDateAsync"/> - moves <see cref="SelectedDate"/> to it and reloads, exactly as if the user had picked that date themselves.</summary>
+    private async Task TryNextAvailableDateAsync()
+    {
+        if (SuggestedNextAvailableDate is null)
+        {
+            return;
+        }
+
+        SelectedDate = SuggestedNextAvailableDate.Value.ToDateTime(TimeOnly.MinValue);
+        await LoadAvailableSlotsAsync().ConfigureAwait(true);
     }
 
     private async Task ConfirmBookingAsync()
@@ -441,8 +618,29 @@ public sealed class BookingWizardViewModel : ViewModelBase
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
         }
     }
+
+    /// <summary>
+    /// Booking Intelligence Phase 1 (Booking Error Handling): maps a caught
+    /// exception to a fixed, friendly, localized message - never the raw
+    /// <see cref="Exception.Message"/> - the same typed-exception approach
+    /// already established by <c>Security.LoginViewModel.SignInAsync</c>
+    /// (separate catch blocks there; a switch expression here, since this
+    /// same mapping is needed at four call sites in this class). A specific
+    /// message for <see cref="ApiTimeoutException"/>/<see cref="ApiConnectivityException"/>
+    /// (both mean "could not reach ROJAN_Backend"), a generic one for any
+    /// other <see cref="ApiException"/> (a real backend rejection, e.g. an
+    /// authoritative conflict check failing - see <see cref="ConfirmBookingAsync"/>'s
+    /// own comment on ADR-004), and the same generic message as a last
+    /// resort for anything unexpected - this class must never show internal
+    /// exception detail to Reception.
+    /// </summary>
+    private static string ToFriendlyErrorMessage(Exception exception) => exception switch
+    {
+        ApiTimeoutException or ApiConnectivityException => Strings.BookingWizard_Error_Network,
+        _ => Strings.BookingWizard_Error_Generic,
+    };
 }
