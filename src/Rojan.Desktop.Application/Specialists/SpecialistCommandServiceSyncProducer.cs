@@ -50,6 +50,13 @@ public sealed class SpecialistCommandServiceSyncProducer : ISpecialistCommandSer
     public Task RemoveSkillAsync(string specialistId, string skillId, CancellationToken cancellationToken = default) =>
         _inner.RemoveSkillAsync(specialistId, skillId, cancellationToken);
 
+    /// <summary>Specialist-Service Assignment: passes straight through unchanged, same as skills above - out of this decorator's deliberately narrow (create/update only) scope.</summary>
+    public Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default) =>
+        _inner.AssignServiceAsync(specialistId, serviceId, cancellationToken);
+
+    public Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default) =>
+        _inner.RemoveServiceAssignmentAsync(specialistId, serviceId, cancellationToken);
+
     private Task EnqueueAsync(string operationType, SpecialistDto dto, CancellationToken cancellationToken) =>
         _syncQueueService.EnqueueAsync(SyncOperationFactory.Create("Specialist", dto.Id, operationType, dto), cancellationToken);
 }

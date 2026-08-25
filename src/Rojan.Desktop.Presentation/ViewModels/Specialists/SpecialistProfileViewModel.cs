@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
+using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -32,12 +34,18 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     private readonly ISpecialistProfileQueryService _profileQueryService;
     private readonly ISpecialistCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
+    private readonly IServiceQueryService _serviceQueryService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _saveErrorMessage;
+    private bool _hasSaveError;
+    private string? _assignmentErrorMessage;
+    private bool _hasAssignmentError;
     private SpecialistDto? _specialist;
     private string _newSkillText = string.Empty;
     private SpecialistStatus _editableStatus;
+    private ServiceDto? _selectedServiceToAssign;
     private bool _hasIntelligence;
     private int _performanceScore;
     private SpecialistPerformanceLevel _performanceLevel = SpecialistPerformanceLevel.Underperforming;
@@ -50,19 +58,25 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         string specialistId,
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        IServiceQueryService serviceQueryService)
     {
         _specialistId = specialistId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+        _serviceQueryService = serviceQueryService;
 
         Skills = new ObservableCollection<SpecialistSkillDto>();
+        AssignedServices = new ObservableCollection<AssignedServiceDto>();
+        AvailableServicesToAssign = new ObservableCollection<ServiceDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AddSkillCommand = new AsyncRelayCommand(_ => AddSkillAsync(), _ => !string.IsNullOrWhiteSpace(NewSkillText));
         RemoveSkillCommand = new AsyncRelayCommand(parameter => RemoveSkillAsync(parameter as SpecialistSkillDto));
         SaveChangesCommand = new AsyncRelayCommand(_ => SaveChangesAsync());
+        AssignServiceCommand = new AsyncRelayCommand(_ => AssignServiceAsync(), _ => SelectedServiceToAssign is not null);
+        RemoveServiceAssignmentCommand = new AsyncRelayCommand(parameter => RemoveServiceAssignmentAsync(parameter as AssignedServiceDto));
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, same pattern as every
@@ -70,7 +84,25 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         _ = LoadAsync();
     }
 
+    /// <summary>
+    /// Specialist Deactivation Wiring: raised after a successful save (see
+    /// <see cref="SaveChangesAsync"/>) so <see cref="SpecialistPageViewModel"/> -
+    /// the specialist directory this profile is shown alongside - can
+    /// refresh its own list rather than keep showing this specialist's old
+    /// status. This ViewModel has no reference back to its owning page
+    /// (same one-way parent-constructs-child shape <c>Customers.CustomerProfileViewModel</c>
+    /// already established), so a plain event is the wiring, not a new
+    /// dependency in either direction.
+    /// </summary>
+    public event EventHandler? SpecialistUpdated;
+
     public ObservableCollection<SpecialistSkillDto> Skills { get; }
+
+    /// <summary>Specialist-Service Assignment: the real, backend-confirmed services this specialist is eligible to perform - see <see cref="AssignedServiceDto"/>'s own doc comment.</summary>
+    public ObservableCollection<AssignedServiceDto> AssignedServices { get; }
+
+    /// <summary>Every catalog service not already in <see cref="AssignedServices"/> - the source list for the assign picker, recomputed on every <see cref="LoadAsync"/> so it never offers a service that is already assigned.</summary>
+    public ObservableCollection<ServiceDto> AvailableServicesToAssign { get; }
 
     public IReadOnlyList<SpecialistStatus> AvailableStatuses { get; } = Enum.GetValues<SpecialistStatus>();
 
@@ -82,6 +114,10 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
 
     public ICommand SaveChangesCommand { get; }
 
+    public ICommand AssignServiceCommand { get; }
+
+    public ICommand RemoveServiceAssignmentCommand { get; }
+
     public DashboardState State
     {
         get => _state;
@@ -92,6 +128,42 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Specialist Deactivation Wiring: a save-specific failure message,
+    /// deliberately separate from <see cref="ErrorMessage"/>/<see cref="State"/> -
+    /// those two drive <c>DashboardWidget</c>, which replaces this panel's
+    /// entire content (status editor included) with a full error+retry
+    /// view. A failed save must never hide the very form the user needs to
+    /// see to retry, so it gets its own inline, non-destructive message
+    /// instead. Never the raw <see cref="Exception.Message"/> - see
+    /// <see cref="SaveChangesAsync"/>'s own doc comment for why.
+    /// </summary>
+    public string? SaveErrorMessage
+    {
+        get => _saveErrorMessage;
+        private set => SetProperty(ref _saveErrorMessage, value);
+    }
+
+    /// <summary>Backs the inline error TextBlock's visibility - same explicit-companion-flag shape <see cref="HasIntelligence"/> already uses for <see cref="PerformanceScore"/>/etc. in this same class, rather than a computed property with no change notification of its own.</summary>
+    public bool HasSaveError
+    {
+        get => _hasSaveError;
+        private set => SetProperty(ref _hasSaveError, value);
+    }
+
+    /// <summary>Specialist-Service Assignment: same "separate, non-destructive, never-raw-exception-text" reasoning as <see cref="SaveErrorMessage"/>, kept deliberately distinct from it - a failed assignment and a failed status save are different operations and should not be reported through the same message.</summary>
+    public string? AssignmentErrorMessage
+    {
+        get => _assignmentErrorMessage;
+        private set => SetProperty(ref _assignmentErrorMessage, value);
+    }
+
+    public bool HasAssignmentError
+    {
+        get => _hasAssignmentError;
+        private set => SetProperty(ref _hasAssignmentError, value);
     }
 
     public SpecialistDto? Specialist
@@ -111,6 +183,13 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     {
         get => _editableStatus;
         set => SetProperty(ref _editableStatus, value);
+    }
+
+    /// <summary>Bound by the assign-service picker's ComboBox - a real <see cref="ServiceDto"/> from <see cref="AvailableServicesToAssign"/>, never free text (Specialist-Service Assignment's core data-model rule).</summary>
+    public ServiceDto? SelectedServiceToAssign
+    {
+        get => _selectedServiceToAssign;
+        set => SetProperty(ref _selectedServiceToAssign, value);
     }
 
     /// <summary>False until an <see cref="IIntelligenceEngine.GetSpecialistIntelligenceAsync"/> result matching <see cref="_specialistId"/> has loaded - lets the view distinguish "not loaded yet"/"no data" from a genuine zero score.</summary>
@@ -161,6 +240,10 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     {
         State = DashboardState.Loading;
         ErrorMessage = null;
+        SaveErrorMessage = null;
+        HasSaveError = false;
+        AssignmentErrorMessage = null;
+        HasAssignmentError = false;
 
         try
         {
@@ -174,6 +257,14 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
             {
                 Skills.Add(skill);
             }
+
+            AssignedServices.Clear();
+            foreach (var assignment in profile.AssignedServices)
+            {
+                AssignedServices.Add(assignment);
+            }
+
+            await RefreshAvailableServicesToAssignAsync().ConfigureAwait(true);
 
             var intelligenceList = await _intelligenceEngine.GetSpecialistIntelligenceAsync().ConfigureAwait(true);
             var intelligence = intelligenceList.FirstOrDefault(entry => entry.SpecialistId == _specialistId);
@@ -215,6 +306,20 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         await LoadAsync().ConfigureAwait(true);
     }
 
+    /// <summary>
+    /// Specialist Deactivation Wiring. On success: clears any prior save
+    /// error and refreshes the projection via <see cref="LoadAsync"/> (a
+    /// live re-fetch from Backend - see <see cref="_commandService"/>'s own
+    /// repository, there is no local specialist truth to update instead).
+    /// On failure: never lets the exception escape (an unhandled fault
+    /// here would otherwise reach <c>App.xaml.cs</c>'s global dialog with a
+    /// raw, internal, developer-facing message - not what an owner should
+    /// see), and never leaves <see cref="EditableStatus"/> showing a status
+    /// change Backend never actually accepted - it reverts to
+    /// <see cref="Specialist"/>'s last known-good value, the same
+    /// "never treat a rejected local edit as if it were applied" rule the
+    /// architecture rules require of this whole vertical.
+    /// </summary>
     private async Task SaveChangesAsync()
     {
         if (Specialist is null)
@@ -231,7 +336,96 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
             EditableStatus,
             Specialist.Bio);
 
-        await _commandService.UpdateSpecialistAsync(request).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.UpdateSpecialistAsync(request).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+            SpecialistUpdated?.Invoke(this, EventArgs.Empty);
+        }
+#pragma warning disable CA1031 // Save boundary: any failure must surface as a safe, user-facing message and leave the ViewModel reflecting the specialist's real last-known-good state, never crash or leak internal exception detail - same justified broad catch as LoadAsync's own top-level boundary in this class.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            EditableStatus = Specialist.Status;
+            SaveErrorMessage = Strings.Specialists_SaveError;
+            HasSaveError = true;
+        }
+    }
+
+    /// <summary>Recomputes <see cref="AvailableServicesToAssign"/> as the full catalog minus <see cref="AssignedServices"/> - called after every load so the picker never re-offers an already-assigned service.</summary>
+    private async Task RefreshAvailableServicesToAssignAsync()
+    {
+        var catalog = await _serviceQueryService.GetServicesAsync().ConfigureAwait(true);
+        var assignedServiceIds = AssignedServices.Select(assignment => assignment.ServiceId).ToHashSet();
+
+        AvailableServicesToAssign.Clear();
+        foreach (var service in catalog.Where(service => !assignedServiceIds.Contains(service.Id)))
+        {
+            AvailableServicesToAssign.Add(service);
+        }
+    }
+
+    /// <summary>
+    /// Specialist-Service Assignment. Real identifiers only -
+    /// <see cref="SelectedServiceToAssign"/> is a real <see cref="ServiceDto"/>
+    /// from the catalog, never free text. Same success/failure shape as
+    /// <see cref="SaveChangesAsync"/>: on success, refreshes the projection
+    /// (<see cref="LoadAsync"/>, a live Backend re-fetch - no local
+    /// assignment truth is ever recorded here); on failure, never lets the
+    /// exception escape and never mutates <see cref="AssignedServices"/>/
+    /// <see cref="AvailableServicesToAssign"/> at all (both are only ever
+    /// touched inside <see cref="LoadAsync"/>, which only runs after a
+    /// confirmed success) - so a rejected assignment leaves the UI exactly
+    /// as it was, never a corrupted or half-applied state.
+    /// </summary>
+    private async Task AssignServiceAsync()
+    {
+        if (SelectedServiceToAssign is null)
+        {
+            return;
+        }
+
+        var serviceId = SelectedServiceToAssign.Id;
+
+        try
+        {
+            await _commandService.AssignServiceAsync(_specialistId, serviceId).ConfigureAwait(true);
+            AssignmentErrorMessage = null;
+            HasAssignmentError = false;
+            SelectedServiceToAssign = null;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Same justified broad catch as SaveChangesAsync's own boundary in this class - see its doc comment.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            AssignmentErrorMessage = Strings.Specialists_AssignmentError;
+            HasAssignmentError = true;
+        }
+    }
+
+    private async Task RemoveServiceAssignmentAsync(AssignedServiceDto? assignment)
+    {
+        if (assignment is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _commandService.RemoveServiceAssignmentAsync(_specialistId, assignment.ServiceId).ConfigureAwait(true);
+            AssignmentErrorMessage = null;
+            HasAssignmentError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Same justified broad catch as SaveChangesAsync's own boundary in this class - see its doc comment.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            AssignmentErrorMessage = Strings.Specialists_AssignmentError;
+            HasAssignmentError = true;
+        }
     }
 }

@@ -37,4 +37,16 @@ public sealed class SpecialistCommandServicePermissionGate : ISpecialistCommandS
         _permissionGate.Ensure(Permission.SpecialistEdit);
         return _inner.RemoveSkillAsync(specialistId, skillId, cancellationToken);
     }
+
+    public Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.SpecialistEdit);
+        return _inner.AssignServiceAsync(specialistId, serviceId, cancellationToken);
+    }
+
+    public Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.SpecialistEdit);
+        return _inner.RemoveServiceAssignmentAsync(specialistId, serviceId, cancellationToken);
+    }
 }

@@ -9,9 +9,17 @@ namespace Rojan.Desktop.Infrastructure.Tests.Specialists;
 /// <summary>
 /// Exercises <see cref="BackendSpecialistRepository"/> - catalog fetch,
 /// status mapping (no <see cref="SpecialistStatus.OnLeave"/> equivalent),
-/// create/update wire mapping, the status-change limitation
-/// <see cref="BackendSpecialistRepository.UpdateSpecialistAsync"/> enforces,
-/// the always-empty skills read, and why the two skill writes always throw.
+/// create/update wire mapping, the one status transition
+/// <see cref="BackendSpecialistRepository.UpdateSpecialistAsync"/> now
+/// fulfils (Active -&gt; Inactive, via <c>DELETE</c> - Specialist
+/// Deactivation Wiring) and the two it still deliberately does not
+/// (Inactive -&gt; Active/reactivation, anything involving
+/// <see cref="SpecialistStatus.OnLeave"/>), the always-empty skills read,
+/// why the two skill writes always throw, and (Specialist-Service
+/// Assignment) the real <c>GET/PUT/DELETE /specialists/{id}/services/{serviceId}</c>
+/// calls backing <see cref="BackendSpecialistRepository.GetAssignedServiceIdsAsync"/>/
+/// <see cref="BackendSpecialistRepository.AssignServiceAsync"/>/
+/// <see cref="BackendSpecialistRepository.RemoveServiceAssignmentAsync"/>.
 /// Only the HTTP transport (<see cref="IApiClient"/>) is faked - same
 /// "exercise the real workflow" convention as
 /// <c>BackendServiceRepositoryTests</c>.
@@ -141,18 +149,153 @@ public sealed class BackendSpecialistRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateSpecialistAsync_RequestedStatusChange_ThrowsNotSupportedException()
+    public async Task UpdateSpecialistAsync_ActiveToInactive_CallsDeactivateEndpointAndReturnsInactive()
     {
-        // ROJAN_Backend's PUT /specialists/{id} has no status field at all - see
-        // BackendSpecialistRepository.UpdateSpecialistAsync's own doc comment.
+        // Specialist Deactivation Wiring: PUT /specialists/{id} still cannot change status (backend still
+        // reports Active), so this is the one direction BackendSpecialistRepository now follows up with the
+        // real DELETE /specialists/{id} endpoint instead of throwing.
+        var apiClient = new StubApiClient
+        {
+            PutResponse = new SpecialistResponse("specialist-1", SalonId, null, "Name", "Bio", null, true),
+        };
+        var repository = CreateRepository(apiClient, SalonId);
+        var specialist = new Specialist("specialist-1", "Name", "Title", "e@x.com", "0912", SpecialistStatus.Inactive, "Bio"); // caller wants Inactive
+
+        var updated = await repository.UpdateSpecialistAsync(specialist);
+
+        Assert.Equal(SpecialistStatus.Inactive, updated.Status);
+        Assert.Equal("Name", updated.FullName); // still carries the PUT's own field updates, not just the status change
+        Assert.Equal($"/api/v1/salons/{SalonId}/specialists/specialist-1", apiClient.LastDeleteCall);
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_ActiveToInactive_DeleteFails_ThrowsApiExceptionAndNeverReportsInactive()
+    {
+        // Backend failure must not corrupt local state: a failed DELETE must never let this method return
+        // (or otherwise imply) a status change ROJAN_Backend did not actually accept.
+        var apiClient = new StubApiClient
+        {
+            PutResponse = new SpecialistResponse("specialist-1", SalonId, null, "Name", "Bio", null, true),
+            DeleteFailure = (500, "Server error"),
+        };
+        var repository = CreateRepository(apiClient, SalonId);
+        var specialist = new Specialist("specialist-1", "Name", "Title", "e@x.com", "0912", SpecialistStatus.Inactive, "Bio");
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.UpdateSpecialistAsync(specialist));
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_InactiveToActive_StillThrowsNotSupportedException_NoReactivationContract()
+    {
+        // Explicitly out of scope for Specialist Deactivation Wiring - ROJAN_Backend has no reactivation
+        // endpoint at all, so this direction must keep failing rather than fabricate a status change.
+        var apiClient = new StubApiClient
+        {
+            PutResponse = new SpecialistResponse("specialist-1", SalonId, null, "Name", null, null, false), // backend still reports Inactive
+        };
+        var repository = CreateRepository(apiClient, SalonId);
+        var specialist = new Specialist("specialist-1", "Name", "Title", "e@x.com", "0912", SpecialistStatus.Active, "Bio"); // caller wants Active
+
+        await Assert.ThrowsAsync<NotSupportedException>(() => repository.UpdateSpecialistAsync(specialist));
+        Assert.Null(apiClient.LastDeleteCall);
+    }
+
+    [Fact]
+    public async Task UpdateSpecialistAsync_RequestedOnLeave_StillThrowsNotSupportedException_NoBackendConcept()
+    {
+        // Explicitly out of scope for Specialist Deactivation Wiring - ROJAN_Backend has no OnLeave
+        // equivalent at all.
         var apiClient = new StubApiClient
         {
             PutResponse = new SpecialistResponse("specialist-1", SalonId, null, "Name", null, null, true), // backend still reports Active
         };
         var repository = CreateRepository(apiClient, SalonId);
-        var specialist = new Specialist("specialist-1", "Name", "Title", "e@x.com", "0912", SpecialistStatus.Inactive, "Bio"); // caller wants Inactive
+        var specialist = new Specialist("specialist-1", "Name", "Title", "e@x.com", "0912", SpecialistStatus.OnLeave, "Bio");
 
         await Assert.ThrowsAsync<NotSupportedException>(() => repository.UpdateSpecialistAsync(specialist));
+        Assert.Null(apiClient.LastDeleteCall);
+    }
+
+    // Specialist-Service Assignment.
+
+    [Fact]
+    public async Task GetAssignedServiceIdsAsync_ReturnsRealServiceIdsFromBackend()
+    {
+        var serviceId1 = Guid.NewGuid();
+        var serviceId2 = Guid.NewGuid();
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/specialists/specialist-1/services"] = new List<Guid> { serviceId1, serviceId2 };
+        var repository = CreateRepository(apiClient, SalonId);
+
+        var serviceIds = await repository.GetAssignedServiceIdsAsync("specialist-1");
+
+        Assert.Equal(2, serviceIds.Count);
+        Assert.Contains(serviceId1.ToString(), serviceIds);
+        Assert.Contains(serviceId2.ToString(), serviceIds);
+    }
+
+    [Fact]
+    public async Task GetAssignedServiceIdsAsync_NoAssignments_ReturnsEmptyList()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/specialists/specialist-1/services"] = new List<Guid>();
+        var repository = CreateRepository(apiClient, SalonId);
+
+        var serviceIds = await repository.GetAssignedServiceIdsAsync("specialist-1");
+
+        Assert.Empty(serviceIds);
+    }
+
+    [Fact]
+    public async Task GetAssignedServiceIdsAsync_FetchFails_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient();
+        apiClient.GetFailures[$"/api/v1/salons/{SalonId}/specialists/specialist-1/services"] = (500, "Server error");
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.GetAssignedServiceIdsAsync("specialist-1"));
+    }
+
+    [Fact]
+    public async Task AssignServiceAsync_CallsRealBackendEndpointWithRealIds()
+    {
+        // Data model rule: assignment is keyed on the real (specialistId, serviceId) pair only - the
+        // path itself carries both real ids, no synthetic assignment id anywhere in the request.
+        var apiClient = new StubApiClient();
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await repository.AssignServiceAsync("specialist-1", "service-1");
+
+        Assert.Equal($"/api/v1/salons/{SalonId}/specialists/specialist-1/services/service-1", apiClient.LastPutCall?.Path);
+    }
+
+    [Fact]
+    public async Task AssignServiceAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient { PutFailure = (409, "Service already assigned") };
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.AssignServiceAsync("specialist-1", "service-1"));
+    }
+
+    [Fact]
+    public async Task RemoveServiceAssignmentAsync_CallsRealBackendEndpointWithRealIds()
+    {
+        var apiClient = new StubApiClient();
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await repository.RemoveServiceAssignmentAsync("specialist-1", "service-1");
+
+        Assert.Equal($"/api/v1/salons/{SalonId}/specialists/specialist-1/services/service-1", apiClient.LastDeleteCall);
+    }
+
+    [Fact]
+    public async Task RemoveServiceAssignmentAsync_BackendRejects_ThrowsApiException()
+    {
+        var apiClient = new StubApiClient { DeleteFailure = (500, "Server error") };
+        var repository = CreateRepository(apiClient, SalonId);
+
+        await Assert.ThrowsAsync<ApiException>(() => repository.RemoveServiceAssignmentAsync("specialist-1", "service-1"));
     }
 
     [Fact]
@@ -204,6 +347,12 @@ public sealed class BackendSpecialistRepositoryTests
 
         public (string Path, object? Body)? LastPutCall { get; private set; }
 
+        public (int? Status, string Message)? PutFailure { get; set; }
+
+        public (int? Status, string Message)? DeleteFailure { get; set; }
+
+        public string? LastDeleteCall { get; private set; }
+
         public Task<ApiResponse<TResponse>> GetAsync<TResponse>(string path, CancellationToken cancellationToken = default)
         {
             if (GetFailures.TryGetValue(path, out var failure))
@@ -228,11 +377,26 @@ public sealed class BackendSpecialistRepositoryTests
         public Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken = default)
         {
             LastPutCall = (path, body);
+
+            if (PutFailure is { } failure)
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
+
             return Task.FromResult(ApiResponseFactory.Success((TResponse)PutResponse!, 200));
         }
 
-        public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException("BackendSpecialistRepository never deletes.");
+        public Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string path, CancellationToken cancellationToken = default)
+        {
+            LastDeleteCall = path;
+
+            if (DeleteFailure is { } failure)
+            {
+                return Task.FromResult(ApiResponseFactory.Failure<TResponse>(failure.Status, failure.Message));
+            }
+
+            return Task.FromResult(ApiResponseFactory.Success(default(TResponse)!, 204));
+        }
 
         public Task<ApiResponse<TResponse>> PatchAsync<TResponse>(string path, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException("BackendSpecialistRepository never patches.");

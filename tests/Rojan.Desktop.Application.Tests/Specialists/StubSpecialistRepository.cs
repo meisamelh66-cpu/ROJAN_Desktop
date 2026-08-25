@@ -9,6 +9,8 @@ internal sealed class StubSpecialistRepository : ISpecialistRepository
 
     public List<SpecialistSkill> Skills { get; } = [];
 
+    public List<(string SpecialistId, string ServiceId)> ServiceAssignments { get; } = [];
+
     public StubSpecialistRepository()
     {
     }
@@ -53,6 +55,26 @@ internal sealed class StubSpecialistRepository : ISpecialistRepository
     public Task RemoveSkillAsync(string specialistId, string skillId, CancellationToken cancellationToken = default)
     {
         Skills.RemoveAll(skill => skill.SpecialistId == specialistId && skill.Id == skillId);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>(
+            ServiceAssignments.Where(assignment => assignment.SpecialistId == specialistId).Select(assignment => assignment.ServiceId).ToList());
+
+    public Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        if (!ServiceAssignments.Contains((specialistId, serviceId)))
+        {
+            ServiceAssignments.Add((specialistId, serviceId));
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        ServiceAssignments.RemoveAll(assignment => assignment.SpecialistId == specialistId && assignment.ServiceId == serviceId);
         return Task.CompletedTask;
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
+using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -37,6 +38,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private readonly ISpecialistProfileQueryService _profileQueryService;
     private readonly ISpecialistCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
+    private readonly IServiceQueryService _serviceQueryService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -57,12 +59,14 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         ISpecialistQueryService queryService,
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        IServiceQueryService serviceQueryService)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+        _serviceQueryService = serviceQueryService;
 
         Specialists = new ObservableCollection<SpecialistDto>();
 
@@ -153,9 +157,19 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedSpecialist, value))
             {
+                if (Profile is not null)
+                {
+                    Profile.SpecialistUpdated -= OnProfileSpecialistUpdated;
+                }
+
                 Profile = value is null
                     ? null
-                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine);
+                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _serviceQueryService);
+
+                if (Profile is not null)
+                {
+                    Profile.SpecialistUpdated += OnProfileSpecialistUpdated;
+                }
             }
         }
     }
@@ -260,6 +274,33 @@ public sealed class SpecialistPageViewModel : ViewModelBase
 
         await LoadAsync().ConfigureAwait(true);
         SelectedSpecialist = Specialists.FirstOrDefault(specialist => specialist.Id == created.Id);
+    }
+
+    /// <summary>
+    /// Specialist Deactivation Wiring: reloads the directory after the
+    /// selected specialist's profile reports a successful save, so a
+    /// just-deactivated specialist's status is never left stale in this
+    /// list. Re-selects by id afterward - same "reload, then re-select by
+    /// the id that changed" shape <see cref="CreateSpecialistAsync"/>
+    /// already established, needed because <see cref="SpecialistDto"/> is a
+    /// record: the pre-reload <see cref="SelectedSpecialist"/> still carries
+    /// the old status, so it no longer equals its own freshly-reloaded
+    /// entry and <see cref="ReplaceAll"/>'s "selection no longer present"
+    /// fallback would otherwise jump the selection to the first specialist
+    /// in the list instead of keeping the one the user was just working on.
+    /// Safe fire-and-forget for the same reason the constructor's own
+    /// initial <see cref="LoadAsync"/> call is - it catches every failure
+    /// internally.
+    /// </summary>
+    private async void OnProfileSpecialistUpdated(object? sender, EventArgs e)
+    {
+        var updatedId = SelectedSpecialist?.Id;
+        await LoadAsync().ConfigureAwait(true);
+
+        if (updatedId is not null)
+        {
+            SelectedSpecialist = Specialists.FirstOrDefault(specialist => specialist.Id == updatedId);
+        }
     }
 
     private void ReplaceAll(IReadOnlyList<SpecialistDto> specialists)

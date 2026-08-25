@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Rojan.Desktop.Infrastructure.Persistence.Services;
 using DomainSpecialists = Rojan.Desktop.Domain.Specialists;
 
 namespace Rojan.Desktop.Infrastructure.Persistence.Specialists;
@@ -118,6 +119,78 @@ public sealed class EfSpecialistRepository : DomainSpecialists.ISpecialistReposi
         }
 
         context.SpecialistSkills.Remove(entity);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Specialist-Service Assignment: reuses the existing
+    /// <see cref="SpecialistServiceEntity"/>/<c>SpecialistServices</c>
+    /// table (Sprint 6 Commit 1's own migration, no new schema) purely as
+    /// a <c>(SpecialistId, ServiceId)</c> join - <see cref="SpecialistServiceEntity.Id"/>
+    /// and <see cref="SpecialistServiceEntity.SpecialistName"/> are that
+    /// table's own legacy, service-centric fields (see its own doc
+    /// comment) that this specialist-centric read/write simply does not
+    /// need; a synthetic id is still generated to satisfy the table's
+    /// existing primary key, and <c>SpecialistName</c> is left empty
+    /// (allowed - <c>IsRequired()</c> only forbids null, not empty) since
+    /// nothing in this interface's shape ever reads it back. This
+    /// implementation is dormant - <c>BackendSpecialistRepository</c> is
+    /// the registered <see cref="DomainSpecialists.ISpecialistRepository"/> -
+    /// added only so this class keeps compiling as a faithful, honest
+    /// implementer of the full interface, same as every other member
+    /// above.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await context.SpecialistServices
+            .AsNoTracking()
+            .Where(assignment => assignment.SpecialistId == specialistId)
+            .Select(assignment => assignment.ServiceId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var alreadyAssigned = await context.SpecialistServices
+            .AnyAsync(assignment => assignment.SpecialistId == specialistId && assignment.ServiceId == serviceId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (alreadyAssigned)
+        {
+            return;
+        }
+
+        context.SpecialistServices.Add(new SpecialistServiceEntity
+        {
+            Id = Guid.NewGuid().ToString(),
+            SpecialistId = specialistId,
+            ServiceId = serviceId,
+            SpecialistName = string.Empty,
+        });
+
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entities = await context.SpecialistServices
+            .Where(assignment => assignment.SpecialistId == specialistId && assignment.ServiceId == serviceId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entities.Count == 0)
+        {
+            return;
+        }
+
+        context.SpecialistServices.RemoveRange(entities);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

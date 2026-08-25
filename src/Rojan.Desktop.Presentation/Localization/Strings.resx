@@ -720,6 +720,18 @@
   <data name="Specialists_RecommendationSignal" xml:space="preserve">
     <value>توصیه</value>
   </data>
+  <data name="Specialists_SaveError" xml:space="preserve">
+    <value>ذخیره تغییرات این متخصص انجام نشد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="Specialists_AssignmentError" xml:space="preserve">
+    <value>تغییر خدمات این متخصص انجام نشد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="Specialists_AssignedServices" xml:space="preserve">
+    <value>خدمات محول‌شده</value>
+  </data>
+  <data name="Specialists_AssignService" xml:space="preserve">
+    <value>افزودن خدمت</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>خدمات</value>
   </data>

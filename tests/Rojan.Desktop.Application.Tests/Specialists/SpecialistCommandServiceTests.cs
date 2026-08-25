@@ -125,4 +125,29 @@ public sealed class SpecialistCommandServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateSpecialistAsync(request));
     }
+
+    // Specialist-Service Assignment.
+
+    [Fact]
+    public async Task AssignServiceAsync_ValidIds_DelegatesToRepositoryWithRealIds()
+    {
+        var repository = new StubSpecialistRepository([MakeSpecialist()]);
+        var sut = new SpecialistCommandService(repository);
+
+        await sut.AssignServiceAsync("specialist-1", "service-1");
+
+        Assert.Contains(("specialist-1", "service-1"), repository.ServiceAssignments);
+    }
+
+    [Fact]
+    public async Task RemoveServiceAssignmentAsync_ExistingAssignment_DelegatesToRepository()
+    {
+        var repository = new StubSpecialistRepository([MakeSpecialist()]);
+        repository.ServiceAssignments.Add(("specialist-1", "service-1"));
+        var sut = new SpecialistCommandService(repository);
+
+        await sut.RemoveServiceAssignmentAsync("specialist-1", "service-1");
+
+        Assert.Empty(repository.ServiceAssignments);
+    }
 }

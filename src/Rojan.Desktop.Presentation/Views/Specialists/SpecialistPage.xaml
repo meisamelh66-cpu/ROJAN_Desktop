@@ -292,6 +292,27 @@
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="12,0,0,0" />
                             </StackPanel>
+
+                            <!-- Specialist Deactivation Wiring: inline, non-destructive save-failure message.
+                                 Deliberately separate from the DashboardWidget State/ErrorMessage above (Skills/
+                                 Intelligence) - that mechanism replaces its whole panel's content with a full
+                                 error+retry view, which would hide this very status editor a failed save needs
+                                 the user to retry from. -->
+                            <TextBlock Text="{Binding SaveErrorMessage}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSaveError}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
@@ -336,6 +357,75 @@
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="8,0,0,0" />
                             </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Assigned Services (Specialist-Service Assignment): the services this specialist is
+                         eligible to perform - real, backend-owned data, same "pill row + picker" shape as
+                         Skills above, but the picker is a real-record ComboBox (AvailableServicesToAssign),
+                         never free text - the data-model rule this feature exists to enforce. -->
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Specialists_AssignedServices}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding AssignedServices}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSpecialists:AssignedServiceDto}">
+                                        <Border Background="{StaticResource Rojan.Brush.SurfaceHover}"
+                                                BorderBrush="{StaticResource Rojan.Brush.Border}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                                                Padding="10,4"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding ServiceName}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                                <Button Content="&#10005;"
+                                                        Margin="8,0,0,0"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        FontSize="11"
+                                                        Command="{Binding DataContext.RemoveServiceAssignmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <ComboBox ItemsSource="{Binding AvailableServicesToAssign}"
+                                          SelectedItem="{Binding SelectedServiceToAssign, Mode=TwoWay}"
+                                          DisplayMemberPath="Name"
+                                          Width="200" />
+                                <Button Content="{x:Static loc:Strings.Specialists_AssignService}"
+                                        Command="{Binding AssignServiceCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                        Margin="8,0,0,0" />
+                            </StackPanel>
+
+                            <!-- Same deliberately-separate-from-DashboardWidget inline error reasoning as
+                                 SaveErrorMessage above - kept distinct from it too, since a failed
+                                 assignment and a failed status save are different operations. -->
+                            <TextBlock Text="{Binding AssignmentErrorMessage}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasAssignmentError}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 

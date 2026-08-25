@@ -73,4 +73,10 @@ public sealed class SpecialistCommandService : ISpecialistCommandService
 
     public Task RemoveSkillAsync(string specialistId, string skillId, CancellationToken cancellationToken = default) =>
         _repository.RemoveSkillAsync(specialistId, skillId, cancellationToken);
+
+    public Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default) =>
+        _repository.AssignServiceAsync(specialistId, serviceId, cancellationToken);
+
+    public Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default) =>
+        _repository.RemoveServiceAssignmentAsync(specialistId, serviceId, cancellationToken);
 }

@@ -21,6 +21,7 @@ public sealed class FakeSpecialistRepository : ISpecialistRepository
 {
     private readonly List<Specialist> _specialists;
     private readonly List<SpecialistSkill> _skills;
+    private readonly List<(string SpecialistId, string ServiceId)> _serviceAssignments = [];
 
     public FakeSpecialistRepository()
     {
@@ -103,5 +104,26 @@ public sealed class FakeSpecialistRepository : ISpecialistRepository
     {
         await Task.Delay(200, cancellationToken).ConfigureAwait(true);
         _skills.RemoveAll(skill => skill.SpecialistId == specialistId && skill.Id == skillId);
+    }
+
+    public async Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        return _serviceAssignments.Where(assignment => assignment.SpecialistId == specialistId).Select(assignment => assignment.ServiceId).ToList();
+    }
+
+    public async Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        if (!_serviceAssignments.Contains((specialistId, serviceId)))
+        {
+            _serviceAssignments.Add((specialistId, serviceId));
+        }
+    }
+
+    public async Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        _serviceAssignments.RemoveAll(assignment => assignment.SpecialistId == specialistId && assignment.ServiceId == serviceId);
     }
 }

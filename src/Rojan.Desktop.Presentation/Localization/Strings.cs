@@ -587,6 +587,16 @@ public static class Strings
 
     public static string Specialists_RecommendationSignal => Get(nameof(Specialists_RecommendationSignal));
 
+    /// <summary>Specialist Deactivation Wiring - shown inline when SpecialistProfileViewModel.SaveChangesAsync fails, deliberately generic (never the raw exception message).</summary>
+    public static string Specialists_SaveError => Get(nameof(Specialists_SaveError));
+
+    /// <summary>Specialist-Service Assignment - shown inline when assigning/removing a service assignment fails, same "generic, never the raw exception message" reasoning as Specialists_SaveError.</summary>
+    public static string Specialists_AssignmentError => Get(nameof(Specialists_AssignmentError));
+
+    public static string Specialists_AssignedServices => Get(nameof(Specialists_AssignedServices));
+
+    public static string Specialists_AssignService => Get(nameof(Specialists_AssignService));
+
     public static string Services_Title => Get(nameof(Services_Title));
 
     public static string Services_Subtitle => Get(nameof(Services_Subtitle));

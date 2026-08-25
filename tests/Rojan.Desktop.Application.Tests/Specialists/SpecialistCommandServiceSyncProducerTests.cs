@@ -105,4 +105,15 @@ public sealed class SpecialistCommandServiceSyncProducerTests
 
         Assert.Empty(queue.Enqueued);
     }
+
+    [Fact]
+    public async Task AssignServiceAsync_IsOutOfProducerScope_NeverEnqueuesASyncOperation()
+    {
+        // Specialist-Service Assignment - same "pass straight through unchanged" scope as skills above.
+        var (sut, _, queue) = CreateSut([MakeSpecialist()]);
+
+        await sut.AssignServiceAsync("specialist-1", "service-1");
+
+        Assert.Empty(queue.Enqueued);
+    }
 }

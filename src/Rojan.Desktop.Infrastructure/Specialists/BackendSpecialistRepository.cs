@@ -35,8 +35,14 @@ namespace Rojan.Desktop.Infrastructure.Specialists;
 /// Same "the gap is a value that's never produced, not a crash" reasoning
 /// as <c>BackendServiceRepository</c>'s own <c>ServiceStatus.Seasonal</c>
 /// note.</item>
-/// <item><see cref="UpdateSpecialistAsync"/> cannot fulfil an actual status
-/// change - see its own doc comment.</item>
+/// <item><see cref="UpdateSpecialistAsync"/> can only fulfil one status
+/// transition - Active to Inactive (deactivation), via ROJAN_Backend's
+/// dedicated <c>DELETE /specialists/{id}</c> endpoint. Every other
+/// direction (Inactive back to Active/reactivation, anything involving
+/// <see cref="DomainSpecialists.SpecialistStatus.OnLeave"/>) still has no
+/// backend mutation path at all and still throws - see that method's own
+/// doc comment for why this is a deliberate scope boundary, not an
+/// oversight.</item>
 /// <item><see cref="GetSkillsAsync"/> always returns empty and <see cref="AddSkillAsync"/>/<see cref="RemoveSkillAsync"/>
 /// always throw - ROJAN_Backend has no specialist-skill concept at all,
 /// same treatment <c>Infrastructure.Services.BackendServiceRepository</c> already gives the
@@ -100,12 +106,19 @@ public sealed class BackendSpecialistRepository(
     /// field at all - there is nothing this call could send to change it.
     /// Name/bio are still sent and applied even when a simultaneous status
     /// change was also requested (an honest partial application, not a
-    /// silent drop) - only afterwards, if the caller's requested <see cref="DomainSpecialists.Specialist.Status"/>
-    /// genuinely differs from what the backend actually returned, does this
-    /// throw <see cref="NotSupportedException"/>. Most calls never hit this
-    /// at all: <c>SpecialistCommandService.UpdateSpecialistAsync</c> carries
-    /// the specialist's current, unchanged status through on every edit
-    /// that isn't itself a status change (see that method's own doc
+    /// silent drop). If the caller's requested <see cref="DomainSpecialists.Specialist.Status"/>
+    /// genuinely differs from what the backend returned, and that
+    /// difference is specifically Active -&gt; Inactive, this follows up
+    /// with ROJAN_Backend's dedicated <c>DELETE /specialists/{id}</c>
+    /// deactivate endpoint (Specialist Deactivation Wiring). Every other
+    /// direction - Inactive -&gt; Active (reactivation) or anything
+    /// involving <see cref="DomainSpecialists.SpecialistStatus.OnLeave"/> -
+    /// still has no backend mutation path at all and still throws
+    /// <see cref="NotSupportedException"/>, deliberately: this class must
+    /// never fabricate a status change ROJAN_Backend never actually
+    /// authorized. Most calls never reach any of this: <c>SpecialistCommandService.UpdateSpecialistAsync</c>
+    /// carries the specialist's current, unchanged status through on every
+    /// edit that isn't itself a status change (see that method's own doc
     /// comment).
     /// </summary>
     public async Task<DomainSpecialists.Specialist> UpdateSpecialistAsync(DomainSpecialists.Specialist specialist, CancellationToken cancellationToken = default)
@@ -123,15 +136,44 @@ public sealed class BackendSpecialistRepository(
         }
 
         var updated = MapSpecialist(response.Data);
-        if (specialist.Status != updated.Status)
+        if (specialist.Status == updated.Status)
         {
-            throw new NotSupportedException(
-                $"ROJAN_Backend's PUT /specialists/{{id}} has no field to change a specialist's active status - " +
-                $"cannot transition '{specialist.Id}' to {specialist.Status}. Name/bio were still applied. See " +
-                "BackendSpecialistRepository.UpdateSpecialistAsync's own doc comment.");
+            return updated;
         }
 
-        return updated;
+        if (updated.Status == DomainSpecialists.SpecialistStatus.Active && specialist.Status == DomainSpecialists.SpecialistStatus.Inactive)
+        {
+            return await DeactivateAsync(salonId, updated, cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new NotSupportedException(
+            $"ROJAN_Backend has no mutation path to change a specialist's status from {updated.Status} to " +
+            $"{specialist.Status} - only Active -> Inactive (deactivation) is supported today, via DELETE " +
+            "/specialists/{id}. Name/bio were still applied. See BackendSpecialistRepository.UpdateSpecialistAsync's own doc comment.");
+    }
+
+    /// <summary>
+    /// The Active -&gt; Inactive half of <see cref="UpdateSpecialistAsync"/> -
+    /// calls ROJAN_Backend's own dedicated deactivate endpoint (a 204/no-body
+    /// response), then returns <paramref name="updated"/> with its
+    /// <see cref="DomainSpecialists.Specialist.Status"/> overridden to
+    /// <see cref="DomainSpecialists.SpecialistStatus.Inactive"/> - an honest
+    /// reflection of a confirmed-successful backend mutation (every other
+    /// field already came straight from ROJAN_Backend's own <c>PUT</c>
+    /// response), not a locally-invented status.
+    /// </summary>
+    private async Task<DomainSpecialists.Specialist> DeactivateAsync(string salonId, DomainSpecialists.Specialist updated, CancellationToken cancellationToken)
+    {
+        var response = await apiClient
+            .DeleteAsync<object?>($"/api/v1/salons/{salonId}/specialists/{updated.Id}", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess)
+        {
+            throw new ApiException($"Failed to deactivate specialist '{updated.Id}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return updated with { Status = DomainSpecialists.SpecialistStatus.Inactive };
     }
 
     public Task<DomainSpecialists.SpecialistSkill> AddSkillAsync(DomainSpecialists.SpecialistSkill skill, CancellationToken cancellationToken = default) =>
@@ -141,6 +183,62 @@ public sealed class BackendSpecialistRepository(
     public Task RemoveSkillAsync(string specialistId, string skillId, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(
             "ROJAN_Backend has no specialist-skill concept - see BackendSpecialistRepository's own doc comment.");
+
+    /// <summary>
+    /// Specialist-Service Assignment: real, backend-connected -
+    /// ROJAN_Backend's <c>GET /specialists/{id}/services</c> returns the
+    /// eligible service ids only (no names - resolved one layer up in
+    /// Application). Unlike <see cref="GetSpecialistByIdAsync"/> a missing
+    /// specialist here still surfaces as a real failure rather than an
+    /// empty list - the caller already knows the specialist exists (it
+    /// asked for their profile), so a 404 here means something is
+    /// genuinely wrong, not "no assignments yet".
+    /// </summary>
+    public async Task<IReadOnlyList<string>> GetAssignedServiceIdsAsync(string specialistId, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+
+        var response = await apiClient
+            .GetAsync<List<Guid>>($"/api/v1/salons/{salonId}/specialists/{specialistId}/services", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess || response.Data is null)
+        {
+            throw new ApiException($"Failed to load assigned services for specialist '{specialistId}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+
+        return response.Data.Select(id => id.ToString()).ToList();
+    }
+
+    /// <summary>Real, backend-connected - ROJAN_Backend's <c>PUT /specialists/{id}/services/{serviceId}</c>, a 204/no-body response. No synthetic assignment id anywhere - the real <c>(specialistId, serviceId)</c> pair is the whole identity, matching ROJAN_Backend's own model.</summary>
+    public async Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+
+        var response = await apiClient
+            .PutAsync<object?, object?>($"/api/v1/salons/{salonId}/specialists/{specialistId}/services/{serviceId}", null, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess)
+        {
+            throw new ApiException($"Failed to assign service '{serviceId}' to specialist '{specialistId}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+    }
+
+    /// <summary>Real, backend-connected - ROJAN_Backend's <c>DELETE /specialists/{id}/services/{serviceId}</c>, same shape as <see cref="DeactivateAsync"/>'s own DELETE call.</summary>
+    public async Task RemoveServiceAssignmentAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
+    {
+        var salonId = await ResolveSalonIdAsync(cancellationToken).ConfigureAwait(false);
+
+        var response = await apiClient
+            .DeleteAsync<object?>($"/api/v1/salons/{salonId}/specialists/{specialistId}/services/{serviceId}", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccess)
+        {
+            throw new ApiException($"Failed to remove service '{serviceId}' from specialist '{specialistId}' (status {response.StatusCode}): {response.ErrorMessage}");
+        }
+    }
 
     private async Task<string> ResolveSalonIdAsync(CancellationToken cancellationToken)
     {
