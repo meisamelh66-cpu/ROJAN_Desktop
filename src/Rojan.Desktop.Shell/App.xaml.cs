@@ -14,6 +14,7 @@ using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Security;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
+using Rojan.Desktop.Infrastructure.Observability;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
@@ -55,6 +56,11 @@ public partial class App
 
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices(ConfigureServices)
+            // P1-5 - Desktop Observability Foundation: additive to the default
+            // Console/Debug providers CreateDefaultBuilder() already wires up -
+            // not a replacement. See LocalFileLoggerProvider's own doc comment
+            // for what it does and does not log.
+            .ConfigureLogging(logging => logging.AddProvider(new LocalFileLoggerProvider()))
             .Build();
 
         // Blocking (not awaiting) is deliberate here, not an oversight: this

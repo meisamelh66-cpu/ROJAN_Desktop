@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Application.Customers;
@@ -75,6 +76,20 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        // P1-5 - Desktop Observability Foundation: HttpApiClient below now
+        // takes an ILogger<HttpApiClient>. Shell's own composition root
+        // already gets logging for free from Host.CreateDefaultBuilder(),
+        // but this method is also exercised directly against a bare
+        // ServiceCollection (see Rojan.Desktop.Infrastructure.Tests'
+        // PersistenceDependencyInjectionTests) with no host underneath it.
+        // AddLogging() is the standard Microsoft.Extensions.Logging
+        // bootstrap - it registers ILoggerFactory/ILogger<T> the same way
+        // CreateDefaultBuilder() does internally, and is safe to call even
+        // when a host already registered it (no duplicate providers, just
+        // guarantees ILogger<T> always resolves for this method's own
+        // callers).
+        services.AddLogging();
+
         // Owner App Backend Integration: real GET /api/v1/dashboard/insights,
         // mapped onto the existing KpiMetric/ActivityEntry shapes (see
         // BackendDashboardRepository's own doc comment). FakeDashboardRepository

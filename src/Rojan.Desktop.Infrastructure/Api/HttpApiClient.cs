@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Security;
@@ -49,7 +50,7 @@ namespace Rojan.Desktop.Infrastructure.Api;
 /// <see cref="EnsureAuthenticatedAsync{TResponse}"/>'s own doc comment for
 /// the full refresh-and-retry-once flow.
 /// </summary>
-public sealed class HttpApiClient : IApiClient, IDisposable
+public sealed partial class HttpApiClient : IApiClient, IDisposable
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
     private static readonly TimeSpan TimeoutSeconds = TimeSpan.FromSeconds(30);
@@ -57,11 +58,12 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     private readonly IConnectivityService _connectivityService;
     private readonly IRetryPolicy _retryPolicy;
     private readonly ISessionService _sessionService;
+    private readonly ILogger<HttpApiClient> _logger;
     private readonly HttpClient _httpClient;
 
     /// <summary>Owner App Login Experience: base address now comes from <see cref="IApiEnvironmentService"/> (Development/Production, persisted, env-var-overridable) instead of reading <c>ROJAN_API_BASE_URL</c> directly - see that service's own doc comment for the full resolution order.</summary>
-    public HttpApiClient(IConnectivityService connectivityService, IRetryPolicy retryPolicy, ISessionService sessionService, IApiEnvironmentService apiEnvironmentService)
-        : this(connectivityService, retryPolicy, sessionService, new HttpClientHandler(), apiEnvironmentService.ResolvedBaseAddress)
+    public HttpApiClient(IConnectivityService connectivityService, IRetryPolicy retryPolicy, ISessionService sessionService, IApiEnvironmentService apiEnvironmentService, ILogger<HttpApiClient> logger)
+        : this(connectivityService, retryPolicy, sessionService, new HttpClientHandler(), apiEnvironmentService.ResolvedBaseAddress, logger)
     {
     }
 
@@ -84,11 +86,13 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         IRetryPolicy retryPolicy,
         ISessionService sessionService,
         HttpMessageHandler handler,
-        Uri? baseAddress)
+        Uri? baseAddress,
+        ILogger<HttpApiClient> logger)
     {
         _connectivityService = connectivityService;
         _retryPolicy = retryPolicy;
         _sessionService = sessionService;
+        _logger = logger;
 
         _httpClient = new HttpClient(handler);
         if (baseAddress is not null)
@@ -151,6 +155,7 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         }
         catch (Exception exception) when (exception is not OperationCanceledException and not ApiException)
         {
+            LogFailure("Unknown", exception);
             throw MapException(exception);
         }
     }
@@ -171,6 +176,7 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         }
         catch (Exception exception) when (exception is not OperationCanceledException and not ApiException)
         {
+            LogFailure("Unknown", exception);
             throw MapException(exception);
         }
     }
@@ -200,7 +206,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     {
         if (response.StatusCode == (int)HttpStatusCode.Forbidden)
         {
-            throw new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+            var forbidden = new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+            LogFailure("Auth", forbidden, statusCode: response.StatusCode);
+            throw forbidden;
         }
 
         if (response.StatusCode != (int)HttpStatusCode.Unauthorized)
@@ -216,7 +224,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
         if (retried.StatusCode is (int)HttpStatusCode.Unauthorized or (int)HttpStatusCode.Forbidden)
         {
-            throw new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+            var stillRejected = new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+            LogFailure("Auth", stillRejected, statusCode: retried.StatusCode);
+            throw stillRejected;
         }
 
         return retried;
@@ -230,7 +240,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     {
         if (response.StatusCode == (int)HttpStatusCode.Forbidden)
         {
-            throw new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+            var forbidden = new ApiAuthenticationException($"Request was rejected with status {response.StatusCode}.");
+            LogFailure("Auth", forbidden, statusCode: response.StatusCode);
+            throw forbidden;
         }
 
         if (response.StatusCode != (int)HttpStatusCode.Unauthorized)
@@ -246,7 +258,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
 
         if (retried.StatusCode is (int)HttpStatusCode.Unauthorized or (int)HttpStatusCode.Forbidden)
         {
-            throw new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+            var stillRejected = new ApiAuthenticationException($"Request was still rejected with status {retried.StatusCode} after refreshing the session.");
+            LogFailure("Auth", stillRejected, statusCode: retried.StatusCode);
+            throw stillRejected;
         }
 
         return retried;
@@ -260,7 +274,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            throw new ApiAuthenticationException("Session refresh failed after an authentication failure - sign in again.", exception);
+            var refreshFailed = new ApiAuthenticationException("Session refresh failed after an authentication failure - sign in again.", exception);
+            LogFailure("Auth", refreshFailed);
+            throw refreshFailed;
         }
     }
 
@@ -316,7 +332,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new ApiTimeoutException($"Request to '{request.RequestUri}' timed out after {TimeoutSeconds.TotalSeconds:N0}s.");
+            var timedOut = new ApiTimeoutException($"Request to '{request.RequestUri}' timed out after {TimeoutSeconds.TotalSeconds:N0}s.");
+            LogFailure("Timeout", timedOut, request.Method, request.RequestUri);
+            throw timedOut;
         }
 
         using (response)
@@ -330,7 +348,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     {
         if (_connectivityService.CurrentState == ConnectionState.Offline)
         {
-            throw new ApiConnectivityException("No network connection is available.");
+            var offline = new ApiConnectivityException("No network connection is available.");
+            LogFailure("Connectivity", offline);
+            throw offline;
         }
     }
 
@@ -338,7 +358,9 @@ public sealed class HttpApiClient : IApiClient, IDisposable
     {
         if (_httpClient.BaseAddress is null)
         {
-            throw new ApiConnectivityException("No API base address is configured - set an API environment in Settings, or the 'ROJAN_API_BASE_URL' environment variable.");
+            var unconfigured = new ApiConnectivityException("No API base address is configured - set an API environment in Settings, or the 'ROJAN_API_BASE_URL' environment variable.");
+            LogFailure("Connectivity", unconfigured);
+            throw unconfigured;
         }
     }
 
@@ -356,4 +378,28 @@ public sealed class HttpApiClient : IApiClient, IDisposable
         HttpRequestException httpException => new ApiConnectivityException($"Request failed: {httpException.Message}", httpException),
         _ => new ApiException($"Request failed: {exception.Message}", exception),
     };
+
+    /// <summary>
+    /// P1-5 - Desktop Observability Foundation. Diagnostic-purpose only:
+    /// logs metadata about a failed request, never its content. Callers
+    /// pass only <paramref name="method"/>/<paramref name="path"/> (never
+    /// a full <see cref="Uri"/> with query string - none of this class's
+    /// relative-path call sites carry one) and <paramref name="statusCode"/> -
+    /// never a request or response body, never an <c>Authorization</c>
+    /// header value. <paramref name="category"/> is one of "Timeout",
+    /// "Connectivity", "Auth", or "Unknown", matching the six failure
+    /// points this class already had before this phase - this method adds
+    /// no new failure path, only records the ones that already existed.
+    /// Delegates to <see cref="LogApiRequestFailed"/>, a source-generated
+    /// <c>[LoggerMessage]</c> method (CA1848) - same content, just the
+    /// allocation-free logging pattern instead of the extension method.
+    /// </summary>
+    private void LogFailure(string category, Exception exception, HttpMethod? method = null, Uri? path = null, int? statusCode = null) =>
+        LogApiRequestFailed(category, method, path, statusCode, exception.GetType().Name, exception);
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Warning,
+        Message = "API request failed. Category={Category} Method={Method} Path={Path} StatusCode={StatusCode} ExceptionType={ExceptionType}")]
+    private partial void LogApiRequestFailed(string category, HttpMethod? method, Uri? path, int? statusCode, string exceptionType, Exception exception);
 }

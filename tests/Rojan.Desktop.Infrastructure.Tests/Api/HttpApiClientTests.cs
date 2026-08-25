@@ -1,4 +1,6 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Identity;
@@ -25,15 +27,29 @@ public sealed class HttpApiClientTests
     [Fact]
     public async Task GetAsync_ConnectivityIsOffline_ThrowsApiConnectivityExceptionWithoutAttemptingARequest()
     {
-        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Offline), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null));
+        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Offline), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null), NullLogger<HttpApiClient>.Instance);
 
         await Assert.ThrowsAsync<ApiConnectivityException>(() => client.GetAsync<string>("health"));
+    }
+
+    /// <summary>P1-5 - Desktop Observability Foundation. Proves the connectivity failure path actually logs, not just throws - the same category-only shape every non-request-scoped failure (no <see cref="HttpMethod"/>/path available at that point) uses.</summary>
+    [Fact]
+    public async Task GetAsync_ConnectivityIsOffline_LogsConnectivityFailure()
+    {
+        var logger = new CapturingLogger();
+        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Offline), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null), logger);
+
+        await Assert.ThrowsAsync<ApiConnectivityException>(() => client.GetAsync<string>("health"));
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Contains("Connectivity", entry.Message);
     }
 
     [Fact]
     public async Task GetAsync_OnlineButNoBaseAddressConfigured_ThrowsApiConnectivityException()
     {
-        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null));
+        using var client = new HttpApiClient(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), new StubSessionService(), new StubApiEnvironmentService(null), NullLogger<HttpApiClient>.Instance);
 
         await Assert.ThrowsAsync<ApiConnectivityException>(() => client.GetAsync<string>("health"));
     }
@@ -196,6 +212,40 @@ public sealed class HttpApiClientTests
         Assert.Equal(2, handler.CallCount);
     }
 
+    /// <summary>
+    /// P1-5 - Desktop Observability Foundation. The structural proof, not
+    /// just a code-review claim, that <see cref="HttpApiClient"/>'s
+    /// failure logging cannot leak a bearer token or a request body:
+    /// this test attaches a real (fixture) token and posts a real
+    /// (fixture) body, drives the request all the way to the
+    /// still-401-after-refresh failure path, and asserts the captured log
+    /// - across every entry, not just the one from this specific path -
+    /// never contains either fixture string. If a future change to
+    /// <see cref="HttpApiClient"/>'s logging ever started including
+    /// request/response content, this test fails; that's its entire job.
+    /// </summary>
+    [Fact]
+    public async Task GetAsync_StillUnauthorizedAfterOneRetry_LoggedFailureNeverContainsTokenOrRequestBody()
+    {
+        const string secretToken = "super-secret-bearer-token-must-never-be-logged";
+        const string secretCustomerName = "Sensitive Customer Name Must Never Be Logged";
+
+        var handler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)));
+        var session = new StubSessionService(new AuthToken(secretToken, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1)));
+        var logger = new CapturingLogger();
+        using var client = CreateClient(handler, session, logger);
+
+        await Assert.ThrowsAsync<ApiAuthenticationException>(
+            () => client.PostAsync<TestRequest, TestResponse>("customers", new TestRequest(secretCustomerName)));
+
+        Assert.NotEmpty(logger.Entries);
+        Assert.All(logger.Entries, entry =>
+        {
+            Assert.DoesNotContain(secretToken, entry.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain(secretCustomerName, entry.Message, StringComparison.Ordinal);
+        });
+    }
+
     [Fact]
     public async Task GetAsync_CallerCancelsWhileTheRetriedRequestAfterARefreshIsInFlight_ThrowsOperationCanceledException()
     {
@@ -261,8 +311,8 @@ public sealed class HttpApiClientTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => client.GetAsync<TestResponse>("items/1", cts.Token));
     }
 
-    private static HttpApiClient CreateClient(HttpMessageHandler handler, ISessionService? sessionService = null) =>
-        new(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), sessionService ?? new StubSessionService(), handler, TestBaseAddress);
+    private static HttpApiClient CreateClient(HttpMessageHandler handler, ISessionService? sessionService = null, ILogger<HttpApiClient>? logger = null) =>
+        new(new StubConnectivityService(ConnectionState.Online), new PassThroughRetryPolicy(), sessionService ?? new StubSessionService(), handler, TestBaseAddress, logger ?? NullLogger<HttpApiClient>.Instance);
 
     private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json) =>
         new(statusCode) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
@@ -382,6 +432,23 @@ public sealed class HttpApiClientTests
     /// <see cref="HttpApiClient"/>'s real request/response pipeline without
     /// any real network call.
     /// </summary>
+    /// <summary>P1-5 - Desktop Observability Foundation test double. Captures every logged entry's formatted message and level, in memory, so a test can assert both that a failure was logged and, separately, that its content is free of anything it shouldn't contain - see <see cref="GetAsync_StillUnauthorizedAfterOneRetry_LoggedFailureNeverContainsTokenOrRequestBody"/>.</summary>
+    private sealed class CapturingLogger : ILogger<HttpApiClient>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            var message = formatter(state, exception);
+            Entries.Add((logLevel, exception is null ? message : $"{message} | {exception}"));
+        }
+    }
+
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _responder;
