@@ -9,6 +9,8 @@ internal sealed class StubServiceRepository : IServiceRepository
 
     public List<SpecialistService> Assignments { get; } = [];
 
+    public List<ServiceCategoryOption> Categories { get; } = [];
+
     public StubServiceRepository()
     {
     }
@@ -37,5 +39,54 @@ internal sealed class StubServiceRepository : IServiceRepository
     {
         Assignments.RemoveAll(assignment => assignment.ServiceId == serviceId && assignment.Id == assignmentId);
         return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<ServiceCategoryOption>>(Categories.ToList());
+
+    public Task<Service> CreateServiceAsync(string categoryId, string name, string? description, int durationMinutes, decimal price, CancellationToken cancellationToken = default)
+    {
+        var category = Categories.FirstOrDefault(option => option.Id == categoryId);
+        var service = new Service(
+            Guid.NewGuid().ToString(),
+            name,
+            ServiceCategory.Other,
+            ServiceStatus.Active,
+            durationMinutes,
+            price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            description ?? string.Empty,
+            category?.Name,
+            categoryId);
+        Services.Add(service);
+        return Task.FromResult(service);
+    }
+
+    public Task<Service> UpdateServiceAsync(
+        string serviceId,
+        string categoryId,
+        string name,
+        string? description,
+        int durationMinutes,
+        decimal price,
+        ServiceStatus requestedStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Services.FindIndex(existing => existing.Id == serviceId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Service '{serviceId}' was not found.");
+        }
+
+        var updated = Services[index] with
+        {
+            Name = name,
+            Description = description ?? string.Empty,
+            DurationMinutes = durationMinutes,
+            Price = price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Status = requestedStatus,
+            CategoryId = categoryId,
+        };
+        Services[index] = updated;
+        return Task.FromResult(updated);
     }
 }

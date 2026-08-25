@@ -792,6 +792,18 @@
   <data name="Services_RecommendationSignal" xml:space="preserve">
     <value>التوصية</value>
   </data>
+  <data name="Services_AddService" xml:space="preserve">
+    <value>إضافة خدمة</value>
+  </data>
+  <data name="Services_Category" xml:space="preserve">
+    <value>الفئة</value>
+  </data>
+  <data name="Services_Deactivate" xml:space="preserve">
+    <value>إلغاء التفعيل</value>
+  </data>
+  <data name="Services_SaveError" xml:space="preserve">
+    <value>تعذر حفظ التغييرات لهذه الخدمة. يرجى المحاولة مرة أخرى.</value>
+  </data>
   <data name="Bookings_Title" xml:space="preserve">
     <value>الحجوزات</value>
   </data>

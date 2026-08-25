@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -39,6 +40,12 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     private string? _errorMessage;
     private ServiceDto? _service;
     private string _newSpecialistName = string.Empty;
+    private string _editableName = string.Empty;
+    private string _editableDescription = string.Empty;
+    private int _editableDurationMinutes;
+    private decimal _editablePrice;
+    private string? _saveErrorMessage;
+    private bool _hasSaveError;
     private bool _hasIntelligence;
     private int _popularityScore;
     private ServicePopularityLevel _popularityLevel = ServicePopularityLevel.LowDemand;
@@ -62,6 +69,8 @@ public sealed class ServiceProfileViewModel : ViewModelBase
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AssignSpecialistCommand = new AsyncRelayCommand(_ => AssignSpecialistAsync(), _ => !string.IsNullOrWhiteSpace(NewSpecialistName));
         UnassignSpecialistCommand = new AsyncRelayCommand(parameter => UnassignSpecialistAsync(parameter as AssignedSpecialistDto));
+        SaveChangesCommand = new AsyncRelayCommand(_ => SaveChangesAsync());
+        DeactivateCommand = new AsyncRelayCommand(_ => DeactivateAsync(), _ => Service?.Status == ServiceStatus.Active);
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, same pattern as every
@@ -76,6 +85,20 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     public ICommand AssignSpecialistCommand { get; }
 
     public ICommand UnassignSpecialistCommand { get; }
+
+    /// <summary>Service Catalog Authoring.</summary>
+    public ICommand SaveChangesCommand { get; }
+
+    /// <summary>
+    /// Service Catalog Authoring. Only supports Active -&gt; Discontinued,
+    /// matching <see cref="Domain.Services.IServiceRepository.UpdateServiceAsync"/>'s
+    /// own scope - deliberately no reactivation, no Seasonal, no general
+    /// status picker. Enabled only when the currently-loaded service is
+    /// Active - a plain UI-level check, not a call into Domain
+    /// (<c>ServicePageViewModel</c>'s own doc comment already establishes
+    /// Presentation never reaches past Application into Domain).
+    /// </summary>
+    public ICommand DeactivateCommand { get; }
 
     public DashboardState State
     {
@@ -99,6 +122,44 @@ public sealed class ServiceProfileViewModel : ViewModelBase
     {
         get => _newSpecialistName;
         set => SetProperty(ref _newSpecialistName, value);
+    }
+
+    /// <summary>Service Catalog Authoring: local edit buffer synced from <see cref="Service"/> on every load - not committed until <see cref="SaveChangesCommand"/> runs, same "buffer separate from source-of-truth" pattern as <c>Specialists.SpecialistProfileViewModel.EditableStatus</c>.</summary>
+    public string EditableName
+    {
+        get => _editableName;
+        set => SetProperty(ref _editableName, value);
+    }
+
+    public string EditableDescription
+    {
+        get => _editableDescription;
+        set => SetProperty(ref _editableDescription, value);
+    }
+
+    public int EditableDurationMinutes
+    {
+        get => _editableDurationMinutes;
+        set => SetProperty(ref _editableDurationMinutes, value);
+    }
+
+    public decimal EditablePrice
+    {
+        get => _editablePrice;
+        set => SetProperty(ref _editablePrice, value);
+    }
+
+    /// <summary>Service Catalog Authoring: shared by <see cref="SaveChangesAsync"/> and <see cref="DeactivateAsync"/> - both are "manage this catalog entry" concerns on the same panel, unlike Specialist's two-separate-message-pairs design.</summary>
+    public string? SaveErrorMessage
+    {
+        get => _saveErrorMessage;
+        private set => SetProperty(ref _saveErrorMessage, value);
+    }
+
+    public bool HasSaveError
+    {
+        get => _hasSaveError;
+        private set => SetProperty(ref _hasSaveError, value);
     }
 
     /// <summary>False until an <see cref="IIntelligenceEngine.GetServiceIntelligenceAsync"/> result matching <see cref="_serviceId"/> has loaded - lets the view distinguish "not loaded yet"/"no data" from a genuine zero score.</summary>
@@ -149,6 +210,10 @@ public sealed class ServiceProfileViewModel : ViewModelBase
             var profile = await _profileQueryService.GetProfileAsync(_serviceId).ConfigureAwait(true);
 
             Service = profile.Service;
+            EditableName = profile.Service.Name;
+            EditableDescription = profile.Service.Description;
+            EditableDurationMinutes = profile.Service.DurationMinutes;
+            EditablePrice = profile.Service.PriceValue;
 
             AssignedSpecialists.Clear();
             foreach (var assignment in profile.AssignedSpecialists)
@@ -193,5 +258,88 @@ public sealed class ServiceProfileViewModel : ViewModelBase
 
         await _commandService.UnassignSpecialistAsync(_serviceId, assignment.Id).ConfigureAwait(true);
         await LoadAsync().ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Service Catalog Authoring. Commits the edit buffers only - never
+    /// touches <see cref="Domain.Services.Service.Status"/>, so a Save can
+    /// never accidentally deactivate/reactivate a service.
+    /// <see cref="Domain.Services.Service.CategoryId"/> is carried through
+    /// unchanged from the currently-loaded <see cref="Service"/>, since
+    /// Backend's update contract has no field to change it (see that
+    /// field's own doc comment) - this is never sourced from any editable
+    /// UI control.
+    /// </summary>
+    private async Task SaveChangesAsync()
+    {
+        if (Service is null)
+        {
+            return;
+        }
+
+        var request = new UpdateServiceRequest(
+            Service.Id, Service.CategoryId, EditableName, EditableDescription,
+            EditableDurationMinutes, EditablePrice, Service.Status);
+
+        try
+        {
+            await _commandService.UpdateServiceAsync(request).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Safe-failure boundary: never let a save error crash the panel or discard the user's edit buffer - revert to last-known-good instead, same reasoning as ServicePageViewModel.CreateServiceAsync.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Services_SaveError;
+            HasSaveError = true;
+
+            // Revert the edit buffers to the last-known-good Service state,
+            // so a failed Save never leaves stale, unsaved text on screen
+            // pretending to be committed.
+            if (Service is not null)
+            {
+                EditableName = Service.Name;
+                EditableDescription = Service.Description;
+                EditableDurationMinutes = Service.DurationMinutes;
+                EditablePrice = Service.PriceValue;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Service Catalog Authoring. Only supported transition:
+    /// Active -&gt; Discontinued. Uses <see cref="Service"/>'s own
+    /// currently-loaded field values (never the unsaved
+    /// <see cref="EditableName"/>-style buffers) so a Deactivate can never
+    /// smuggle in an unsaved edit - Save and Deactivate are two
+    /// independent actions.
+    /// </summary>
+    private async Task DeactivateAsync()
+    {
+        if (Service is null)
+        {
+            return;
+        }
+
+        var request = new UpdateServiceRequest(
+            Service.Id, Service.CategoryId, Service.Name, Service.Description,
+            Service.DurationMinutes, Service.PriceValue, ServiceStatus.Discontinued);
+
+        try
+        {
+            await _commandService.UpdateServiceAsync(request).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Safe-failure boundary - see SaveChangesAsync's own justification.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Services_SaveError;
+            HasSaveError = true;
+        }
     }
 }

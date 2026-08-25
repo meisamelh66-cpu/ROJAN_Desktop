@@ -43,6 +43,18 @@
         RecommendationSignal/CompletedBookingCount/UpcomingBookingCount,
         requested from Application's IIntelligenceEngine and bound as-is -
         no calculation happens in this view or its ViewModel.
+
+        Service Catalog Authoring: added an "Add Service" form (mirroring
+        SpecialistPage's own "New Specialist" section - same DashboardCard/
+        TextBox/Grid shape, no new control), and made the profile panel's
+        Name/Description/Duration/Price editable with a Save button plus a
+        Deactivate button (enabled only while the service is Active - the
+        one supported transition). Category is shown read-only in both
+        places - there is no category picker on Edit, since Backend has no
+        contract to change it once a service is created (see
+        Domain.Services.Service.CategoryId's own doc comment). Both forms
+        share the same inline, non-destructive error-message idiom already
+        shipped for Specialists (SaveErrorMessage/HasSaveError).
     -->
     <UserControl.Resources>
         <!-- Sprint 5 Commit 5C: ServicePopularityLevel/ServiceRecommendationSignal severity mapping - a display-only color choice, not a recalculation of the level/signal itself. -->
@@ -90,6 +102,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -100,8 +113,76 @@
                        Foreground="{StaticResource Rojan.Brush.MutedText}"
                        Margin="0,44,0,0" />
 
+            <!-- Add Service (Service Catalog Authoring): the Create command's one Presentation entry point - same shape as Specialists' own "Add Specialist" card. -->
+            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Services_AddService}" Margin="0,24,0,0">
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:Strings.Services_Category}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                        <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                  SelectedItem="{Binding SelectedCategoryForNewService, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"
+                                  Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServiceName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServiceDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Duration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServiceDurationMinutes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Static loc:Strings.Common_Price}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <TextBox Text="{Binding NewServicePrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="{x:Static loc:Strings.Services_AddService}"
+                            Command="{Binding CreateServiceCommand}"
+                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                            HorizontalAlignment="Left"
+                            Margin="0,16,0,0" />
+
+                    <!-- Inline, non-destructive create-failure message - same idiom as Specialists' SaveErrorMessage/HasSaveError. -->
+                    <TextBlock Text="{Binding CreateErrorMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Error}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasCreateError}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </dashboardControls:DashboardCard>
+
             <!-- Search & Filter: free text plus category/status/duration/price, combined by the ViewModel into one ServiceSearchFilter -->
-            <dashboardControls:DashboardCard Grid.Row="1" Title="{x:Static loc:Strings.Services_SearchAndFilter}" Margin="0,24,0,0">
+            <dashboardControls:DashboardCard Grid.Row="2" Title="{x:Static loc:Strings.Services_SearchAndFilter}" Margin="0,24,0,0">
                 <StackPanel>
                     <StackPanel>
                         <TextBlock Text="{x:Static loc:Strings.Common_Search}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
@@ -206,7 +287,7 @@
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
-            <dashboardControls:DashboardWidget Grid.Row="2"
+            <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Services_AllServices}"
                                                 State="{Binding State}"
                                                 ErrorMessage="{Binding ErrorMessage}"
@@ -296,15 +377,68 @@
                         </StackPanel>
                     </dashboardControls:DashboardCard>
 
-                    <!-- Duration and price display -->
+                    <!-- Editable details (Service Catalog Authoring): Name/Description/Duration/Price, committed by
+                         SaveChangesCommand; category is read-only (Service.Category above) - there is no picker
+                         here, Backend's update contract has no field to change it once a service is created. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Services_Details}"
                                                         State="{Binding State}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <shared:KPIValue Label="{x:Static loc:Strings.Common_Duration}" Value="{Binding Service.DurationMinutes, Converter={StaticResource Rojan.Converter.MinutesSuffix}}" Margin="0,0,32,0" />
-                            <shared:KPIValue Label="{x:Static loc:Strings.Common_Price}" Value="{Binding Service.Price}" />
+                        <StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{x:Static loc:Strings.Common_Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding EditableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="{x:Static loc:Strings.Common_Description}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                <TextBox Text="{Binding EditableDescription, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Duration}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding EditableDurationMinutes, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Static loc:Strings.Common_Price}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                                    <TextBox Text="{Binding EditablePrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button Content="{x:Static loc:Strings.Common_SaveChanges}"
+                                        Command="{Binding SaveChangesCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}" />
+                                <Button Content="{x:Static loc:Strings.Services_Deactivate}"
+                                        Command="{Binding DeactivateCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                        Margin="12,0,0,0" />
+                            </StackPanel>
+
+                            <!-- Inline, non-destructive Save/Deactivate-failure message - shared by both actions,
+                                 same idiom as Specialists' own SaveErrorMessage/HasSaveError. -->
+                            <TextBlock Text="{Binding SaveErrorMessage}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSaveError}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 

@@ -99,4 +99,35 @@ public sealed class EfServiceRepository : DomainServices.IServiceRepository
         context.SpecialistServices.Remove(entity);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Service Catalog Authoring: unlike <c>Specialists.EfSpecialistRepository</c>'s
+    /// own equivalent addition (which could honestly reuse an existing
+    /// table as a plain join), there is no category table anywhere in this
+    /// SQLite model at all - <see cref="ServiceEntity"/> has no
+    /// <c>CategoryId</c> column, and adding one would be a schema change
+    /// this phase is forbidden from making. This dormant, unregistered
+    /// implementation (see this class's own doc comment - <c>Infrastructure.Services.BackendServiceRepository</c>
+    /// is the real, registered <see cref="DomainServices.IServiceRepository"/>)
+    /// honestly declines rather than inventing persistence it does not
+    /// have - same "throw rather than fake a capability that doesn't
+    /// exist" reasoning <c>Infrastructure.Services.BackendServiceRepository.AssignSpecialistAsync</c>
+    /// already established for a different gap.
+    /// </summary>
+    public Task<IReadOnlyList<DomainServices.ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("EfServiceRepository has no category persistence model - see this class's own doc comment.");
+
+    public Task<DomainServices.Service> CreateServiceAsync(string categoryId, string name, string? description, int durationMinutes, decimal price, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("EfServiceRepository has no category persistence model - see this class's own doc comment.");
+
+    public Task<DomainServices.Service> UpdateServiceAsync(
+        string serviceId,
+        string categoryId,
+        string name,
+        string? description,
+        int durationMinutes,
+        decimal price,
+        DomainServices.ServiceStatus requestedStatus,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("EfServiceRepository has no category persistence model - see this class's own doc comment.");
 }

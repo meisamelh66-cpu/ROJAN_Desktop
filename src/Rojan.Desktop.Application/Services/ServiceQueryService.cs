@@ -126,4 +126,10 @@ public sealed class ServiceQueryService : IServiceQueryService
 
         return services.Select(ServiceMapper.MapService).ToList();
     }
+
+    public async Task<IReadOnlyList<ServiceCategoryOptionDto>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var categories = await _repository.GetCategoriesAsync(cancellationToken).ConfigureAwait(true);
+        return categories.Select(ServiceMapper.MapCategoryOption).ToList();
+    }
 }

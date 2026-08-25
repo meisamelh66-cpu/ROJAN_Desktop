@@ -56,4 +56,21 @@ public static class ServiceRules
     /// </summary>
     public static bool CanDeactivate(ServiceStatus from) =>
         from == ServiceStatus.Active;
+
+    // Service Catalog Authoring: field-shape validation, deliberately mirroring ROJAN_Backend's own
+    // Jakarta constraints on CreateServiceRequest/UpdateServiceRequest (@NotBlank @Size(max=255) name,
+    // @Positive durationMinutes, @NotNull @DecimalMin(0.0, exclusive) price) - the same "structural,
+    // non-authoritative client-side mirror" reasoning already established for status transitions above.
+    // ROJAN_Backend remains the final, authoritative validator regardless of what these report.
+
+    private const int MaxNameLength = 255;
+
+    public static bool IsValidName(string name) =>
+        !string.IsNullOrWhiteSpace(name) && name.Length <= MaxNameLength;
+
+    public static bool IsValidDuration(int durationMinutes) =>
+        durationMinutes > 0;
+
+    public static bool IsValidPrice(decimal price) =>
+        price > 0m;
 }

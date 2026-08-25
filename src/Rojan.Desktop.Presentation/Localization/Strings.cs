@@ -646,6 +646,17 @@ public static class Strings
 
     public static string Services_RecommendationSignal => Get(nameof(Services_RecommendationSignal));
 
+    /// <summary>Service Catalog Authoring: "Add Service" form card title/button label - same reuse-as-both-title-and-button-content pattern Specialists_AddSpecialist already established.</summary>
+    public static string Services_AddService => Get(nameof(Services_AddService));
+
+    public static string Services_Category => Get(nameof(Services_Category));
+
+    /// <summary>Service Catalog Authoring: Deactivate button label - the one supported status transition (Active -&gt; Discontinued).</summary>
+    public static string Services_Deactivate => Get(nameof(Services_Deactivate));
+
+    /// <summary>Service Catalog Authoring: shared, generic, never-raw-exception-text inline error for a failed Create/Save/Deactivate - same reasoning as Specialists_SaveError.</summary>
+    public static string Services_SaveError => Get(nameof(Services_SaveError));
+
     public static string Bookings_Title => Get(nameof(Bookings_Title));
 
     public static string Bookings_Subtitle => Get(nameof(Bookings_Subtitle));

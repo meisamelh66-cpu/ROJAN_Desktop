@@ -10,4 +10,7 @@ public interface IServiceQueryService
 
     /// <summary>Returns services matching every non-null/non-empty criterion in <paramref name="filter"/> (ANDed) - an all-default <see cref="ServiceSearchFilter"/> returns every service, identical to <see cref="GetServicesAsync"/>.</summary>
     public Task<IReadOnlyList<ServiceDto>> SearchServicesAsync(ServiceSearchFilter filter, CancellationToken cancellationToken = default);
+
+    /// <summary>Service Catalog Authoring: the real, selectable, per-salon categories a new service can be created into - see <see cref="ServiceCategoryOptionDto"/>'s own doc comment.</summary>
+    public Task<IReadOnlyList<ServiceCategoryOptionDto>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 }

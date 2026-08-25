@@ -21,6 +21,7 @@ internal sealed class StubServiceQueryService : IServiceQueryService
     private readonly Func<CancellationToken, Task<IReadOnlyList<ServiceDto>>> _getServices;
     private readonly Func<string, CancellationToken, Task<IReadOnlyList<ServiceDto>>>? _searchServices;
     private readonly Func<ServiceSearchFilter, CancellationToken, Task<IReadOnlyList<ServiceDto>>> _searchServicesByFilter;
+    private readonly IReadOnlyList<ServiceCategoryOptionDto> _categories;
 
     /// <summary>Every filter this stub was asked to search with, in call order.</summary>
     public List<ServiceSearchFilter> SearchCalls { get; } = [];
@@ -28,11 +29,13 @@ internal sealed class StubServiceQueryService : IServiceQueryService
     public StubServiceQueryService(
         Func<CancellationToken, Task<IReadOnlyList<ServiceDto>>> getServices,
         Func<string, CancellationToken, Task<IReadOnlyList<ServiceDto>>>? searchServices = null,
-        Func<ServiceSearchFilter, CancellationToken, Task<IReadOnlyList<ServiceDto>>>? searchServicesByFilter = null)
+        Func<ServiceSearchFilter, CancellationToken, Task<IReadOnlyList<ServiceDto>>>? searchServicesByFilter = null,
+        IReadOnlyList<ServiceCategoryOptionDto>? categories = null)
     {
         _getServices = getServices;
         _searchServices = searchServices;
         _searchServicesByFilter = searchServicesByFilter ?? ((_, cancellationToken) => _getServices(cancellationToken));
+        _categories = categories ?? [];
     }
 
     public Task<IReadOnlyList<ServiceDto>> GetServicesAsync(CancellationToken cancellationToken = default) =>
@@ -64,4 +67,7 @@ internal sealed class StubServiceQueryService : IServiceQueryService
         SearchCalls.Add(filter);
         return _searchServicesByFilter(filter, cancellationToken);
     }
+
+    public Task<IReadOnlyList<ServiceCategoryOptionDto>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(_categories);
 }

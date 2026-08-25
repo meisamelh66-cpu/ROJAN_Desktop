@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -55,6 +56,13 @@ public sealed class ServicePageViewModel : ViewModelBase
     private int _resultCount;
     private ServiceDto? _selectedService;
     private ServiceProfileViewModel? _profile;
+    private string _newServiceName = string.Empty;
+    private string _newServiceDescription = string.Empty;
+    private int _newServiceDurationMinutes;
+    private decimal _newServicePrice;
+    private ServiceCategoryOptionDto? _selectedCategoryForNewService;
+    private string? _createErrorMessage;
+    private bool _hasCreateError;
 
     /// <summary>Incremented on every filter/load-triggering change - see <c>Bookings.BookingPageViewModel</c>'s field of the same name for the full reasoning.</summary>
     private int _filterVersion;
@@ -71,18 +79,28 @@ public sealed class ServicePageViewModel : ViewModelBase
         _intelligenceEngine = intelligenceEngine;
 
         Services = new ObservableCollection<ServiceDto>();
+        AvailableCategories = new ObservableCollection<ServiceCategoryOptionDto>();
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         SearchCommand = new AsyncRelayCommand(_ => LoadAsync());
         ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
+        CreateServiceCommand = new AsyncRelayCommand(_ => CreateServiceAsync(), _ => CanCreateService());
 
         // Safe fire-and-forget: LoadAsync catches every failure internally
         // and represents it via State/ErrorMessage, so there is nothing
         // left that could become an unobserved task exception.
         _ = LoadAsync();
+
+        // Service Catalog Authoring: categories are unrelated to the filtered service list, so they're
+        // loaded once here, not re-fetched on every filter change LoadAsync responds to. A failure here
+        // is swallowed deliberately - see LoadCategoriesAsync's own doc comment.
+        _ = LoadCategoriesAsync();
     }
 
     public ObservableCollection<ServiceDto> Services { get; }
+
+    /// <summary>Service Catalog Authoring: the real, selectable categories the Create Service picker binds to - never free text.</summary>
+    public ObservableCollection<ServiceCategoryOptionDto> AvailableCategories { get; }
 
     /// <summary>Re-runs the load - bound as the Retry action on DashboardWidget's Error state.</summary>
     public ICommand LoadCommand { get; }
@@ -92,6 +110,9 @@ public sealed class ServicePageViewModel : ViewModelBase
 
     /// <summary>Resets every filter property to its default (empty/null) and reloads - equivalent to a freshly-opened, unfiltered catalog view.</summary>
     public ICommand ClearFiltersCommand { get; }
+
+    /// <summary>Service Catalog Authoring.</summary>
+    public ICommand CreateServiceCommand { get; }
 
     public DashboardState State
     {
@@ -227,6 +248,53 @@ public sealed class ServicePageViewModel : ViewModelBase
         private set => SetProperty(ref _profile, value);
     }
 
+    // Service Catalog Authoring: "New Service" fields - same shape as Specialists.SpecialistPageViewModel's
+    // own "New Specialist" fields, the direct structural precedent for this section.
+
+    public string NewServiceName
+    {
+        get => _newServiceName;
+        set => SetProperty(ref _newServiceName, value);
+    }
+
+    public string NewServiceDescription
+    {
+        get => _newServiceDescription;
+        set => SetProperty(ref _newServiceDescription, value);
+    }
+
+    public int NewServiceDurationMinutes
+    {
+        get => _newServiceDurationMinutes;
+        set => SetProperty(ref _newServiceDurationMinutes, value);
+    }
+
+    public decimal NewServicePrice
+    {
+        get => _newServicePrice;
+        set => SetProperty(ref _newServicePrice, value);
+    }
+
+    /// <summary>Bound by the Create Service picker's ComboBox - a real <see cref="ServiceCategoryOptionDto"/> from <see cref="AvailableCategories"/>, never free text (Service Catalog Authoring's core data-model rule).</summary>
+    public ServiceCategoryOptionDto? SelectedCategoryForNewService
+    {
+        get => _selectedCategoryForNewService;
+        set => SetProperty(ref _selectedCategoryForNewService, value);
+    }
+
+    /// <summary>Non-destructive, never-raw-exception-text inline error for a failed Create - same reasoning as Specialists.SpecialistProfileViewModel's own AssignmentErrorMessage.</summary>
+    public string? CreateErrorMessage
+    {
+        get => _createErrorMessage;
+        private set => SetProperty(ref _createErrorMessage, value);
+    }
+
+    public bool HasCreateError
+    {
+        get => _hasCreateError;
+        private set => SetProperty(ref _hasCreateError, value);
+    }
+
     private async Task LoadAsync()
     {
         State = DashboardState.Loading;
@@ -261,6 +329,78 @@ public sealed class ServicePageViewModel : ViewModelBase
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
             }
+        }
+    }
+
+    /// <summary>
+    /// Service Catalog Authoring. Failure is deliberately swallowed (no
+    /// ErrorMessage/State change) rather than surfaced as a page-level
+    /// error - a category-load failure only degrades the Create form's own
+    /// picker to empty, it must never hide the entire, otherwise-healthy
+    /// catalog list behind an error view.
+    /// </summary>
+    private async Task LoadCategoriesAsync()
+    {
+#pragma warning disable CA1031 // Deliberately swallowed - see this method's own doc comment.
+        try
+        {
+            var categories = await _queryService.GetCategoriesAsync().ConfigureAwait(true);
+            AvailableCategories.Clear();
+            foreach (var category in categories)
+            {
+                AvailableCategories.Add(category);
+            }
+        }
+        catch (Exception)
+        {
+            // Swallowed by design - see this method's own doc comment.
+        }
+#pragma warning restore CA1031
+    }
+
+    private bool CanCreateService() =>
+        !string.IsNullOrWhiteSpace(NewServiceName) && NewServiceDurationMinutes > 0 && NewServicePrice > 0m && SelectedCategoryForNewService is not null;
+
+    /// <summary>
+    /// Service Catalog Authoring. Real identifiers only -
+    /// <see cref="SelectedCategoryForNewService"/> is a real
+    /// <see cref="ServiceCategoryOptionDto"/> from <see cref="AvailableCategories"/>,
+    /// never free text. On success: clears the form and reloads the
+    /// catalog (a live Backend re-fetch - no local service truth is ever
+    /// recorded here), then selects the newly-created service. On failure:
+    /// never lets the exception escape, never mutates <see cref="Services"/>,
+    /// and preserves the form's contents so the user can retry without
+    /// re-typing.
+    /// </summary>
+    private async Task CreateServiceAsync()
+    {
+        if (SelectedCategoryForNewService is null)
+        {
+            return;
+        }
+
+        var request = new CreateServiceRequest(
+            SelectedCategoryForNewService.Id, NewServiceName, NewServiceDescription, NewServiceDurationMinutes, NewServicePrice);
+
+        try
+        {
+            var created = await _commandService.CreateServiceAsync(request).ConfigureAwait(true);
+            CreateErrorMessage = null;
+            HasCreateError = false;
+            NewServiceName = string.Empty;
+            NewServiceDescription = string.Empty;
+            NewServiceDurationMinutes = 0;
+            NewServicePrice = 0m;
+            SelectedCategoryForNewService = null;
+            await LoadAsync().ConfigureAwait(true);
+            SelectedService = Services.FirstOrDefault(service => service.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Save boundary: any failure must surface as a safe, user-facing message and preserve the form's contents, never crash or leak internal exception detail - same justified broad catch as every other write in this app.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            CreateErrorMessage = Strings.Services_SaveError;
+            HasCreateError = true;
         }
     }
 

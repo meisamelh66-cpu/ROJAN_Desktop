@@ -21,29 +21,40 @@ public sealed class FakeServiceRepository : IServiceRepository
 {
     private readonly List<Service> _services;
     private readonly List<SpecialistService> _assignments;
+    private readonly List<ServiceCategoryOption> _categories;
 
     public FakeServiceRepository()
     {
+        _categories =
+        [
+            new ServiceCategoryOption("category-hair", "مو"),
+            new ServiceCategoryOption("category-colour", "رنگ"),
+            new ServiceCategoryOption("category-nails", "ناخن"),
+            new ServiceCategoryOption("category-skin", "پوست"),
+            new ServiceCategoryOption("category-spa", "اسپا"),
+            new ServiceCategoryOption("category-consultation", "مشاوره"),
+        ];
+
         _services =
         [
             new Service("service-1", "کوتاهی و استایل مو", ServiceCategory.Hair, ServiceStatus.Active,
-                60, "650,000 تومان", "کوتاهی کلاسیک همراه با سشوار و فرم‌دهی نهایی."),
+                60, "650,000 تومان", "کوتاهی کلاسیک همراه با سشوار و فرم‌دهی نهایی.", CategoryId: "category-hair"),
             new Service("service-2", "اصلاح رنگ ریشه", ServiceCategory.Colour, ServiceStatus.Active,
-                90, "1,200,000 تومان", "پوشش ریشه و رنگ تک‌مرحله‌ای مو."),
+                90, "1,200,000 تومان", "پوشش ریشه و رنگ تک‌مرحله‌ای مو.", CategoryId: "category-colour"),
             new Service("service-3", "پکیج کامل - بالیاژ و استایل", ServiceCategory.Colour, ServiceStatus.Active,
-                150, "2,200,000 تومان", "های‌لایت بالیاژ همراه با استایل نهایی مو."),
+                150, "2,200,000 تومان", "های‌لایت بالیاژ همراه با استایل نهایی مو.", CategoryId: "category-colour"),
             new Service("service-4", "مانیکور", ServiceCategory.Nails, ServiceStatus.Active,
-                45, "400,000 تومان", "مانیکور کلاسیک همراه با لاک."),
+                45, "400,000 تومان", "مانیکور کلاسیک همراه با لاک.", CategoryId: "category-nails"),
             new Service("service-5", "فیشیال ترمیمی", ServiceCategory.Skin, ServiceStatus.Active,
-                60, "850,000 تومان", "پاکسازی عمیق و مراقبت از پوست صورت."),
+                60, "850,000 تومان", "پاکسازی عمیق و مراقبت از پوست صورت.", CategoryId: "category-skin"),
             new Service("service-6", "ماساژ", ServiceCategory.Spa, ServiceStatus.Active,
-                60, "950,000 تومان", "ماساژ آرامش‌بخش بدن."),
+                60, "950,000 تومان", "ماساژ آرامش‌بخش بدن.", CategoryId: "category-spa"),
             new Service("service-7", "مشاوره", ServiceCategory.Consultation, ServiceStatus.Active,
-                30, "رایگان", "مشاوره رایگان برای مشتریان جدید."),
+                30, "رایگان", "مشاوره رایگان برای مشتریان جدید.", CategoryId: "category-consultation"),
             new Service("service-8", "کراتینه صافی مو", ServiceCategory.Hair, ServiceStatus.Seasonal,
-                120, "1,800,000 تومان", "درمان کراتینه برای کاهش وز مو، خدمت فصلی."),
+                120, "1,800,000 تومان", "درمان کراتینه برای کاهش وز مو، خدمت فصلی.", CategoryId: "category-hair"),
             new Service("service-9", "فر مو", ServiceCategory.Hair, ServiceStatus.Discontinued,
-                90, "1,100,000 تومان", "فر کلاسیک مو، دیگر ارائه نمی‌شود."),
+                90, "1,100,000 تومان", "فر کلاسیک مو، دیگر ارائه نمی‌شود.", CategoryId: "category-hair"),
         ];
 
         _assignments =
@@ -89,4 +100,76 @@ public sealed class FakeServiceRepository : IServiceRepository
         await Task.Delay(200, cancellationToken).ConfigureAwait(true);
         _assignments.RemoveAll(assignment => assignment.ServiceId == serviceId && assignment.Id == assignmentId);
     }
+
+    public async Task<IReadOnlyList<ServiceCategoryOption>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        return _categories.ToList();
+    }
+
+    public async Task<Service> CreateServiceAsync(string categoryId, string name, string? description, int durationMinutes, decimal price, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var category = _categories.FirstOrDefault(option => option.Id == categoryId);
+        var service = new Service(
+            Guid.NewGuid().ToString(),
+            name,
+            MapCategory(category?.Name),
+            ServiceStatus.Active,
+            durationMinutes,
+            FormatToman(price),
+            description ?? string.Empty,
+            category?.Name,
+            categoryId);
+        _services.Add(service);
+        return service;
+    }
+
+    public async Task<Service> UpdateServiceAsync(
+        string serviceId,
+        string categoryId,
+        string name,
+        string? description,
+        int durationMinutes,
+        decimal price,
+        ServiceStatus requestedStatus,
+        CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(200, cancellationToken).ConfigureAwait(true);
+        var index = _services.FindIndex(existing => existing.Id == serviceId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Service '{serviceId}' was not found.");
+        }
+
+        var existing = _services[index];
+        if (requestedStatus != existing.Status && !ServiceRules.IsValidTransition(existing.Status, requestedStatus))
+        {
+            throw new InvalidOperationException($"Cannot transition service from {existing.Status} to {requestedStatus}.");
+        }
+
+        var updated = existing with
+        {
+            Name = name,
+            Description = description ?? string.Empty,
+            DurationMinutes = durationMinutes,
+            Price = FormatToman(price),
+            Status = requestedStatus,
+        };
+        _services[index] = updated;
+        return updated;
+    }
+
+    private static ServiceCategory MapCategory(string? categoryName) => categoryName?.Trim().ToLowerInvariant() switch
+    {
+        "مو" => ServiceCategory.Hair,
+        "رنگ" => ServiceCategory.Colour,
+        "ناخن" => ServiceCategory.Nails,
+        "پوست" => ServiceCategory.Skin,
+        "اسپا" => ServiceCategory.Spa,
+        "مشاوره" => ServiceCategory.Consultation,
+        _ => ServiceCategory.Other,
+    };
+
+    private static string FormatToman(decimal amount) => $"{amount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} تومان";
 }

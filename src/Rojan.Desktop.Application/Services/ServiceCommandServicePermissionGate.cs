@@ -25,4 +25,16 @@ public sealed class ServiceCommandServicePermissionGate : IServiceCommandService
         _permissionGate.Ensure(Permission.ServiceEdit);
         return _inner.UnassignSpecialistAsync(serviceId, assignmentId, cancellationToken);
     }
+
+    public Task<ServiceDto> CreateServiceAsync(CreateServiceRequest request, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.ServiceEdit);
+        return _inner.CreateServiceAsync(request, cancellationToken);
+    }
+
+    public Task<ServiceDto> UpdateServiceAsync(UpdateServiceRequest request, CancellationToken cancellationToken = default)
+    {
+        _permissionGate.Ensure(Permission.ServiceEdit);
+        return _inner.UpdateServiceAsync(request, cancellationToken);
+    }
 }

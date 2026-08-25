@@ -13,10 +13,16 @@ internal static class ServiceMapper
         service.DurationMinutes,
         service.Price,
         service.Description,
-        service.CategoryName);
+        service.CategoryName,
+        service.CategoryId,
+        ServicePriceParser.Parse(service.Price));
 
     public static AssignedSpecialistDto MapAssignment(DomainServices.SpecialistService assignment) =>
         new(assignment.Id, assignment.ServiceId, assignment.SpecialistId, assignment.SpecialistName);
+
+    /// <summary>Service Catalog Authoring.</summary>
+    public static ServiceCategoryOptionDto MapCategoryOption(DomainServices.ServiceCategoryOption category) =>
+        new(category.Id, category.Name);
 
     public static ServiceCategory MapCategory(DomainServices.ServiceCategory category) => category switch
     {
