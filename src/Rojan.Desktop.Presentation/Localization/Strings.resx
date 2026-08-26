@@ -684,6 +684,36 @@
   <data name="Specialists_Skills" xml:space="preserve">
     <value>مهارت‌ها</value>
   </data>
+  <data name="SpecialistSchedule_Title" xml:space="preserve">
+    <value>برنامه کاری</value>
+  </data>
+  <data name="SpecialistSchedule_WeeklyAvailability" xml:space="preserve">
+    <value>دسترسی هفتگی</value>
+  </data>
+  <data name="SpecialistSchedule_Closed" xml:space="preserve">
+    <value>تعطیل</value>
+  </data>
+  <data name="SpecialistSchedule_SetAvailability" xml:space="preserve">
+    <value>تنظیم ساعت</value>
+  </data>
+  <data name="SpecialistSchedule_Overrides" xml:space="preserve">
+    <value>استثناهای موردی</value>
+  </data>
+  <data name="SpecialistSchedule_Leave" xml:space="preserve">
+    <value>مرخصی</value>
+  </data>
+  <data name="SpecialistSchedule_Blocks" xml:space="preserve">
+    <value>زمان‌های مسدود</value>
+  </data>
+  <data name="SpecialistSchedule_InvalidTimeRange" xml:space="preserve">
+    <value>بازه زمانی نامعتبر است.</value>
+  </data>
+  <data name="Specialists_AssignedServices" xml:space="preserve">
+    <value>خدمات تخصیص‌یافته</value>
+  </data>
+  <data name="Specialists_EligibleForAllServices" xml:space="preserve">
+    <value>واجد شرایط برای همه خدمات</value>
+  </data>
   <data name="Specialists_AddSkill" xml:space="preserve">
     <value>افزودن مهارت</value>
   </data>

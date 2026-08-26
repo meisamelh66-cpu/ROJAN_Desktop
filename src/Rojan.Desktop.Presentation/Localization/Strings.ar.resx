@@ -672,6 +672,36 @@
   <data name="Specialists_Skills" xml:space="preserve">
     <value>المهارات</value>
   </data>
+  <data name="SpecialistSchedule_Title" xml:space="preserve">
+    <value>الجدول الزمني</value>
+  </data>
+  <data name="SpecialistSchedule_WeeklyAvailability" xml:space="preserve">
+    <value>التوفر الأسبوعي</value>
+  </data>
+  <data name="SpecialistSchedule_Closed" xml:space="preserve">
+    <value>مغلق</value>
+  </data>
+  <data name="SpecialistSchedule_SetAvailability" xml:space="preserve">
+    <value>تعيين التوفر</value>
+  </data>
+  <data name="SpecialistSchedule_Overrides" xml:space="preserve">
+    <value>استثناءات التاريخ</value>
+  </data>
+  <data name="SpecialistSchedule_Leave" xml:space="preserve">
+    <value>الإجازة</value>
+  </data>
+  <data name="SpecialistSchedule_Blocks" xml:space="preserve">
+    <value>الأوقات المحجوبة</value>
+  </data>
+  <data name="SpecialistSchedule_InvalidTimeRange" xml:space="preserve">
+    <value>نطاق زمني غير صالح.</value>
+  </data>
+  <data name="Specialists_AssignedServices" xml:space="preserve">
+    <value>الخدمات المعينة</value>
+  </data>
+  <data name="Specialists_EligibleForAllServices" xml:space="preserve">
+    <value>مؤهل لجميع الخدمات</value>
+  </data>
   <data name="Specialists_AddSkill" xml:space="preserve">
     <value>إضافة مهارة</value>
   </data>

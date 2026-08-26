@@ -563,6 +563,26 @@ public static class Strings
 
     public static string Specialists_Skills => Get(nameof(Specialists_Skills));
 
+    public static string SpecialistSchedule_Title => Get(nameof(SpecialistSchedule_Title));
+
+    public static string SpecialistSchedule_WeeklyAvailability => Get(nameof(SpecialistSchedule_WeeklyAvailability));
+
+    public static string SpecialistSchedule_Closed => Get(nameof(SpecialistSchedule_Closed));
+
+    public static string SpecialistSchedule_SetAvailability => Get(nameof(SpecialistSchedule_SetAvailability));
+
+    public static string SpecialistSchedule_Overrides => Get(nameof(SpecialistSchedule_Overrides));
+
+    public static string SpecialistSchedule_Leave => Get(nameof(SpecialistSchedule_Leave));
+
+    public static string SpecialistSchedule_Blocks => Get(nameof(SpecialistSchedule_Blocks));
+
+    public static string SpecialistSchedule_InvalidTimeRange => Get(nameof(SpecialistSchedule_InvalidTimeRange));
+
+    public static string Specialists_AssignedServices => Get(nameof(Specialists_AssignedServices));
+
+    public static string Specialists_EligibleForAllServices => Get(nameof(Specialists_EligibleForAllServices));
+
     public static string Specialists_AddSkill => Get(nameof(Specialists_AddSkill));
 
     public static string Specialists_SearchAndFilter => Get(nameof(Specialists_SearchAndFilter));

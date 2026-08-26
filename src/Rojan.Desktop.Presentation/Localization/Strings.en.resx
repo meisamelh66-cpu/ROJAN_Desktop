@@ -672,6 +672,36 @@
   <data name="Specialists_Skills" xml:space="preserve">
     <value>Skills</value>
   </data>
+  <data name="SpecialistSchedule_Title" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="SpecialistSchedule_WeeklyAvailability" xml:space="preserve">
+    <value>Weekly Availability</value>
+  </data>
+  <data name="SpecialistSchedule_Closed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="SpecialistSchedule_SetAvailability" xml:space="preserve">
+    <value>Set Availability</value>
+  </data>
+  <data name="SpecialistSchedule_Overrides" xml:space="preserve">
+    <value>Date Overrides</value>
+  </data>
+  <data name="SpecialistSchedule_Leave" xml:space="preserve">
+    <value>Leave</value>
+  </data>
+  <data name="SpecialistSchedule_Blocks" xml:space="preserve">
+    <value>Blocked Time</value>
+  </data>
+  <data name="SpecialistSchedule_InvalidTimeRange" xml:space="preserve">
+    <value>Invalid time range.</value>
+  </data>
+  <data name="Specialists_AssignedServices" xml:space="preserve">
+    <value>Assigned Services</value>
+  </data>
+  <data name="Specialists_EligibleForAllServices" xml:space="preserve">
+    <value>Eligible for all services</value>
+  </data>
   <data name="Specialists_AddSkill" xml:space="preserve">
     <value>Add Skill</value>
   </data>

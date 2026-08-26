@@ -5,6 +5,9 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appSpecialists="clr-namespace:Rojan.Desktop.Application.Specialists;assembly=Rojan.Desktop.Application"
+             xmlns:appServices="clr-namespace:Rojan.Desktop.Application.Services;assembly=Rojan.Desktop.Application"
+             xmlns:appSchedule="clr-namespace:Rojan.Desktop.Application.Schedule;assembly=Rojan.Desktop.Application"
+             xmlns:vmSpecialists="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Specialists"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
@@ -338,6 +341,285 @@
                             </StackPanel>
                         </StackPanel>
                     </dashboardControls:DashboardCard>
+
+                    <!-- Specialist-Service Assignment: real, Backend-confirmed only - AssignServiceCommand/UnassignServiceCommand submit to Backend and reload the confirmed result, never an optimistic local edit. Same pill-list pattern as Skills above, for a consistent look, but a distinct data source (real catalog services with real ids, never free text). -->
+                    <dashboardControls:DashboardCard Title="{x:Static loc:Strings.Specialists_AssignedServices}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <!-- The empty-list business rule, made explicit and unmissable rather than shown as an empty list: an empty assignment set from Backend means eligible for every service, never "no services assigned". -->
+                            <shared:StatusPill Text="{x:Static loc:Strings.Specialists_EligibleForAllServices}"
+                                                Severity="Info"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,0,0,12">
+                                <shared:StatusPill.Style>
+                                    <Style TargetType="{x:Type shared:StatusPill}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAssignedToEveryService}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </shared:StatusPill.Style>
+                            </shared:StatusPill>
+
+                            <ItemsControl ItemsSource="{Binding AssignedServices}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appServices:ServiceDto}">
+                                        <Border Background="{StaticResource Rojan.Brush.SurfaceHover}"
+                                                BorderBrush="{StaticResource Rojan.Brush.Border}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource Rojan.CornerRadius.Pill}"
+                                                Padding="10,4"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.TextPrimary}" />
+                                                <Button Content="&#10005;"
+                                                        Margin="8,0,0,0"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        FontSize="11"
+                                                        Command="{Binding DataContext.UnassignServiceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <ComboBox ItemsSource="{Binding AvailableServicesToAssign}"
+                                          SelectedItem="{Binding SelectedServiceToAssign, Mode=TwoWay}"
+                                          DisplayMemberPath="Name"
+                                          Width="200" />
+                                <Button Content="{x:Static loc:Strings.Services_Assign}"
+                                        Command="{Binding AssignServiceCommand}"
+                                        Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                        Margin="8,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </dashboardControls:DashboardCard>
+
+                    <!-- Phase 5 Shift Engine: weekly availability, date overrides, leave, and blocked time - every value real and Backend-authoritative (SpecialistScheduleController), this view only displays and submits, never computes or decides a conflict. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.SpecialistSchedule_Title}"
+                                                        DataContext="{Binding Schedule}"
+                                                        State="{Binding State}"
+                                                        ErrorMessage="{Binding ErrorMessage}"
+                                                        RetryCommand="{Binding LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel>
+                            <!-- Weekly Availability -->
+                            <TextBlock Text="{x:Static loc:Strings.SpecialistSchedule_WeeklyAvailability}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding WeeklyAvailability}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vmSpecialists:ScheduleDayRow}">
+                                        <Border BorderBrush="{StaticResource Rojan.Brush.Border}" BorderThickness="0,0,0,1" Padding="0,8">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding DayOfWeek, Converter={StaticResource Rojan.Converter.EnumLabel}}" Style="{StaticResource Rojan.TextStyle.Body}" Width="110" />
+                                                        <TextBlock Text="{x:Static loc:Strings.SpecialistSchedule_Closed}" Foreground="{StaticResource Rojan.Brush.MutedText}">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Availability}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <ItemsControl ItemsSource="{Binding Availability.Intervals}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="{x:Type appSchedule:TimeIntervalDto}">
+                                                                    <TextBlock Style="{StaticResource Rojan.TextStyle.Caption}" Margin="0,0,8,0">
+                                                                        <Run Text="{Binding Start, StringFormat='{}{0:HH:mm}'}" />
+                                                                        <Run Text="–" />
+                                                                        <Run Text="{Binding End, StringFormat='{}{0:HH:mm}'}" />
+                                                                    </TextBlock>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <Button Content="{x:Static loc:Strings.SpecialistSchedule_SetAvailability}"
+                                                                Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                                Command="{Binding DataContext.BeginEditDayCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Content="{x:Static loc:Strings.Common_Delete}"
+                                                                Margin="8,0,0,0"
+                                                                Command="{Binding DataContext.ClearDayAvailabilityCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                CommandParameter="{Binding}">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button" BasedOn="{StaticResource Rojan.Style.ButtonSecondary}">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Availability}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <!-- Inline edit form - visible only for the row currently being edited. Single interval per save, a real v1 scope limit (see this section's own ViewModel doc comment). -->
+                                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                                    <StackPanel.Style>
+                                                        <Style TargetType="StackPanel">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </StackPanel.Style>
+                                                    <TextBox Text="{Binding DataContext.EditIntervalStart, RelativeSource={RelativeSource AncestorType=ItemsControl}, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                                                    <TextBlock Text="–" Margin="4,4,4,0" />
+                                                    <TextBox Text="{Binding DataContext.EditIntervalEnd, RelativeSource={RelativeSource AncestorType=ItemsControl}, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                                                    <Button Content="{x:Static loc:Strings.Common_Save}"
+                                                            Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                                                            Margin="8,0,0,0"
+                                                            Command="{Binding DataContext.SaveDayAvailabilityCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Date Overrides -->
+                            <TextBlock Text="{x:Static loc:Strings.SpecialistSchedule_Overrides}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" Margin="0,20,0,0" />
+                            <ItemsControl ItemsSource="{Binding Overrides}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:ScheduleOverrideDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Caption}">
+                                                <Run Text="{Binding Date, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                                <Run Text=" · " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Delete}"
+                                                    Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                    Command="{Binding DataContext.RemoveOverrideCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewOverrideDate, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                                <TextBox Grid.Column="1" Text="{Binding NewOverrideStart, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="4,0,0,0" />
+                                <TextBox Grid.Column="2" Text="{Binding NewOverrideEnd, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="4,0,0,0" />
+                                <TextBox Grid.Column="3" Text="{Binding NewOverrideReason, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0" />
+                                <Button Grid.Column="4" Content="{x:Static loc:Strings.Common_Add}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Command="{Binding AddOverrideCommand}" Margin="4,0,0,0" />
+                            </Grid>
+
+                            <!-- Leave -->
+                            <TextBlock Text="{x:Static loc:Strings.SpecialistSchedule_Leave}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" Margin="0,20,0,0" />
+                            <ItemsControl ItemsSource="{Binding Leaves}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistLeaveDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Caption}">
+                                                <Run Text="{Binding StartDate, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                                <Run Text=" → " />
+                                                <Run Text="{Binding EndDate, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                                <Run Text=" · " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Delete}"
+                                                    Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                    Command="{Binding DataContext.RemoveLeaveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewLeaveStartDate, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                                <TextBox Grid.Column="1" Text="{Binding NewLeaveEndDate, UpdateSourceTrigger=PropertyChanged}" Width="90" Margin="4,0,0,0" />
+                                <TextBox Grid.Column="2" Text="{Binding NewLeaveReason, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0" />
+                                <Button Grid.Column="3" Content="{x:Static loc:Strings.Common_Add}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Command="{Binding AddLeaveCommand}" Margin="4,0,0,0" />
+                            </Grid>
+
+                            <!-- Blocked Time -->
+                            <TextBlock Text="{x:Static loc:Strings.SpecialistSchedule_Blocks}" Style="{StaticResource Rojan.TextStyle.Body}" FontWeight="SemiBold" Margin="0,20,0,0" />
+                            <ItemsControl ItemsSource="{Binding Blocks}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistBlockDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Caption}">
+                                                <Run Text="{Binding Date, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding Start, StringFormat='{}{0:HH:mm}'}" />
+                                                <Run Text="–" />
+                                                <Run Text="{Binding End, StringFormat='{}{0:HH:mm}'}" />
+                                                <Run Text=" · " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="{x:Static loc:Strings.Common_Delete}"
+                                                    Style="{StaticResource Rojan.Style.ButtonSecondary}"
+                                                    Command="{Binding DataContext.RemoveBlockCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewBlockDate, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                                <TextBox Grid.Column="1" Text="{Binding NewBlockStart, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="4,0,0,0" />
+                                <TextBox Grid.Column="2" Text="{Binding NewBlockEnd, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="4,0,0,0" />
+                                <TextBox Grid.Column="3" Text="{Binding NewBlockReason, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0" />
+                                <Button Grid.Column="4" Content="{x:Static loc:Strings.Common_Add}" Style="{StaticResource Rojan.Style.ButtonPrimary}" Command="{Binding AddBlockCommand}" Margin="4,0,0,0" />
+                            </Grid>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
 
                     <!-- Intelligence (Sprint 5 Commit 5C): calculated performance score/level/recommendation, composed by Application's IntelligenceEngine from booking data already queried elsewhere in the app - no new query added here, only display. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Intelligence}"

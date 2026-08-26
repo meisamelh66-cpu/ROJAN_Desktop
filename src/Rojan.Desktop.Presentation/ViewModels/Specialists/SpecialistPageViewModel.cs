@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
+using Rojan.Desktop.Application.Schedule;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -37,6 +38,8 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private readonly ISpecialistProfileQueryService _profileQueryService;
     private readonly ISpecialistCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
+    private readonly IScheduleQueryService _scheduleQueryService;
+    private readonly IScheduleCommandService _scheduleCommandService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -57,12 +60,16 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         ISpecialistQueryService queryService,
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        IScheduleQueryService scheduleQueryService,
+        IScheduleCommandService scheduleCommandService)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+        _scheduleQueryService = scheduleQueryService;
+        _scheduleCommandService = scheduleCommandService;
 
         Specialists = new ObservableCollection<SpecialistDto>();
 
@@ -155,7 +162,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine);
+                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _scheduleQueryService, _scheduleCommandService);
             }
         }
     }

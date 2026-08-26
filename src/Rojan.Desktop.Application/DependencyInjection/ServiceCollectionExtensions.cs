@@ -17,6 +17,7 @@ using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Application.Schedule;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
@@ -90,6 +91,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppServices.ServiceCommandService>();
         services.AddSingleton<AppServices.IServiceCommandService>(sp =>
             new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+        // Phase 5 Shift Engine: real from day one, same registered-pair pattern as every
+        // *CommandService above - see ScheduleCommandServicePermissionGate's own doc comment.
+        // IScheduleRepository -> BackendScheduleRepository is registered in AddInfrastructure(),
+        // same "Infrastructure owns its own repository registration" convention ICalendarQueryService
+        // already established below.
+        services.AddSingleton<IScheduleQueryService, ScheduleQueryService>();
+        services.AddSingleton<ScheduleCommandService>();
+        services.AddSingleton<IScheduleCommandService>(sp =>
+            new ScheduleCommandServicePermissionGate(sp.GetRequiredService<ScheduleCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<IIntelligenceEngine, IntelligenceEngine>();
         // ICalendarQueryService is registered in AddInfrastructure() instead of here -
         // Calendar/Availability Integration Phase 3 replaced CalendarQueryService (local

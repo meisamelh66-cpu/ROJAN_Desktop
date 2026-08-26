@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
+using Rojan.Desktop.Application.Schedule;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -50,12 +51,19 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         string specialistId,
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        IScheduleQueryService scheduleQueryService,
+        IScheduleCommandService scheduleCommandService)
     {
         _specialistId = specialistId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+
+        // Phase 5 Shift Engine: constructed fresh alongside this profile, same
+        // per-selection child-ViewModel lifetime as this class's own doc comment
+        // already establishes for itself under SpecialistPageViewModel.
+        Schedule = new SpecialistScheduleViewModel(specialistId, scheduleQueryService, scheduleCommandService);
 
         Skills = new ObservableCollection<SpecialistSkillDto>();
 
@@ -69,6 +77,9 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         // other page/profile ViewModel in this app.
         _ = LoadAsync();
     }
+
+    /// <summary>Phase 5 Shift Engine: this specialist's real schedule (weekly availability, overrides, leave, blocks) - Backend-authoritative, never computed here.</summary>
+    public SpecialistScheduleViewModel Schedule { get; }
 
     public ObservableCollection<SpecialistSkillDto> Skills { get; }
 

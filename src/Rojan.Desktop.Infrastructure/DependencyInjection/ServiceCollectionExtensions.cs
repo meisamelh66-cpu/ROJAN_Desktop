@@ -51,6 +51,7 @@ using Rojan.Desktop.Infrastructure.Persistence.Calendar;
 using Rojan.Desktop.Infrastructure.QrCodes;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Salons;
+using Rojan.Desktop.Infrastructure.Schedule;
 using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Services;
@@ -59,6 +60,7 @@ using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Application.Schedule;
 using AppCalendar = Rojan.Desktop.Application.Calendar;
 using DomainServices = Rojan.Desktop.Domain.Services;
 
@@ -185,6 +187,10 @@ public static class ServiceCollectionExtensions
         // Fake/Ef->Backend swap. See BackendCalendarAvailabilityRepository's
         // own doc comment for the full reasoning and its honesty notes.
         services.AddSingleton<AppCalendar.ICalendarQueryService, BackendCalendarAvailabilityRepository>();
+
+        // Phase 5 Shift Engine: real from day one, no Fake counterpart - see
+        // BackendScheduleRepository's own doc comment.
+        services.AddSingleton<IScheduleRepository, BackendScheduleRepository>();
 
         services.AddSingleton<IInventoryRepository, FakeInventoryRepository>();
         services.AddSingleton<IAccountingRepository, FakeAccountingRepository>();
