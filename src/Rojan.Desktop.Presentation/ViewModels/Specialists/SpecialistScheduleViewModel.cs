@@ -244,7 +244,14 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
                 Blocks.Add(entry);
             }
 
-            State = DashboardState.Loaded;
+            // Distinct from "specialist without availability" (a real per-day "Closed" label,
+            // already handled) - this is the narrower case where nothing at all has been
+            // configured yet for this specialist: no weekly availability, no overrides, no
+            // leave, no blocks. Uses the app's own existing DashboardState.Empty mechanism
+            // rather than a bespoke one.
+            var isGenuinelyEmpty = WeeklyAvailability.All(row => row.Availability is null) &&
+                Overrides.Count == 0 && Leaves.Count == 0 && Blocks.Count == 0;
+            State = isGenuinelyEmpty ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page/profile ViewModel in this app.
         catch (Exception exception)
@@ -290,7 +297,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.SetWeeklyAvailabilityAsync(_specialistId, day, [new TimeIntervalDto(start, end)]).ConfigureAwait(true);
+        try
+        {
+            await _commandService.SetWeeklyAvailabilityAsync(_specialistId, day, [new TimeIntervalDto(start, end)]).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Same top-level command boundary as LoadAsync's own catch - a permission denial or Backend failure here must surface as the Error state, never as an unhandled exception out of this async-void command.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         EditingDay = null;
         foreach (var candidate in WeeklyAvailability)
         {
@@ -306,7 +325,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.RemoveWeeklyAvailabilityAsync(_specialistId, row.DayOfWeek).ConfigureAwait(true);
+        try
+        {
+            await _commandService.RemoveWeeklyAvailabilityAsync(_specialistId, row.DayOfWeek).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         await LoadAsync().ConfigureAwait(true);
     }
 
@@ -324,7 +355,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             intervals = [new TimeIntervalDto(start, end)];
         }
 
-        await _commandService.SetOverrideAsync(_specialistId, date, intervals, NullIfEmpty(NewOverrideReason)).ConfigureAwait(true);
+        try
+        {
+            await _commandService.SetOverrideAsync(_specialistId, date, intervals, NullIfEmpty(NewOverrideReason)).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         NewOverrideDate = string.Empty;
         NewOverrideStart = string.Empty;
         NewOverrideEnd = string.Empty;
@@ -339,7 +382,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.RemoveOverrideAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        try
+        {
+            await _commandService.RemoveOverrideAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         await LoadAsync().ConfigureAwait(true);
     }
 
@@ -351,7 +406,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.CreateLeaveAsync(_specialistId, startDate, endDate, NullIfEmpty(NewLeaveReason)).ConfigureAwait(true);
+        try
+        {
+            await _commandService.CreateLeaveAsync(_specialistId, startDate, endDate, NullIfEmpty(NewLeaveReason)).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         NewLeaveStartDate = string.Empty;
         NewLeaveEndDate = string.Empty;
         NewLeaveReason = string.Empty;
@@ -365,7 +432,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.RemoveLeaveAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        try
+        {
+            await _commandService.RemoveLeaveAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         await LoadAsync().ConfigureAwait(true);
     }
 
@@ -378,7 +457,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.CreateBlockAsync(_specialistId, date, start, end, NullIfEmpty(NewBlockReason)).ConfigureAwait(true);
+        try
+        {
+            await _commandService.CreateBlockAsync(_specialistId, date, start, end, NullIfEmpty(NewBlockReason)).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         NewBlockDate = string.Empty;
         NewBlockStart = string.Empty;
         NewBlockEnd = string.Empty;
@@ -393,7 +484,19 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.RemoveBlockAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        try
+        {
+            await _commandService.RemoveBlockAsync(_specialistId, entry.Id).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // See SaveDayAvailabilityAsync's own catch for the reasoning.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            return;
+        }
+
         await LoadAsync().ConfigureAwait(true);
     }
 
