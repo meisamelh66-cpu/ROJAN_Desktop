@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -21,7 +22,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Accounting;
 /// consistent with Presentation never reaching past Application into
 /// Domain/Infrastructure.
 /// </summary>
-public sealed class AccountingPageViewModel : ViewModelBase
+public sealed partial class AccountingPageViewModel : ViewModelBase
 {
     private readonly IInvoiceQueryService _invoiceQueryService;
     private readonly IInvoiceCommandService _invoiceCommandService;
@@ -29,6 +30,7 @@ public sealed class AccountingPageViewModel : ViewModelBase
     private readonly IPaymentCommandService _paymentCommandService;
     private readonly IDialogService _dialogService;
     private readonly ILogger<PosCheckoutViewModel>? _posCheckoutLogger;
+    private readonly ILogger<AccountingPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -43,7 +45,8 @@ public sealed class AccountingPageViewModel : ViewModelBase
         IPaymentQueryService paymentQueryService,
         IPaymentCommandService paymentCommandService,
         IDialogService dialogService,
-        ILogger<PosCheckoutViewModel>? posCheckoutLogger = null)
+        ILogger<PosCheckoutViewModel>? posCheckoutLogger = null,
+        ILogger<AccountingPageViewModel>? logger = null)
     {
         _invoiceQueryService = invoiceQueryService;
         _invoiceCommandService = invoiceCommandService;
@@ -51,6 +54,7 @@ public sealed class AccountingPageViewModel : ViewModelBase
         _paymentCommandService = paymentCommandService;
         _dialogService = dialogService;
         _posCheckoutLogger = posCheckoutLogger;
+        _logger = logger ?? NullLogger<AccountingPageViewModel>.Instance;
 
         Invoices = new ObservableCollection<InvoiceDto>();
 
@@ -147,6 +151,7 @@ public sealed class AccountingPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(_logger, nameof(LoadAsync), exception);
         }
     }
 
@@ -179,9 +184,16 @@ public sealed class AccountingPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(_logger, nameof(SearchAsync), exception);
             }
         }
     }
+
+    // Static form (ILogger passed explicitly) because this class holds two ILogger
+    // fields - the source generator (SYSLIB1020) cannot pick one implicitly. Same
+    // shape as App.LogUnhandledException.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Accounting operation failed. Operation={Operation}")]
+    private static partial void LogOperationFailed(ILogger logger, string operation, Exception exception);
 
     private void ReplaceInvoices(IReadOnlyList<InvoiceDto> invoices)
     {

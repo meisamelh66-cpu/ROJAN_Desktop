@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Organizations;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 namespace Rojan.Desktop.Presentation.Tests.Dashboard;
@@ -18,8 +20,8 @@ public sealed class DashboardPageViewModelTests
         return new DashboardOverviewDto(metrics, activity);
     }
 
-    private static DashboardPageViewModel CreateSut(StubDashboardQueryService queryService, WorkspaceRole role = WorkspaceRole.PlatformOwner) =>
-        new(queryService, new PermissionEngine(), new FakeCurrentSessionService { CurrentRole = role });
+    private static DashboardPageViewModel CreateSut(StubDashboardQueryService queryService, WorkspaceRole role = WorkspaceRole.PlatformOwner, RecordingLogger<DashboardPageViewModel>? logger = null) =>
+        new(queryService, new PermissionEngine(), new FakeCurrentSessionService { CurrentRole = role }, logger);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -66,6 +68,32 @@ public sealed class DashboardPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    [Fact]
+    public void Constructor_QueryServiceThrows_LogsError()
+    {
+        var queryService = new StubDashboardQueryService(
+            _ => Task.FromException<DashboardOverviewDto>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<DashboardPageViewModel>();
+
+        var sut = CreateSut(queryService, logger: logger);
+
+        // User-visible behaviour unchanged - the log is additive.
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubDashboardQueryService(
+            _ => Task.FromException<DashboardOverviewDto>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => CreateSut(queryService));
+
+        Assert.Null(exception);
     }
 
     [Fact]

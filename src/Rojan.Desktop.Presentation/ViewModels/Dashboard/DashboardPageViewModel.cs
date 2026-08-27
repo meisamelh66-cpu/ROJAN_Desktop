@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
@@ -29,7 +31,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Dashboard;
 /// filtering anywhere in this ViewModel. Reuses the existing permission -
 /// no new one added.
 /// </summary>
-public sealed class DashboardPageViewModel : ViewModelBase
+public sealed partial class DashboardPageViewModel : ViewModelBase
 {
     private const string FinancialKpiId = "kpi-revenue";
 
@@ -38,14 +40,16 @@ public sealed class DashboardPageViewModel : ViewModelBase
     private readonly IDashboardQueryService _queryService;
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
+    private readonly ILogger<DashboardPageViewModel> _logger;
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
 
-    public DashboardPageViewModel(IDashboardQueryService queryService, IPermissionEngine permissionEngine, ICurrentSessionService currentSessionService)
+    public DashboardPageViewModel(IDashboardQueryService queryService, IPermissionEngine permissionEngine, ICurrentSessionService currentSessionService, ILogger<DashboardPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
+        _logger = logger ?? NullLogger<DashboardPageViewModel>.Instance;
 
         KpiMetrics = new ObservableCollection<KpiMetricDto>();
         RecentActivity = new ObservableCollection<ActivityEntryDto>();
@@ -286,6 +290,10 @@ public sealed class DashboardPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogLoadFailed(exception);
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Dashboard overview load failed.")]
+    private partial void LogLoadFailed(Exception exception);
 }

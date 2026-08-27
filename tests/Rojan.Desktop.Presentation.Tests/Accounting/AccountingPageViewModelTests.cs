@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -18,12 +20,14 @@ public sealed class AccountingPageViewModelTests
         StubInvoiceCommandService? commandService = null,
         StubPaymentQueryService? paymentQueryService = null,
         StubPaymentCommandService? paymentCommandService = null,
-        StubDialogService? dialogService = null) => new(
+        StubDialogService? dialogService = null,
+        RecordingLogger<AccountingPageViewModel>? logger = null) => new(
         queryService,
         commandService ?? new StubInvoiceCommandService(),
         paymentQueryService ?? new StubPaymentQueryService(),
         paymentCommandService ?? new StubPaymentCommandService(),
-        dialogService ?? new StubDialogService());
+        dialogService ?? new StubDialogService(),
+        logger: logger);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -74,6 +78,51 @@ public sealed class AccountingPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.11 Logging Hardening: LoadAsync and SearchAsync now log at Error
+    // before surfacing the Error state - user-visible behaviour unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryServiceThrows_LogsErrorWithOperation()
+    {
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<AccountingPageViewModel>();
+
+        var sut = MakeSut(queryService, logger: logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SearchAsync_QueryServiceThrows_LogsErrorWithOperation()
+    {
+        var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
+            searchInvoices: (_, _) => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("search boom")),
+            getProfile: (invoiceId, _) => Task.FromResult(MakeProfile(invoiceId)));
+        var logger = new RecordingLogger<AccountingPageViewModel>();
+        var sut = MakeSut(queryService, logger: logger);
+
+        sut.SearchText = "sophia";
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("SearchAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => MakeSut(queryService));
+
+        Assert.Null(exception);
     }
 
     [Fact]

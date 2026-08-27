@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -40,10 +42,11 @@ namespace Rojan.Desktop.Presentation.ViewModels.Calendar;
 /// - a real, deliberate scope addition to this page, not incidental
 /// plumbing.
 /// </summary>
-public sealed class CalendarPageViewModel : ViewModelBase
+public sealed partial class CalendarPageViewModel : ViewModelBase
 {
     private readonly ICalendarQueryService _queryService;
     private readonly IServiceQueryService _serviceQueryService;
+    private readonly ILogger<CalendarPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -53,10 +56,11 @@ public sealed class CalendarPageViewModel : ViewModelBase
     private string _workingHoursText = string.Empty;
     private CalendarViewMode _viewMode = CalendarViewMode.Day;
 
-    public CalendarPageViewModel(ICalendarQueryService queryService, IServiceQueryService serviceQueryService)
+    public CalendarPageViewModel(ICalendarQueryService queryService, IServiceQueryService serviceQueryService, ILogger<CalendarPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _serviceQueryService = serviceQueryService;
+        _logger = logger ?? NullLogger<CalendarPageViewModel>.Instance;
 
         Specialists = new ObservableCollection<ScheduledSpecialistDto>();
         Services = new ObservableCollection<ServiceDto>();
@@ -215,6 +219,7 @@ public sealed class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogLoadFailed(nameof(InitializeAsync), exception);
         }
     }
 
@@ -258,6 +263,7 @@ public sealed class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogLoadFailed(nameof(LoadDailyAvailabilityAsync), exception);
         }
     }
 
@@ -297,8 +303,12 @@ public sealed class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogLoadFailed(nameof(LoadWeeklyAvailabilityAsync), exception);
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Calendar availability load failed. Operation={Operation}")]
+    private partial void LogLoadFailed(string operation, Exception exception);
 
     private static string FormatTime(TimeSpan time) =>
         DateTime.Today.Add(time).ToString("h:mm tt", CultureInfo.InvariantCulture);

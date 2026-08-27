@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Presentation.Tests.Services;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -92,6 +94,73 @@ public sealed class CalendarPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.11 Logging Hardening: the three broad-catch load boundaries
+    // (InitializeAsync / LoadDailyAvailabilityAsync / LoadWeeklyAvailabilityAsync)
+    // now log at Error before surfacing the Error state - user-visible behaviour
+    // (ErrorMessage / State) is unchanged, verified by the existing tests above.
+
+    [Fact]
+    public void InitializeAsync_SpecialistsQueryThrows_LogsErrorWithOperation()
+    {
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromException<IReadOnlyList<ScheduledSpecialistDto>>(new InvalidOperationException("boom")),
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+        var logger = new RecordingLogger<CalendarPageViewModel>();
+
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("InitializeAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LoadDailyAvailabilityAsync_Throws_LogsErrorWithOperation()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (_, _, _, _) => Task.FromException<DailyAvailabilityDto>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<CalendarPageViewModel>();
+
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadDailyAvailabilityAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LoadWeeklyAvailabilityAsync_Throws_LogsErrorWithOperation()
+    {
+        var specialists = new List<ScheduledSpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var slot = MakeSlot("specialist-1", AvailabilityStatus.Available);
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromResult<IReadOnlyList<ScheduledSpecialistDto>>(specialists),
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee", [slot])),
+            (_, _, _, _) => Task.FromException<WeeklyAvailabilityDto>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<CalendarPageViewModel>();
+        var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")), logger);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+
+        sut.SetViewModeCommand.Execute(CalendarViewMode.Week);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadWeeklyAvailabilityAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_InitializeFailureNeverThrows()
+    {
+        var queryService = new StubCalendarQueryService(
+            _ => Task.FromException<IReadOnlyList<ScheduledSpecialistDto>>(new InvalidOperationException("boom")),
+            (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
+
+        var exception = Record.Exception(() =>
+            new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut"))));
+
+        Assert.Null(exception);
     }
 
     [Fact]
