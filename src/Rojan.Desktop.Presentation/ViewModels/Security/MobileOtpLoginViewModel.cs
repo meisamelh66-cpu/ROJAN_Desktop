@@ -1,6 +1,8 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Presentation.Localization;
@@ -21,7 +23,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Security;
 /// never a dialog" convention and its <c>SignedIn</c> signal shape exactly -
 /// <see cref="LoginWindowViewModel"/> treats both the same way.
 /// </summary>
-public sealed class MobileOtpLoginViewModel : ViewModelBase
+public sealed partial class MobileOtpLoginViewModel : ViewModelBase
 {
     private static readonly Regex E164Pattern = new(@"^\+[1-9]\d{7,14}$", RegexOptions.Compiled);
 
@@ -41,6 +43,7 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
 
     private readonly IAuthenticationService _authenticationService;
     private readonly IDelayScheduler _delayScheduler;
+    private readonly ILogger<MobileOtpLoginViewModel> _logger;
 
     private string _phoneNumber = string.Empty;
     private string _code = string.Empty;
@@ -50,10 +53,11 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
     private bool _canResend;
     private IDisposable? _resendCooldownHandle;
 
-    public MobileOtpLoginViewModel(IAuthenticationService authenticationService, IDelayScheduler delayScheduler)
+    public MobileOtpLoginViewModel(IAuthenticationService authenticationService, IDelayScheduler delayScheduler, ILogger<MobileOtpLoginViewModel>? logger = null)
     {
         _authenticationService = authenticationService;
         _delayScheduler = delayScheduler;
+        _logger = logger ?? NullLogger<MobileOtpLoginViewModel>.Instance;
         RequestCodeCommand = new AsyncRelayCommand(_ => RequestCodeAsync(), _ => CanRequestCode());
         ResendCodeCommand = new AsyncRelayCommand(_ => ResendCodeAsync(), _ => CanResendCode());
         VerifyCodeCommand = new AsyncRelayCommand(_ => VerifyCodeAsync(), _ => CanVerifyCode());
@@ -288,6 +292,7 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         catch (ApiException)
         {
             ErrorMessage = Strings.Login_Error_Generic;
+            LogUnexpectedOtpApiFailure(nameof(RequestCodeAsync));
         }
         finally
         {
@@ -329,6 +334,7 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         catch (ApiException)
         {
             ErrorMessage = Strings.Login_Error_Generic;
+            LogUnexpectedOtpApiFailure(nameof(ResendCodeAsync));
         }
         finally
         {
@@ -396,10 +402,18 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         catch (ApiException)
         {
             ErrorMessage = Strings.Login_Error_Generic;
+            LogUnexpectedOtpApiFailure(nameof(VerifyCodeAsync));
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // the phone number, the OTP code, or any token/session data. The OTP client
+    // (AuthBootstrapHttpClient) embeds the raw backend response body in
+    // ApiException messages, so the exception is deliberately not passed here.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "OTP API request failed during {Operation}")]
+    private partial void LogUnexpectedOtpApiFailure(string operation);
 }

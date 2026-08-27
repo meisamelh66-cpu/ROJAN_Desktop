@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Presentation.Localization;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Security;
 
 namespace Rojan.Desktop.Presentation.Tests.Security;
@@ -224,6 +226,107 @@ public sealed class MobileOtpLoginViewModelTests
 
         Assert.Equal(Strings.Login_Mobile_Error_RateLimited, sut.ErrorMessage);
         Assert.False(sut.IsCodeSent);
+    }
+
+    // Phase 8.15 OTP Logging Hardening: the generic ApiException fallthrough of each
+    // flow logs at Warning, operation name only - never the exception, its message,
+    // the phone number, the code, or any token/session data. Typed/expected failures
+    // (rate-limit, connectivity, timeout, auth-rejection) are deliberately NOT logged.
+    // User-visible behaviour (ErrorMessage / IsCodeSent / IsBusy) is unchanged,
+    // verified by the existing tests above.
+
+    [Fact]
+    public async Task RequestCodeCommand_UnexpectedApiException_LogsWarningWithOperationOnly()
+    {
+        var logger = new RecordingLogger<MobileOtpLoginViewModel>();
+        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiException("Request failed with status 500: {\"secret\":\"body\"}") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler(), logger) { PhoneNumber = "+989123456789" };
+
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Error_Generic, sut.ErrorMessage);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Contains("RequestCodeAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("+989123456789", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ResendCodeCommand_UnexpectedApiException_LogsWarningWithOperationOnly()
+    {
+        var logger = new RecordingLogger<MobileOtpLoginViewModel>();
+        var service = new StubAuthenticationService
+        {
+            ChallengeToReturn = new OtpChallenge("+989123456789", TimeSpan.FromMinutes(2), TimeSpan.FromSeconds(60)),
+        };
+        var scheduler = new StubDelayScheduler();
+        var sut = new MobileOtpLoginViewModel(service, scheduler, logger) { PhoneNumber = "+989123456789" };
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+        scheduler.FireAll();
+        service.ResendOtpExceptionToThrow = new ApiException("boom");
+
+        await ExecuteAsync(sut.ResendCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Error_Generic, sut.ErrorMessage);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Contains("ResendCodeAsync", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task VerifyCodeCommand_UnexpectedApiException_LogsWarningWithOperationOnly()
+    {
+        var logger = new RecordingLogger<MobileOtpLoginViewModel>();
+        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiException("boom") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler(), logger) { PhoneNumber = "+989123456789", Code = "123456" };
+
+        await ExecuteAsync(sut.VerifyCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Error_Generic, sut.ErrorMessage);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Contains("VerifyCodeAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("123456", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RequestCodeCommand_RateLimited_DoesNotLog()
+    {
+        var logger = new RecordingLogger<MobileOtpLoginViewModel>();
+        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiRateLimitException("429") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler(), logger) { PhoneNumber = "+989123456789" };
+
+        await ExecuteAsync(sut.RequestCodeCommand, sut);
+
+        Assert.Equal(Strings.Login_Mobile_Error_RateLimited, sut.ErrorMessage);
+        Assert.Empty(logger.Entries);
+    }
+
+    [Theory]
+    [InlineData(401)]
+    [InlineData(403)]
+    public async Task VerifyCodeCommand_AuthRejection_DoesNotLog(int statusCode)
+    {
+        var logger = new RecordingLogger<MobileOtpLoginViewModel>();
+        var service = new StubAuthenticationService { SignInWithOtpExceptionToThrow = new ApiAuthenticationException("auth rejected", statusCode: statusCode) };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler(), logger) { PhoneNumber = "+989123456789", Code = "000000" };
+
+        await ExecuteAsync(sut.VerifyCodeCommand, sut);
+
+        Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
+    public async Task NoLoggerSupplied_UsesNullLogger_UnexpectedApiFailureNeverThrows()
+    {
+        var service = new StubAuthenticationService { RequestOtpExceptionToThrow = new ApiException("boom") };
+        var sut = new MobileOtpLoginViewModel(service, new StubDelayScheduler()) { PhoneNumber = "+989123456789" };
+
+        var exception = await Record.ExceptionAsync(() => ExecuteAsync(sut.RequestCodeCommand, sut));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Login_Error_Generic, sut.ErrorMessage);
     }
 
     [Fact]
