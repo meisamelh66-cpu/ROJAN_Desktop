@@ -20,6 +20,7 @@ using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Application.Search;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Application.Support;
 using Rojan.Desktop.Application.Workspaces;
 using AppServices = Rojan.Desktop.Application.Services;
@@ -85,6 +86,15 @@ public static class ServiceCollectionExtensions
             new SpecialistCommandServiceSyncProducer(sp.GetRequiredService<SpecialistCommandService>(), sp.GetRequiredService<ISyncQueueService>()));
         services.AddSingleton<ISpecialistCommandService>(sp =>
             new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandServiceSyncProducer>(), sp.GetRequiredService<IPermissionGate>()));
+
+        // Phase 7.2.4 Shift Engine (Specialist Schedule) Backend Integration: same
+        // "raw service registered as itself, wrapped by a permission-enforcing decorator
+        // registered as the public interface" pair as every other module above - no sync
+        // producer here, this vertical slice was not asked to support offline sync.
+        services.AddSingleton<ISpecialistScheduleQueryService, SpecialistScheduleQueryService>();
+        services.AddSingleton<SpecialistScheduleCommandService>();
+        services.AddSingleton<ISpecialistScheduleCommandService>(sp =>
+            new SpecialistScheduleCommandServicePermissionGate(sp.GetRequiredService<SpecialistScheduleCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<AppServices.IServiceQueryService, AppServices.ServiceQueryService>();
         services.AddSingleton<AppServices.IServiceProfileQueryService, AppServices.ServiceProfileQueryService>();
         services.AddSingleton<AppServices.ServiceCommandService>();

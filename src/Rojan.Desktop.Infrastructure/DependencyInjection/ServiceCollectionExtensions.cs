@@ -28,6 +28,7 @@ using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Automation;
 using Rojan.Desktop.Domain.Salons;
 using Rojan.Desktop.Domain.Specialists;
+using Rojan.Desktop.Domain.Specialists.Schedule;
 using Rojan.Desktop.Domain.Support;
 using Rojan.Desktop.Domain.Workspaces;
 using Rojan.Desktop.Infrastructure.Accounting;
@@ -56,6 +57,7 @@ using Rojan.Desktop.Infrastructure.Search;
 using Rojan.Desktop.Infrastructure.Security;
 using Rojan.Desktop.Infrastructure.Services;
 using Rojan.Desktop.Infrastructure.Specialists;
+using Rojan.Desktop.Infrastructure.Specialists.Schedule;
 using Rojan.Desktop.Infrastructure.Support;
 using Rojan.Desktop.Infrastructure.Sync;
 using Rojan.Desktop.Infrastructure.Workspaces;
@@ -161,6 +163,12 @@ public static class ServiceCollectionExtensions
         // equivalent, why a status change via UpdateSpecialistAsync throws,
         // and why specialist-skill reads/writes are empty/throw).
         services.AddSingleton<ISpecialistRepository, BackendSpecialistRepository>();
+
+        // Phase 7.2.4 Shift Engine (Specialist Schedule) Backend Integration: no Fake
+        // predecessor to retain unreferenced - same "genuinely new vertical slice" shape as
+        // ISalonRepository above, not a Fake/Ef->Backend swap. See
+        // BackendSpecialistScheduleRepository's own doc comment for the full reasoning.
+        services.AddSingleton<ISpecialistScheduleRepository, BackendSpecialistScheduleRepository>();
 
         // Reception Booking Integration Phase 1 (Service Integration): real
         // GET against ROJAN_Backend's category/service catalog, replacing
