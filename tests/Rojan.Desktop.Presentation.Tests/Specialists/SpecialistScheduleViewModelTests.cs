@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -235,5 +236,82 @@ public sealed class SpecialistScheduleViewModelTests
         await Task.Yield();
 
         Assert.Equal(0, commandService.RemoveLeaveCallCount);
+    }
+
+    // Phase 7.4.1 Production Hardening: a handled failure must also be logged, not just shown via
+    // ErrorMessage/IsPermissionDenied - see this class's own doc comment.
+
+    [Fact]
+    public async Task LoadCommand_QueryThrows_LogsTheFailure()
+    {
+        var logger = new RecordingLogger<SpecialistScheduleViewModel>();
+        var queryService = new StubSpecialistScheduleQueryService
+        {
+            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("boom")),
+        };
+        var sut = new SpecialistScheduleViewModel("specialist-1", queryService, new StubSpecialistScheduleCommandService(), logger);
+
+        sut.LoadCommand.Execute(null);
+        await Task.Yield();
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task LoadCommand_UnauthorizedOperationException_LogsAsWarningNotError()
+    {
+        var logger = new RecordingLogger<SpecialistScheduleViewModel>();
+        var queryService = new StubSpecialistScheduleQueryService
+        {
+            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new UnauthorizedOperationException("denied")),
+        };
+        var sut = new SpecialistScheduleViewModel("specialist-1", queryService, new StubSpecialistScheduleCommandService(), logger);
+
+        sut.LoadCommand.Execute(null);
+        await Task.Yield();
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Warning);
+        Assert.DoesNotContain(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task SetWeeklyAvailabilityCommand_PermissionDenied_LogsTheDenial()
+    {
+        var logger = new RecordingLogger<SpecialistScheduleViewModel>();
+        var commandService = new StubSpecialistScheduleCommandService { Fail = new UnauthorizedOperationException("denied") };
+        var sut = new SpecialistScheduleViewModel("specialist-1", new StubSpecialistScheduleQueryService(), commandService, logger)
+        {
+            NewAvailabilityStartText = "09:00",
+            NewAvailabilityEndText = "13:00",
+        };
+        await Task.Yield();
+        logger.Entries.Clear(); // discard the constructor's own initial LoadAsync log noise, if any
+
+        sut.SetWeeklyAvailabilityCommand.Execute(null);
+        await Task.Yield();
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Warning && entry.Message.Contains(nameof(SpecialistScheduleViewModel.SetWeeklyAvailabilityCommand).Replace("Command", "Async", StringComparison.Ordinal), StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task NoLoggerSupplied_UsesNullLogger_NeverThrows()
+    {
+        // The optional-logger default (NullLogger) must be a genuinely safe no-op, not merely
+        // "compiles" - a failure here would mean every existing test/call site that doesn't pass a
+        // logger (all of them, before this Phase) was silently relying on undefined behavior.
+        var queryService = new StubSpecialistScheduleQueryService
+        {
+            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("boom")),
+        };
+        var sut = new SpecialistScheduleViewModel("specialist-1", queryService, new StubSpecialistScheduleCommandService());
+
+        var exception = await Record.ExceptionAsync(async () =>
+        {
+            sut.LoadCommand.Execute(null);
+            await Task.Yield();
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -63,5 +64,43 @@ public sealed class SpecialistAvailabilityViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 7.4.1 Production Hardening: see SpecialistScheduleViewModelTests' own tests for the
+    // full reasoning - a handled failure must also be logged.
+
+    [Fact]
+    public async Task LoadCommand_QueryThrows_LogsTheFailure()
+    {
+        var logger = new RecordingLogger<SpecialistAvailabilityViewModel>();
+        var queryService = new StubSpecialistScheduleQueryService
+        {
+            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("boom")),
+        };
+        var sut = new SpecialistAvailabilityViewModel("specialist-1", queryService, logger);
+
+        sut.LoadCommand.Execute(null);
+        await Task.Yield();
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task NoLoggerSupplied_UsesNullLogger_NeverThrows()
+    {
+        var queryService = new StubSpecialistScheduleQueryService
+        {
+            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("boom")),
+        };
+        var sut = new SpecialistAvailabilityViewModel("specialist-1", queryService);
+
+        var exception = await Record.ExceptionAsync(async () =>
+        {
+            sut.LoadCommand.Execute(null);
+            await Task.Yield();
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 }

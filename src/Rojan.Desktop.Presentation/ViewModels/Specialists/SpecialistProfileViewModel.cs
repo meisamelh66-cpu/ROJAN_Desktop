@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
@@ -64,7 +65,9 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         IIntelligenceEngine intelligenceEngine,
         IServiceQueryService serviceQueryService,
         ISpecialistScheduleQueryService scheduleQueryService,
-        ISpecialistScheduleCommandService scheduleCommandService)
+        ISpecialistScheduleCommandService scheduleCommandService,
+        ILogger<SpecialistScheduleViewModel>? scheduleLogger = null,
+        ILogger<SpecialistAvailabilityViewModel>? availabilityLogger = null)
     {
         _specialistId = specialistId;
         _profileQueryService = profileQueryService;
@@ -82,8 +85,8 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         // itself, and never rebuilt on this ViewModel's own reloads - each self-loads
         // independently in its own constructor, same "per-selection child ViewModel" shape this
         // class already uses for itself (see this class's own doc comment).
-        Schedule = new SpecialistScheduleViewModel(specialistId, scheduleQueryService, scheduleCommandService);
-        Availability = new SpecialistAvailabilityViewModel(specialistId, scheduleQueryService);
+        Schedule = new SpecialistScheduleViewModel(specialistId, scheduleQueryService, scheduleCommandService, scheduleLogger);
+        Availability = new SpecialistAvailabilityViewModel(specialistId, scheduleQueryService, availabilityLogger);
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AddSkillCommand = new AsyncRelayCommand(_ => AddSkillAsync(), _ => !string.IsNullOrWhiteSpace(NewSkillText));

@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.Localization;
@@ -35,12 +38,25 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// means "you are not allowed to do this," not "something went wrong,"
 /// and is shown as its own message rather than the generic error state -
 /// same reasoning the Implementation Readiness report's own §E called for.
+///
+/// Phase 7.4.1 Production Hardening: every caught failure is now also
+/// logged (<see cref="LogPermissionDenied"/>/<see cref="LogOperationFailed"/>,
+/// same allocation-free <c>[LoggerMessage]</c> pattern already established
+/// by <c>Infrastructure.Api.HttpApiClient</c>) - before this, a failure
+/// handled here (shown via <see cref="ErrorMessage"/>/<see cref="IsPermissionDenied"/>)
+/// left no diagnostic trail at all; only a genuinely *unhandled* exception
+/// ever reached the app's global logger. <see cref="ILogger{T}"/> is
+/// optional, defaulting to <see cref="NullLogger{T}.Instance"/> when not
+/// supplied - deliberately, so this addition doesn't force every existing
+/// test constructing this class to change; tests that want to assert on
+/// logging can still inject a real one.
 /// </summary>
-public sealed class SpecialistScheduleViewModel : ViewModelBase
+public sealed partial class SpecialistScheduleViewModel : ViewModelBase
 {
     private readonly string _specialistId;
     private readonly ISpecialistScheduleQueryService _queryService;
     private readonly ISpecialistScheduleCommandService _commandService;
+    private readonly ILogger<SpecialistScheduleViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -65,11 +81,12 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
     private string _newBlockEndText = string.Empty;
     private string _newBlockReason = string.Empty;
 
-    public SpecialistScheduleViewModel(string specialistId, ISpecialistScheduleQueryService queryService, ISpecialistScheduleCommandService commandService)
+    public SpecialistScheduleViewModel(string specialistId, ISpecialistScheduleQueryService queryService, ISpecialistScheduleCommandService commandService, ILogger<SpecialistScheduleViewModel>? logger = null)
     {
         _specialistId = specialistId;
         _queryService = queryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<SpecialistScheduleViewModel>.Instance;
 
         WeeklyAvailability = new ObservableCollection<WeeklyAvailabilityDto>();
         Overrides = new ObservableCollection<ScheduleOverrideDto>();
@@ -258,6 +275,7 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
         {
             IsPermissionDenied = true;
             State = DashboardState.Error;
+            LogPermissionDenied(_specialistId, nameof(LoadAsync));
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page/profile ViewModel in this app (see SpecialistProfileViewModel.LoadAsync).
         catch (Exception exception)
@@ -265,6 +283,7 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(_specialistId, nameof(LoadAsync), exception);
         }
     }
 
@@ -428,9 +447,12 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
     /// sets <see cref="IsPermissionDenied"/> (never crashes, never a generic
     /// error), any other failure sets <see cref="ErrorMessage"/>. Returns
     /// whether the mutation actually succeeded, so callers know whether to
-    /// clear their input buffers and reload.
+    /// clear their input buffers and reload. <paramref name="operationName"/>
+    /// is deliberately <see cref="CallerMemberNameAttribute"/>-supplied, not
+    /// passed explicitly by any of the eight callers - keeps this Phase
+    /// 7.4.1 logging addition from touching any of those existing call sites.
     /// </summary>
-    private async Task<bool> TryMutateAsync(Func<Task> mutate)
+    private async Task<bool> TryMutateAsync(Func<Task> mutate, [CallerMemberName] string operationName = "")
     {
         try
         {
@@ -442,6 +464,7 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
         catch (UnauthorizedOperationException)
         {
             IsPermissionDenied = true;
+            LogPermissionDenied(_specialistId, operationName);
             return false;
         }
 #pragma warning disable CA1031 // Mutation boundary: any failure must surface as ErrorMessage, never crash - same justified broad catch as SpecialistProfileViewModel's own save/assignment boundaries.
@@ -449,9 +472,16 @@ public sealed class SpecialistScheduleViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(_specialistId, operationName, exception);
             return false;
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Specialist schedule permission denied. SpecialistId={SpecialistId} Operation={Operation}")]
+    private partial void LogPermissionDenied(string specialistId, string operation);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Specialist schedule operation failed. SpecialistId={SpecialistId} Operation={Operation}")]
+    private partial void LogOperationFailed(string specialistId, string operation, Exception exception);
 
     private static bool TryParseTime(string text, out TimeSpan value) =>
         TimeSpan.TryParseExact(text.Trim(), @"hh\:mm", CultureInfo.InvariantCulture, out value);

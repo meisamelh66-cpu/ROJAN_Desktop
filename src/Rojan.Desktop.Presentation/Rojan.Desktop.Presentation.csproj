@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <!-- Phase 7.4.1 Production Hardening - see Directory.Packages.props's own comment. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <!-- Phase D-1: the ROJAN AI hero banner artwork - a byte-for-byte, unedited copy of docs/assets/rojan_ai_hero_banner.png (this project's first binary asset; every icon/illustration before this was hand-authored WPF vector). Referenced from AiHeroBanner.xaml via a pack URI, never a hardcoded file-system path. -->

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -24,19 +26,26 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// <c>I*QueryService</c> in this codebase). No command, no mutation, no
 /// input buffer - this view cannot change anything, by construction, not
 /// by a runtime check.
+///
+/// Phase 7.4.1 Production Hardening: the caught load failure is now also
+/// logged (<see cref="LogLoadFailed"/>) - see <see cref="SpecialistScheduleViewModel"/>'s
+/// own doc comment for the full reasoning, including why <see cref="ILogger{T}"/>
+/// is optional here too.
 /// </summary>
-public sealed class SpecialistAvailabilityViewModel : ViewModelBase
+public sealed partial class SpecialistAvailabilityViewModel : ViewModelBase
 {
     private readonly string _specialistId;
     private readonly ISpecialistScheduleQueryService _queryService;
+    private readonly ILogger<SpecialistAvailabilityViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
 
-    public SpecialistAvailabilityViewModel(string specialistId, ISpecialistScheduleQueryService queryService)
+    public SpecialistAvailabilityViewModel(string specialistId, ISpecialistScheduleQueryService queryService, ILogger<SpecialistAvailabilityViewModel>? logger = null)
     {
         _specialistId = specialistId;
         _queryService = queryService;
+        _logger = logger ?? NullLogger<SpecialistAvailabilityViewModel>.Instance;
 
         WeeklyAvailability = new ObservableCollection<WeeklyAvailabilityDto>();
         Overrides = new ObservableCollection<ScheduleOverrideDto>();
@@ -99,8 +108,12 @@ public sealed class SpecialistAvailabilityViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogLoadFailed(_specialistId, exception);
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Specialist availability load failed. SpecialistId={SpecialistId}")]
+    private partial void LogLoadFailed(string specialistId, Exception exception);
 
     private static void Replace<T>(ObservableCollection<T> collection, IReadOnlyList<T> items)
     {
