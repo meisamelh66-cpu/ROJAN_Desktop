@@ -15,4 +15,12 @@ public enum WorkspaceRole
     Ai,
     Support,
     Marketing,
+
+    /// <summary>
+    /// Remediation Phase 2 (Role Mapping Hardening): mirrors
+    /// <see cref="Domain.Organizations.WorkspaceRole.Unknown"/> - see its
+    /// own doc comment. Application's own copy, same reasoning as every
+    /// other member here.
+    /// </summary>
+    Unknown,
 }

@@ -116,6 +116,13 @@ public static class RolePermissions
             Permission.ReportingView,
             Permission.AiUse,
         },
+
+        // Remediation Phase 2 (Role Mapping Hardening): explicit, not relying on
+        // GetPermissions's own "not in the map" fallback (which would already return
+        // empty) - a security-relevant "this role denies everything" invariant should be
+        // visible here, not implicit. Deliberately excludes even Permission.DashboardView,
+        // unlike every other role above - see WorkspaceRole.Unknown's own doc comment for why.
+        [WorkspaceRole.Unknown] = new HashSet<Permission>(),
     };
 
     public static IReadOnlySet<Permission> GetPermissions(WorkspaceRole role) =>

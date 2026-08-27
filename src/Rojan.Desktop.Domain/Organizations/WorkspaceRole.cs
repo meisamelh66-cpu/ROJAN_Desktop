@@ -15,4 +15,17 @@ public enum WorkspaceRole
     Ai,
     Support,
     Marketing,
+
+    /// <summary>
+    /// Remediation Phase 2 (Role Mapping Hardening): the deliberate,
+    /// fail-closed fallback for a session whose real backend role/
+    /// relationship could not be recognized as one of the roles above -
+    /// see <c>Application.Salons.SalonSessionAdapter.ToWorkspaceRole</c>'s
+    /// own doc comment for the exact cases that map here. Deliberately
+    /// absent from <see cref="RolePermissions"/>'s map (or present with an
+    /// explicit empty set - see that class's own comment) so it grants
+    /// zero permissions, not even <see cref="Permission.DashboardView"/> -
+    /// "deny safely" means every capability, no exceptions.
+    /// </summary>
+    Unknown,
 }

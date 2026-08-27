@@ -74,7 +74,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<CustomerCommandServiceSyncProducer>(sp =>
             new CustomerCommandServiceSyncProducer(sp.GetRequiredService<CustomerCommandService>(), sp.GetRequiredService<ISyncQueueService>()));
         services.AddSingleton<ICustomerCommandService>(sp =>
-            new CustomerCommandServicePermissionGate(sp.GetRequiredService<CustomerCommandServiceSyncProducer>(), sp.GetRequiredService<IPermissionGate>()));
+            new CustomerCommandServicePermissionGate(sp.GetRequiredService<CustomerCommandServiceSyncProducer>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<IBookingQueryService, BookingQueryService>();
         services.AddSingleton<BookingCommandService>();
         services.AddSingleton<IBookingCommandService>(sp =>
@@ -85,7 +85,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SpecialistCommandServiceSyncProducer>(sp =>
             new SpecialistCommandServiceSyncProducer(sp.GetRequiredService<SpecialistCommandService>(), sp.GetRequiredService<ISyncQueueService>()));
         services.AddSingleton<ISpecialistCommandService>(sp =>
-            new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandServiceSyncProducer>(), sp.GetRequiredService<IPermissionGate>()));
+            new SpecialistCommandServicePermissionGate(sp.GetRequiredService<SpecialistCommandServiceSyncProducer>(), sp.GetRequiredService<IBackendPermissionGate>()));
 
         // Phase 7.2.4 Shift Engine (Specialist Schedule) Backend Integration: same
         // "raw service registered as itself, wrapped by a permission-enforcing decorator
@@ -99,7 +99,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppServices.IServiceProfileQueryService, AppServices.ServiceProfileQueryService>();
         services.AddSingleton<AppServices.ServiceCommandService>();
         services.AddSingleton<AppServices.IServiceCommandService>(sp =>
-            new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IPermissionGate>()));
+            new AppServices.ServiceCommandServicePermissionGate(sp.GetRequiredService<AppServices.ServiceCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
         services.AddSingleton<IIntelligenceEngine, IntelligenceEngine>();
         // ICalendarQueryService is registered in AddInfrastructure() instead of here -
         // Calendar/Availability Integration Phase 3 replaced CalendarQueryService (local

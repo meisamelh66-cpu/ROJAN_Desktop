@@ -167,6 +167,7 @@ internal static class OrganizationMapper
         DomainOrg.WorkspaceRole.Ai => WorkspaceRole.Ai,
         DomainOrg.WorkspaceRole.Support => WorkspaceRole.Support,
         DomainOrg.WorkspaceRole.Marketing => WorkspaceRole.Marketing,
+        DomainOrg.WorkspaceRole.Unknown => WorkspaceRole.Unknown,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown workspace role."),
     };
 
@@ -184,6 +185,7 @@ internal static class OrganizationMapper
         WorkspaceRole.Ai => DomainOrg.WorkspaceRole.Ai,
         WorkspaceRole.Support => DomainOrg.WorkspaceRole.Support,
         WorkspaceRole.Marketing => DomainOrg.WorkspaceRole.Marketing,
+        WorkspaceRole.Unknown => DomainOrg.WorkspaceRole.Unknown,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown workspace role."),
     };
 }

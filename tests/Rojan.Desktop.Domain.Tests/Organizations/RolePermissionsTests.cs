@@ -55,10 +55,30 @@ public sealed class RolePermissionsTests
     [Fact]
     public void GetPermissions_EveryNonOwnerRole_AlwaysIncludesDashboardView()
     {
-        foreach (var role in Enum.GetValues<WorkspaceRole>())
+        // Remediation Phase 2 (Role Mapping Hardening): WorkspaceRole.Unknown is the deliberate
+        // exception to this invariant - it exists specifically to deny every permission, including
+        // DashboardView, for a session whose real backend role could not be recognized. See its
+        // own doc comment and GetPermissions_UnknownRole_GrantsNoPermissions below.
+        foreach (var role in Enum.GetValues<WorkspaceRole>().Where(role => role != WorkspaceRole.Unknown))
         {
             Assert.Contains(Permission.DashboardView, RolePermissions.GetPermissions(role));
         }
+    }
+
+    [Fact]
+    public void GetPermissions_UnknownRole_GrantsNoPermissions()
+    {
+        var permissions = RolePermissions.GetPermissions(WorkspaceRole.Unknown);
+
+        Assert.Empty(permissions);
+    }
+
+    [Fact]
+    public void HasPermission_UnknownRoleRequestingDashboardView_ReturnsFalse()
+    {
+        // Not even the one permission every other role always has (see the test above) - a
+        // deliberately fail-closed default, never a fail-open one.
+        Assert.False(RolePermissions.HasPermission(WorkspaceRole.Unknown, Permission.DashboardView));
     }
 
     [Fact]
