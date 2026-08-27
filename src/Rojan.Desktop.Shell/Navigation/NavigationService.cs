@@ -29,6 +29,22 @@ namespace Rojan.Desktop.Shell.Navigation;
 /// exactly like a web browser abandons forward history once you click a
 /// new link after going back.
 ///
+/// Phase 8.6 (Navigation BackStack Hardening): the back-stack is bounded to
+/// <see cref="MaxBackStackDepth"/> entries with FIFO eviction - when a push
+/// would exceed the cap, the oldest entry (the bottom of the stack) is
+/// discarded first. This keeps a long-running session's retained
+/// <see cref="ViewModelBase"/> count fixed regardless of how many total
+/// navigations occur, at the disclosed cost of bounded Back-history depth
+/// (the evicted oldest page is permanently unreachable via <see cref="GoBack"/>,
+/// not merely deferred). <see cref="System.Collections.Generic.Stack{T}"/> has
+/// no O(1) remove-from-bottom, so <see cref="_backStack"/> is a
+/// <see cref="LinkedList{T}"/> used as a deque: <c>AddLast</c>/<c>RemoveLast</c>
+/// are the push/pop of top-of-stack, <c>RemoveFirst</c> is the eviction of the
+/// oldest. <see cref="_forwardStack"/> is left an ordinary
+/// <see cref="System.Collections.Generic.Stack{T}"/> - it is cleared on every
+/// fresh <see cref="Navigate"/> and so is already self-bounding by ordinary
+/// usage.
+///
 /// Reception Stabilization Sprint: <see cref="NavigateTo{TViewModel}"/> is
 /// now permission-checked - previously the sidebar's own
 /// <c>MainWindowViewModel.BuildVisibleNavigationItems</c> filter was the
@@ -57,10 +73,19 @@ public sealed class NavigationService : INavigationService
         [typeof(ReportingPageViewModel)] = Permission.ReportingView,
     };
 
+    /// <summary>
+    /// Maximum number of entries retained in <see cref="_backStack"/>. Deep
+    /// enough that realistic step-back-a-handful-of-pages navigation is never
+    /// truncated in practice; small enough to bound worst-case retained memory
+    /// to a fixed small multiple of one page's footprint. Not derived from a
+    /// measured memory budget - a reasonable default (Phase 8.6), tunable here.
+    /// </summary>
+    internal const int MaxBackStackDepth = 20;
+
     private readonly IServiceProvider _serviceProvider;
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
-    private readonly Stack<ViewModelBase> _backStack = new();
+    private readonly LinkedList<ViewModelBase> _backStack = new();
     private readonly Stack<ViewModelBase> _forwardStack = new();
     private ContentControl? _host;
     private ViewModelBase? _current;
@@ -78,6 +103,21 @@ public sealed class NavigationService : INavigationService
     public bool CanGoBack => _backStack.Count > 0;
 
     public bool CanGoForward => _forwardStack.Count > 0;
+
+    /// <summary>
+    /// Test-only seam (mirrors <see cref="CanGoBack"/>'s role in
+    /// <c>NavigationServiceTests</c>): the current <see cref="_backStack"/>
+    /// entry count, so the cap and FIFO eviction (Phase 8.6) can be asserted
+    /// directly without a public API for internal history depth.
+    /// </summary>
+    internal int BackStackDepth => _backStack.Count;
+
+    /// <summary>
+    /// Test-only seam: the currently-displayed ViewModel, so tests can assert
+    /// exactly which entry <see cref="GoBack"/>/<see cref="GoForward"/> land on
+    /// after FIFO eviction (Phase 8.6) without a public accessor for it.
+    /// </summary>
+    internal ViewModelBase? Current => _current;
 
     /// <summary>
     /// Wires this service to the window's navigation content host. Called
@@ -130,7 +170,7 @@ public sealed class NavigationService : INavigationService
             _forwardStack.Push(_current);
         }
 
-        SetContent(_backStack.Pop());
+        SetContent(PopBackStack());
     }
 
     public void GoForward()
@@ -142,7 +182,7 @@ public sealed class NavigationService : INavigationService
 
         if (_current is not null)
         {
-            _backStack.Push(_current);
+            PushBackStack(_current);
         }
 
         SetContent(_forwardStack.Pop());
@@ -152,11 +192,39 @@ public sealed class NavigationService : INavigationService
     {
         if (_current is not null)
         {
-            _backStack.Push(_current);
+            PushBackStack(_current);
         }
 
         _forwardStack.Clear();
         SetContent(viewModel);
+    }
+
+    /// <summary>
+    /// Pushes <paramref name="viewModel"/> onto the top of the bounded
+    /// back-stack. If the stack is already at <see cref="MaxBackStackDepth"/>,
+    /// the oldest entry (bottom) is evicted first (FIFO) - so the count never
+    /// exceeds the cap and the evicted <see cref="ViewModelBase"/> is no longer
+    /// referenced by this service.
+    /// </summary>
+    private void PushBackStack(ViewModelBase viewModel)
+    {
+        if (_backStack.Count >= MaxBackStackDepth)
+        {
+            _backStack.RemoveFirst();
+        }
+
+        _backStack.AddLast(viewModel);
+    }
+
+    /// <summary>
+    /// Pops the most-recent entry off the top of the bounded back-stack. Callers
+    /// must check <see cref="CanGoBack"/> first (as <see cref="GoBack"/> does).
+    /// </summary>
+    private ViewModelBase PopBackStack()
+    {
+        var top = _backStack.Last!.Value;
+        _backStack.RemoveLast();
+        return top;
     }
 
     private void SetContent(ViewModelBase viewModel)

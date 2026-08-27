@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Infrastructure.Organizations;
@@ -71,6 +72,140 @@ public sealed class NavigationServiceTests
         sut.NavigateTo<PlaceholderModuleViewModel>();
         sut.NavigateTo<PlaceholderModuleViewModel>();
 
+        Assert.True(sut.CanGoBack);
+    }
+
+    // ---------------------------------------------------------------------
+    // Phase 8.6 - Navigation BackStack Hardening: bounded _backStack with
+    // FIFO (oldest-first) eviction, capped at NavigationService.MaxBackStackDepth.
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Registers a fresh, individually-identifiable <see cref="PlaceholderModuleViewModel"/>
+    /// per resolution (Title = "page-0", "page-1", ...) so back-stack contents and
+    /// eviction order can be asserted precisely. Placeholder pages have no required
+    /// permission, so <see cref="NavigationService.NavigateTo{TViewModel}"/> always navigates.
+    /// </summary>
+    private static NavigationService CreateSutWithSequentialPlaceholderPages()
+    {
+        var next = 0;
+        var services = new ServiceCollection();
+        services.AddTransient(_ => new PlaceholderModuleViewModel($"page-{next++}"));
+        return CreateSut(services.BuildServiceProvider(), WorkspaceRole.Support);
+    }
+
+    private static string CurrentTitle(NavigationService sut) =>
+        ((PlaceholderModuleViewModel)sut.Current!).Title;
+
+    [Fact]
+    public void Navigate_ExceedsMaxDepth_BackStackDepthNeverExceedsCap()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+
+        for (var i = 0; i < NavigationService.MaxBackStackDepth + 10; i++)
+        {
+            sut.NavigateTo<PlaceholderModuleViewModel>();
+            Assert.True(
+                sut.BackStackDepth <= NavigationService.MaxBackStackDepth,
+                $"BackStackDepth {sut.BackStackDepth} exceeded cap {NavigationService.MaxBackStackDepth} after {i + 1} navigations");
+        }
+
+        Assert.Equal(NavigationService.MaxBackStackDepth, sut.BackStackDepth);
+    }
+
+    [Fact]
+    public void Navigate_ExceedsMaxDepth_EvictsOldestEntryFirst()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+
+        // Navigates page-0 .. page-21. At cap (20) after page-20 is pushed;
+        // navigating page-21 pushes page-20 and evicts page-0 from the bottom.
+        for (var i = 0; i < NavigationService.MaxBackStackDepth + 2; i++)
+        {
+            sut.NavigateTo<PlaceholderModuleViewModel>();
+        }
+
+        var reachedViaBack = new List<string>();
+        while (sut.CanGoBack)
+        {
+            sut.GoBack();
+            reachedViaBack.Add(CurrentTitle(sut));
+        }
+
+        Assert.Equal(NavigationService.MaxBackStackDepth, reachedViaBack.Count);
+        Assert.Equal("page-20", reachedViaBack[0]);   // newest below current - popped first
+        Assert.Equal("page-1", reachedViaBack[^1]);    // oldest still retained
+        Assert.DoesNotContain("page-0", reachedViaBack); // oldest entry was evicted
+    }
+
+    [Fact]
+    public void Navigate_ExceedsMaxDepth_EvictedViewModelIsReleasedForCollection()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+
+        var evicted = NavigateOnceAndWeaklyReferenceCurrent(sut);
+
+        // Push well past the cap so the first-navigated page falls off the bottom.
+        for (var i = 0; i < NavigationService.MaxBackStackDepth + 5; i++)
+        {
+            sut.NavigateTo<PlaceholderModuleViewModel>();
+        }
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(evicted.IsAlive, "Evicted back-stack ViewModel is still reachable - FIFO eviction did not drop the reference");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference NavigateOnceAndWeaklyReferenceCurrent(NavigationService sut)
+    {
+        sut.NavigateTo<PlaceholderModuleViewModel>();
+        return new WeakReference(sut.Current);
+    }
+
+    [Fact]
+    public void GoBack_AfterEviction_WalksEveryRetainedEntryThenStopsWithoutThrowing()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+
+        for (var i = 0; i < NavigationService.MaxBackStackDepth + 3; i++)
+        {
+            sut.NavigateTo<PlaceholderModuleViewModel>();
+        }
+
+        var backSteps = 0;
+        var exception = Record.Exception(() =>
+        {
+            while (sut.CanGoBack)
+            {
+                sut.GoBack();
+                backSteps++;
+            }
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(NavigationService.MaxBackStackDepth, backSteps);
+        Assert.False(sut.CanGoBack);
+    }
+
+    [Fact]
+    public void GoForward_AfterGoBack_RestoresThePageSteppedBackFrom()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+
+        sut.NavigateTo<PlaceholderModuleViewModel>(); // page-0
+        sut.NavigateTo<PlaceholderModuleViewModel>(); // page-1
+        sut.NavigateTo<PlaceholderModuleViewModel>(); // page-2 (current)
+
+        sut.GoBack();
+        Assert.Equal("page-1", CurrentTitle(sut));
+        Assert.True(sut.CanGoForward);
+
+        sut.GoForward();
+        Assert.Equal("page-2", CurrentTitle(sut));
+        Assert.False(sut.CanGoForward);
         Assert.True(sut.CanGoBack);
     }
 
