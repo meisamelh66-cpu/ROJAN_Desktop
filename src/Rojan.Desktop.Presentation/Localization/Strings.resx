@@ -753,6 +753,81 @@
   <data name="Specialists_AssignService" xml:space="preserve">
     <value>افزودن خدمت</value>
   </data>
+  <data name="Specialists_Schedule_ManagerTitle" xml:space="preserve">
+    <value>مدیریت برنامه کاری</value>
+  </data>
+  <data name="Specialists_Schedule_AvailabilityTitle" xml:space="preserve">
+    <value>دسترس‌پذیری</value>
+  </data>
+  <data name="Specialists_Schedule_WeeklyAvailability" xml:space="preserve">
+    <value>برنامه هفتگی</value>
+  </data>
+  <data name="Specialists_Schedule_Overrides" xml:space="preserve">
+    <value>استثناها</value>
+  </data>
+  <data name="Specialists_Schedule_Leave" xml:space="preserve">
+    <value>مرخصی</value>
+  </data>
+  <data name="Specialists_Schedule_Blocks" xml:space="preserve">
+    <value>بازه‌های مسدود</value>
+  </data>
+  <data name="Specialists_Schedule_Day" xml:space="preserve">
+    <value>روز</value>
+  </data>
+  <data name="Specialists_Schedule_StartTime" xml:space="preserve">
+    <value>ساعت شروع</value>
+  </data>
+  <data name="Specialists_Schedule_EndTime" xml:space="preserve">
+    <value>ساعت پایان</value>
+  </data>
+  <data name="Specialists_Schedule_Date" xml:space="preserve">
+    <value>تاریخ</value>
+  </data>
+  <data name="Specialists_Schedule_StartDate" xml:space="preserve">
+    <value>تاریخ شروع</value>
+  </data>
+  <data name="Specialists_Schedule_EndDate" xml:space="preserve">
+    <value>تاریخ پایان</value>
+  </data>
+  <data name="Specialists_Schedule_Reason" xml:space="preserve">
+    <value>دلیل</value>
+  </data>
+  <data name="Specialists_Schedule_Set" xml:space="preserve">
+    <value>ثبت</value>
+  </data>
+  <data name="Specialists_Schedule_Add" xml:space="preserve">
+    <value>افزودن</value>
+  </data>
+  <data name="Specialists_Schedule_PermissionDenied" xml:space="preserve">
+    <value>شما مجوز مدیریت این برنامه کاری را ندارید.</value>
+  </data>
+  <data name="Specialists_Schedule_InvalidInput" xml:space="preserve">
+    <value>لطفاً فرمت تاریخ/ساعت را بررسی کنید (ساعت: hh:mm، تاریخ: yyyy-MM-dd).</value>
+  </data>
+  <data name="Specialists_Schedule_Unavailable" xml:space="preserve">
+    <value>در دسترس نیست (تمام روز)</value>
+  </data>
+  <data name="Enum_Sunday" xml:space="preserve">
+    <value>یکشنبه</value>
+  </data>
+  <data name="Enum_Monday" xml:space="preserve">
+    <value>دوشنبه</value>
+  </data>
+  <data name="Enum_Tuesday" xml:space="preserve">
+    <value>سه‌شنبه</value>
+  </data>
+  <data name="Enum_Wednesday" xml:space="preserve">
+    <value>چهارشنبه</value>
+  </data>
+  <data name="Enum_Thursday" xml:space="preserve">
+    <value>پنجشنبه</value>
+  </data>
+  <data name="Enum_Friday" xml:space="preserve">
+    <value>جمعه</value>
+  </data>
+  <data name="Enum_Saturday" xml:space="preserve">
+    <value>شنبه</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>خدمات</value>
   </data>
@@ -3009,6 +3084,15 @@
   </data>
   <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
     <value>شماره موبایل نامعتبر است. مثال: ۰۹۱۲۳۴۵۶۷۸۹ یا ‎+989123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_TooShort" xml:space="preserve">
+    <value>شماره موبایل کوتاه‌تر از حد لازم است. شماره باید ۱۱ رقم باشد، مثال: ۰۹۱۲۳۴۵۶۷۸۹.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidPhoneCharacters" xml:space="preserve">
+    <value>شماره موبایل باید فقط شامل رقم باشد.</value>
+  </data>
+  <data name="Login_Mobile_Error_WrongPrefix" xml:space="preserve">
+    <value>شماره موبایل باید با ۰۹ یا ‎+98 شروع شود.</value>
   </data>
   <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
     <value>کد تأیید را وارد کنید.</value>

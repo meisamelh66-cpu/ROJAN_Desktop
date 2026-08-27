@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -35,6 +36,8 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     private readonly ISpecialistCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
     private readonly IServiceQueryService _serviceQueryService;
+    private readonly ISpecialistScheduleQueryService _scheduleQueryService;
+    private readonly ISpecialistScheduleCommandService _scheduleCommandService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -59,17 +62,28 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
         IIntelligenceEngine intelligenceEngine,
-        IServiceQueryService serviceQueryService)
+        IServiceQueryService serviceQueryService,
+        ISpecialistScheduleQueryService scheduleQueryService,
+        ISpecialistScheduleCommandService scheduleCommandService)
     {
         _specialistId = specialistId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
         _serviceQueryService = serviceQueryService;
+        _scheduleQueryService = scheduleQueryService;
+        _scheduleCommandService = scheduleCommandService;
 
         Skills = new ObservableCollection<SpecialistSkillDto>();
         AssignedServices = new ObservableCollection<AssignedServiceDto>();
         AvailableServicesToAssign = new ObservableCollection<ServiceDto>();
+
+        // Phase 7.2.6 Shift Engine UI Activation: constructed once, alongside this ViewModel
+        // itself, and never rebuilt on this ViewModel's own reloads - each self-loads
+        // independently in its own constructor, same "per-selection child ViewModel" shape this
+        // class already uses for itself (see this class's own doc comment).
+        Schedule = new SpecialistScheduleViewModel(specialistId, scheduleQueryService, scheduleCommandService);
+        Availability = new SpecialistAvailabilityViewModel(specialistId, scheduleQueryService);
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         AddSkillCommand = new AsyncRelayCommand(_ => AddSkillAsync(), _ => !string.IsNullOrWhiteSpace(NewSkillText));
@@ -103,6 +117,12 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
 
     /// <summary>Every catalog service not already in <see cref="AssignedServices"/> - the source list for the assign picker, recomputed on every <see cref="LoadAsync"/> so it never offers a service that is already assigned.</summary>
     public ObservableCollection<ServiceDto> AvailableServicesToAssign { get; }
+
+    /// <summary>Phase 7.2.6 Shift Engine UI Activation - the Manager schedule UI (full read/write) for this specialist. See <see cref="SpecialistScheduleViewModel"/>'s own doc comment.</summary>
+    public SpecialistScheduleViewModel Schedule { get; }
+
+    /// <summary>Phase 7.2.6 Shift Engine UI Activation - the read-only availability view for this specialist. See <see cref="SpecialistAvailabilityViewModel"/>'s own doc comment.</summary>
+    public SpecialistAvailabilityViewModel Availability { get; }
 
     public IReadOnlyList<SpecialistStatus> AvailableStatuses { get; } = Enum.GetValues<SpecialistStatus>();
 

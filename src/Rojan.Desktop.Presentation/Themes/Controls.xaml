@@ -12,6 +12,8 @@
   -->
   <converters:EnumLabelConverter x:Key="Rojan.Converter.EnumLabel" />
   <converters:MinutesSuffixConverter x:Key="Rojan.Converter.MinutesSuffix" />
+  <!-- Phase 7.2.6 Shift Engine UI Activation - see Converters/IntervalListConverter.cs. -->
+  <converters:IntervalListConverter x:Key="Rojan.Converter.IntervalList" />
 
   <!--
     Phase 16: Microsoft Fluent 2 Design System Integration - foundation

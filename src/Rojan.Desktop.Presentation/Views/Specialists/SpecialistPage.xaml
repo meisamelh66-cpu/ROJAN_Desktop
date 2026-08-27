@@ -5,6 +5,7 @@
              xmlns:dashboardControls="clr-namespace:Rojan.Desktop.Presentation.Controls.Dashboard"
              xmlns:shared="clr-namespace:Rojan.Desktop.Presentation.Controls.Shared"
              xmlns:appSpecialists="clr-namespace:Rojan.Desktop.Application.Specialists;assembly=Rojan.Desktop.Application"
+             xmlns:appSchedule="clr-namespace:Rojan.Desktop.Application.Specialists.Schedule;assembly=Rojan.Desktop.Application"
              xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization">
 
     <!--
@@ -478,6 +479,288 @@
                                                         Margin="0,4,0,0" />
                                 </StackPanel>
                             </Grid>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Phase 7.2.6 Shift Engine UI Activation: Manager schedule UI - full read/write
+                         access to this specialist's weekly availability, overrides, leave, and blocks.
+                         See SpecialistScheduleViewModel's own doc comment for the "Official Shift
+                         definition" reasoning and why this is a new, additive section, not a
+                         replacement of anything above. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Schedule_ManagerTitle}"
+                                                        State="{Binding Schedule.State}"
+                                                        ErrorMessage="{Binding Schedule.ErrorMessage}"
+                                                        RetryCommand="{Binding Schedule.LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel DataContext="{Binding Schedule}">
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_PermissionDenied}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPermissionDenied}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{Binding InputErrorMessage}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding InputErrorMessage}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <!-- Weekly Availability -->
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_WeeklyAvailability}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding WeeklyAvailability}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:WeeklyAvailabilityDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Body}">
+                                                <Run Text="{Binding DayOfWeek, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                                <Run Text=": " />
+                                                <Run Text="{Binding Intervals, Converter={StaticResource Rojan.Converter.IntervalList}, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="&#10005;" Padding="0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="11"
+                                                    Command="{Binding DataContext.RemoveWeeklyAvailabilityCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableDaysOfWeek}" SelectedItem="{Binding SelectedDayOfWeek, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Grid.Column="2" Text="{Binding NewAvailabilityStartText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="4" Text="{Binding NewAvailabilityEndText, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="6" Content="{x:Static loc:Strings.Specialists_Schedule_Set}" Command="{Binding SetWeeklyAvailabilityCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            </Grid>
+
+                            <!-- Overrides -->
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Overrides}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Overrides}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:ScheduleOverrideDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Body}">
+                                                <Run Text="{Binding Date}" />
+                                                <Run Text=": " />
+                                                <Run Text="{Binding Intervals, Converter={StaticResource Rojan.Converter.IntervalList}, Mode=OneWay}" />
+                                                <Run Text=" - " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="&#10005;" Padding="0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="11"
+                                                    Command="{Binding DataContext.RemoveOverrideCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewOverrideDateText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Text="{Binding NewOverrideStartText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="4" Text="{Binding NewOverrideEndText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="6" Text="{Binding NewOverrideReason, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="8" Content="{x:Static loc:Strings.Specialists_Schedule_Add}" Command="{Binding SetOverrideCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            </Grid>
+
+                            <!-- Leave -->
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Leave}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Leave}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistLeaveDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Body}">
+                                                <Run Text="{Binding StartDate}" />
+                                                <Run Text=" - " />
+                                                <Run Text="{Binding EndDate}" />
+                                                <Run Text=": " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="&#10005;" Padding="0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="11"
+                                                    Command="{Binding DataContext.RemoveLeaveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewLeaveStartDateText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Text="{Binding NewLeaveEndDateText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="4" Text="{Binding NewLeaveReason, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="6" Content="{x:Static loc:Strings.Specialists_Schedule_Add}" Command="{Binding CreateLeaveCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            </Grid>
+
+                            <!-- Blocks -->
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Blocks}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Blocks}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistBlockDto}">
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{StaticResource Rojan.TextStyle.Body}">
+                                                <Run Text="{Binding Date}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding Interval.Start}" />
+                                                <Run Text="-" />
+                                                <Run Text="{Binding Interval.End}" />
+                                                <Run Text=": " />
+                                                <Run Text="{Binding Reason}" />
+                                            </TextBlock>
+                                            <Button Grid.Column="1" Content="&#10005;" Padding="0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="11"
+                                                    Command="{Binding DataContext.RemoveBlockCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewBlockDateText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Text="{Binding NewBlockStartText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="4" Text="{Binding NewBlockEndText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="6" Text="{Binding NewBlockReason, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="8" Content="{x:Static loc:Strings.Specialists_Schedule_Add}" Command="{Binding CreateBlockCommand}" Style="{StaticResource Rojan.Style.ButtonSecondary}" />
+                            </Grid>
+                        </StackPanel>
+                    </dashboardControls:DashboardWidget>
+
+                    <!-- Phase 7.2.6 Shift Engine UI Activation: read-only availability view - what
+                         Reception sees while helping a customer, or a specialist reviewing their own
+                         schedule. See SpecialistAvailabilityViewModel's own doc comment for why this
+                         app has no literal "Customer" role/view and what this section stands in for. -->
+                    <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Schedule_AvailabilityTitle}"
+                                                        State="{Binding Availability.State}"
+                                                        ErrorMessage="{Binding Availability.ErrorMessage}"
+                                                        RetryCommand="{Binding Availability.LoadCommand}"
+                                                        Margin="0,16,0,0">
+                        <StackPanel DataContext="{Binding Availability}">
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_WeeklyAvailability}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding WeeklyAvailability}" Margin="0,4,0,12">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:WeeklyAvailabilityDto}">
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,4">
+                                            <Run Text="{Binding DayOfWeek, Converter={StaticResource Rojan.Converter.EnumLabel}}" />
+                                            <Run Text=": " />
+                                            <Run Text="{Binding Intervals, Converter={StaticResource Rojan.Converter.IntervalList}, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Overrides}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Overrides}" Margin="0,4,0,12">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:ScheduleOverrideDto}">
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,4">
+                                            <Run Text="{Binding Date}" />
+                                            <Run Text=": " />
+                                            <Run Text="{Binding Intervals, Converter={StaticResource Rojan.Converter.IntervalList}, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Leave}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Leave}" Margin="0,4,0,12">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistLeaveDto}">
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,4">
+                                            <Run Text="{Binding StartDate}" />
+                                            <Run Text=" - " />
+                                            <Run Text="{Binding EndDate}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static loc:Strings.Specialists_Schedule_Blocks}" Style="{StaticResource Rojan.TextStyle.Caption}" Foreground="{StaticResource Rojan.Brush.MutedText}" />
+                            <ItemsControl ItemsSource="{Binding Blocks}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type appSchedule:SpecialistBlockDto}">
+                                        <TextBlock Style="{StaticResource Rojan.TextStyle.Body}" Margin="0,0,0,4">
+                                            <Run Text="{Binding Date}" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding Interval.Start}" />
+                                            <Run Text="-" />
+                                            <Run Text="{Binding Interval.End}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </dashboardControls:DashboardWidget>
 

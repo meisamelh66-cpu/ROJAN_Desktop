@@ -741,6 +741,81 @@
   <data name="Specialists_AssignService" xml:space="preserve">
     <value>Assign Service</value>
   </data>
+  <data name="Specialists_Schedule_ManagerTitle" xml:space="preserve">
+    <value>Schedule Management</value>
+  </data>
+  <data name="Specialists_Schedule_AvailabilityTitle" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Specialists_Schedule_WeeklyAvailability" xml:space="preserve">
+    <value>Weekly Schedule</value>
+  </data>
+  <data name="Specialists_Schedule_Overrides" xml:space="preserve">
+    <value>Exceptions</value>
+  </data>
+  <data name="Specialists_Schedule_Leave" xml:space="preserve">
+    <value>Leave</value>
+  </data>
+  <data name="Specialists_Schedule_Blocks" xml:space="preserve">
+    <value>Blocked Windows</value>
+  </data>
+  <data name="Specialists_Schedule_Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Specialists_Schedule_StartTime" xml:space="preserve">
+    <value>Start Time</value>
+  </data>
+  <data name="Specialists_Schedule_EndTime" xml:space="preserve">
+    <value>End Time</value>
+  </data>
+  <data name="Specialists_Schedule_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Specialists_Schedule_StartDate" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="Specialists_Schedule_EndDate" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Specialists_Schedule_Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Specialists_Schedule_Set" xml:space="preserve">
+    <value>Set</value>
+  </data>
+  <data name="Specialists_Schedule_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Specialists_Schedule_PermissionDenied" xml:space="preserve">
+    <value>You don't have permission to manage this schedule.</value>
+  </data>
+  <data name="Specialists_Schedule_InvalidInput" xml:space="preserve">
+    <value>Please check the date/time format (time: hh:mm, date: yyyy-MM-dd).</value>
+  </data>
+  <data name="Specialists_Schedule_Unavailable" xml:space="preserve">
+    <value>Unavailable (all day)</value>
+  </data>
+  <data name="Enum_Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Enum_Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Enum_Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Enum_Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Enum_Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Enum_Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Enum_Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
   <data name="Services_Title" xml:space="preserve">
     <value>Services</value>
   </data>
@@ -2997,6 +3072,15 @@ Use the action buttons in the detail panel to make changes.</value>
   </data>
   <data name="Login_Mobile_Error_InvalidPhone" xml:space="preserve">
     <value>Enter a valid Iranian mobile number, e.g. 09123456789 or +989123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_TooShort" xml:space="preserve">
+    <value>Mobile number is too short. It should be 11 digits, e.g. 09123456789.</value>
+  </data>
+  <data name="Login_Mobile_Error_InvalidPhoneCharacters" xml:space="preserve">
+    <value>Mobile number should contain digits only.</value>
+  </data>
+  <data name="Login_Mobile_Error_WrongPrefix" xml:space="preserve">
+    <value>Mobile number should start with 09 or +98.</value>
   </data>
   <data name="Login_Mobile_Error_MissingCode" xml:space="preserve">
     <value>Enter the verification code.</value>

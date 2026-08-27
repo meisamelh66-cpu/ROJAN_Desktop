@@ -2,6 +2,7 @@ using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.Tests.Services;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -10,6 +11,11 @@ namespace Rojan.Desktop.Presentation.Tests.Specialists;
 
 public sealed class SpecialistProfileViewModelTests
 {
+    /// <summary>Phase 7.2.6 Shift Engine UI Activation: an empty, no-op schedule by default - tests that only care about status/skills/intelligence don't need any schedule data configured.</summary>
+    private static EmptySpecialistScheduleQueryService MakeScheduleQueryService() => new();
+
+    private static NoOpSpecialistScheduleCommandService MakeScheduleCommandService() => new();
+
     private static SpecialistProfileDto MakeProfile(string specialistId = "specialist-1", IReadOnlyList<AssignedServiceDto>? assignedServices = null) =>
         new(
             new SpecialistDto(specialistId, "Jordan Lee", "Senior Colour Specialist", "jordan.lee@rojan.example", "555-0100", SpecialistStatus.Active, "Specializes in balayage."),
@@ -33,7 +39,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => tcs.Task);
         var commandService = new StubSpecialistCommandService();
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -44,7 +50,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal("Jordan Lee", sut.Specialist?.FullName);
@@ -58,7 +64,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException("boom")));
         var commandService = new StubSpecialistCommandService();
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -69,7 +75,7 @@ public sealed class SpecialistProfileViewModelTests
     {
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.False(sut.AddSkillCommand.CanExecute(null));
 
@@ -83,7 +89,7 @@ public sealed class SpecialistProfileViewModelTests
     {
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             NewSkillText = "Massage",
         };
@@ -101,7 +107,7 @@ public sealed class SpecialistProfileViewModelTests
     {
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         var skill = new SpecialistSkillDto("skill-1", "specialist-1", "Colour");
 
         sut.RemoveSkillCommand.Execute(skill);
@@ -116,7 +122,7 @@ public sealed class SpecialistProfileViewModelTests
     {
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.OnLeave,
         };
@@ -147,7 +153,7 @@ public sealed class SpecialistProfileViewModelTests
                 []));
         });
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.Inactive,
         };
@@ -167,7 +173,7 @@ public sealed class SpecialistProfileViewModelTests
         // The signal SpecialistPageViewModel relies on to keep its own directory list in sync.
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.Inactive,
         };
@@ -189,7 +195,7 @@ public sealed class SpecialistProfileViewModelTests
         {
             UpdateSpecialistException = new NotSupportedException("ROJAN_Backend has no mutation path to change a specialist's status from Active to OnLeave."),
         };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.OnLeave,
         };
@@ -210,7 +216,7 @@ public sealed class SpecialistProfileViewModelTests
         // needs to see to retry - only the new, additive SaveErrorMessage/HasSaveError may change.
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService { UpdateSpecialistException = new InvalidOperationException("boom") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.Inactive,
         };
@@ -229,7 +235,7 @@ public sealed class SpecialistProfileViewModelTests
         // backend value (Active), never stay showing the attempted (and failed) Inactive.
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile())); // MakeProfile's specialist is Active
         var commandService = new StubSpecialistCommandService { UpdateSpecialistException = new InvalidOperationException("boom") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             EditableStatus = SpecialistStatus.Inactive,
         };
@@ -249,7 +255,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(
             MakeProfile(assignedServices: [new AssignedServiceDto("service-1", "Balayage")])));
         var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage"), MakeService("service-2", "Haircut") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         var assigned = Assert.Single(sut.AssignedServices);
         Assert.Equal("service-1", assigned.ServiceId);
@@ -266,7 +272,7 @@ public sealed class SpecialistProfileViewModelTests
         // at all - the command can only ever run against a real SelectedServiceToAssign record.
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.False(sut.AssignServiceCommand.CanExecute(null));
 
@@ -281,7 +287,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage") };
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
         sut.SelectedServiceToAssign = sut.AvailableServicesToAssign[0];
 
         sut.AssignServiceCommand.Execute(null);
@@ -304,7 +310,7 @@ public sealed class SpecialistProfileViewModelTests
             var assigned = profileCallCount == 1 ? [] : new List<AssignedServiceDto> { new("service-1", "Balayage") };
             return Task.FromResult(MakeProfile(assignedServices: assigned));
         });
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
         sut.SelectedServiceToAssign = sut.AvailableServicesToAssign[0];
 
         sut.AssignServiceCommand.Execute(null);
@@ -322,7 +328,7 @@ public sealed class SpecialistProfileViewModelTests
         var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage") };
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService { AssignServiceException = new ApiException("Failed to assign service 'service-1' (status 500): Server error") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
         sut.SelectedServiceToAssign = sut.AvailableServicesToAssign[0];
 
         sut.AssignServiceCommand.Execute(null);
@@ -341,7 +347,7 @@ public sealed class SpecialistProfileViewModelTests
         var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage"), MakeService("service-2", "Haircut") };
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var commandService = new StubSpecialistCommandService { AssignServiceException = new InvalidOperationException("boom") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog));
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService());
         sut.SelectedServiceToAssign = sut.AvailableServicesToAssign[0];
 
         sut.AssignServiceCommand.Execute(null);
@@ -361,7 +367,7 @@ public sealed class SpecialistProfileViewModelTests
             return Task.FromResult(MakeProfile(assignedServices: assigned));
         });
         var commandService = new StubSpecialistCommandService();
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         var assignment = sut.AssignedServices[0];
 
         sut.RemoveServiceAssignmentCommand.Execute(assignment);
@@ -379,7 +385,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(
             MakeProfile(assignedServices: [new AssignedServiceDto("service-1", "Balayage")])));
         var commandService = new StubSpecialistCommandService { RemoveServiceAssignmentException = new InvalidOperationException("boom") };
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         var assignment = sut.AssignedServices[0];
 
         sut.RemoveServiceAssignmentCommand.Execute(assignment);
@@ -399,7 +405,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var intelligenceEngine = new StubIntelligenceEngine([MakeIntelligence()]);
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.True(sut.HasIntelligence);
         Assert.Equal(55, sut.PerformanceScore);
@@ -419,7 +425,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var intelligenceEngine = new StubIntelligenceEngine([MakeIntelligence(specialistId: "someone-else")]);
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.False(sut.HasIntelligence);
@@ -437,7 +443,7 @@ public sealed class SpecialistProfileViewModelTests
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var intelligenceEngine = new StubIntelligenceEngine([]);
 
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.False(sut.HasIntelligence);
@@ -449,7 +455,7 @@ public sealed class SpecialistProfileViewModelTests
         // Refresh behavior: a reload must pick up the engine's latest data, not cache the first result.
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
         var intelligenceEngine = new StubIntelligenceEngine([MakeIntelligence()]);
-        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         Assert.Equal(55, sut.PerformanceScore);
 
         intelligenceEngine.SpecialistIntelligence =
@@ -469,7 +475,7 @@ public sealed class SpecialistProfileViewModelTests
         var intelligenceEngine = new StubIntelligenceEngine();
         var tcs = new TaskCompletionSource<SpecialistProfileDto>();
         var slowProfileQuery = new StubSpecialistProfileQueryService((_, _) => tcs.Task);
-        var sut = new SpecialistProfileViewModel("specialist-1", slowProfileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService());
+        var sut = new SpecialistProfileViewModel("specialist-1", slowProfileQuery, new StubSpecialistCommandService(), intelligenceEngine, MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         var raisedProperties = new List<string>();
         sut.PropertyChanged += (_, args) =>
         {

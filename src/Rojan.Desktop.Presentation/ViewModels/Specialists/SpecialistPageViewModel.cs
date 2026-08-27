@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Application.Specialists.Schedule;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -39,6 +40,8 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private readonly ISpecialistCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
     private readonly IServiceQueryService _serviceQueryService;
+    private readonly ISpecialistScheduleQueryService _scheduleQueryService;
+    private readonly ISpecialistScheduleCommandService _scheduleCommandService;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -60,13 +63,17 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         ISpecialistProfileQueryService profileQueryService,
         ISpecialistCommandService commandService,
         IIntelligenceEngine intelligenceEngine,
-        IServiceQueryService serviceQueryService)
+        IServiceQueryService serviceQueryService,
+        ISpecialistScheduleQueryService scheduleQueryService,
+        ISpecialistScheduleCommandService scheduleCommandService)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
         _serviceQueryService = serviceQueryService;
+        _scheduleQueryService = scheduleQueryService;
+        _scheduleCommandService = scheduleCommandService;
 
         Specialists = new ObservableCollection<SpecialistDto>();
 
@@ -164,7 +171,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
 
                 Profile = value is null
                     ? null
-                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _serviceQueryService);
+                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _serviceQueryService, _scheduleQueryService, _scheduleCommandService);
 
                 if (Profile is not null)
                 {

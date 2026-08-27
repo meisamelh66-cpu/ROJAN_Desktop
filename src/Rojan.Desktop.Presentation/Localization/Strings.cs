@@ -618,6 +618,43 @@ public static class Strings
 
     public static string Specialists_AssignService => Get(nameof(Specialists_AssignService));
 
+    // Phase 7.2.6 Shift Engine UI Activation.
+    public static string Specialists_Schedule_ManagerTitle => Get(nameof(Specialists_Schedule_ManagerTitle));
+
+    public static string Specialists_Schedule_AvailabilityTitle => Get(nameof(Specialists_Schedule_AvailabilityTitle));
+
+    public static string Specialists_Schedule_WeeklyAvailability => Get(nameof(Specialists_Schedule_WeeklyAvailability));
+
+    public static string Specialists_Schedule_Overrides => Get(nameof(Specialists_Schedule_Overrides));
+
+    public static string Specialists_Schedule_Leave => Get(nameof(Specialists_Schedule_Leave));
+
+    public static string Specialists_Schedule_Blocks => Get(nameof(Specialists_Schedule_Blocks));
+
+    public static string Specialists_Schedule_Day => Get(nameof(Specialists_Schedule_Day));
+
+    public static string Specialists_Schedule_StartTime => Get(nameof(Specialists_Schedule_StartTime));
+
+    public static string Specialists_Schedule_EndTime => Get(nameof(Specialists_Schedule_EndTime));
+
+    public static string Specialists_Schedule_Date => Get(nameof(Specialists_Schedule_Date));
+
+    public static string Specialists_Schedule_StartDate => Get(nameof(Specialists_Schedule_StartDate));
+
+    public static string Specialists_Schedule_EndDate => Get(nameof(Specialists_Schedule_EndDate));
+
+    public static string Specialists_Schedule_Reason => Get(nameof(Specialists_Schedule_Reason));
+
+    public static string Specialists_Schedule_Set => Get(nameof(Specialists_Schedule_Set));
+
+    public static string Specialists_Schedule_Add => Get(nameof(Specialists_Schedule_Add));
+
+    public static string Specialists_Schedule_PermissionDenied => Get(nameof(Specialists_Schedule_PermissionDenied));
+
+    public static string Specialists_Schedule_InvalidInput => Get(nameof(Specialists_Schedule_InvalidInput));
+
+    public static string Specialists_Schedule_Unavailable => Get(nameof(Specialists_Schedule_Unavailable));
+
     public static string Services_Title => Get(nameof(Services_Title));
 
     public static string Services_Subtitle => Get(nameof(Services_Subtitle));
@@ -1670,6 +1707,12 @@ public static class Strings
     public static string Login_Mobile_Error_MissingPhone => Get(nameof(Login_Mobile_Error_MissingPhone));
 
     public static string Login_Mobile_Error_InvalidPhone => Get(nameof(Login_Mobile_Error_InvalidPhone));
+
+    public static string Login_Mobile_Error_TooShort => Get(nameof(Login_Mobile_Error_TooShort));
+
+    public static string Login_Mobile_Error_InvalidPhoneCharacters => Get(nameof(Login_Mobile_Error_InvalidPhoneCharacters));
+
+    public static string Login_Mobile_Error_WrongPrefix => Get(nameof(Login_Mobile_Error_WrongPrefix));
 
     public static string Login_Mobile_Error_MissingCode => Get(nameof(Login_Mobile_Error_MissingCode));
 

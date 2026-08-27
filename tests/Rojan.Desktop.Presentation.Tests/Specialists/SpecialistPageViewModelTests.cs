@@ -20,13 +20,18 @@ public sealed class SpecialistPageViewModelTests
     private static StubServiceQueryService MakeServiceQueryService() =>
         new(_ => Task.FromResult<IReadOnlyList<ServiceDto>>([]));
 
+    /// <summary>Phase 7.2.6 Shift Engine UI Activation: only Profile's own construction needs these dependencies, not any of this page's own query behavior.</summary>
+    private static EmptySpecialistScheduleQueryService MakeScheduleQueryService() => new();
+
+    private static NoOpSpecialistScheduleCommandService MakeScheduleCommandService() => new();
+
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
     {
         var tcs = new TaskCompletionSource<IReadOnlyList<SpecialistDto>>();
         var queryService = new StubSpecialistQueryService(_ => tcs.Task);
 
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loading, sut.State);
     }
@@ -37,7 +42,7 @@ public sealed class SpecialistPageViewModelTests
         var specialists = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
 
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Loaded, sut.State);
         Assert.Equal(specialists, sut.Specialists);
@@ -50,7 +55,7 @@ public sealed class SpecialistPageViewModelTests
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
 
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Empty, sut.State);
         Assert.Null(sut.SelectedSpecialist);
@@ -63,7 +68,7 @@ public sealed class SpecialistPageViewModelTests
         var queryService = new StubSpecialistQueryService(
             _ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom")));
 
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
@@ -83,7 +88,7 @@ public sealed class SpecialistPageViewModelTests
         var specialists = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
 
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         var filter = Assert.Single(queryService.SearchCalls);
         Assert.Null(filter.SearchText);
@@ -97,7 +102,7 @@ public sealed class SpecialistPageViewModelTests
     public void SearchText_Changed_SearchesWithSearchTextInFilter()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         sut.SearchText = "priya";
 
@@ -108,7 +113,7 @@ public sealed class SpecialistPageViewModelTests
     public void StatusFilter_Changed_SearchesWithStatusInFilter()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         sut.StatusFilter = SpecialistStatus.OnLeave;
 
@@ -119,7 +124,7 @@ public sealed class SpecialistPageViewModelTests
     public void SelectedSkill_Changed_SearchesWithSkillInFilter()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         sut.SelectedSkill = "Balayage";
 
@@ -140,7 +145,7 @@ public sealed class SpecialistPageViewModelTests
                 string.IsNullOrEmpty(filter.SearchText)
                     ? specialists
                     : specialists.Where(specialist => specialist.FullName.Contains(filter.SearchText, StringComparison.OrdinalIgnoreCase)).ToList()));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         sut.SelectedSpecialist = specialists[0];
 
         sut.SearchText = "Priya";
@@ -152,7 +157,7 @@ public sealed class SpecialistPageViewModelTests
     public void SearchCommand_Executed_ReRunsSearchWithCurrentFilter()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             SearchText = "priya",
         };
@@ -168,7 +173,7 @@ public sealed class SpecialistPageViewModelTests
     public void ClearFiltersCommand_Executed_ResetsEveryFilterAndReloadsWithDefaultFilter()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             SearchText = "priya",
             StatusFilter = SpecialistStatus.OnLeave,
@@ -195,7 +200,7 @@ public sealed class SpecialistPageViewModelTests
         var queryService = new StubSpecialistQueryService(_ => shouldFail
             ? Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom"))
             : Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         Assert.Equal(DashboardState.Error, sut.State);
 
         shouldFail = false;
@@ -210,7 +215,7 @@ public sealed class SpecialistPageViewModelTests
     public void CreateSpecialistCommand_FullNameIsEmpty_CanExecuteIsFalse()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>([]));
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.False(sut.CreateSpecialistCommand.CanExecute(null));
 
@@ -228,7 +233,7 @@ public sealed class SpecialistPageViewModelTests
         {
             OnSpecialistCreated = (_, dto) => existing.Add(dto),
         };
-        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), commandService, new StubIntelligenceEngine(), MakeServiceQueryService())
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
         {
             NewSpecialistFullName = "Riley Chen",
             NewSpecialistTitle = "Junior Stylist",
@@ -260,7 +265,7 @@ public sealed class SpecialistPageViewModelTests
         var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists.ToList()));
         var profileQueryService = new StubSpecialistProfileQueryService((specialistId, _) =>
             Task.FromResult(new SpecialistProfileDto(specialists.Single(specialist => specialist.Id == specialistId), [], [])));
-        var sut = new SpecialistPageViewModel(queryService, profileQueryService, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService());
+        var sut = new SpecialistPageViewModel(queryService, profileQueryService, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
         Assert.Equal("specialist-1", sut.SelectedSpecialist?.Id); // sanity: constructor selected the first specialist
 
         // Simulate the backend having accepted the deactivation by the time the post-save reload runs.
