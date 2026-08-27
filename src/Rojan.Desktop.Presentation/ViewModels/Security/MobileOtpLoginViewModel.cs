@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Rojan.Desktop.Application.Api;
@@ -142,13 +143,14 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Login UI Simplification: converts Persian-Indic/Arabic-Indic digits to ASCII, strips
-    /// spaces/dashes/parentheses, and expands a local Iranian mobile number (<see cref="IranLocalMobilePattern"/>)
-    /// or a <c>0098</c>-prefixed one to E.164 - already-E.164 input passes through unchanged.
-    /// Purely a display/input-tolerance concern; the normalized value is what every caller
-    /// downstream (validation, the API call) actually uses.
+    /// Login UI Simplification: converts Persian-Indic/Arabic-Indic digits to ASCII and strips
+    /// spaces/dashes/parentheses - the one cleanup step both <see cref="NormalizePhoneNumber"/>
+    /// and <see cref="ClassifyInvalidPhoneNumber"/> (Iranian Phone Input UX Fix) share, so a
+    /// validation message is never wrong just because of how the number was punctuated. A
+    /// leading <c>+</c> and every digit character pass through unchanged; anything else (a
+    /// letter, for example) is left in place too - callers decide what to do with it.
     /// </summary>
-    private static string NormalizePhoneNumber(string input)
+    private static string CleanDigits(string input)
     {
         var digits = new System.Text.StringBuilder(input.Length);
         foreach (var ch in input.Trim())
@@ -175,7 +177,19 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
             digits.Append(ch);
         }
 
-        var normalized = digits.ToString();
+        return digits.ToString();
+    }
+
+    /// <summary>
+    /// Login UI Simplification: expands a local Iranian mobile number (<see cref="IranLocalMobilePattern"/>)
+    /// or a <c>0098</c>-prefixed one to E.164 - already-E.164 input passes through unchanged.
+    /// Purely a display/input-tolerance concern; the normalized value is what every caller
+    /// downstream (validation, the API call) actually uses. Backend contract is unchanged - only
+    /// what Desktop accepts as raw user input got more forgiving.
+    /// </summary>
+    private static string NormalizePhoneNumber(string input)
+    {
+        var normalized = CleanDigits(input);
 
         if (normalized.StartsWith("0098", StringComparison.Ordinal))
         {
@@ -189,6 +203,47 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
         return normalized;
     }
 
+    /// <summary>
+    /// Iranian Phone Input UX Fix: classifies *why* a raw (cleaned, but not yet normalized) phone
+    /// number will fail E.164 validation, so the login screen can show a specific, actionable
+    /// message instead of one generic "invalid phone" for every case. Only classifies the local
+    /// Iranian input shapes <see cref="NormalizePhoneNumber"/> itself understands (a bare
+    /// <c>+...</c> international number falls through to the existing generic message, unchanged -
+    /// this fix's scope is Iranian local input, not general E.164 diagnostics). Returns
+    /// <see langword="null"/> when it finds nothing specific to say, in which case the caller
+    /// falls back to <see cref="Strings.Login_Mobile_Error_InvalidPhone"/> exactly as before this
+    /// fix.
+    /// </summary>
+    private static string? ClassifyInvalidPhoneNumber(string cleaned)
+    {
+        if (cleaned.Length == 0 || cleaned == "+")
+        {
+            return null;
+        }
+
+        if (cleaned.StartsWith('+') || cleaned.StartsWith("0098", StringComparison.Ordinal))
+        {
+            // Already-international shapes are NormalizePhoneNumber's/E164Pattern's own
+            // territory - not this fix's Iranian-local-input scope.
+            return null;
+        }
+
+        if (!cleaned.All(char.IsAsciiDigit))
+        {
+            return Strings.Login_Mobile_Error_InvalidPhoneCharacters;
+        }
+
+        var startsWithNine = cleaned[0] == '9';
+        var startsWithZeroNine = cleaned.Length > 1 && cleaned[0] == '0' && cleaned[1] == '9';
+        if (!startsWithNine && !startsWithZeroNine)
+        {
+            return Strings.Login_Mobile_Error_WrongPrefix;
+        }
+
+        var localLength = cleaned[0] == '0' ? cleaned.Length - 1 : cleaned.Length;
+        return localLength < 10 ? Strings.Login_Mobile_Error_TooShort : null;
+    }
+
     private async Task RequestCodeAsync()
     {
         var phoneNumber = NormalizePhoneNumber(PhoneNumber);
@@ -200,7 +255,10 @@ public sealed class MobileOtpLoginViewModel : ViewModelBase
 
         if (!E164Pattern.IsMatch(phoneNumber))
         {
-            ErrorMessage = Strings.Login_Mobile_Error_InvalidPhone;
+            // Iranian Phone Input UX Fix: a specific reason (too short / invalid characters /
+            // wrong prefix) when one is identifiable, the same generic message as before
+            // otherwise - see ClassifyInvalidPhoneNumber's own doc comment for its scope.
+            ErrorMessage = ClassifyInvalidPhoneNumber(CleanDigits(PhoneNumber)) ?? Strings.Login_Mobile_Error_InvalidPhone;
             return;
         }
 
