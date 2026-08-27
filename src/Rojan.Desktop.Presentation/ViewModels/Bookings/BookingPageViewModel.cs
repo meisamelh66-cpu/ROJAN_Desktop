@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Dialogs;
@@ -33,13 +35,31 @@ namespace Rojan.Desktop.Presentation.ViewModels.Bookings;
 /// action instead of silently resetting. An all-default filter is
 /// equivalent to the old unfiltered <c>GetBookingsAsync</c> call - see
 /// <see cref="BookingSearchFilter"/>'s own doc comment.
+///
+/// Phase 7.4.4 Booking/Checkout Error Hardening: <see cref="CreateBookingAsync"/>/
+/// <see cref="ChangeStatusAsync"/>/<see cref="CancelSelectedBookingAsync"/>/
+/// <see cref="RescheduleSelectedBookingAsync"/> previously had no
+/// try/catch at all - a real backend/network failure would propagate as
+/// an unhandled exception through <c>AsyncRelayCommand.Execute</c>'s bare
+/// <c>try/finally</c> and surface as the app's generic global error
+/// dialog (still safely recovered by <c>Shell.App</c>'s own
+/// <c>DispatcherUnhandledException</c> handler - never a crash), rather
+/// than this app's own established in-page <see cref="ErrorMessage"/>/
+/// <see cref="State"/> pattern every other command in this app already
+/// uses. Fixed by wrapping each in the same pattern <see cref="LoadAsync"/>
+/// already used, plus logging (same allocation-free <c>[LoggerMessage]</c>
+/// pattern <c>Specialists.SpecialistScheduleViewModel</c> established) -
+/// no change to what any of these methods call, when they are allowed to
+/// run (<c>CanExecute</c> predicates, unchanged), or what
+/// <c>Domain.Bookings.BookingRules</c>/the backend actually decide.
 /// </summary>
-public sealed class BookingPageViewModel : ViewModelBase
+public sealed partial class BookingPageViewModel : ViewModelBase
 {
     private readonly IBookingQueryService _queryService;
     private readonly IBookingCommandService _commandService;
     private readonly IBookingWorkflowService _workflowService;
     private readonly IDialogService _dialogService;
+    private readonly ILogger<BookingPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -72,12 +92,14 @@ public sealed class BookingPageViewModel : ViewModelBase
         IBookingQueryService queryService,
         IBookingCommandService commandService,
         IBookingWorkflowService workflowService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        ILogger<BookingPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _commandService = commandService;
         _workflowService = workflowService;
         _dialogService = dialogService;
+        _logger = logger ?? NullLogger<BookingPageViewModel>.Instance;
 
         Bookings = new ObservableCollection<BookingDto>();
 
@@ -331,6 +353,7 @@ public sealed class BookingPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(nameof(LoadAsync), exception);
             }
         }
     }
@@ -354,16 +377,29 @@ public sealed class BookingPageViewModel : ViewModelBase
             NewBookingDurationMinutes,
             string.Empty);
 
-        var created = await _commandService.CreateBookingAsync(request).ConfigureAwait(true);
+        try
+        {
+            var created = await _commandService.CreateBookingAsync(request).ConfigureAwait(true);
 
-        NewBookingCustomerName = string.Empty;
-        NewBookingServiceName = string.Empty;
-        NewBookingSpecialistName = string.Empty;
-        NewBookingDate = DateTime.Today.AddDays(1);
-        NewBookingDurationMinutes = 60;
+            NewBookingCustomerName = string.Empty;
+            NewBookingServiceName = string.Empty;
+            NewBookingSpecialistName = string.Empty;
+            NewBookingDate = DateTime.Today.AddDays(1);
+            NewBookingDurationMinutes = 60;
 
-        await LoadAsync().ConfigureAwait(true);
-        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id);
+            await LoadAsync().ConfigureAwait(true);
+            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Phase 7.4.4: top-level command boundary - any failure must surface as the Error state (never crash, never the input the user just typed silently discarded) - same justified broad catch as LoadAsync's own boundary in this class.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            // Deliberately does not clear the New Booking form fields here - a failed submission
+            // should let the user retry with what they already typed, not lose it.
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            LogOperationFailed(nameof(CreateBookingAsync), exception);
+        }
     }
 
     private void OpenWizard()
@@ -380,9 +416,21 @@ public sealed class BookingPageViewModel : ViewModelBase
         }
 
         var bookingId = SelectedBooking.Id;
-        await _commandService.UpdateBookingStatusAsync(bookingId, status).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+
+        try
+        {
+            await _commandService.UpdateBookingStatusAsync(bookingId, status).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+        }
+#pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            LogOperationFailed(nameof(ChangeStatusAsync), exception);
+        }
     }
 
     /// <summary>
@@ -402,9 +450,21 @@ public sealed class BookingPageViewModel : ViewModelBase
         }
 
         var bookingId = SelectedBooking.Id;
-        await _workflowService.CancelBookingAsync(bookingId).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+
+        try
+        {
+            await _workflowService.CancelBookingAsync(bookingId).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+        }
+#pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            LogOperationFailed(nameof(CancelSelectedBookingAsync), exception);
+        }
     }
 
     /// <summary>
@@ -425,10 +485,24 @@ public sealed class BookingPageViewModel : ViewModelBase
         var originalTimeOfDay = SelectedBooking.ScheduledAt.TimeOfDay;
         var newScheduledAt = new DateTimeOffset(RescheduleDate.Value.Date + originalTimeOfDay, SelectedBooking.ScheduledAt.Offset);
 
-        await _workflowService.RescheduleBookingAsync(bookingId, newScheduledAt).ConfigureAwait(true);
+        try
+        {
+            await _workflowService.RescheduleBookingAsync(bookingId, newScheduledAt).ConfigureAwait(true);
 
-        RescheduleDate = null;
-        await LoadAsync().ConfigureAwait(true);
-        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+            RescheduleDate = null;
+            await LoadAsync().ConfigureAwait(true);
+            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
+        }
+#pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class - deliberately does not clear RescheduleDate here, same "let the user retry" reasoning as CreateBookingAsync's own form fields.
+        catch (Exception exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = exception.Message;
+            State = DashboardState.Error;
+            LogOperationFailed(nameof(RescheduleSelectedBookingAsync), exception);
+        }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Booking operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation, Exception exception);
 }

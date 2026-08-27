@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -25,12 +27,14 @@ public sealed class PosCheckoutViewModelTests
         StubInvoiceCommandService? commandService = null,
         StubPaymentCommandService? paymentCommandService = null,
         StubDialogService? dialogService = null,
-        Action? onCompleted = null) => new(
+        Action? onCompleted = null,
+        ILogger<PosCheckoutViewModel>? logger = null) => new(
         queryService ?? new StubInvoiceQueryService(_ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]), getCheckoutOptions: _ => Task.FromResult(MakeOptions())),
         commandService ?? new StubInvoiceCommandService((request, _) => Task.FromResult(MakeCreatedInvoice(request))),
         paymentCommandService ?? new StubPaymentCommandService(),
         dialogService ?? new StubDialogService(),
-        onCompleted);
+        onCompleted,
+        logger);
 
     [Fact]
     public void Constructor_OptionsLoad_StateIsLoadedAndCollectionsPopulated()
@@ -119,9 +123,10 @@ public sealed class PosCheckoutViewModelTests
         StubInvoiceCommandService? commandService = null,
         StubPaymentCommandService? paymentCommandService = null,
         StubDialogService? dialogService = null,
-        Action? onCompleted = null)
+        Action? onCompleted = null,
+        ILogger<PosCheckoutViewModel>? logger = null)
     {
-        var sut = MakeSut(commandService: commandService, paymentCommandService: paymentCommandService, dialogService: dialogService, onCompleted: onCompleted);
+        var sut = MakeSut(commandService: commandService, paymentCommandService: paymentCommandService, dialogService: dialogService, onCompleted: onCompleted, logger: logger);
         sut.SelectedCustomer = MakeCustomer();
         sut.SelectedProductToAdd = MakeProduct();
         sut.AddProductCommand.Execute(null);
@@ -212,5 +217,68 @@ public sealed class PosCheckoutViewModelTests
         sut.DoneCommand.Execute(null);
 
         Assert.Equal(1, dialogService.CloseCount);
+    }
+
+    // Phase 7.4.4 Booking/Checkout Error Hardening: this ViewModel already had a real try/catch on
+    // every backend-touching method - these tests verify the newly-added logging actually fires,
+    // not the error-state behavior itself (already covered above/pre-existing).
+
+    [Fact]
+    public void LoadCommand_QueryThrows_LogsTheFailure()
+    {
+        var logger = new RecordingLogger<PosCheckoutViewModel>();
+        var queryService = new StubInvoiceQueryService(_ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]), getCheckoutOptions: _ => Task.FromException<CheckoutOptionsDto>(new InvalidOperationException("boom")));
+
+        var sut = MakeSut(queryService, logger: logger);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void ProceedToPaymentCommand_BackendThrows_LogsTheFailure()
+    {
+        var logger = new RecordingLogger<PosCheckoutViewModel>();
+        var commandService = new StubInvoiceCommandService((_, _) => Task.FromException<InvoiceDto>(new InvalidOperationException("boom")));
+        var sut = MakeSut(commandService: commandService, logger: logger);
+        sut.SelectedCustomer = MakeCustomer();
+        sut.SelectedProductToAdd = MakeProduct();
+        sut.AddProductCommand.Execute(null);
+
+        sut.ProceedToPaymentCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void ChargeCommand_BackendThrows_LogsTheFailureAndLeavesInvoiceReChargeable()
+    {
+        var logger = new RecordingLogger<PosCheckoutViewModel>();
+        var paymentCommandService = new StubPaymentCommandService((_, _) => Task.FromException<PaymentDto>(new InvalidOperationException("boom")));
+        var sut = MakeSutOnPaymentStep(paymentCommandService: paymentCommandService, logger: logger);
+        var invoiceBeforeCharge = sut.CreatedInvoice;
+
+        sut.ChargeCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+        // Flagged in the audit report, not fixed here (payment business logic is out of scope):
+        // CreatedInvoice/AmountTendered are left unchanged after a failed charge, so ChargeCommand
+        // can be re-invoked against the same invoice - this test documents that current behavior
+        // rather than silently assuming it.
+        Assert.Same(invoiceBeforeCharge, sut.CreatedInvoice);
+        Assert.True(sut.ChargeCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_ChargeFailureNeverThrows()
+    {
+        var paymentCommandService = new StubPaymentCommandService((_, _) => Task.FromException<PaymentDto>(new InvalidOperationException("boom")));
+        var sut = MakeSutOnPaymentStep(paymentCommandService: paymentCommandService);
+
+        var exception = Record.Exception(() => sut.ChargeCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 }

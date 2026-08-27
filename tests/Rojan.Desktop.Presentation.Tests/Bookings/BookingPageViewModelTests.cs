@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Presentation.Tests.BookingWorkflow;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -16,8 +18,9 @@ public sealed class BookingPageViewModelTests
         StubBookingQueryService queryService,
         StubBookingCommandService? commandService = null,
         StubBookingWorkflowService? workflowService = null,
-        StubDialogService? dialogService = null) =>
-        new(queryService, commandService ?? new StubBookingCommandService(), workflowService ?? new StubBookingWorkflowService(), dialogService ?? new StubDialogService());
+        StubDialogService? dialogService = null,
+        ILogger<BookingPageViewModel>? logger = null) =>
+        new(queryService, commandService ?? new StubBookingCommandService(), workflowService ?? new StubBookingWorkflowService(), dialogService ?? new StubDialogService(), logger);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -538,5 +541,100 @@ public sealed class BookingPageViewModelTests
         sut.RescheduleBookingCommand.Execute(null);
 
         Assert.Equal("Amelia", queryService.SearchCalls[^1].CustomerName);
+    }
+
+    // Phase 7.4.4 Booking/Checkout Error Hardening: CreateBookingAsync/ChangeStatusAsync/
+    // CancelSelectedBookingAsync/RescheduleSelectedBookingAsync previously had no try/catch at all
+    // - these tests exercise the new guards directly, not just that the app "doesn't crash".
+
+    [Fact]
+    public void CreateBookingCommand_BackendThrows_SetsErrorStateAndLogsWithoutClearingForm()
+    {
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var commandService = new StubBookingCommandService { CreateFailure = new InvalidOperationException("boom") };
+        var logger = new RecordingLogger<BookingPageViewModel>();
+        var sut = MakeSut(queryService, commandService, logger: logger);
+        sut.NewBookingCustomerName = "Amelia Hart";
+        sut.NewBookingServiceName = "Haircut";
+        sut.NewBookingDate = new DateTime(2026, 3, 20);
+
+        sut.CreateBookingCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        // The user's input must survive a failed submission so they can retry, not lose it.
+        Assert.Equal("Amelia Hart", sut.NewBookingCustomerName);
+        Assert.Equal("Haircut", sut.NewBookingServiceName);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void ConfirmBookingCommand_BackendThrows_SetsErrorState()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService { UpdateStatusFailure = new InvalidOperationException("boom") };
+        var logger = new RecordingLogger<BookingPageViewModel>();
+        var sut = MakeSut(queryService, commandService, logger: logger);
+
+        sut.ConfirmBookingCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void CancelBookingCommand_WorkflowThrows_SetsErrorState()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var workflowService = new StubBookingWorkflowService { CancelFailure = new InvalidOperationException("boom") };
+        var logger = new RecordingLogger<BookingPageViewModel>();
+        var sut = MakeSut(queryService, workflowService: workflowService, logger: logger);
+
+        sut.CancelBookingCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_WorkflowThrows_SetsErrorStateAndDoesNotClearRescheduleDate()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var workflowService = new StubBookingWorkflowService(
+            rescheduleBooking: (_, _, _) => Task.FromException<Application.BookingWorkflow.BookingConfirmationDto>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<BookingPageViewModel>();
+        var sut = MakeSut(queryService, workflowService: workflowService, logger: logger);
+        sut.RescheduleDate = new DateTime(2026, 3, 20);
+
+        sut.RescheduleBookingCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.NotNull(sut.RescheduleDate);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_CreateBookingFailureNeverThrows()
+    {
+        // The optional-logger default (NullLogger) must be a genuinely safe no-op - a failure here
+        // would mean every existing test/call site that doesn't pass a logger (all of them, before
+        // this Phase) was silently relying on undefined behavior.
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var commandService = new StubBookingCommandService { CreateFailure = new InvalidOperationException("boom") };
+        var sut = MakeSut(queryService, commandService);
+        sut.NewBookingCustomerName = "Amelia Hart";
+        sut.NewBookingServiceName = "Haircut";
+        sut.NewBookingDate = new DateTime(2026, 3, 20);
+
+        var exception = Record.Exception(() => sut.CreateBookingCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 }

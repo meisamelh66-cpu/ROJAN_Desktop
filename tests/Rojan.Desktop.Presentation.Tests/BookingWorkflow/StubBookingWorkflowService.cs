@@ -2,7 +2,7 @@ using Rojan.Desktop.Application.BookingWorkflow;
 
 namespace Rojan.Desktop.Presentation.Tests.BookingWorkflow;
 
-/// <summary>Configurable, call-recording <see cref="IBookingWorkflowService"/> test double - same reasoning as Calendar.StubCalendarQueryService/StubCalendarCommandService.</summary>
+/// <summary>Configurable, call-recording <see cref="IBookingWorkflowService"/> test double - same reasoning as Calendar.StubCalendarQueryService.</summary>
 internal sealed class StubBookingWorkflowService : IBookingWorkflowService
 {
     private readonly Func<CancellationToken, Task<BookingOptionsDto>> _getOptions;
@@ -18,6 +18,9 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
     public List<(string BookingId, DateTimeOffset NewSlotStart)> RescheduleCalls { get; } = [];
 
     public List<(string FullName, string Phone)> CreateGuestCustomerCalls { get; } = [];
+
+    /// <summary>Phase 7.4.4 Booking/Checkout Error Hardening: when set, <see cref="CancelBookingAsync"/> throws this instead of succeeding - lets a test exercise the new try/catch without a real backend failure.</summary>
+    public Exception? CancelFailure { get; set; }
 
     public StubBookingWorkflowService(
         Func<CancellationToken, Task<BookingOptionsDto>>? getOptions = null,
@@ -55,6 +58,11 @@ internal sealed class StubBookingWorkflowService : IBookingWorkflowService
 
     public Task CancelBookingAsync(string bookingId, CancellationToken cancellationToken = default)
     {
+        if (CancelFailure is not null)
+        {
+            return Task.FromException(CancelFailure);
+        }
+
         CancelledBookingIds.Add(bookingId);
         return Task.CompletedTask;
     }

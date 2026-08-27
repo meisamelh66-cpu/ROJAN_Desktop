@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -19,8 +21,26 @@ namespace Rojan.Desktop.Presentation.ViewModels.Accounting;
 /// (invoice creation), <see cref="IPaymentCommandService"/> (charging), and
 /// <see cref="IDialogService"/> - same small-dependency-surface shape as
 /// <c>BookingWorkflow.BookingWizardViewModel</c>.
+///
+/// Phase 7.4.4 Booking/Checkout Error Hardening audit: every backend-
+/// touching method here (<see cref="LoadOptionsAsync"/>/
+/// <see cref="ProceedToPaymentAsync"/>/<see cref="ChargeAsync"/>) already
+/// had a real try/catch setting <see cref="ErrorMessage"/>/<see cref="State"/>
+/// before this phase - unlike <c>Bookings.BookingPageViewModel</c>, this
+/// class needed no new exception guards, only logging (same allocation-
+/// free <c>[LoggerMessage]</c> pattern <c>Specialists.SpecialistScheduleViewModel</c>
+/// established). The audit's one flagged-but-not-fixed risk: after a
+/// failed <see cref="ChargeAsync"/>, <see cref="CreatedInvoice"/> and
+/// <see cref="AmountTendered"/> are left unchanged, so
+/// <see cref="ChargeCommand"/> can be re-invoked against the same
+/// invoice - whether that is safe depends on
+/// <see cref="IPaymentCommandService.RecordPaymentAsync"/>/the backend's
+/// own idempotency guarantee, which this audit has no way to verify and
+/// this phase's own restrictions (no payment business logic changes)
+/// forbid attempting to fix here - see the accompanying audit report's
+/// own risk register.
 /// </summary>
-public sealed class PosCheckoutViewModel : ViewModelBase
+public sealed partial class PosCheckoutViewModel : ViewModelBase
 {
     /// <summary>
     /// Flat sales-tax rate this foundation POS applies to every sale -
@@ -38,6 +58,7 @@ public sealed class PosCheckoutViewModel : ViewModelBase
     private readonly IPaymentCommandService _paymentCommandService;
     private readonly IDialogService _dialogService;
     private readonly Action? _onCompleted;
+    private readonly ILogger<PosCheckoutViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -60,13 +81,15 @@ public sealed class PosCheckoutViewModel : ViewModelBase
         IInvoiceCommandService invoiceCommandService,
         IPaymentCommandService paymentCommandService,
         IDialogService dialogService,
-        Action? onCompleted = null)
+        Action? onCompleted = null,
+        ILogger<PosCheckoutViewModel>? logger = null)
     {
         _invoiceQueryService = invoiceQueryService;
         _invoiceCommandService = invoiceCommandService;
         _paymentCommandService = paymentCommandService;
         _dialogService = dialogService;
         _onCompleted = onCompleted;
+        _logger = logger ?? NullLogger<PosCheckoutViewModel>.Instance;
 
         Customers = new ObservableCollection<CheckoutCustomerOptionDto>();
         Bookings = new ObservableCollection<CheckoutBookingOptionDto>();
@@ -253,6 +276,7 @@ public sealed class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadOptionsAsync), exception);
         }
     }
 
@@ -348,6 +372,7 @@ public sealed class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(ProceedToPaymentAsync), exception);
         }
     }
 
@@ -375,6 +400,10 @@ public sealed class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(ChargeAsync), exception);
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "POS checkout operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation, Exception exception);
 }

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -27,6 +28,7 @@ public sealed class AccountingPageViewModel : ViewModelBase
     private readonly IPaymentQueryService _paymentQueryService;
     private readonly IPaymentCommandService _paymentCommandService;
     private readonly IDialogService _dialogService;
+    private readonly ILogger<PosCheckoutViewModel>? _posCheckoutLogger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -40,13 +42,15 @@ public sealed class AccountingPageViewModel : ViewModelBase
         IInvoiceCommandService invoiceCommandService,
         IPaymentQueryService paymentQueryService,
         IPaymentCommandService paymentCommandService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        ILogger<PosCheckoutViewModel>? posCheckoutLogger = null)
     {
         _invoiceQueryService = invoiceQueryService;
         _invoiceCommandService = invoiceCommandService;
         _paymentQueryService = paymentQueryService;
         _paymentCommandService = paymentCommandService;
         _dialogService = dialogService;
+        _posCheckoutLogger = posCheckoutLogger;
 
         Invoices = new ObservableCollection<InvoiceDto>();
 
@@ -208,7 +212,7 @@ public sealed class AccountingPageViewModel : ViewModelBase
 
     private void OpenPosCheckout()
     {
-        var checkout = new PosCheckoutViewModel(_invoiceQueryService, _invoiceCommandService, _paymentCommandService, _dialogService, () => _ = LoadAsync());
+        var checkout = new PosCheckoutViewModel(_invoiceQueryService, _invoiceCommandService, _paymentCommandService, _dialogService, () => _ = LoadAsync(), _posCheckoutLogger);
         _dialogService.ShowDialog(checkout);
     }
 }

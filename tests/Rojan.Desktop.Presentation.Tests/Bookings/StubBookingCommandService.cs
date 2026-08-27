@@ -14,8 +14,19 @@ internal sealed class StubBookingCommandService : IBookingCommandService
 
     public bool SupportsInProgressAndNoShowStatuses { get; set; } = true;
 
+    /// <summary>Phase 7.4.4 Booking/Checkout Error Hardening: when set, <see cref="CreateBookingAsync"/> throws this instead of succeeding - lets a test exercise the new try/catch without a real backend failure.</summary>
+    public Exception? CreateFailure { get; set; }
+
+    /// <summary>Same as <see cref="CreateFailure"/>, for <see cref="UpdateBookingStatusAsync"/>.</summary>
+    public Exception? UpdateStatusFailure { get; set; }
+
     public Task<BookingDto> CreateBookingAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
     {
+        if (CreateFailure is not null)
+        {
+            return Task.FromException<BookingDto>(CreateFailure);
+        }
+
         CreateRequests.Add(request);
         var dto = new BookingDto(
             "new-booking", request.CustomerId, request.CustomerName, request.ServiceId, request.ServiceName,
@@ -27,6 +38,11 @@ internal sealed class StubBookingCommandService : IBookingCommandService
 
     public Task<BookingDto> UpdateBookingStatusAsync(string bookingId, BookingStatus status, CancellationToken cancellationToken = default)
     {
+        if (UpdateStatusFailure is not null)
+        {
+            return Task.FromException<BookingDto>(UpdateStatusFailure);
+        }
+
         UpdateStatusCalls.Add((bookingId, status));
         return Task.FromResult(new BookingDto(
             bookingId, string.Empty, "Test Customer", string.Empty, "Test Service", string.Empty, string.Empty,
