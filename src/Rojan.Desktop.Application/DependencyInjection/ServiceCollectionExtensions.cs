@@ -107,9 +107,16 @@ public static class ServiceCollectionExtensions
         // class's own doc comment for why an Infrastructure type implements this
         // Application-layer interface directly, unlike every other vertical slice's
         // swap-the-Domain-repository pattern.
-        services.AddSingleton<CalendarCommandService>();
-        services.AddSingleton<ICalendarCommandService>(sp =>
-            new CalendarCommandServicePermissionGate(sp.GetRequiredService<CalendarCommandService>(), sp.GetRequiredService<IBackendPermissionGate>()));
+        //
+        // Remediation Phase 3A (Calendar Dead Code Cleanup): CalendarCommandService/
+        // ICalendarCommandService/CalendarCommandServicePermissionGate were removed entirely -
+        // confirmed to have zero production callers (the manual "reserve a slot" feature they
+        // served was removed in the same Phase 3 product change referenced above; real booking
+        // creation was independently confirmed, via BookingWorkflowService's own "Governance
+        // correction (ROJAN Architecture Governance V1.0 / ADR-004)" comment, to have stopped
+        // calling this reserve/release path once Backend became the sole booking-conflict
+        // authority). See ROJAN_DESKTOP_CALENDAR_CLEANUP_PHASE3A_REPORT_v1.md for the full
+        // verification trail.
         services.AddSingleton<BookingWorkflowService>();
         services.AddSingleton<IBookingWorkflowService>(sp =>
             new BookingWorkflowServicePermissionGate(sp.GetRequiredService<BookingWorkflowService>(), sp.GetRequiredService<IPermissionGate>(), sp.GetRequiredService<IBackendPermissionGate>()));

@@ -25,10 +25,15 @@ namespace Rojan.Desktop.Infrastructure.Calendar;
 /// the backend's own <c>TimeSlotEngine</c> client-side (duplicated logic,
 /// real risk of drift) or calling <c>available-slots</c> once and mapping
 /// its answer directly. The latter is what this class does.
-/// <c>ICalendarRepository</c>/<c>EfCalendarRepository</c> are
-/// untouched by this change - <see cref="ICalendarCommandService"/>'s
-/// implementation still depends on them for its own, unrelated
-/// reserve/release bookkeeping (see that interface's own doc comment).
+/// <c>ICalendarRepository</c> was untouched by this change at the time -
+/// <c>ICalendarCommandService</c>'s implementation still depended on it
+/// (and on the now-removed <c>EfCalendarRepository</c>) for its own,
+/// unrelated reserve/release bookkeeping. Remediation Phase 3A (Calendar
+/// Dead Code Cleanup) later removed that entire command-side chain -
+/// confirmed to have zero production callers by then, since real booking
+/// creation independently stopped orchestrating any Calendar reserve/
+/// release step once Backend became the sole booking-conflict authority.
+/// See ROJAN_DESKTOP_CALENDAR_CLEANUP_PHASE3A_REPORT_v1.md.
 ///
 /// Honesty notes on the mapping, all deliberate:
 /// <list type="bullet">

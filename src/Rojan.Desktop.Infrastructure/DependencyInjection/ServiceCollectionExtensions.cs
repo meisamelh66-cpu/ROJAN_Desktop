@@ -15,7 +15,6 @@ using Rojan.Desktop.Application.Support;
 using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
 using Rojan.Desktop.Domain.Bookings;
-using Rojan.Desktop.Domain.Calendar;
 using Rojan.Desktop.Domain.Customers;
 using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.Help;
@@ -49,7 +48,6 @@ using Rojan.Desktop.Infrastructure.Notifications;
 using Rojan.Desktop.Infrastructure.Organizations;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Infrastructure.Persistence.Bookings;
-using Rojan.Desktop.Infrastructure.Persistence.Calendar;
 using Rojan.Desktop.Infrastructure.QrCodes;
 using Rojan.Desktop.Infrastructure.Reporting;
 using Rojan.Desktop.Infrastructure.Salons;
@@ -184,18 +182,19 @@ public static class ServiceCollectionExtensions
         // scope, same pre-existing gap as before this swap.
         services.AddSingleton<DomainServices.IServiceRepository, BackendServiceRepository>();
 
-        // Sprint 6 Commit 6: Calendar is the fifth Domain module moved off
-        // its Fake*Repository onto EF Core - same reasoning as Customers/
-        // Specialists/Services/Bookings in Commits 2/3/4/5 (see
-        // EfCustomerRepository's own DI comment above). FakeCalendarRepository
-        // stays in the codebase, unreferenced. ICalendarRepository/
-        // EfCalendarRepository remain registered and unchanged by Calendar/
-        // Availability Integration Phase 3 below - ICalendarCommandService's
-        // implementation still depends on them for its own reserve/release
-        // bookkeeping (a concern separate from availability *reads*, which
-        // this registration no longer serves - see
-        // BackendCalendarAvailabilityRepository's own doc comment).
-        services.AddSingleton<ICalendarRepository, EfCalendarRepository>();
+        // Remediation Phase 3A (Calendar Dead Code Cleanup): the
+        // ICalendarRepository -> EfCalendarRepository registration that used to sit here (Sprint 6
+        // Commit 6's EF Core swap) was removed entirely, not merely left unreferenced like its
+        // Customer/Specialist/Service/Booking siblings above - verified to have zero production
+        // callers once ICalendarCommandService (its sole Application-layer consumer) was also
+        // removed, since availability reads never depended on it (see
+        // BackendCalendarAvailabilityRepository's own doc comment) and real booking creation
+        // stopped orchestrating a Calendar reserve/release step once Backend became the sole
+        // booking-conflict authority (BookingWorkflowService's own "Governance correction" comment).
+        // ICalendarRepository (Domain), FakeCalendarRepository, and CalendarQueryService (the
+        // unregistered, local/EF-independent generation logic) all remain, deliberately - they
+        // still serve CalendarQueryService's own retained test coverage. See
+        // ROJAN_DESKTOP_CALENDAR_CLEANUP_PHASE3A_REPORT_v1.md for the full verification trail.
 
         // Calendar/Availability Integration Phase 3: ICalendarQueryService
         // (Application) is registered here instead of in AddApplication() -

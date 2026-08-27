@@ -29,7 +29,11 @@ namespace Rojan.Desktop.Presentation.ViewModels.Calendar;
 /// and this ViewModel's <c>ICalendarCommandService</c> dependency along
 /// with it - is gone; a slot's Booked state now comes from real
 /// <c>Booking</c> data only (via the Booking Wizard), never a local
-/// reservation this page wrote itself.
+/// reservation this page wrote itself. Remediation Phase 3A (Calendar
+/// Dead Code Cleanup) later removed <c>ICalendarCommandService</c> itself
+/// (and its entire local-storage-backed implementation) from the codebase
+/// entirely, confirming it had zero remaining callers anywhere - see
+/// ROJAN_DESKTOP_CALENDAR_CLEANUP_PHASE3A_REPORT_v1.md.
 /// <see cref="ICalendarQueryService"/>'s backend-connected implementation
 /// requires a service to compute slot length (see that interface's own
 /// doc comment), hence the new <see cref="Services"/>/<see cref="SelectedService"/>

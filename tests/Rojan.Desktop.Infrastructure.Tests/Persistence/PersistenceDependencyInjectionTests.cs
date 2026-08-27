@@ -72,6 +72,14 @@ public sealed class PersistenceDependencyInjectionTests
         // by AddInfrastructure) - matching the real composition root's own
         // AddApplication().AddInfrastructure().AddPresentation() call
         // order (see Shell's App.xaml.cs).
+        //
+        // Remediation Phase 3A (Calendar Dead Code Cleanup): the
+        // Domain.Calendar.ICalendarRepository assertion that used to sit
+        // here was removed, not left to fail - that registration was
+        // deliberately deleted (confirmed zero production callers; see
+        // ROJAN_DESKTOP_CALENDAR_CLEANUP_PHASE3A_REPORT_v1.md), so its
+        // absence here is the cleanup's intended outcome, not something
+        // this test should keep expecting.
         var services = new ServiceCollection().AddApplication().AddInfrastructure();
         services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
         var provider = services.BuildServiceProvider();
@@ -80,7 +88,19 @@ public sealed class PersistenceDependencyInjectionTests
         Assert.NotNull(provider.GetService<Domain.Specialists.ISpecialistRepository>());
         Assert.NotNull(provider.GetService<Domain.Services.IServiceRepository>());
         Assert.NotNull(provider.GetService<Domain.Bookings.IBookingRepository>());
-        Assert.NotNull(provider.GetService<Domain.Calendar.ICalendarRepository>());
+    }
+
+    [Fact]
+    public void AddInfrastructure_NoLongerRegistersCalendarRepository()
+    {
+        // Positive assertion of Remediation Phase 3A's own removal - proves the registration is
+        // genuinely gone from the real composition root, not just absent from the test above by
+        // omission.
+        var services = new ServiceCollection().AddApplication().AddInfrastructure();
+        services.AddSingleton<IEnterpriseContext>(new StubEnterpriseContext());
+        var provider = services.BuildServiceProvider();
+
+        Assert.Null(provider.GetService<Domain.Calendar.ICalendarRepository>());
     }
 
     [Fact]
