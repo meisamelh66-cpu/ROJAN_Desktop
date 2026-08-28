@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Presentation.Localization;
@@ -26,7 +28,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Membership;
 /// intact for correction without touching a later accept attempt's own
 /// error state, and vice versa.
 /// </summary>
-public sealed class AcceptInviteViewModel : ViewModelBase
+public sealed partial class AcceptInviteViewModel : ViewModelBase
 {
     // Culture is set once at startup and never changes mid-session (see Strings' own doc
     // comment) - safe to parse once here, same "static readonly CompositeFormat" convention
@@ -36,6 +38,7 @@ public sealed class AcceptInviteViewModel : ViewModelBase
     private readonly ISalonInviteService _inviteService;
     private readonly ISalonContextService _salonContextService;
     private readonly ICurrentSessionService _currentSessionService;
+    private readonly ILogger<AcceptInviteViewModel> _logger;
 
     private string _token = string.Empty;
     private bool _isLookingUp;
@@ -48,11 +51,13 @@ public sealed class AcceptInviteViewModel : ViewModelBase
     public AcceptInviteViewModel(
         ISalonInviteService inviteService,
         ISalonContextService salonContextService,
-        ICurrentSessionService currentSessionService)
+        ICurrentSessionService currentSessionService,
+        ILogger<AcceptInviteViewModel>? logger = null)
     {
         _inviteService = inviteService;
         _salonContextService = salonContextService;
         _currentSessionService = currentSessionService;
+        _logger = logger ?? NullLogger<AcceptInviteViewModel>.Instance;
 
         LookupCommand = new AsyncRelayCommand(_ => LookupAsync(), _ => CanLookup());
         AcceptCommand = new AsyncRelayCommand(_ => AcceptAsync(), _ => CanAccept());
@@ -159,12 +164,19 @@ public sealed class AcceptInviteViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             LookupErrorMessage = exception.Message;
+            LogOperationFailed(nameof(LookupAsync));
         }
         finally
         {
             IsLookingUp = false;
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // the invite token, any bearer token, the user's identity/email, salon
+    // identifiers/role, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Invite operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private bool CanAccept() => !IsAccepting && Details is not null;
 
@@ -197,6 +209,7 @@ public sealed class AcceptInviteViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             AcceptErrorMessage = exception.Message;
+            LogOperationFailed(nameof(AcceptAsync));
         }
         finally
         {

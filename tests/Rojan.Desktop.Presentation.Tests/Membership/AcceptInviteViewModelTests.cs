@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Presentation.Organizations;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Membership;
 
 namespace Rojan.Desktop.Presentation.Tests.Membership;
@@ -115,6 +117,110 @@ public sealed class AcceptInviteViewModelTests
         Assert.Equal(0, currentSessionService.InitializeAsyncCallCount);
     }
 
+    // Phase 8.35 AcceptInvite Security Logging: the LookupAsync / AcceptAsync broad-catch
+    // boundaries now log at Error, operation name only. The invite token, the user's
+    // identity (resolved by ICurrentSessionService.InitializeAsync), and any backend
+    // response detail must never enter the log line. User-visible error is unchanged,
+    // verified by LookupCommand_Failure_* / AcceptCommand_Failure_* above.
+
+    private const string SecretToken = "SECRET-INVITE-TOKEN-xyz789";
+
+    [Fact]
+    public void LookupCommand_Failure_LogsErrorWithoutLeakingToken()
+    {
+        var inviteService = new StubSalonInviteService
+        {
+            DetailsException = new InvalidOperationException($"invite {SecretToken} not found or no longer available"),
+        };
+        var logger = new RecordingLogger<AcceptInviteViewModel>();
+        var sut = new AcceptInviteViewModel(inviteService, new StubSalonContextService(), new StubCurrentSessionService(), logger)
+        {
+            Token = SecretToken,
+        };
+
+        sut.LookupCommand.Execute(null);
+
+        Assert.True(sut.HasLookupError);
+        Assert.Contains(SecretToken, sut.LookupErrorMessage!, StringComparison.Ordinal); // the user still sees the raw backend message
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("LookupAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(SecretToken, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptCommand_Failure_LogsErrorWithoutLeakingToken()
+    {
+        var inviteService = new StubSalonInviteService
+        {
+            DetailsResult = new SalonInviteDetailsDto("Glow Salon", "RECEPTIONIST"),
+            AcceptException = new InvalidOperationException($"accept failed for {SecretToken}"),
+        };
+        var logger = new RecordingLogger<AcceptInviteViewModel>();
+        var sut = new AcceptInviteViewModel(inviteService, new StubSalonContextService(), new StubCurrentSessionService(), logger)
+        {
+            Token = SecretToken,
+        };
+        sut.LookupCommand.Execute(null);
+
+        sut.AcceptCommand.Execute(null);
+
+        Assert.True(sut.HasAcceptError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("AcceptAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(SecretToken, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptCommand_SessionInitializeFailure_LogsErrorWithoutLeakingIdentity()
+    {
+        var inviteService = new StubSalonInviteService
+        {
+            DetailsResult = new SalonInviteDetailsDto("Glow Salon", "RECEPTIONIST"),
+            AcceptResult = new AcceptedMembershipDto("salon-1", "Glow Salon", "RECEPTIONIST"),
+        };
+        var session = new StubCurrentSessionService
+        {
+            InitializeException = new InvalidOperationException("session resolution failed for user owner@salon.example (id u-4821)"),
+        };
+        var logger = new RecordingLogger<AcceptInviteViewModel>();
+        var sut = new AcceptInviteViewModel(inviteService, new StubSalonContextService(), session, logger)
+        {
+            Token = SecretToken,
+        };
+        sut.LookupCommand.Execute(null);
+
+        sut.AcceptCommand.Execute(null);
+
+        Assert.True(sut.HasAcceptError);
+        Assert.False(sut.IsAccepted);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("AcceptAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("owner@salon.example", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("u-4821", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(SecretToken, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LookupFailureNeverThrows()
+    {
+        var inviteService = new StubSalonInviteService
+        {
+            DetailsException = new InvalidOperationException("boom"),
+        };
+        var sut = new AcceptInviteViewModel(inviteService, new StubSalonContextService(), new StubCurrentSessionService())
+        {
+            Token = SecretToken,
+        };
+
+        var exception = Record.Exception(() => sut.LookupCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasLookupError);
+    }
+
     private static AcceptInviteViewModel CreateSut(
         StubSalonInviteService inviteService,
         out StubSalonContextService salonContextService,
@@ -180,6 +286,9 @@ public sealed class AcceptInviteViewModelTests
     {
         public int InitializeAsyncCallCount { get; private set; }
 
+        /// <summary>Phase 8.35: when set, <see cref="InitializeAsync"/> throws this (after counting the call) so a test can exercise the post-accept session-re-establishment failure path.</summary>
+        public Exception? InitializeException { get; set; }
+
         public OrganizationDto? CurrentOrganization => null;
 
         public BranchDto? CurrentBranch => null;
@@ -199,6 +308,11 @@ public sealed class AcceptInviteViewModelTests
         public Task InitializeAsync(CancellationToken cancellationToken = default)
         {
             InitializeAsyncCallCount++;
+            if (InitializeException is not null)
+            {
+                return Task.FromException(InitializeException);
+            }
+
             SessionChanged?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         }
