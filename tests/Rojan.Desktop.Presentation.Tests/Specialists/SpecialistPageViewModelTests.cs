@@ -28,6 +28,59 @@ public sealed class SpecialistPageViewModelTests
         Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
     }
 
+    // ---- Phase 8.56: PII-safe diagnostic logging (Wave 2D / final P1) ----
+
+    private const string PageSecret = "Jordan Lee / jordan.lee@rojan.example / 555-0100 / balayage bio / search=colour";
+
+    [Fact]
+    public void LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoPiiLeak()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException(PageSecret)));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), loggerFactory: loggerFactory);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(SpecialistPageViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(PageSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_WithoutLoggerFactory_UsesNullLogger_NeverThrows()
+    {
+        var queryService = new StubSpecialistQueryService(_ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom")));
+
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    [Fact]
+    public void LoadAsync_StaleFailure_SupersededByNewerLoad_LogsNothing()
+    {
+        // The log call sits inside the existing `if (requestVersion == _filterVersion)` staleness
+        // guard - a load that was superseded by a newer filter change must apply nothing AND log nothing.
+        var callCount = 0;
+        var slowFirstLoad = new TaskCompletionSource<IReadOnlyList<SpecialistDto>>();
+        var queryService = new StubSpecialistQueryService(_ =>
+        {
+            callCount++;
+            return callCount == 1 ? slowFirstLoad.Task : Task.FromResult<IReadOnlyList<SpecialistDto>>([]);
+        });
+        var loggerFactory = new RecordingLoggerFactory();
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), loggerFactory: loggerFactory);
+
+        sut.SearchText = "colour"; // starts (and synchronously completes) a newer load -> bumps _filterVersion
+        slowFirstLoad.SetException(new InvalidOperationException(PageSecret)); // the now-stale first load faults
+
+        Assert.Equal(DashboardState.Empty, sut.State); // the newer (empty) load's result stands
+        Assert.Empty(loggerFactory.Entries);
+    }
+
     private static SpecialistDto MakeSpecialist(string id, string fullName, string title = "", string email = "") =>
         new(id, fullName, title, email, string.Empty, SpecialistStatus.Active, string.Empty);
 

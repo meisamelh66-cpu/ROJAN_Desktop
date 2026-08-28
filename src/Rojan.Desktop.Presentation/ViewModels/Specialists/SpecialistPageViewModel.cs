@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
@@ -34,7 +35,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// <c>_filterVersion</c> staleness-guard pattern as every other page
 /// ViewModel with combinable filters.
 /// </summary>
-public sealed class SpecialistPageViewModel : ViewModelBase
+public sealed partial class SpecialistPageViewModel : ViewModelBase
 {
     private readonly ISpecialistQueryService _queryService;
     private readonly ISpecialistProfileQueryService _profileQueryService;
@@ -255,9 +256,18 @@ public sealed class SpecialistPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(_loggerFactory?.CreateLogger<SpecialistPageViewModel>() ?? NullLogger<SpecialistPageViewModel>.Instance, nameof(LoadAsync));
             }
         }
     }
+
+    // Static form (ILogger passed explicitly) because this class already holds two ILogger
+    // fields (_scheduleLogger / _availabilityLogger, forwarded to the profile child's
+    // grandchildren) - an instance-form [LoggerMessage] plus a third ILogger field would trip
+    // SYSLIB1020. Same shape as Accounting.AccountingPageViewModel. No Exception parameter:
+    // the log line carries only the operation name (Phase 8.15+ security rule).
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Specialist page operation failed. Operation={Operation}")]
+    private static partial void LogOperationFailed(ILogger logger, string operation);
 
     private SpecialistSearchFilter BuildFilter() => new(
         SearchText: string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
