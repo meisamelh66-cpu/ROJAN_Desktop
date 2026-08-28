@@ -102,18 +102,20 @@ public sealed class CalendarPageViewModelTests
     // (ErrorMessage / State) is unchanged, verified by the existing tests above.
 
     [Fact]
-    public void InitializeAsync_SpecialistsQueryThrows_LogsErrorWithOperation()
+    public void InitializeAsync_SpecialistsQueryThrows_LogsErrorWithOperation_NoExceptionLeak()
     {
+        const string backendBody = "HTTP 500: backend response body / calendar secret";
         var queryService = new StubCalendarQueryService(
-            _ => Task.FromException<IReadOnlyList<ScheduledSpecialistDto>>(new InvalidOperationException("boom")),
+            _ => Task.FromException<IReadOnlyList<ScheduledSpecialistDto>>(new InvalidOperationException(backendBody)),
             (specialistId, _, _, _) => Task.FromResult(MakeAvailability(specialistId, "Jordan Lee")));
         var logger = new RecordingLogger<CalendarPageViewModel>();
 
         var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("InitializeAsync", StringComparison.Ordinal));
+        Assert.Equal(backendBody, sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=InitializeAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -154,7 +154,7 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(_logger, nameof(LoadAsync), exception);
+            LogOperationFailed(_logger, nameof(LoadAsync));
         }
     }
 
@@ -187,16 +187,17 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
-                LogOperationFailed(_logger, nameof(SearchAsync), exception);
+                LogOperationFailed(_logger, nameof(SearchAsync));
             }
         }
     }
 
     // Static form (ILogger passed explicitly) because this class holds two ILogger
-    // fields - the source generator (SYSLIB1020) cannot pick one implicitly. Same
-    // shape as App.LogUnhandledException.
+    // fields - the source generator (SYSLIB1020) cannot pick one implicitly.
+    // Operation name only: the caught exception is never passed to the logger
+    // (Phase 8.15+ security rule - backend response bodies must not reach the log).
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Accounting operation failed. Operation={Operation}")]
-    private static partial void LogOperationFailed(ILogger logger, string operation, Exception exception);
+    private static partial void LogOperationFailed(ILogger logger, string operation);
 
     private void ReplaceInvoices(IReadOnlyList<InvoiceDto> invoices)
     {

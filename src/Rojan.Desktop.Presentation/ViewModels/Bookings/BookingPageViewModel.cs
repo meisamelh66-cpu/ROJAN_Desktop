@@ -356,7 +356,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
-                LogOperationFailed(nameof(LoadAsync), exception);
+                LogOperationFailed(nameof(LoadAsync));
             }
         }
     }
@@ -401,7 +401,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             // should let the user retry with what they already typed, not lose it.
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(CreateBookingAsync), exception);
+            LogOperationFailed(nameof(CreateBookingAsync));
         }
     }
 
@@ -432,7 +432,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(ChangeStatusAsync), exception);
+            LogOperationFailed(nameof(ChangeStatusAsync));
         }
     }
 
@@ -466,7 +466,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(CancelSelectedBookingAsync), exception);
+            LogOperationFailed(nameof(CancelSelectedBookingAsync));
         }
     }
 
@@ -502,10 +502,12 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(RescheduleSelectedBookingAsync), exception);
+            LogOperationFailed(nameof(RescheduleSelectedBookingAsync));
         }
     }
 
+    // Operation name only: the caught exception is never passed to the logger
+    // (Phase 8.15+ security rule - backend response bodies must not reach the log).
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Booking operation failed. Operation={Operation}")]
-    private partial void LogOperationFailed(string operation, Exception exception);
+    private partial void LogOperationFailed(string operation);
 }

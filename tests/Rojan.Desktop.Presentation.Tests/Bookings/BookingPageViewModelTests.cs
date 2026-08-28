@@ -574,8 +574,9 @@ public sealed class BookingPageViewModelTests
     [Fact]
     public void CreateBookingCommand_BackendThrows_SetsErrorStateAndLogsWithoutClearingForm()
     {
+        const string backendBody = "HTTP 409: backend response body / booking secret";
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
-        var commandService = new StubBookingCommandService { CreateFailure = new InvalidOperationException("boom") };
+        var commandService = new StubBookingCommandService { CreateFailure = new InvalidOperationException(backendBody) };
         var logger = new RecordingLogger<BookingPageViewModel>();
         var sut = MakeSut(queryService, commandService, logger: logger);
         sut.NewBookingCustomerName = "Amelia Hart";
@@ -585,11 +586,12 @@ public sealed class BookingPageViewModelTests
         sut.CreateBookingCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(backendBody, sut.ErrorMessage);
         // The user's input must survive a failed submission so they can retry, not lose it.
         Assert.Equal("Amelia Hart", sut.NewBookingCustomerName);
         Assert.Equal("Haircut", sut.NewBookingServiceName);
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=CreateBookingAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]

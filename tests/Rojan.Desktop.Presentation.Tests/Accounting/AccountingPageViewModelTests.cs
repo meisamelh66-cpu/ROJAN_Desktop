@@ -106,17 +106,19 @@ public sealed class AccountingPageViewModelTests
     // before surfacing the Error state - user-visible behaviour unchanged.
 
     [Fact]
-    public void LoadAsync_QueryServiceThrows_LogsErrorWithOperation()
+    public void LoadAsync_QueryServiceThrows_LogsErrorWithOperation_NoExceptionLeak()
     {
+        const string backendBody = "HTTP 500: backend response body / customer secret";
         var queryService = new StubInvoiceQueryService(
-            _ => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException(backendBody)));
         var logger = new RecordingLogger<AccountingPageViewModel>();
 
         var sut = MakeSut(queryService, logger: logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+        Assert.Equal(backendBody, sut.ErrorMessage); // user-facing behaviour unchanged
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]

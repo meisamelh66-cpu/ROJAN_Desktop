@@ -276,7 +276,7 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(LoadOptionsAsync), exception);
+            LogOperationFailed(nameof(LoadOptionsAsync));
         }
     }
 
@@ -372,7 +372,7 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(ProceedToPaymentAsync), exception);
+            LogOperationFailed(nameof(ProceedToPaymentAsync));
         }
     }
 
@@ -400,10 +400,12 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(nameof(ChargeAsync), exception);
+            LogOperationFailed(nameof(ChargeAsync));
         }
     }
 
+    // Operation name only: the caught exception is never passed to the logger
+    // (Phase 8.15+ security rule - backend response bodies must not reach the log).
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "POS checkout operation failed. Operation={Operation}")]
-    private partial void LogOperationFailed(string operation, Exception exception);
+    private partial void LogOperationFailed(string operation);
 }

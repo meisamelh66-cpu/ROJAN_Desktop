@@ -224,14 +224,16 @@ public sealed class PosCheckoutViewModelTests
     // not the error-state behavior itself (already covered above/pre-existing).
 
     [Fact]
-    public void LoadCommand_QueryThrows_LogsTheFailure()
+    public void LoadCommand_QueryThrows_LogsTheFailure_OperationNameOnly_NoLeak()
     {
+        const string backendBody = "HTTP 500: backend response body / payment secret";
         var logger = new RecordingLogger<PosCheckoutViewModel>();
-        var queryService = new StubInvoiceQueryService(_ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]), getCheckoutOptions: _ => Task.FromException<CheckoutOptionsDto>(new InvalidOperationException("boom")));
+        var queryService = new StubInvoiceQueryService(_ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]), getCheckoutOptions: _ => Task.FromException<CheckoutOptionsDto>(new InvalidOperationException(backendBody)));
 
         var sut = MakeSut(queryService, logger: logger);
 
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadOptionsAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]

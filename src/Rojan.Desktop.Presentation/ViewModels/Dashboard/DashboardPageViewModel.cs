@@ -290,10 +290,12 @@ public sealed partial class DashboardPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogLoadFailed(exception);
+            LogLoadFailed(nameof(LoadAsync));
         }
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Dashboard overview load failed.")]
-    private partial void LogLoadFailed(Exception exception);
+    // Operation name only: the caught exception is never passed to the logger
+    // (Phase 8.15+ security rule - backend response bodies must not reach the log).
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Dashboard overview load failed. Operation={Operation}")]
+    private partial void LogLoadFailed(string operation);
 }

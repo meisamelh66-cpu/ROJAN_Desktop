@@ -71,18 +71,20 @@ public sealed class DashboardPageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryServiceThrows_LogsError()
+    public void Constructor_QueryServiceThrows_LogsError_OperationNameOnly_NoExceptionLeak()
     {
+        const string backendBody = "HTTP 500: backend response body / dashboard secret";
         var queryService = new StubDashboardQueryService(
-            _ => Task.FromException<DashboardOverviewDto>(new InvalidOperationException("boom")));
+            _ => Task.FromException<DashboardOverviewDto>(new InvalidOperationException(backendBody)));
         var logger = new RecordingLogger<DashboardPageViewModel>();
 
         var sut = CreateSut(queryService, logger: logger);
 
         // User-visible behaviour unchanged - the log is additive.
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
+        Assert.Equal(backendBody, sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]

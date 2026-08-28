@@ -219,7 +219,7 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogLoadFailed(nameof(InitializeAsync), exception);
+            LogLoadFailed(nameof(InitializeAsync));
         }
     }
 
@@ -263,7 +263,7 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogLoadFailed(nameof(LoadDailyAvailabilityAsync), exception);
+            LogLoadFailed(nameof(LoadDailyAvailabilityAsync));
         }
     }
 
@@ -303,12 +303,14 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogLoadFailed(nameof(LoadWeeklyAvailabilityAsync), exception);
+            LogLoadFailed(nameof(LoadWeeklyAvailabilityAsync));
         }
     }
 
+    // Operation name only: the caught exception is never passed to the logger
+    // (Phase 8.15+ security rule - backend response bodies must not reach the log).
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Calendar availability load failed. Operation={Operation}")]
-    private partial void LogLoadFailed(string operation, Exception exception);
+    private partial void LogLoadFailed(string operation);
 
     private static string FormatTime(TimeSpan time) =>
         DateTime.Today.Add(time).ToString("h:mm tt", CultureInfo.InvariantCulture);

@@ -108,12 +108,14 @@ public sealed partial class SpecialistAvailabilityViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogLoadFailed(_specialistId, exception);
+            LogLoadFailed(nameof(LoadAsync));
         }
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Specialist availability load failed. SpecialistId={SpecialistId}")]
-    private partial void LogLoadFailed(string specialistId, Exception exception);
+    // Operation name only: neither the caught exception nor the specialist id is
+    // passed to the logger (Phase 8.15+ security rule - no backend bodies, no identifiers).
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Specialist availability load failed. Operation={Operation}")]
+    private partial void LogLoadFailed(string operation);
 
     private static void Replace<T>(ObservableCollection<T> collection, IReadOnlyList<T> items)
     {

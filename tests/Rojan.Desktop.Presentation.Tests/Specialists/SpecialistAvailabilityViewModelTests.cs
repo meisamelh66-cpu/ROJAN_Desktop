@@ -70,19 +70,21 @@ public sealed class SpecialistAvailabilityViewModelTests
     // full reasoning - a handled failure must also be logged.
 
     [Fact]
-    public async Task LoadCommand_QueryThrows_LogsTheFailure()
+    public async Task LoadCommand_QueryThrows_LogsTheFailure_OperationNameOnly_NoLeak()
     {
         var logger = new RecordingLogger<SpecialistAvailabilityViewModel>();
         var queryService = new StubSpecialistScheduleQueryService
         {
-            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("boom")),
+            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("backend body / specialist-1")),
         };
         var sut = new SpecialistAvailabilityViewModel("specialist-1", queryService, logger);
 
         sut.LoadCommand.Execute(null);
         await Task.Yield();
 
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains("backend body", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -275,7 +275,7 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
         {
             IsPermissionDenied = true;
             State = DashboardState.Error;
-            LogPermissionDenied(_specialistId, nameof(LoadAsync));
+            LogPermissionDenied(nameof(LoadAsync));
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page/profile ViewModel in this app (see SpecialistProfileViewModel.LoadAsync).
         catch (Exception exception)
@@ -283,7 +283,7 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
-            LogOperationFailed(_specialistId, nameof(LoadAsync), exception);
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -464,7 +464,7 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
         catch (UnauthorizedOperationException)
         {
             IsPermissionDenied = true;
-            LogPermissionDenied(_specialistId, operationName);
+            LogPermissionDenied(operationName);
             return false;
         }
 #pragma warning disable CA1031 // Mutation boundary: any failure must surface as ErrorMessage, never crash - same justified broad catch as SpecialistProfileViewModel's own save/assignment boundaries.
@@ -472,16 +472,18 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             ErrorMessage = exception.Message;
-            LogOperationFailed(_specialistId, operationName, exception);
+            LogOperationFailed(operationName);
             return false;
         }
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Specialist schedule permission denied. SpecialistId={SpecialistId} Operation={Operation}")]
-    private partial void LogPermissionDenied(string specialistId, string operation);
+    // Operation name only: neither the caught exception nor the specialist id is
+    // passed to the logger (Phase 8.15+ security rule - no backend bodies, no identifiers).
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Specialist schedule permission denied. Operation={Operation}")]
+    private partial void LogPermissionDenied(string operation);
 
-    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Specialist schedule operation failed. SpecialistId={SpecialistId} Operation={Operation}")]
-    private partial void LogOperationFailed(string specialistId, string operation, Exception exception);
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Specialist schedule operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private static bool TryParseTime(string text, out TimeSpan value) =>
         TimeSpan.TryParseExact(text.Trim(), @"hh\:mm", CultureInfo.InvariantCulture, out value);

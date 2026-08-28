@@ -242,19 +242,21 @@ public sealed class SpecialistScheduleViewModelTests
     // ErrorMessage/IsPermissionDenied - see this class's own doc comment.
 
     [Fact]
-    public async Task LoadCommand_QueryThrows_LogsTheFailure()
+    public async Task LoadCommand_QueryThrows_LogsTheFailure_OperationNameOnly_NoLeak()
     {
         var logger = new RecordingLogger<SpecialistScheduleViewModel>();
         var queryService = new StubSpecialistScheduleQueryService
         {
-            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("boom")),
+            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("backend body / specialist-1")),
         };
         var sut = new SpecialistScheduleViewModel("specialist-1", queryService, new StubSpecialistScheduleCommandService(), logger);
 
         sut.LoadCommand.Execute(null);
         await Task.Yield();
 
-        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains("specialist-1", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains("backend body", StringComparison.Ordinal));
     }
 
     [Fact]
