@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.Controls.Shared;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using AppBookings = Rojan.Desktop.Application.Bookings;
@@ -58,6 +59,8 @@ public sealed partial class CustomerProfileViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _saveErrorMessage;
+    private bool _hasSaveError;
     private CustomerDto? _customer;
     private string _newNoteText = string.Empty;
     private string _newTagText = string.Empty;
@@ -140,6 +143,30 @@ public sealed partial class CustomerProfileViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Production Hardening (missing-guard sweep, Wave A): an action-specific
+    /// failure message for a failed note/tag/status write, deliberately
+    /// separate from <see cref="ErrorMessage"/>/<see cref="State"/> - those two
+    /// drive <c>DashboardWidget</c>, which replaces this panel's entire content
+    /// with a full error+retry view. A failed write must never hide the form
+    /// the user needs to retry, so it gets its own inline, non-destructive
+    /// message instead - same reasoning as
+    /// <c>Services.ServiceProfileViewModel.SaveErrorMessage</c>. Never the raw
+    /// <see cref="System.Exception.Message"/>.
+    /// </summary>
+    public string? SaveErrorMessage
+    {
+        get => _saveErrorMessage;
+        private set => SetProperty(ref _saveErrorMessage, value);
+    }
+
+    /// <summary>Backs the inline error TextBlock's visibility - same explicit-companion-flag shape as <c>Services.ServiceProfileViewModel.HasSaveError</c>.</summary>
+    public bool HasSaveError
+    {
+        get => _hasSaveError;
+        private set => SetProperty(ref _hasSaveError, value);
     }
 
     public CustomerDto? Customer
@@ -255,16 +282,42 @@ public sealed partial class CustomerProfileViewModel : ViewModelBase
 
     private async Task AddNoteAsync()
     {
-        await _commandService.AddNoteAsync(_customerId, NewNoteText).ConfigureAwait(true);
-        NewNoteText = string.Empty;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.AddNoteAsync(_customerId, NewNoteText).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            NewNoteText = string.Empty;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Write boundary: any failure must surface as a safe inline message and preserve the form, never crash or leak internal detail - same justified broad catch as Services.ServiceProfileViewModel's own write boundaries.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Common_ActionFailedMessage;
+            HasSaveError = true;
+            LogOperationFailed(nameof(AddNoteAsync));
+        }
     }
 
     private async Task AddTagAsync()
     {
-        await _commandService.AddTagAsync(_customerId, NewTagText).ConfigureAwait(true);
-        NewTagText = string.Empty;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.AddTagAsync(_customerId, NewTagText).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            NewTagText = string.Empty;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Write boundary - see AddNoteAsync's own justification.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Common_ActionFailedMessage;
+            HasSaveError = true;
+            LogOperationFailed(nameof(AddTagAsync));
+        }
     }
 
     private async Task RemoveTagAsync(CustomerTagDto? tag)
@@ -274,8 +327,21 @@ public sealed partial class CustomerProfileViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.RemoveTagAsync(_customerId, tag.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.RemoveTagAsync(_customerId, tag.Id).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Write boundary - see AddNoteAsync's own justification.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Common_ActionFailedMessage;
+            HasSaveError = true;
+            LogOperationFailed(nameof(RemoveTagAsync));
+        }
     }
 
     private async Task SaveChangesAsync()
@@ -295,8 +361,26 @@ public sealed partial class CustomerProfileViewModel : ViewModelBase
             Customer.LifetimeValue,
             Customer.Notes);
 
-        await _commandService.UpdateCustomerAsync(request).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.UpdateCustomerAsync(request).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Save boundary: revert the status edit buffer to the last-known-good value so a rejected change is never left displayed as applied, then surface a safe inline message - same reasoning as Services.ServiceProfileViewModel.SaveChangesAsync.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            if (Customer is not null)
+            {
+                EditableStatus = Customer.Status;
+            }
+
+            SaveErrorMessage = Strings.Common_ActionFailedMessage;
+            HasSaveError = true;
+            LogOperationFailed(nameof(SaveChangesAsync));
+        }
     }
 
     private static void ReplaceAll<T>(ObservableCollection<T> collection, IReadOnlyList<T> items)

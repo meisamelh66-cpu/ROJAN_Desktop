@@ -4,6 +4,7 @@ using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Application.Specialists.Schedule;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Services;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -101,6 +102,44 @@ public sealed class SpecialistProfileViewModelTests
         Assert.Equal("specialist-1", call.SpecialistId);
         Assert.Equal("Massage", call.Name);
         Assert.Equal(string.Empty, sut.NewSkillText);
+    }
+
+    [Fact]
+    public void AddSkillCommand_BackendThrows_SetsInlineSaveError_DoesNotThrow_PreservesInput_LogsOperationOnly()
+    {
+        const string backendBody = "HTTP 500: backend response body";
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubSpecialistCommandService { AddSkillException = new InvalidOperationException(backendBody) };
+        var logger = new RecordingLogger<SpecialistProfileViewModel>();
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), logger: logger)
+        {
+            NewSkillText = "Massage",
+        };
+
+        var exception = Record.Exception(() => sut.AddSkillCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Specialists_SaveError, sut.SaveErrorMessage);
+        Assert.Equal("Massage", sut.NewSkillText); // input preserved for retry
+        var entry = Assert.Single(logger.Entries.FindAll(e => e.Message.Contains("AddSkillAsync", StringComparison.Ordinal)));
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.DoesNotContain(backendBody, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RemoveSkillCommand_BackendThrows_SetsInlineSaveError_DoesNotThrow()
+    {
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubSpecialistCommandService { RemoveSkillException = new InvalidOperationException("boom") };
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
+        var skill = new SpecialistSkillDto("skill-1", "specialist-1", "Colour");
+
+        var exception = Record.Exception(() => sut.RemoveSkillCommand.Execute(skill));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Specialists_SaveError, sut.SaveErrorMessage);
     }
 
     [Fact]

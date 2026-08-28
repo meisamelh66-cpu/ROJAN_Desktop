@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -39,6 +40,8 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _createErrorMessage;
+    private bool _hasCreateError;
     private string _searchText = string.Empty;
     private string _companyFilter = string.Empty;
     private string _tagFilter = string.Empty;
@@ -95,6 +98,28 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Production Hardening (missing-guard sweep, Wave A): a create-specific
+    /// failure message for a failed new-customer submission, deliberately
+    /// separate from <see cref="ErrorMessage"/>/<see cref="State"/> - those two
+    /// replace the whole page with an error+retry view, which would discard
+    /// the quick-add form the user needs to retry. Same reasoning and shape as
+    /// <c>Services.ServicePageViewModel.CreateErrorMessage</c>. Never the raw
+    /// <see cref="System.Exception.Message"/>.
+    /// </summary>
+    public string? CreateErrorMessage
+    {
+        get => _createErrorMessage;
+        private set => SetProperty(ref _createErrorMessage, value);
+    }
+
+    /// <summary>Backs the inline error TextBlock's visibility - same explicit-companion-flag shape as <c>Services.ServicePageViewModel.HasCreateError</c>.</summary>
+    public bool HasCreateError
+    {
+        get => _hasCreateError;
+        private set => SetProperty(ref _hasCreateError, value);
     }
 
     public string SearchText
@@ -247,15 +272,29 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
     private async Task CreateCustomerAsync()
     {
         var request = new CreateCustomerRequest(NewCustomerFullName, NewCustomerCompany, NewCustomerEmail, NewCustomerPhone, string.Empty);
-        var created = await _commandService.CreateCustomerAsync(request).ConfigureAwait(true);
 
-        NewCustomerFullName = string.Empty;
-        NewCustomerCompany = string.Empty;
-        NewCustomerEmail = string.Empty;
-        NewCustomerPhone = string.Empty;
+        try
+        {
+            var created = await _commandService.CreateCustomerAsync(request).ConfigureAwait(true);
+            CreateErrorMessage = null;
+            HasCreateError = false;
 
-        await LoadAsync().ConfigureAwait(true);
-        SelectedCustomer = Customers.FirstOrDefault(customer => customer.Id == created.Id);
+            NewCustomerFullName = string.Empty;
+            NewCustomerCompany = string.Empty;
+            NewCustomerEmail = string.Empty;
+            NewCustomerPhone = string.Empty;
+
+            await LoadAsync().ConfigureAwait(true);
+            SelectedCustomer = Customers.FirstOrDefault(customer => customer.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Create boundary: any failure must surface as a safe inline message and preserve the form's contents, never crash or leak internal detail - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            CreateErrorMessage = Strings.Common_ActionFailedMessage;
+            HasCreateError = true;
+            LogOperationFailed(nameof(CreateCustomerAsync));
+        }
     }
 
     private void ReplaceAll(IReadOnlyList<CustomerDto> customers)

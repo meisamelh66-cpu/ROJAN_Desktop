@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Services;
@@ -85,6 +86,44 @@ public sealed class ServiceProfileViewModelTests
         Assert.Equal("service-1", call.ServiceId);
         Assert.Equal("Casey Morgan", call.SpecialistName);
         Assert.Equal(string.Empty, sut.NewSpecialistName);
+    }
+
+    [Fact]
+    public void AssignSpecialistCommand_BackendThrows_SetsInlineSaveError_DoesNotThrow_PreservesInput_LogsOperationOnly()
+    {
+        const string backendBody = "HTTP 500: backend response body";
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService { AssignSpecialistException = new InvalidOperationException(backendBody) };
+        var logger = new RecordingLogger<ServiceProfileViewModel>();
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine(), logger)
+        {
+            NewSpecialistName = "Casey Morgan",
+        };
+
+        var exception = Record.Exception(() => sut.AssignSpecialistCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Services_SaveError, sut.SaveErrorMessage);
+        Assert.Equal("Casey Morgan", sut.NewSpecialistName); // input preserved for retry
+        var entry = Assert.Single(logger.Entries.FindAll(e => e.Message.Contains("AssignSpecialistAsync", StringComparison.Ordinal)));
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.DoesNotContain(backendBody, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UnassignSpecialistCommand_BackendThrows_SetsInlineSaveError_DoesNotThrow()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService { UnassignSpecialistException = new InvalidOperationException("boom") };
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine());
+        var assignment = new AssignedSpecialistDto("assignment-1", "service-1", "specialist-1", "Jordan Lee");
+
+        var exception = Record.Exception(() => sut.UnassignSpecialistCommand.Execute(assignment));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Services_SaveError, sut.SaveErrorMessage);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Services;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
@@ -320,6 +321,53 @@ public sealed class SpecialistPageViewModelTests
         Assert.Equal("Riley Chen", request.FullName);
         Assert.Equal(string.Empty, sut.NewSpecialistFullName);
         Assert.Equal("new-specialist", sut.SelectedSpecialist?.Id);
+    }
+
+    // ---- Phase 8.66: Production Hardening (missing-guard sweep, Wave A) ----
+
+    [Fact]
+    public void CreateSpecialistCommand_BackendThrows_SetsInlineCreateError_DoesNotThrow_PreservesForm_LogsOperationOnly()
+    {
+        const string backendBody = "HTTP 500: backend response body / specialist PII secret";
+        var existing = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(existing.ToList()));
+        var commandService = new StubSpecialistCommandService { CreateSpecialistException = new InvalidOperationException(backendBody) };
+        var loggerFactory = new RecordingLoggerFactory();
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), loggerFactory: loggerFactory)
+        {
+            NewSpecialistFullName = "Riley Chen",
+            NewSpecialistEmail = "riley.chen@rojan.example",
+        };
+
+        var exception = Record.Exception(() => sut.CreateSpecialistCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasCreateError);
+        Assert.Equal(Strings.Specialists_SaveError, sut.CreateErrorMessage);
+        Assert.Equal("Riley Chen", sut.NewSpecialistFullName); // form preserved for retry
+        Assert.Equal("riley.chen@rojan.example", sut.NewSpecialistEmail);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+        var entry = Assert.Single(loggerFactory.Entries.FindAll(e => e.Message.Contains("CreateSpecialistAsync", StringComparison.Ordinal)));
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(SpecialistPageViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.DoesNotContain(backendBody, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateSpecialistCommand_WithoutLoggerFactory_BackendThrows_DoesNotThrow()
+    {
+        var existing = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(existing.ToList()));
+        var commandService = new StubSpecialistCommandService { CreateSpecialistException = new InvalidOperationException("boom") };
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService())
+        {
+            NewSpecialistFullName = "Riley Chen",
+        };
+
+        var exception = Record.Exception(() => sut.CreateSpecialistCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasCreateError);
     }
 
     [Fact]

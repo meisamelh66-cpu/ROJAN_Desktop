@@ -19,16 +19,24 @@ internal sealed class StubServiceCommandService : IServiceCommandService
     /// <summary>Service Catalog Authoring: when set, <see cref="UpdateServiceAsync"/> throws this instead of succeeding.</summary>
     public Exception? UpdateServiceException { get; set; }
 
+    /// <summary>Production Hardening (missing-guard sweep): when set, <see cref="AssignSpecialistAsync"/> throws this instead of succeeding.</summary>
+    public Exception? AssignSpecialistException { get; set; }
+
+    /// <summary>Production Hardening (missing-guard sweep): when set, <see cref="UnassignSpecialistAsync"/> throws this instead of succeeding.</summary>
+    public Exception? UnassignSpecialistException { get; set; }
+
     public Task<AssignedSpecialistDto> AssignSpecialistAsync(string serviceId, string specialistName, CancellationToken cancellationToken = default)
     {
         AssignCalls.Add((serviceId, specialistName));
-        return Task.FromResult(new AssignedSpecialistDto("new-assignment", serviceId, "new-specialist", specialistName));
+        return AssignSpecialistException is not null
+            ? Task.FromException<AssignedSpecialistDto>(AssignSpecialistException)
+            : Task.FromResult(new AssignedSpecialistDto("new-assignment", serviceId, "new-specialist", specialistName));
     }
 
     public Task UnassignSpecialistAsync(string serviceId, string assignmentId, CancellationToken cancellationToken = default)
     {
         UnassignCalls.Add((serviceId, assignmentId));
-        return Task.CompletedTask;
+        return UnassignSpecialistException is not null ? Task.FromException(UnassignSpecialistException) : Task.CompletedTask;
     }
 
     public Task<ServiceDto> CreateServiceAsync(CreateServiceRequest request, CancellationToken cancellationToken = default)

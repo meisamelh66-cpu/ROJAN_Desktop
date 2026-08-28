@@ -29,9 +29,25 @@ internal sealed class StubCustomerCommandService : ICustomerCommandService
     /// </summary>
     public Action<CreateCustomerRequest, CustomerDto>? OnCustomerCreated { get; set; }
 
+    /// <summary>Production Hardening (missing-guard sweep): when set, the matching command throws this instead of succeeding - lets a test exercise the ViewModel's new try/catch without a real backend failure. Same seam pattern as StubServiceCommandService.UpdateServiceException.</summary>
+    public Exception? CreateCustomerException { get; set; }
+
+    public Exception? UpdateCustomerException { get; set; }
+
+    public Exception? AddNoteException { get; set; }
+
+    public Exception? AddTagException { get; set; }
+
+    public Exception? RemoveTagException { get; set; }
+
     public Task<CustomerDto> CreateCustomerAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         CreateRequests.Add(request);
+        if (CreateCustomerException is not null)
+        {
+            return Task.FromException<CustomerDto>(CreateCustomerException);
+        }
+
         var dto = new CustomerDto(
             "new-customer", request.FullName, request.Company, request.Email, request.Phone,
             CustomerStatus.Lead, "$0", DateTimeOffset.UnixEpoch, request.Notes, "org-1", "branch-1");
@@ -42,6 +58,11 @@ internal sealed class StubCustomerCommandService : ICustomerCommandService
     public Task<CustomerDto> UpdateCustomerAsync(UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         UpdateRequests.Add(request);
+        if (UpdateCustomerException is not null)
+        {
+            return Task.FromException<CustomerDto>(UpdateCustomerException);
+        }
+
         return Task.FromResult(new CustomerDto(
             request.Id, request.FullName, request.Company, request.Email, request.Phone,
             request.Status, request.LifetimeValue, DateTimeOffset.UnixEpoch, request.Notes, "org-1", "branch-1"));
@@ -50,18 +71,22 @@ internal sealed class StubCustomerCommandService : ICustomerCommandService
     public Task<CustomerNoteDto> AddNoteAsync(string customerId, string text, CancellationToken cancellationToken = default)
     {
         AddNoteCalls.Add((customerId, text));
-        return Task.FromResult(new CustomerNoteDto("new-note", customerId, text, DateTimeOffset.UnixEpoch));
+        return AddNoteException is not null
+            ? Task.FromException<CustomerNoteDto>(AddNoteException)
+            : Task.FromResult(new CustomerNoteDto("new-note", customerId, text, DateTimeOffset.UnixEpoch));
     }
 
     public Task<CustomerTagDto> AddTagAsync(string customerId, string label, CancellationToken cancellationToken = default)
     {
         AddTagCalls.Add((customerId, label));
-        return Task.FromResult(new CustomerTagDto("new-tag", customerId, label, DateTimeOffset.UnixEpoch));
+        return AddTagException is not null
+            ? Task.FromException<CustomerTagDto>(AddTagException)
+            : Task.FromResult(new CustomerTagDto("new-tag", customerId, label, DateTimeOffset.UnixEpoch));
     }
 
     public Task RemoveTagAsync(string customerId, string tagId, CancellationToken cancellationToken = default)
     {
         RemoveTagCalls.Add((customerId, tagId));
-        return Task.CompletedTask;
+        return RemoveTagException is not null ? Task.FromException(RemoveTagException) : Task.CompletedTask;
     }
 }

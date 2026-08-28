@@ -91,6 +91,9 @@ public static class Strings
 
     public static string Common_ErrorDialogMessage => Get(nameof(Common_ErrorDialogMessage));
 
+    /// <summary>Generic, localized, never-raw-exception inline error shown when a user-triggered write command fails - the Production Hardening "missing-guard sweep" equivalent of Services_SaveError / Specialists_SaveError, reused across domains that have no domain-specific save-error string of their own.</summary>
+    public static string Common_ActionFailedMessage => Get(nameof(Common_ActionFailedMessage));
+
     public static string Common_Save => Get(nameof(Common_Save));
 
     public static string Common_Cancel => Get(nameof(Common_Cancel));

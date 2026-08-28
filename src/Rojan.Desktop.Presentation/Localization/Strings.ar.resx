@@ -63,6 +63,9 @@
   <data name="Common_ErrorDialogMessage" xml:space="preserve">
     <value>حدث خطأ ما. سيحاول روجان ديسكتوب مواصلة العمل.</value>
   </data>
+  <data name="Common_ActionFailedMessage" xml:space="preserve">
+    <value>تعذّر إكمال العملية. يُرجى المحاولة مرة أخرى.</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>حفظ</value>
   </data>

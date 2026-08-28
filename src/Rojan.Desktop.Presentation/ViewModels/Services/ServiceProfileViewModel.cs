@@ -250,9 +250,22 @@ public sealed partial class ServiceProfileViewModel : ViewModelBase
 
     private async Task AssignSpecialistAsync()
     {
-        await _commandService.AssignSpecialistAsync(_serviceId, NewSpecialistName).ConfigureAwait(true);
-        NewSpecialistName = string.Empty;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.AssignSpecialistAsync(_serviceId, NewSpecialistName).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            NewSpecialistName = string.Empty;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Write boundary: any failure must surface as a safe inline message and preserve the form, never crash or leak internal detail - same justified broad catch as this class's own SaveChangesAsync boundary.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Services_SaveError;
+            HasSaveError = true;
+            LogOperationFailed(nameof(AssignSpecialistAsync));
+        }
     }
 
     private async Task UnassignSpecialistAsync(AssignedSpecialistDto? assignment)
@@ -262,8 +275,21 @@ public sealed partial class ServiceProfileViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.UnassignSpecialistAsync(_serviceId, assignment.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.UnassignSpecialistAsync(_serviceId, assignment.Id).ConfigureAwait(true);
+            SaveErrorMessage = null;
+            HasSaveError = false;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Write boundary - see AssignSpecialistAsync's own justification.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            SaveErrorMessage = Strings.Services_SaveError;
+            HasSaveError = true;
+            LogOperationFailed(nameof(UnassignSpecialistAsync));
+        }
     }
 
     /// <summary>

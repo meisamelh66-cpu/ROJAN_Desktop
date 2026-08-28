@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -327,6 +328,57 @@ public sealed class CustomerPageViewModelTests
         Assert.Equal("Kim Aesthetics", request.Company);
         Assert.Equal(string.Empty, sut.NewCustomerFullName);
         Assert.Equal("new-customer", sut.SelectedCustomer?.Id);
+    }
+
+    // ---- Phase 8.66: Production Hardening (missing-guard sweep, Wave A) ----
+
+    [Fact]
+    public void CreateCustomerCommand_BackendThrows_SetsInlineCreateError_DoesNotThrow_PreservesForm_LogsOperationOnly()
+    {
+        const string backendBody = "HTTP 500: backend response body / customer PII secret";
+        var existing = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(existing.ToList()));
+        var commandService = new StubCustomerCommandService { CreateCustomerException = new InvalidOperationException(backendBody) };
+        var logger = new RecordingLogger<CustomerPageViewModel>();
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), commandService, logger: logger)
+        {
+            NewCustomerFullName = "Grace Kim",
+            NewCustomerEmail = "grace.kim@example.com",
+        };
+
+        var exception = Record.Exception(() => sut.CreateCustomerCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasCreateError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.CreateErrorMessage);
+        Assert.Equal("Grace Kim", sut.NewCustomerFullName); // form preserved for retry
+        Assert.Equal("grace.kim@example.com", sut.NewCustomerEmail);
+        Assert.NotEqual(DashboardState.Error, sut.State); // page not replaced with the full error view
+        var entry = Assert.Single(logger.Entries.FindAll(e => e.Message.Contains("CreateCustomerAsync", StringComparison.Ordinal)));
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.DoesNotContain(backendBody, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateCustomerCommand_Succeeds_ClearsAnyPriorInlineCreateError()
+    {
+        var existing = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(existing.ToList()));
+        var commandService = new StubCustomerCommandService
+        {
+            CreateCustomerException = new InvalidOperationException("boom"),
+            OnCustomerCreated = (_, dto) => existing.Add(dto),
+        };
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), commandService) { NewCustomerFullName = "Grace Kim" };
+        sut.CreateCustomerCommand.Execute(null);
+        Assert.True(sut.HasCreateError);
+
+        commandService.CreateCustomerException = null;
+        sut.NewCustomerFullName = "Grace Kim";
+        sut.CreateCustomerCommand.Execute(null);
+
+        Assert.False(sut.HasCreateError);
+        Assert.Null(sut.CreateErrorMessage);
     }
 
     [Fact]

@@ -6,6 +6,7 @@ using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Application.Specialists.Schedule;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -50,6 +51,8 @@ public sealed partial class SpecialistPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _createErrorMessage;
+    private bool _hasCreateError;
     private string _searchText = string.Empty;
     private SpecialistStatus? _statusFilter;
     private string _selectedSkill = string.Empty;
@@ -124,6 +127,28 @@ public sealed partial class SpecialistPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Production Hardening (missing-guard sweep, Wave A): a create-specific
+    /// failure message for a failed new-specialist submission, deliberately
+    /// separate from <see cref="ErrorMessage"/>/<see cref="State"/> - those two
+    /// replace the whole page with an error+retry view, which would discard the
+    /// quick-add form the user needs to retry. Same reasoning and shape as
+    /// <c>Services.ServicePageViewModel.CreateErrorMessage</c>. Never the raw
+    /// <see cref="System.Exception.Message"/>.
+    /// </summary>
+    public string? CreateErrorMessage
+    {
+        get => _createErrorMessage;
+        private set => SetProperty(ref _createErrorMessage, value);
+    }
+
+    /// <summary>Backs the inline error TextBlock's visibility - same explicit-companion-flag shape as <c>Services.ServicePageViewModel.HasCreateError</c>.</summary>
+    public bool HasCreateError
+    {
+        get => _hasCreateError;
+        private set => SetProperty(ref _hasCreateError, value);
     }
 
     public string SearchText
@@ -256,10 +281,13 @@ public sealed partial class SpecialistPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
-                LogOperationFailed(_loggerFactory?.CreateLogger<SpecialistPageViewModel>() ?? NullLogger<SpecialistPageViewModel>.Instance, nameof(LoadAsync));
+                LogOperationFailed(Logger, nameof(LoadAsync));
             }
         }
     }
+
+    /// <summary>The page's own logger, derived from the <see cref="ILoggerFactory"/> this class already takes (no new field - it holds two <see cref="ILogger{T}"/> fields for the profile child's grandchildren and a third would trip SYSLIB1020 with the static-form <c>[LoggerMessage]</c> below).</summary>
+    private ILogger Logger => _loggerFactory?.CreateLogger<SpecialistPageViewModel>() ?? NullLogger<SpecialistPageViewModel>.Instance;
 
     // Static form (ILogger passed explicitly) because this class already holds two ILogger
     // fields (_scheduleLogger / _availabilityLogger, forwarded to the profile child's
@@ -292,15 +320,29 @@ public sealed partial class SpecialistPageViewModel : ViewModelBase
     private async Task CreateSpecialistAsync()
     {
         var request = new CreateSpecialistRequest(NewSpecialistFullName, NewSpecialistTitle, NewSpecialistEmail, NewSpecialistPhone, string.Empty);
-        var created = await _commandService.CreateSpecialistAsync(request).ConfigureAwait(true);
 
-        NewSpecialistFullName = string.Empty;
-        NewSpecialistTitle = string.Empty;
-        NewSpecialistEmail = string.Empty;
-        NewSpecialistPhone = string.Empty;
+        try
+        {
+            var created = await _commandService.CreateSpecialistAsync(request).ConfigureAwait(true);
+            CreateErrorMessage = null;
+            HasCreateError = false;
 
-        await LoadAsync().ConfigureAwait(true);
-        SelectedSpecialist = Specialists.FirstOrDefault(specialist => specialist.Id == created.Id);
+            NewSpecialistFullName = string.Empty;
+            NewSpecialistTitle = string.Empty;
+            NewSpecialistEmail = string.Empty;
+            NewSpecialistPhone = string.Empty;
+
+            await LoadAsync().ConfigureAwait(true);
+            SelectedSpecialist = Specialists.FirstOrDefault(specialist => specialist.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Create boundary: any failure must surface as a safe inline message and preserve the form's contents, never crash or leak internal detail - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            CreateErrorMessage = Strings.Specialists_SaveError;
+            HasCreateError = true;
+            LogOperationFailed(Logger, nameof(CreateSpecialistAsync));
+        }
     }
 
     /// <summary>

@@ -75,6 +75,9 @@
   <data name="Common_ErrorDialogMessage" xml:space="preserve">
     <value>مشکلی پیش آمد. روژان دسکتاپ سعی می‌کند به کار خود ادامه دهد.</value>
   </data>
+  <data name="Common_ActionFailedMessage" xml:space="preserve">
+    <value>انجام این عملیات ممکن نشد. لطفاً دوباره تلاش کنید.</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>ذخیره</value>
   </data>

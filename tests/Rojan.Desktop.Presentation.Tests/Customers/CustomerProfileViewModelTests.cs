@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -171,6 +172,99 @@ public sealed class CustomerProfileViewModelTests
         var request = Assert.Single(commandService.UpdateRequests);
         Assert.Equal("customer-1", request.Id);
         Assert.Equal(CustomerStatus.Churned, request.Status);
+    }
+
+    // ---- Phase 8.66: Production Hardening (missing-guard sweep, Wave A) ----
+
+    private const string BackendBody = "HTTP 500: backend response body / customer PII secret";
+
+    [Fact]
+    public void AddNoteCommand_BackendThrows_SetsInlineError_DoesNotThrow_PreservesInput_LogsOperationOnly()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService { AddNoteException = new InvalidOperationException(BackendBody) };
+        var logger = new RecordingLogger<CustomerProfileViewModel>();
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService, logger)
+        {
+            NewNoteText = "Prefers evenings.",
+        };
+
+        var exception = Record.Exception(() => sut.AddNoteCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.SaveErrorMessage);
+        Assert.Equal("Prefers evenings.", sut.NewNoteText); // input preserved for retry
+        Assert.Equal(DashboardState.Loaded, sut.State); // panel not replaced with the full error view
+        var entry = Assert.Single(logger.Entries.FindAll(e => e.Message.Contains("AddNoteAsync", StringComparison.Ordinal)));
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.DoesNotContain(BackendBody, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AddTagCommand_BackendThrows_SetsInlineError_DoesNotThrow()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService { AddTagException = new InvalidOperationException(BackendBody) };
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService) { NewTagText = "VIP" };
+
+        var exception = Record.Exception(() => sut.AddTagCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.SaveErrorMessage);
+        Assert.Equal("VIP", sut.NewTagText);
+    }
+
+    [Fact]
+    public void RemoveTagCommand_BackendThrows_SetsInlineError_DoesNotThrow()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService { RemoveTagException = new InvalidOperationException(BackendBody) };
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
+        var tag = new CustomerTagDto("tag-1", "customer-1", "Regular", DateTimeOffset.UnixEpoch);
+
+        var exception = Record.Exception(() => sut.RemoveTagCommand.Execute(tag));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.SaveErrorMessage);
+    }
+
+    [Fact]
+    public void SaveChangesCommand_BackendThrows_SetsInlineError_RevertsEditableStatus_DoesNotThrow()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile())); // MakeProfile's customer is Active
+        var commandService = new StubCustomerCommandService { UpdateCustomerException = new InvalidOperationException(BackendBody) };
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService)
+        {
+            EditableStatus = CustomerStatus.Churned,
+        };
+
+        var exception = Record.Exception(() => sut.SaveChangesCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.SaveErrorMessage);
+        Assert.Equal(CustomerStatus.Active, sut.EditableStatus); // reverted - a rejected change is never left displayed as applied
+        Assert.Equal(CustomerStatus.Active, sut.Customer?.Status);
+    }
+
+    [Fact]
+    public void AddNoteCommand_Succeeds_ClearsAnyPriorInlineError()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubCustomerCommandService { AddNoteException = new InvalidOperationException("boom") };
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService) { NewNoteText = "first" };
+        sut.AddNoteCommand.Execute(null);
+        Assert.True(sut.HasSaveError);
+
+        commandService.AddNoteException = null;
+        sut.NewNoteText = "second";
+        sut.AddNoteCommand.Execute(null);
+
+        Assert.False(sut.HasSaveError);
+        Assert.Null(sut.SaveErrorMessage);
     }
 
     // Sprint 4 Commit 3: customer 360 booking integration.

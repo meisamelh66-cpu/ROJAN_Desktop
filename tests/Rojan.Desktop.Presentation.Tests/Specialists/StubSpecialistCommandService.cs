@@ -29,9 +29,23 @@ internal sealed class StubSpecialistCommandService : ISpecialistCommandService
     /// <summary>Specialist-Service Assignment: when set, <see cref="RemoveServiceAssignmentAsync"/> throws this instead of succeeding.</summary>
     public Exception? RemoveServiceAssignmentException { get; set; }
 
+    /// <summary>Production Hardening (missing-guard sweep): when set, <see cref="CreateSpecialistAsync"/> throws this instead of succeeding.</summary>
+    public Exception? CreateSpecialistException { get; set; }
+
+    /// <summary>Production Hardening (missing-guard sweep): when set, <see cref="AddSkillAsync"/> throws this instead of succeeding.</summary>
+    public Exception? AddSkillException { get; set; }
+
+    /// <summary>Production Hardening (missing-guard sweep): when set, <see cref="RemoveSkillAsync"/> throws this instead of succeeding.</summary>
+    public Exception? RemoveSkillException { get; set; }
+
     public Task<SpecialistDto> CreateSpecialistAsync(CreateSpecialistRequest request, CancellationToken cancellationToken = default)
     {
         CreateRequests.Add(request);
+        if (CreateSpecialistException is not null)
+        {
+            return Task.FromException<SpecialistDto>(CreateSpecialistException);
+        }
+
         var dto = new SpecialistDto(
             "new-specialist", request.FullName, request.Title, request.Email, request.Phone,
             SpecialistStatus.Active, request.Bio);
@@ -56,13 +70,15 @@ internal sealed class StubSpecialistCommandService : ISpecialistCommandService
     public Task<SpecialistSkillDto> AddSkillAsync(string specialistId, string name, CancellationToken cancellationToken = default)
     {
         AddSkillCalls.Add((specialistId, name));
-        return Task.FromResult(new SpecialistSkillDto("new-skill", specialistId, name));
+        return AddSkillException is not null
+            ? Task.FromException<SpecialistSkillDto>(AddSkillException)
+            : Task.FromResult(new SpecialistSkillDto("new-skill", specialistId, name));
     }
 
     public Task RemoveSkillAsync(string specialistId, string skillId, CancellationToken cancellationToken = default)
     {
         RemoveSkillCalls.Add((specialistId, skillId));
-        return Task.CompletedTask;
+        return RemoveSkillException is not null ? Task.FromException(RemoveSkillException) : Task.CompletedTask;
     }
 
     public Task AssignServiceAsync(string specialistId, string serviceId, CancellationToken cancellationToken = default)
