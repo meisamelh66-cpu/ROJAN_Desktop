@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Services;
 
@@ -7,6 +9,7 @@ namespace Rojan.Desktop.Presentation.Tests.Services;
 
 public sealed class ServiceProfileViewModelTests
 {
+    private const string Secret = "Haircut & Style / $65 / Classic cut and blow-dry finish.";
     private static ServiceProfileDto MakeProfile(string serviceId = "service-1") =>
         new(
             new ServiceDto(serviceId, "Haircut & Style", ServiceCategory.Hair, ServiceStatus.Active, 60, "$65", "Classic cut and blow-dry finish."),
@@ -195,5 +198,67 @@ public sealed class ServiceProfileViewModelTests
         Assert.Contains(nameof(ServiceProfileViewModel.PopularityScore), raisedProperties);
         Assert.Contains(nameof(ServiceProfileViewModel.PopularityLevel), raisedProperties);
         Assert.Contains(nameof(ServiceProfileViewModel.RecommendationSignal), raisedProperties);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException(Secret)));
+        var logger = new RecordingLogger<ServiceProfileViewModel>();
+
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SaveChangesCommand_Failure_LogsErrorWithOperationNameOnly_AndStillRevertsBuffers()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService { UpdateServiceException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<ServiceProfileViewModel>();
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine(), logger);
+        sut.EditableName = "Edited name that should be reverted";
+
+        sut.SaveChangesCommand.Execute(null);
+
+        Assert.True(sut.HasSaveError);
+        Assert.Equal("Haircut & Style", sut.EditableName);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=SaveChangesAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DeactivateCommand_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubServiceCommandService { UpdateServiceException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<ServiceProfileViewModel>();
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine(), logger);
+
+        sut.DeactivateCommand.Execute(null);
+
+        Assert.True(sut.HasSaveError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=DeactivateAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException("boom")));
+
+        var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
     }
 }

@@ -215,4 +215,22 @@ public sealed class InventoryPageViewModelTests
         Assert.Contains(sut.Suppliers, s => s.Name == "Northline Wholesale");
         Assert.Equal(string.Empty, sut.NewSupplierName);
     }
+
+    [Fact]
+    public void LoggerFactory_ForwardedToProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        var products = new List<ProductDto> { MakeProduct("product-1", "Hydrating Shampoo 1L") };
+        var queryService = new StubProductQueryService(_ => Task.FromResult<IReadOnlyList<ProductDto>>(products));
+        var failingProfileQuery = new StubProductProfileQueryService((_, _) => Task.FromException<ProductProfileDto>(new InvalidOperationException("child boom")));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = new InventoryPageViewModel(queryService, failingProfileQuery, new StubInventoryQueryService(), new StubInventoryCommandService(), logger: null, loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(InventoryProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("child boom", entry.Message, StringComparison.Ordinal);
+    }
 }

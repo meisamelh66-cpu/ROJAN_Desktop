@@ -27,6 +27,7 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
     private readonly IInventoryQueryService _inventoryQueryService;
     private readonly IInventoryCommandService _commandService;
     private readonly ILogger<InventoryPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -52,13 +53,15 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
         IProductProfileQueryService profileQueryService,
         IInventoryQueryService inventoryQueryService,
         IInventoryCommandService commandService,
-        ILogger<InventoryPageViewModel>? logger = null)
+        ILogger<InventoryPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _inventoryQueryService = inventoryQueryService;
         _commandService = commandService;
         _logger = logger ?? NullLogger<InventoryPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Products = new ObservableCollection<ProductDto>();
         Categories = new ObservableCollection<ProductCategoryDto>();
@@ -135,7 +138,7 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new InventoryProfileViewModel(value.Id, _profileQueryService, _commandService);
+                    : new InventoryProfileViewModel(value.Id, _profileQueryService, _commandService, _loggerFactory?.CreateLogger<InventoryProfileViewModel>());
             }
         }
     }

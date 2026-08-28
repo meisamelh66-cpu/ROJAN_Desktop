@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Presentation.Localization;
@@ -29,12 +31,13 @@ namespace Rojan.Desktop.Presentation.ViewModels.Services;
 /// <c>Domain.Services.ServicePopularityCalculator</c> and
 /// <c>Application.Intelligence.IntelligenceEngine</c>), never here.
 /// </summary>
-public sealed class ServiceProfileViewModel : ViewModelBase
+public sealed partial class ServiceProfileViewModel : ViewModelBase
 {
     private readonly string _serviceId;
     private readonly IServiceProfileQueryService _profileQueryService;
     private readonly IServiceCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
+    private readonly ILogger<ServiceProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -57,12 +60,14 @@ public sealed class ServiceProfileViewModel : ViewModelBase
         string serviceId,
         IServiceProfileQueryService profileQueryService,
         IServiceCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        ILogger<ServiceProfileViewModel>? logger = null)
     {
         _serviceId = serviceId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+        _logger = logger ?? NullLogger<ServiceProfileViewModel>.Instance;
 
         AssignedSpecialists = new ObservableCollection<AssignedSpecialistDto>();
 
@@ -239,6 +244,7 @@ public sealed class ServiceProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -305,6 +311,8 @@ public sealed class ServiceProfileViewModel : ViewModelBase
                 EditableDurationMinutes = Service.DurationMinutes;
                 EditablePrice = Service.PriceValue;
             }
+
+            LogOperationFailed(nameof(SaveChangesAsync));
         }
     }
 
@@ -340,6 +348,10 @@ public sealed class ServiceProfileViewModel : ViewModelBase
         {
             SaveErrorMessage = Strings.Services_SaveError;
             HasSaveError = true;
+            LogOperationFailed(nameof(DeactivateAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Service profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

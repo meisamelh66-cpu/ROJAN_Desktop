@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.Controls.Shared;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -47,11 +49,12 @@ namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 /// same <c>CustomerBookingSummaryDto</c>, so a second, differently-named
 /// copy would only invite the two to drift.
 /// </summary>
-public sealed class CustomerProfileViewModel : ViewModelBase
+public sealed partial class CustomerProfileViewModel : ViewModelBase
 {
     private readonly string _customerId;
     private readonly ICustomerProfileQueryService _profileQueryService;
     private readonly ICustomerCommandService _commandService;
+    private readonly ILogger<CustomerProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -70,11 +73,13 @@ public sealed class CustomerProfileViewModel : ViewModelBase
     public CustomerProfileViewModel(
         string customerId,
         ICustomerProfileQueryService profileQueryService,
-        ICustomerCommandService commandService)
+        ICustomerCommandService commandService,
+        ILogger<CustomerProfileViewModel>? logger = null)
     {
         _customerId = customerId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<CustomerProfileViewModel>.Instance;
 
         Notes = new ObservableCollection<CustomerNoteDto>();
         Tags = new ObservableCollection<CustomerTagDto>();
@@ -241,8 +246,12 @@ public sealed class CustomerProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Customer profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task AddNoteAsync()
     {

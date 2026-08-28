@@ -316,4 +316,22 @@ public sealed class ServicePageViewModelTests
         Assert.Null(sut.ErrorMessage);
         Assert.Equal(services, sut.Services);
     }
+
+    [Fact]
+    public void LoggerFactory_ForwardedToProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        var services = new List<ServiceDto> { MakeService("service-1", "Haircut & Style") };
+        var queryService = new StubServiceQueryService(_ => Task.FromResult<IReadOnlyList<ServiceDto>>(services));
+        var failingProfileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException("child boom")));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = new ServicePageViewModel(queryService, failingProfileQuery, new StubServiceCommandService(), new StubIntelligenceEngine(), logger: null, loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(ServiceProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("child boom", entry.Message, StringComparison.Ordinal);
+    }
 }

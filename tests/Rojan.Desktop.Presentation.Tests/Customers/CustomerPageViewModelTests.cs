@@ -328,4 +328,22 @@ public sealed class CustomerPageViewModelTests
         Assert.Equal(string.Empty, sut.NewCustomerFullName);
         Assert.Equal("new-customer", sut.SelectedCustomer?.Id);
     }
+
+    [Fact]
+    public void LoggerFactory_ForwardedToProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        var customers = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(_ => Task.FromResult<IReadOnlyList<CustomerDto>>(customers));
+        var failingProfileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromException<CustomerProfileDto>(new InvalidOperationException("child boom")));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = new CustomerPageViewModel(queryService, failingProfileQuery, new StubCustomerCommandService(), logger: null, loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(CustomerProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("child boom", entry.Message, StringComparison.Ordinal);
+    }
 }

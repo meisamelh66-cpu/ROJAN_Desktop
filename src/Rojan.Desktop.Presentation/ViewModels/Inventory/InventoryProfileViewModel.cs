@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -15,11 +17,12 @@ namespace Rojan.Desktop.Presentation.ViewModels.Inventory;
 /// selected product changes - same per-selection child-ViewModel pattern
 /// <c>Customers.CustomerProfileViewModel</c> established in Phase 10.
 /// </summary>
-public sealed class InventoryProfileViewModel : ViewModelBase
+public sealed partial class InventoryProfileViewModel : ViewModelBase
 {
     private readonly string _productId;
     private readonly IProductProfileQueryService _profileQueryService;
     private readonly IInventoryCommandService _commandService;
+    private readonly ILogger<InventoryProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -34,11 +37,13 @@ public sealed class InventoryProfileViewModel : ViewModelBase
     public InventoryProfileViewModel(
         string productId,
         IProductProfileQueryService profileQueryService,
-        IInventoryCommandService commandService)
+        IInventoryCommandService commandService,
+        ILogger<InventoryProfileViewModel>? logger = null)
     {
         _productId = productId;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<InventoryProfileViewModel>.Instance;
 
         RecentTransactions = new ObservableCollection<StockTransactionDto>();
         ServiceMappings = new ObservableCollection<ServiceProductMappingDto>();
@@ -155,8 +160,12 @@ public sealed class InventoryProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Inventory profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task RecordTransactionAsync()
     {

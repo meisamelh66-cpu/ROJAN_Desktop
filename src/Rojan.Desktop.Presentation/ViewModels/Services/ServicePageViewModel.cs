@@ -46,6 +46,7 @@ public sealed partial class ServicePageViewModel : ViewModelBase
     private readonly IServiceCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
     private readonly ILogger<ServicePageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -75,13 +76,15 @@ public sealed partial class ServicePageViewModel : ViewModelBase
         IServiceProfileQueryService profileQueryService,
         IServiceCommandService commandService,
         IIntelligenceEngine intelligenceEngine,
-        ILogger<ServicePageViewModel>? logger = null)
+        ILogger<ServicePageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
         _logger = logger ?? NullLogger<ServicePageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Services = new ObservableCollection<ServiceDto>();
         AvailableCategories = new ObservableCollection<ServiceCategoryOptionDto>();
@@ -241,7 +244,7 @@ public sealed partial class ServicePageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new ServiceProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine);
+                    : new ServiceProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _loggerFactory?.CreateLogger<ServiceProfileViewModel>());
             }
         }
     }

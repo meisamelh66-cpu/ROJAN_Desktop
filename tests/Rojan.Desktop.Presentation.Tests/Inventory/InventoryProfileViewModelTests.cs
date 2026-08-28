@@ -1,4 +1,6 @@
-﻿using Rojan.Desktop.Application.Inventory;
+﻿using Microsoft.Extensions.Logging;
+using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 
@@ -6,6 +8,34 @@ namespace Rojan.Desktop.Presentation.Tests.Inventory;
 
 public sealed class InventoryProfileViewModelTests
 {
+    private const string Secret = "SKU-SECRET-9931 / Glow Beauty Supply Co. / $18";
+
+    [Fact]
+    public void LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var profileQuery = new StubProductProfileQueryService((_, _) => Task.FromException<ProductProfileDto>(new InvalidOperationException(Secret)));
+        var logger = new RecordingLogger<InventoryProfileViewModel>();
+
+        var sut = new InventoryProfileViewModel("product-1", profileQuery, new StubInventoryCommandService(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var profileQuery = new StubProductProfileQueryService((_, _) => Task.FromException<ProductProfileDto>(new InvalidOperationException("boom")));
+
+        var sut = new InventoryProfileViewModel("product-1", profileQuery, new StubInventoryCommandService());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+    }
+
     private static ProductProfileDto MakeProfile(string productId = "product-1") =>
         new(
             new ProductDto(productId, "SKU-1", "Hydrating Shampoo 1L", "category-1", "Hair Care", "supplier-1", "Glow Beauty Supply Co.", "$18", ProductStatus.Active, string.Empty, "org-1", "branch-1"),

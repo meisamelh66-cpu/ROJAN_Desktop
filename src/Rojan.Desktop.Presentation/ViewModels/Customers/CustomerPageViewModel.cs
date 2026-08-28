@@ -35,6 +35,7 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
     private readonly ICustomerProfileQueryService _profileQueryService;
     private readonly ICustomerCommandService _commandService;
     private readonly ILogger<CustomerPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -56,12 +57,14 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
         ICustomerQueryService queryService,
         ICustomerProfileQueryService profileQueryService,
         ICustomerCommandService commandService,
-        ILogger<CustomerPageViewModel>? logger = null)
+        ILogger<CustomerPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _logger = logger ?? NullLogger<CustomerPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Customers = new ObservableCollection<CustomerDto>();
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
@@ -156,7 +159,7 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new CustomerProfileViewModel(value.Id, _profileQueryService, _commandService);
+                    : new CustomerProfileViewModel(value.Id, _profileQueryService, _commandService, _loggerFactory?.CreateLogger<CustomerProfileViewModel>());
             }
         }
     }

@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using AppBookings = Rojan.Desktop.Application.Bookings;
@@ -7,6 +9,34 @@ namespace Rojan.Desktop.Presentation.Tests.Customers;
 
 public sealed class CustomerProfileViewModelTests
 {
+    private const string PiiSecret = "Amelia Hart / amelia.hart@example.com / 555-0100";
+
+    [Fact]
+    public void LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoPiiLeak()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromException<CustomerProfileDto>(new InvalidOperationException(PiiSecret)));
+        var logger = new RecordingLogger<CustomerProfileViewModel>();
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, new StubCustomerCommandService(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(PiiSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => Task.FromException<CustomerProfileDto>(new InvalidOperationException("boom")));
+
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, new StubCustomerCommandService());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+    }
+
     private static CustomerProfileDto MakeProfile(string customerId = "customer-1", CustomerBookingSummaryDto? bookingSummary = null, CustomerInsightsDto? insights = null) =>
         new(
             new CustomerDto(customerId, "Amelia Hart", "Hart & Co. Salon", "amelia.hart@example.com", "555-0100", CustomerStatus.Active, "$4,820", DateTimeOffset.UnixEpoch, "Notes", "org-1", "branch-1"),
