@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -24,12 +26,13 @@ namespace Rojan.Desktop.Presentation.ViewModels.Organizations;
 /// Last Updated timestamp, per this phase's "every new page must include"
 /// requirement.
 /// </summary>
-public sealed class OrganizationPageViewModel : ViewModelBase
+public sealed partial class OrganizationPageViewModel : ViewModelBase
 {
     private readonly IOrganizationQueryService _queryService;
     private readonly IOrganizationCommandService _commandService;
     private readonly IPermissionEngine _permissionEngine;
     private readonly Rojan.Desktop.Presentation.Organizations.ICurrentSessionService _currentSessionService;
+    private readonly ILogger<OrganizationPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -85,12 +88,14 @@ public sealed class OrganizationPageViewModel : ViewModelBase
         IOrganizationQueryService queryService,
         IOrganizationCommandService commandService,
         IPermissionEngine permissionEngine,
-        Rojan.Desktop.Presentation.Organizations.ICurrentSessionService currentSessionService)
+        Rojan.Desktop.Presentation.Organizations.ICurrentSessionService currentSessionService,
+        ILogger<OrganizationPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _commandService = commandService;
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
+        _logger = logger ?? NullLogger<OrganizationPageViewModel>.Instance;
 
         Organizations = new ObservableCollection<OrganizationDto>();
         Branches = new ObservableCollection<BranchDto>();
@@ -413,8 +418,14 @@ public sealed class OrganizationPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // organization/tax/VAT/receipt data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Organization page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     /// <summary>
     /// Loads every branch for <see cref="SelectedOrganization"/> - the
