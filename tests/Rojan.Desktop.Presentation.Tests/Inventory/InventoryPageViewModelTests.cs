@@ -1,4 +1,6 @@
-﻿using Rojan.Desktop.Application.Inventory;
+﻿using Microsoft.Extensions.Logging;
+using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
 
@@ -16,8 +18,9 @@ public sealed class InventoryPageViewModelTests
     private static InventoryPageViewModel MakeSut(
         StubProductQueryService queryService,
         StubInventoryQueryService? inventoryQueryService = null,
-        StubInventoryCommandService? commandService = null) =>
-        new(queryService, MakeProfileQueryService(), inventoryQueryService ?? new StubInventoryQueryService(), commandService ?? new StubInventoryCommandService());
+        StubInventoryCommandService? commandService = null,
+        RecordingLogger<InventoryPageViewModel>? logger = null) =>
+        new(queryService, MakeProfileQueryService(), inventoryQueryService ?? new StubInventoryQueryService(), commandService ?? new StubInventoryCommandService(), logger);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -66,6 +69,34 @@ public sealed class InventoryPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.19 Logging Wave 2A: LoadAsync / SearchAsync now log at Error before
+    // their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryServiceThrows_LogsError()
+    {
+        var queryService = new StubProductQueryService(
+            _ => Task.FromException<IReadOnlyList<ProductDto>>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<InventoryPageViewModel>();
+
+        var sut = MakeSut(queryService, logger: logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubProductQueryService(
+            _ => Task.FromException<IReadOnlyList<ProductDto>>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => MakeSut(queryService));
+
+        Assert.Null(exception);
     }
 
     [Fact]

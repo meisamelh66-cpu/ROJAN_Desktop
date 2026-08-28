@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
 
@@ -22,7 +24,8 @@ public sealed class HrPageViewModelTests
         StubCommissionQueryService? commissionQueryService = null,
         StubCommissionCommandService? commissionCommandService = null,
         StubPayrollQueryService? payrollQueryService = null,
-        StubPayrollCommandService? payrollCommandService = null) => new(
+        StubPayrollCommandService? payrollCommandService = null,
+        RecordingLogger<HrPageViewModel>? logger = null) => new(
         employeeQueryService ?? new StubEmployeeQueryService(_ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]), getProfile: (id, _) => Task.FromResult(MakeProfile(id))),
         employeeCommandService ?? new StubEmployeeCommandService(),
         attendanceQueryService ?? new StubAttendanceQueryService(),
@@ -32,7 +35,8 @@ public sealed class HrPageViewModelTests
         commissionQueryService ?? new StubCommissionQueryService(),
         commissionCommandService ?? new StubCommissionCommandService(),
         payrollQueryService ?? new StubPayrollQueryService(),
-        payrollCommandService ?? new StubPayrollCommandService());
+        payrollCommandService ?? new StubPayrollCommandService(),
+        logger);
 
     [Fact]
     public void Constructor_EmployeesLoad_StateIsLoadedAndSelectsFirstEmployee()
@@ -68,6 +72,32 @@ public sealed class HrPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.19 Logging Wave 2A: LoadAsync / SearchAsync now log at Error before
+    // their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryThrows_LogsError()
+    {
+        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<HrPageViewModel>();
+
+        var sut = MakeSut(queryService, logger: logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => MakeSut(queryService));
+
+        Assert.Null(exception);
     }
 
     [Fact]

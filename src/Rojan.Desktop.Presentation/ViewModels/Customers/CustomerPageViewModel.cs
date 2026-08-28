@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Customers;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -27,11 +29,12 @@ namespace Rojan.Desktop.Presentation.ViewModels.Customers;
 /// own doc comment. Same <c>_filterVersion</c> staleness-guard pattern as
 /// <c>Bookings.BookingPageViewModel</c>.
 /// </summary>
-public sealed class CustomerPageViewModel : ViewModelBase
+public sealed partial class CustomerPageViewModel : ViewModelBase
 {
     private readonly ICustomerQueryService _queryService;
     private readonly ICustomerProfileQueryService _profileQueryService;
     private readonly ICustomerCommandService _commandService;
+    private readonly ILogger<CustomerPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -52,11 +55,13 @@ public sealed class CustomerPageViewModel : ViewModelBase
     public CustomerPageViewModel(
         ICustomerQueryService queryService,
         ICustomerProfileQueryService profileQueryService,
-        ICustomerCommandService commandService)
+        ICustomerCommandService commandService,
+        ILogger<CustomerPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<CustomerPageViewModel>.Instance;
 
         Customers = new ObservableCollection<CustomerDto>();
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
@@ -220,9 +225,15 @@ public sealed class CustomerPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(nameof(LoadAsync));
             }
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // customer data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Customer page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private CustomerSearchFilter BuildFilter() => new(
         SearchText: string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,

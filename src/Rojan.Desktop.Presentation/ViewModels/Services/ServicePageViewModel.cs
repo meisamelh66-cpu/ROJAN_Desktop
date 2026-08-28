@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Presentation.Localization;
@@ -37,12 +39,13 @@ namespace Rojan.Desktop.Presentation.ViewModels.Services;
 /// own doc comment. Same <c>_filterVersion</c> staleness-guard pattern as
 /// every other page ViewModel with combinable filters.
 /// </summary>
-public sealed class ServicePageViewModel : ViewModelBase
+public sealed partial class ServicePageViewModel : ViewModelBase
 {
     private readonly IServiceQueryService _queryService;
     private readonly IServiceProfileQueryService _profileQueryService;
     private readonly IServiceCommandService _commandService;
     private readonly IIntelligenceEngine _intelligenceEngine;
+    private readonly ILogger<ServicePageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -71,12 +74,14 @@ public sealed class ServicePageViewModel : ViewModelBase
         IServiceQueryService queryService,
         IServiceProfileQueryService profileQueryService,
         IServiceCommandService commandService,
-        IIntelligenceEngine intelligenceEngine)
+        IIntelligenceEngine intelligenceEngine,
+        ILogger<ServicePageViewModel>? logger = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
+        _logger = logger ?? NullLogger<ServicePageViewModel>.Instance;
 
         Services = new ObservableCollection<ServiceDto>();
         AvailableCategories = new ObservableCollection<ServiceCategoryOptionDto>();
@@ -328,9 +333,15 @@ public sealed class ServicePageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(nameof(LoadAsync));
             }
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // service/catalog data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Service page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     /// <summary>
     /// Service Catalog Authoring. Failure is deliberately swallowed (no
@@ -353,7 +364,9 @@ public sealed class ServicePageViewModel : ViewModelBase
         }
         catch (Exception)
         {
-            // Swallowed by design - see this method's own doc comment.
+            // Swallowed by design - see this method's own doc comment. A log
+            // entry is the only trail for this otherwise-silent degradation.
+            LogOperationFailed(nameof(LoadCategoriesAsync));
         }
 #pragma warning restore CA1031
     }
@@ -401,6 +414,7 @@ public sealed class ServicePageViewModel : ViewModelBase
         {
             CreateErrorMessage = Strings.Services_SaveError;
             HasCreateError = true;
+            LogOperationFailed(nameof(CreateServiceAsync));
         }
     }
 

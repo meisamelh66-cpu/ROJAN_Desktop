@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -16,7 +18,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.HR;
 /// every other module. Depends only on Application services - never
 /// reaches past Application into Domain/Infrastructure.
 /// </summary>
-public sealed class HrPageViewModel : ViewModelBase
+public sealed partial class HrPageViewModel : ViewModelBase
 {
     private readonly IEmployeeQueryService _employeeQueryService;
     private readonly IEmployeeCommandService _employeeCommandService;
@@ -28,6 +30,7 @@ public sealed class HrPageViewModel : ViewModelBase
     private readonly ICommissionCommandService _commissionCommandService;
     private readonly IPayrollQueryService _payrollQueryService;
     private readonly IPayrollCommandService _payrollCommandService;
+    private readonly ILogger<HrPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -85,7 +88,8 @@ public sealed class HrPageViewModel : ViewModelBase
         ICommissionQueryService commissionQueryService,
         ICommissionCommandService commissionCommandService,
         IPayrollQueryService payrollQueryService,
-        IPayrollCommandService payrollCommandService)
+        IPayrollCommandService payrollCommandService,
+        ILogger<HrPageViewModel>? logger = null)
     {
         _employeeQueryService = employeeQueryService;
         _employeeCommandService = employeeCommandService;
@@ -97,6 +101,7 @@ public sealed class HrPageViewModel : ViewModelBase
         _commissionCommandService = commissionCommandService;
         _payrollQueryService = payrollQueryService;
         _payrollCommandService = payrollCommandService;
+        _logger = logger ?? NullLogger<HrPageViewModel>.Instance;
 
         Employees = new ObservableCollection<EmployeeDto>();
         TodayAttendance = new ObservableCollection<AttendanceDto>();
@@ -382,8 +387,14 @@ public sealed class HrPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // employee/payroll data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "HR page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task SearchAsync(string searchText)
     {
@@ -405,6 +416,7 @@ public sealed class HrPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(nameof(SearchAsync));
             }
         }
     }

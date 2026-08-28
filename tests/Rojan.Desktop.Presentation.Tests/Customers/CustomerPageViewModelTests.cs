@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Customers;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -61,6 +63,35 @@ public sealed class CustomerPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.19 Logging Wave 2A: LoadAsync now logs at Error before surfacing the
+    // Error state - user-visible behaviour (State / ErrorMessage) is unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryServiceThrows_LogsError()
+    {
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<CustomerPageViewModel>();
+
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() =>
+            new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService()));
+
+        Assert.Null(exception);
     }
 
     // Sprint 4 Commit 2: customer search and filters. SearchText/CompanyFilter/TagFilter/

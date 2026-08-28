@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Presentation.Dialogs;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -17,7 +19,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Reporting;
 /// framework, the same way <c>Accounting.AccountingPageViewModel</c> shows
 /// its POS checkout dialog.
 /// </summary>
-public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
+public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
 {
     private readonly IReportCatalogQueryService _catalogQueryService;
     private readonly IReportExecutionQueryService _executionQueryService;
@@ -25,6 +27,7 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
     private readonly IReportSnapshotCommandService _snapshotCommandService;
     private readonly IReportExportService _exportService;
     private readonly IDialogService _dialogService;
+    private readonly ILogger<ReportingPageViewModel> _logger;
 
     private CancellationTokenSource? _runCancellation;
 
@@ -46,7 +49,8 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         IReportSnapshotQueryService snapshotQueryService,
         IReportSnapshotCommandService snapshotCommandService,
         IReportExportService exportService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        ILogger<ReportingPageViewModel>? logger = null)
     {
         _catalogQueryService = catalogQueryService;
         _executionQueryService = executionQueryService;
@@ -54,6 +58,7 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         _snapshotCommandService = snapshotCommandService;
         _exportService = exportService;
         _dialogService = dialogService;
+        _logger = logger ?? NullLogger<ReportingPageViewModel>.Instance;
 
         ReportDefinitions = new ObservableCollection<ReportDefinitionDto>();
         AdditionalFilters = new ObservableCollection<FilterEntryViewModel>();
@@ -207,8 +212,14 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // report data/filters, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Reporting page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private void ApplyCatalogFilter()
     {
@@ -274,6 +285,7 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
 #pragma warning restore CA1031
         {
             StatusMessage = exception.Message;
+            LogOperationFailed(nameof(RunReportAsync));
         }
         finally
         {
@@ -304,6 +316,7 @@ public sealed class ReportingPageViewModel : ViewModelBase, IDisposable
 #pragma warning restore CA1031
         {
             StatusMessage = exception.Message;
+            LogOperationFailed(nameof(RerunSnapshotAsync));
         }
         finally
         {

@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 
 namespace Rojan.Desktop.Presentation.Tests.Reporting;
@@ -12,7 +14,8 @@ public sealed class ReportingPageViewModelTests
         [FilterType.DateRange, FilterType.Customer]);
 
     private static (ReportingPageViewModel Sut, StubReportExecutionQueryService Execution, StubReportSnapshotQueryService SnapshotQuery, StubReportSnapshotCommandService SnapshotCommand, StubDialogService Dialog) CreateSut(
-        IReadOnlyList<ReportDefinitionDto>? definitions = null)
+        IReadOnlyList<ReportDefinitionDto>? definitions = null,
+        RecordingLogger<ReportingPageViewModel>? logger = null)
     {
         var catalog = new StubReportCatalogQueryService(definitions ?? [MakeDefinition()]);
         var execution = new StubReportExecutionQueryService();
@@ -21,7 +24,7 @@ public sealed class ReportingPageViewModelTests
         var export = new StubReportExportService();
         var dialog = new StubDialogService();
 
-        var sut = new ReportingPageViewModel(catalog, execution, snapshotQuery, snapshotCommand, export, dialog);
+        var sut = new ReportingPageViewModel(catalog, execution, snapshotQuery, snapshotCommand, export, dialog, logger);
         return (sut, execution, snapshotQuery, snapshotCommand, dialog);
     }
 
@@ -80,6 +83,36 @@ public sealed class ReportingPageViewModelTests
         Assert.NotNull(sut.CurrentResult);
         Assert.Equal(1, snapshotCommand.RecordCount);
         Assert.Contains("rows", sut.StatusMessage, StringComparison.Ordinal);
+    }
+
+    // Phase 8.19 Logging Wave 2A: LoadAsync / RunReportAsync / RerunSnapshotAsync now log at Error
+    // before their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public void RunReportCommand_ExecutionThrows_LogsError()
+    {
+        var logger = new RecordingLogger<ReportingPageViewModel>();
+        var (sut, execution, _, _, _) = CreateSut(logger: logger);
+        execution.ResultFactory = (_, _) => throw new InvalidOperationException("boom");
+        sut.SelectReportCommand.Execute(sut.ReportDefinitions[0]);
+
+        sut.RunReportCommand.Execute(null);
+
+        Assert.Equal("boom", sut.StatusMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("RunReportAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_RunReportFailureNeverThrows()
+    {
+        var (sut, execution, _, _, _) = CreateSut();
+        execution.ResultFactory = (_, _) => throw new InvalidOperationException("boom");
+        sut.SelectReportCommand.Execute(sut.ReportDefinitions[0]);
+
+        var exception = Record.Exception(() => sut.RunReportCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.Equal("boom", sut.StatusMessage);
     }
 
     [Fact]

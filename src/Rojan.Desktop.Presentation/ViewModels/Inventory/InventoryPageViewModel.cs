@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Inventory;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -18,12 +20,13 @@ namespace Rojan.Desktop.Presentation.ViewModels.Inventory;
 /// <see cref="DashboardState"/> rather than a duplicate enum, same
 /// reasoning as every other page ViewModel in this app.
 /// </summary>
-public sealed class InventoryPageViewModel : ViewModelBase
+public sealed partial class InventoryPageViewModel : ViewModelBase
 {
     private readonly IProductQueryService _queryService;
     private readonly IProductProfileQueryService _profileQueryService;
     private readonly IInventoryQueryService _inventoryQueryService;
     private readonly IInventoryCommandService _commandService;
+    private readonly ILogger<InventoryPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -48,12 +51,14 @@ public sealed class InventoryPageViewModel : ViewModelBase
         IProductQueryService queryService,
         IProductProfileQueryService profileQueryService,
         IInventoryQueryService inventoryQueryService,
-        IInventoryCommandService commandService)
+        IInventoryCommandService commandService,
+        ILogger<InventoryPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _inventoryQueryService = inventoryQueryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<InventoryPageViewModel>.Instance;
 
         Products = new ObservableCollection<ProductDto>();
         Categories = new ObservableCollection<ProductCategoryDto>();
@@ -239,8 +244,14 @@ public sealed class InventoryPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // product/supplier data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Inventory page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     /// <summary>
     /// Runs the search through <see cref="IProductQueryService.SearchProductsAsync"/>
@@ -271,6 +282,7 @@ public sealed class InventoryPageViewModel : ViewModelBase
             {
                 ErrorMessage = exception.Message;
                 State = DashboardState.Error;
+                LogOperationFailed(nameof(SearchAsync));
             }
         }
     }

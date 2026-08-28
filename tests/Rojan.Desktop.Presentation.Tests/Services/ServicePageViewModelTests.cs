@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Services;
 
@@ -61,6 +63,35 @@ public sealed class ServicePageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.19 Logging Wave 2A: LoadAsync / LoadCategoriesAsync / CreateServiceAsync now log at
+    // Error before their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryServiceThrows_LogsError()
+    {
+        var queryService = new StubServiceQueryService(
+            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<ServicePageViewModel>();
+
+        var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubServiceQueryService(
+            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() =>
+            new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine()));
+
+        Assert.Null(exception);
     }
 
     // Sprint 5 Commit 2: premium service search and filters. Text/field-matching behavior now
