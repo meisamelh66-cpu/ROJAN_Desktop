@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -35,6 +36,8 @@ public sealed partial class HrPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private HrDashboardSummaryDto? _summary;
     private HrSection _selectedSection = HrSection.Employees;
     private string _statusMessage = string.Empty;
@@ -208,6 +211,25 @@ public sealed partial class HrPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when a user-triggered HR write command
+    /// (create employee, record attendance, assign shift, approve leave, generate
+    /// payroll, ...) fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/>
+    /// it never blanks the page. Production Hardening missing-guard sweep (Wave B),
+    /// same shape as Customers.CustomerProfileViewModel.SaveErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     public HrDashboardSummaryDto? Summary
@@ -445,15 +467,28 @@ public sealed partial class HrPageViewModel : ViewModelBase
             string.Empty, NewEmployeeFullName, NewEmployeeEmail, NewEmployeePhone,
             NewEmployeeRole, NewEmployeeDepartment, NewEmployeeEmploymentType, DateOnly.FromDateTime(DateTime.Today), baseSalary);
 
-        var created = await _employeeCommandService.CreateEmployeeAsync(request).ConfigureAwait(true);
+        try
+        {
+            var created = await _employeeCommandService.CreateEmployeeAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        NewEmployeeFullName = string.Empty;
-        NewEmployeeEmail = string.Empty;
-        NewEmployeePhone = string.Empty;
-        NewEmployeeBaseSalary = string.Empty;
+            NewEmployeeFullName = string.Empty;
+            NewEmployeeEmail = string.Empty;
+            NewEmployeePhone = string.Empty;
+            NewEmployeeBaseSalary = string.Empty;
 
-        await LoadAsync().ConfigureAwait(true);
-        SelectedEmployee = Employees.FirstOrDefault(employee => employee.Id == created.Id);
+            await LoadAsync().ConfigureAwait(true);
+            SelectedEmployee = Employees.FirstOrDefault(employee => employee.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateEmployeeAsync));
+        }
     }
 
     private async Task RecordAttendanceAsync()
@@ -468,19 +503,32 @@ public sealed partial class HrPageViewModel : ViewModelBase
         var request = new RecordAttendanceRequest(
             AttendanceSelectedEmployee.Id, DateOnly.FromDateTime(DateTime.Today), checkInTime, null, null, AttendanceNotes);
 
-        await _attendanceCommandService.RecordAttendanceAsync(request).ConfigureAwait(true);
-
-        AttendanceCheckInTime = string.Empty;
-        AttendanceNotes = string.Empty;
-
-        var todayAttendance = await _attendanceQueryService.GetTodayAttendanceAsync().ConfigureAwait(true);
-        TodayAttendance.Clear();
-        foreach (var attendance in todayAttendance)
+        try
         {
-            TodayAttendance.Add(attendance);
-        }
+            await _attendanceCommandService.RecordAttendanceAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        Summary = await _employeeQueryService.GetDashboardSummaryAsync().ConfigureAwait(true);
+            AttendanceCheckInTime = string.Empty;
+            AttendanceNotes = string.Empty;
+
+            var todayAttendance = await _attendanceQueryService.GetTodayAttendanceAsync().ConfigureAwait(true);
+            TodayAttendance.Clear();
+            foreach (var attendance in todayAttendance)
+            {
+                TodayAttendance.Add(attendance);
+            }
+
+            Summary = await _employeeQueryService.GetDashboardSummaryAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(RecordAttendanceAsync));
+        }
     }
 
     private async Task CreateShiftAsync()
@@ -491,13 +539,27 @@ public sealed partial class HrPageViewModel : ViewModelBase
         }
 
         var request = new CreateShiftRequest(NewShiftLabel, NewShiftDepartment, start, end);
-        var created = await _shiftCommandService.CreateShiftAsync(request).ConfigureAwait(true);
 
-        NewShiftLabel = string.Empty;
-        NewShiftStartTime = string.Empty;
-        NewShiftEndTime = string.Empty;
+        try
+        {
+            var created = await _shiftCommandService.CreateShiftAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        Shifts.Add(created);
+            NewShiftLabel = string.Empty;
+            NewShiftStartTime = string.Empty;
+            NewShiftEndTime = string.Empty;
+
+            Shifts.Add(created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateShiftAsync));
+        }
     }
 
     private async Task AssignShiftAsync()
@@ -508,9 +570,23 @@ public sealed partial class HrPageViewModel : ViewModelBase
         }
 
         var request = new AssignShiftRequest(AssignShiftSelectedShift.Id, AssignShiftSelectedEmployee.Id, DateOnly.FromDateTime(AssignShiftDate));
-        var created = await _shiftCommandService.AssignShiftAsync(request).ConfigureAwait(true);
 
-        ShiftAssignments.Add(created);
+        try
+        {
+            var created = await _shiftCommandService.AssignShiftAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            ShiftAssignments.Add(created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(AssignShiftAsync));
+        }
     }
 
     private async Task RequestLeaveAsync()
@@ -522,10 +598,24 @@ public sealed partial class HrPageViewModel : ViewModelBase
 
         var request = new CreateLeaveRequestRequest(
             LeaveSelectedEmployee.Id, DateOnly.FromDateTime(LeaveStartDate), DateOnly.FromDateTime(LeaveEndDate), LeaveReason);
-        var created = await _attendanceCommandService.RequestLeaveAsync(request).ConfigureAwait(true);
 
-        LeaveReason = string.Empty;
-        LeaveRequests.Insert(0, created);
+        try
+        {
+            var created = await _attendanceCommandService.RequestLeaveAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            LeaveReason = string.Empty;
+            LeaveRequests.Insert(0, created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(RequestLeaveAsync));
+        }
     }
 
     private async Task ApproveLeaveAsync(LeaveRequestDto? leaveRequest)
@@ -535,8 +625,21 @@ public sealed partial class HrPageViewModel : ViewModelBase
             return;
         }
 
-        var updated = await _attendanceCommandService.ApproveLeaveAsync(leaveRequest.Id).ConfigureAwait(true);
-        ReplaceLeaveRequest(updated);
+        try
+        {
+            var updated = await _attendanceCommandService.ApproveLeaveAsync(leaveRequest.Id).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            ReplaceLeaveRequest(updated);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(ApproveLeaveAsync));
+        }
     }
 
     private async Task RejectLeaveAsync(LeaveRequestDto? leaveRequest)
@@ -546,8 +649,21 @@ public sealed partial class HrPageViewModel : ViewModelBase
             return;
         }
 
-        var updated = await _attendanceCommandService.RejectLeaveAsync(leaveRequest.Id).ConfigureAwait(true);
-        ReplaceLeaveRequest(updated);
+        try
+        {
+            var updated = await _attendanceCommandService.RejectLeaveAsync(leaveRequest.Id).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            ReplaceLeaveRequest(updated);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(RejectLeaveAsync));
+        }
     }
 
     private void ReplaceLeaveRequest(LeaveRequestDto updated)
@@ -567,24 +683,52 @@ public sealed partial class HrPageViewModel : ViewModelBase
         }
 
         var request = new CreateCommissionRuleRequest(NewRuleSelectedEmployee.Id, NewRuleType, value, NewRuleDescription);
-        var created = await _commissionCommandService.CreateCommissionRuleAsync(request).ConfigureAwait(true);
 
-        NewRuleValue = string.Empty;
-        NewRuleDescription = string.Empty;
-        CommissionRules.Add(created);
+        try
+        {
+            var created = await _commissionCommandService.CreateCommissionRuleAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            NewRuleValue = string.Empty;
+            NewRuleDescription = string.Empty;
+            CommissionRules.Add(created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateCommissionRuleAsync));
+        }
     }
 
     private async Task GenerateCommissionsAsync()
     {
-        var generated = await _commissionCommandService.GenerateCommissionsFromAccountingAsync().ConfigureAwait(true);
-        foreach (var transaction in generated)
+        try
         {
-            CommissionTransactions.Insert(0, transaction);
-        }
+            var generated = await _commissionCommandService.GenerateCommissionsFromAccountingAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        StatusMessage = generated.Count == 1
-            ? "Generated 1 new commission from Accounting."
-            : $"Generated {generated.Count} new commissions from Accounting.";
+            foreach (var transaction in generated)
+            {
+                CommissionTransactions.Insert(0, transaction);
+            }
+
+            StatusMessage = generated.Count == 1
+                ? "Generated 1 new commission from Accounting."
+                : $"Generated {generated.Count} new commissions from Accounting.";
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(GenerateCommissionsAsync));
+        }
     }
 
     private async Task GeneratePayrollAsync()
@@ -598,10 +742,24 @@ public sealed partial class HrPageViewModel : ViewModelBase
         _ = decimal.TryParse(PayrollDeduction, out var deduction);
 
         var request = new GeneratePayrollRequest(PayrollSelectedEmployee.Id, PayrollMonth, PayrollYear, bonus, deduction);
-        var created = await _payrollCommandService.GeneratePayrollSummaryAsync(request).ConfigureAwait(true);
 
-        PayrollBonus = string.Empty;
-        PayrollDeduction = string.Empty;
-        PayrollSummaries.Insert(0, created);
+        try
+        {
+            var created = await _payrollCommandService.GeneratePayrollSummaryAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            PayrollBonus = string.Empty;
+            PayrollDeduction = string.Empty;
+            PayrollSummaries.Insert(0, created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed HR write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(GeneratePayrollAsync));
+        }
     }
 }

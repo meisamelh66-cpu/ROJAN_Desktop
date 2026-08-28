@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
@@ -342,6 +343,257 @@ public sealed class HrPageViewModelTests
 
         sut.GeneratePayrollCommand.Execute(null);
 
+        Assert.Single(sut.PayrollSummaries);
+    }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Wave B (HR commands).
+    // Every user-triggered HR write command now surfaces a backend failure
+    // via the non-destructive ActionErrorMessage/HasActionError pair instead
+    // of the global App.DispatcherUnhandledException dialog. Failures never
+    // expose Exception.Message, backend payload, salary/commission data or
+    // employee PII, and log operation-name-only via the existing
+    // LogOperationFailed([LoggerMessage]).
+    // ---------------------------------------------------------------------
+
+    private const string HrBackendSecret = "backend 500: employee Jordan Lee salary=3200 net=2870 commission=518.40 ssn=123";
+
+    [Fact]
+    public void CreateEmployeeCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesForm()
+    {
+        var commandService = new StubEmployeeCommandService { CreateEmployeeException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(employeeCommandService: commandService);
+        sut.NewEmployeeFullName = "New Hire";
+        sut.NewEmployeeEmail = "new.hire@rojan.example";
+        sut.NewEmployeeBaseSalary = "2200";
+
+        var exception = Record.Exception(() => sut.CreateEmployeeCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+        Assert.Equal("New Hire", sut.NewEmployeeFullName);
+        Assert.Equal("new.hire@rojan.example", sut.NewEmployeeEmail);
+        Assert.Single(commandService.CreateRequests);
+    }
+
+    [Fact]
+    public void RecordAttendanceCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesForm()
+    {
+        var commandService = new StubAttendanceCommandService { RecordAttendanceException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(attendanceCommandService: commandService);
+        sut.AttendanceSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+        sut.AttendanceCheckInTime = "09:15";
+        sut.AttendanceNotes = "late shuttle";
+
+        var exception = Record.Exception(() => sut.RecordAttendanceCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal("09:15", sut.AttendanceCheckInTime);
+        Assert.Equal("late shuttle", sut.AttendanceNotes);
+    }
+
+    [Fact]
+    public void CreateShiftCommand_Failure_DoesNotThrow_SetsActionErrorAndDoesNotAddShift()
+    {
+        var commandService = new StubShiftCommandService { CreateShiftException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(shiftCommandService: commandService);
+        sut.NewShiftLabel = "Morning - Hair";
+        sut.NewShiftStartTime = "09:00";
+        sut.NewShiftEndTime = "17:00";
+
+        var exception = Record.Exception(() => sut.CreateShiftCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Empty(sut.Shifts);
+        Assert.Equal("Morning - Hair", sut.NewShiftLabel);
+    }
+
+    [Fact]
+    public void AssignShiftCommand_Failure_DoesNotThrow_SetsActionErrorAndDoesNotAddAssignment()
+    {
+        var commandService = new StubShiftCommandService { AssignShiftException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(shiftCommandService: commandService);
+        sut.AssignShiftSelectedShift = new ShiftDto("shift-1", "Morning - Hair", Department.Hair, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0));
+        sut.AssignShiftSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+
+        var exception = Record.Exception(() => sut.AssignShiftCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Empty(sut.ShiftAssignments);
+    }
+
+    [Fact]
+    public void RequestLeaveCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesReason()
+    {
+        var commandService = new StubAttendanceCommandService { RequestLeaveException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(attendanceCommandService: commandService);
+        sut.LeaveSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+        sut.LeaveReason = "Vacation";
+
+        var exception = Record.Exception(() => sut.RequestLeaveCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Empty(sut.LeaveRequests);
+        Assert.Equal("Vacation", sut.LeaveReason);
+    }
+
+    [Fact]
+    public void ApproveLeaveCommand_Failure_DoesNotThrow_SetsActionErrorAndLeavesRowUnchanged()
+    {
+        var commandService = new StubAttendanceCommandService { ApproveLeaveException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(attendanceCommandService: commandService);
+        var leaveRequest = new LeaveRequestDto("leave-1", "employee-1", "Jordan Lee", DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today), "Vacation", LeaveStatus.Pending, DateTimeOffset.Now);
+        sut.LeaveRequests.Add(leaveRequest);
+
+        var exception = Record.Exception(() => sut.ApproveLeaveCommand.Execute(leaveRequest));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(LeaveStatus.Pending, Assert.Single(sut.LeaveRequests).Status);
+        Assert.Single(commandService.ApprovedLeaveIds);
+    }
+
+    [Fact]
+    public void RejectLeaveCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var commandService = new StubAttendanceCommandService { RejectLeaveException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(attendanceCommandService: commandService);
+        var leaveRequest = new LeaveRequestDto("leave-1", "employee-1", "Jordan Lee", DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today), "Vacation", LeaveStatus.Pending, DateTimeOffset.Now);
+        sut.LeaveRequests.Add(leaveRequest);
+
+        var exception = Record.Exception(() => sut.RejectLeaveCommand.Execute(leaveRequest));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void CreateCommissionRuleCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesForm()
+    {
+        var commandService = new StubCommissionCommandService { CreateCommissionRuleException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(commissionCommandService: commandService);
+        sut.NewRuleSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+        sut.NewRuleValue = "0.10";
+        sut.NewRuleDescription = "Colour upsell";
+
+        var exception = Record.Exception(() => sut.CreateCommissionRuleCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Empty(sut.CommissionRules);
+        Assert.Equal("0.10", sut.NewRuleValue);
+        Assert.Equal("Colour upsell", sut.NewRuleDescription);
+    }
+
+    [Fact]
+    public void GenerateCommissionsCommand_Failure_DoesNotThrow_SetsActionErrorAndLeavesStatusMessageUntouched()
+    {
+        var commandService = new StubCommissionCommandService(_ => Task.FromException<IReadOnlyList<CommissionTransactionDto>>(new InvalidOperationException(HrBackendSecret)));
+        var sut = MakeSut(commissionCommandService: commandService);
+
+        var exception = Record.Exception(() => sut.GenerateCommissionsCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Empty(sut.CommissionTransactions);
+        Assert.Equal(string.Empty, sut.StatusMessage);
+    }
+
+    [Fact]
+    public void GeneratePayrollCommand_Failure_DoesNotThrow_SetsActionErrorAndDoesNotInsertSummary()
+    {
+        var commandService = new StubPayrollCommandService { GeneratePayrollException = new InvalidOperationException(HrBackendSecret) };
+        var sut = MakeSut(payrollCommandService: commandService);
+        sut.PayrollSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+        sut.PayrollBonus = "100";
+        sut.PayrollDeduction = "50";
+
+        var exception = Record.Exception(() => sut.GeneratePayrollCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Empty(sut.PayrollSummaries);
+        Assert.Equal("100", sut.PayrollBonus);
+    }
+
+    [Fact]
+    public void CreateEmployeeCommand_Failure_LogsOperationNameOnly_NoPiiOrSalaryLeak()
+    {
+        var commandService = new StubEmployeeCommandService { CreateEmployeeException = new InvalidOperationException(HrBackendSecret) };
+        var logger = new RecordingLogger<HrPageViewModel>();
+        var sut = MakeSut(employeeCommandService: commandService, logger: logger);
+        sut.NewEmployeeFullName = "New Hire";
+        sut.NewEmployeeEmail = "new.hire@rojan.example";
+
+        sut.CreateEmployeeCommand.Execute(null);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=CreateEmployeeAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(HrBackendSecret, StringComparison.Ordinal));
+        Assert.DoesNotContain(HrBackendSecret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GeneratePayrollCommand_Failure_LogsOperationNameOnly_NoSalaryLeak()
+    {
+        var commandService = new StubPayrollCommandService { GeneratePayrollException = new InvalidOperationException(HrBackendSecret) };
+        var logger = new RecordingLogger<HrPageViewModel>();
+        var sut = MakeSut(payrollCommandService: commandService, logger: logger);
+        sut.PayrollSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+
+        sut.GeneratePayrollCommand.Execute(null);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=GeneratePayrollAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(HrBackendSecret, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void CreateShiftCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var commandService = new StubShiftCommandService { CreateShiftException = new InvalidOperationException("boom") };
+        var sut = MakeSut(shiftCommandService: commandService);
+        sut.NewShiftLabel = "Morning - Hair";
+        sut.NewShiftStartTime = "09:00";
+        sut.NewShiftEndTime = "17:00";
+        sut.CreateShiftCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        commandService.CreateShiftException = null;
+        sut.NewShiftLabel = "Evening - Hair";
+        sut.NewShiftStartTime = "13:00";
+        sut.NewShiftEndTime = "21:00";
+        sut.CreateShiftCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
+        Assert.Single(sut.Shifts);
+    }
+
+    [Fact]
+    public void GeneratePayrollCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var commandService = new StubPayrollCommandService { GeneratePayrollException = new InvalidOperationException("boom") };
+        var sut = MakeSut(payrollCommandService: commandService);
+        sut.PayrollSelectedEmployee = MakeEmployee("employee-1", "Jordan Lee");
+        sut.GeneratePayrollCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        commandService.GeneratePayrollException = null;
+        sut.GeneratePayrollCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
         Assert.Single(sut.PayrollSummaries);
     }
 }

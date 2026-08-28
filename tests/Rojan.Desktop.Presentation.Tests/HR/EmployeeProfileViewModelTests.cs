@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.HR;
@@ -101,5 +102,91 @@ public sealed class EmployeeProfileViewModelTests
         sut.SuspendCommand.Execute(null);
 
         Assert.Single(commandService.SuspendedIds);
+    }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Wave B. Activate/Deactivate/
+    // Suspend now surface a backend failure via ActionErrorMessage/
+    // HasActionError instead of the global dialog; the profile, State and the
+    // onChanged callback are left untouched on failure, and logging is
+    // operation-name-only (no PII / salary leak).
+    // ---------------------------------------------------------------------
+
+    private static StubEmployeeQueryService LoadingQueryService() =>
+        new(_ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]), getProfile: (employeeId, _) => Task.FromResult(MakeProfile(employeeId)));
+
+    [Fact]
+    public void ActivateCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesStateAndOnChanged()
+    {
+        var commandService = new StubEmployeeCommandService { ActivateEmployeeException = new InvalidOperationException(PiiSecret) };
+        var changed = false;
+        var sut = new EmployeeProfileViewModel("employee-1", LoadingQueryService(), commandService, () => changed = true);
+
+        var exception = Record.Exception(() => sut.ActivateCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal("employee-1", sut.Profile?.Employee.Id);
+        Assert.False(changed);
+        Assert.Single(commandService.ActivatedIds);
+    }
+
+    [Fact]
+    public void DeactivateCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var commandService = new StubEmployeeCommandService { DeactivateEmployeeException = new InvalidOperationException(PiiSecret) };
+        var sut = new EmployeeProfileViewModel("employee-1", LoadingQueryService(), commandService);
+
+        var exception = Record.Exception(() => sut.DeactivateCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void SuspendCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var commandService = new StubEmployeeCommandService { SuspendEmployeeException = new InvalidOperationException(PiiSecret) };
+        var sut = new EmployeeProfileViewModel("employee-1", LoadingQueryService(), commandService);
+
+        var exception = Record.Exception(() => sut.SuspendCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void ActivateCommand_Failure_LogsOperationNameOnly_NoPiiLeak()
+    {
+        var commandService = new StubEmployeeCommandService { ActivateEmployeeException = new InvalidOperationException(PiiSecret) };
+        var logger = new RecordingLogger<EmployeeProfileViewModel>();
+        var sut = new EmployeeProfileViewModel("employee-1", LoadingQueryService(), commandService, onChanged: null, logger);
+
+        sut.ActivateCommand.Execute(null);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=ActivateAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(PiiSecret, StringComparison.Ordinal));
+        Assert.DoesNotContain(PiiSecret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ActivateCommand_SuccessAfterFailure_ClearsActionErrorAndInvokesOnChanged()
+    {
+        var commandService = new StubEmployeeCommandService { ActivateEmployeeException = new InvalidOperationException("boom") };
+        var changed = false;
+        var sut = new EmployeeProfileViewModel("employee-1", LoadingQueryService(), commandService, () => changed = true);
+        sut.ActivateCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        commandService.ActivateEmployeeException = null;
+        sut.ActivateCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
+        Assert.True(changed);
     }
 }

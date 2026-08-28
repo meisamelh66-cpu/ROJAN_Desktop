@@ -2,6 +2,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.HR;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -27,6 +28,8 @@ public sealed partial class EmployeeProfileViewModel : ViewModelBase
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private EmployeeProfileDto? _profile;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
 
     public EmployeeProfileViewModel(
         string employeeId,
@@ -78,6 +81,24 @@ public sealed partial class EmployeeProfileViewModel : ViewModelBase
         private set => SetProperty(ref _profile, value);
     }
 
+    /// <summary>
+    /// Non-destructive inline error shown when an activate/deactivate/suspend
+    /// command fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/> it
+    /// never blanks the panel. Production Hardening missing-guard sweep (Wave B),
+    /// same shape as Customers.CustomerProfileViewModel.SaveErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
+    }
+
     public async Task LoadAsync()
     {
         State = DashboardState.Loading;
@@ -103,22 +124,61 @@ public sealed partial class EmployeeProfileViewModel : ViewModelBase
 
     private async Task ActivateAsync()
     {
-        await _commandService.ActivateEmployeeAsync(_employeeId).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        _onChanged?.Invoke();
+        try
+        {
+            await _commandService.ActivateEmployeeAsync(_employeeId).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            await LoadAsync().ConfigureAwait(true);
+            _onChanged?.Invoke();
+        }
+#pragma warning disable CA1031 // Command boundary: a failed lifecycle change must surface inline, not via the global dialog - same justified broad catch as the Wave A command guards.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(ActivateAsync));
+        }
     }
 
     private async Task DeactivateAsync()
     {
-        await _commandService.DeactivateEmployeeAsync(_employeeId).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        _onChanged?.Invoke();
+        try
+        {
+            await _commandService.DeactivateEmployeeAsync(_employeeId).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            await LoadAsync().ConfigureAwait(true);
+            _onChanged?.Invoke();
+        }
+#pragma warning disable CA1031 // Command boundary: a failed lifecycle change must surface inline, not via the global dialog - same justified broad catch as the Wave A command guards.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(DeactivateAsync));
+        }
     }
 
     private async Task SuspendAsync()
     {
-        await _commandService.SuspendEmployeeAsync(_employeeId).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        _onChanged?.Invoke();
+        try
+        {
+            await _commandService.SuspendEmployeeAsync(_employeeId).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            await LoadAsync().ConfigureAwait(true);
+            _onChanged?.Invoke();
+        }
+#pragma warning disable CA1031 // Command boundary: a failed lifecycle change must surface inline, not via the global dialog - same justified broad catch as the Wave A command guards.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SuspendAsync));
+        }
     }
 }
