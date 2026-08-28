@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -6,11 +8,57 @@ namespace Rojan.Desktop.Presentation.Tests.Automation;
 
 public sealed class BusinessRulesTabViewModelTests
 {
+    private const string Secret = "IF-Customer-is-VIP-SECRET";
+
     private static (BusinessRulesTabViewModel Sut, StubBusinessRuleService Rules) CreateSut()
     {
         var rules = new StubBusinessRuleService();
         var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1");
         return (sut, rules);
+    }
+
+    [Fact]
+    public async Task LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var rules = new StubBusinessRuleService { GetAllException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<BusinessRulesTabViewModel>();
+        var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1", logger);
+
+        await sut.LoadAsync();
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var rules = new StubBusinessRuleService { CreateException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<BusinessRulesTabViewModel>();
+        var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1", logger);
+        sut.NewRuleName = "VIP Discount";
+        sut.NewRuleField = "IsVip";
+
+        sut.CreateCommand.Execute(null);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=CreateAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var rules = new StubBusinessRuleService { GetAllException = new InvalidOperationException("boom") };
+        var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1");
+
+        await sut.LoadAsync();
+
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 
     [Fact]

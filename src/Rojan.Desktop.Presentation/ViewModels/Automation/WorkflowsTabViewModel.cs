@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -15,13 +17,14 @@ namespace Rojan.Desktop.Presentation.ViewModels.Automation;
 /// rollback/execute/trigger-subscription) is still fully real and
 /// exercisable against it.
 /// </summary>
-public sealed class WorkflowsTabViewModel : ViewModelBase
+public sealed partial class WorkflowsTabViewModel : ViewModelBase
 {
     private readonly IWorkflowService _workflowService;
     private readonly IWorkflowExecutionEngine _executionEngine;
     private readonly string _currentUserId;
     private readonly string _organizationId;
     private readonly string _branchId;
+    private readonly ILogger<WorkflowsTabViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -30,13 +33,14 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
     private TriggerType? _newWorkflowTrigger;
     private WorkflowDefinitionDto? _selectedWorkflow;
 
-    public WorkflowsTabViewModel(IWorkflowService workflowService, IWorkflowExecutionEngine executionEngine, string currentUserId, string organizationId, string branchId)
+    public WorkflowsTabViewModel(IWorkflowService workflowService, IWorkflowExecutionEngine executionEngine, string currentUserId, string organizationId, string branchId, ILogger<WorkflowsTabViewModel>? logger = null)
     {
         _workflowService = workflowService;
         _executionEngine = executionEngine;
         _currentUserId = currentUserId;
         _organizationId = organizationId;
         _branchId = branchId;
+        _logger = logger ?? NullLogger<WorkflowsTabViewModel>.Instance;
 
         Workflows = [];
         VersionHistory = [];
@@ -139,6 +143,7 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -173,6 +178,7 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(CreateDraftAsync));
         }
     }
 
@@ -197,6 +203,7 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(PublishAsync));
         }
     }
 
@@ -221,6 +228,7 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(RunNowAsync));
         }
     }
 
@@ -234,6 +242,10 @@ public sealed class WorkflowsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(RollbackAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation workflows operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

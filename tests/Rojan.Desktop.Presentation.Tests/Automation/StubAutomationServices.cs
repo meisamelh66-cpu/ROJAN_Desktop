@@ -39,8 +39,21 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public IReadOnlyList<string> ValidateErrors { get; set; } = [];
 
+    // Optional failure hooks - default null (no throw); set by a test to force the matching operation to fail.
+    public Exception? GetAllException { get; set; }
+
+    public Exception? CreateDraftException { get; set; }
+
+    public Exception? PublishException { get; set; }
+
+    public Exception? GetPublishedException { get; set; }
+
+    public Exception? RollbackException { get; set; }
+
     public Task<IReadOnlyList<WorkflowDefinitionDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.ToList());
+        GetAllException is not null
+            ? Task.FromException<IReadOnlyList<WorkflowDefinitionDto>>(GetAllException)
+            : Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.ToList());
 
     public Task<WorkflowDefinitionDto?> GetByIdAsync(string id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_workflows.FirstOrDefault(w => w.Id == id));
@@ -49,7 +62,9 @@ internal sealed class StubWorkflowService : IWorkflowService
         Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.Where(w => w.ParentWorkflowId == parentWorkflowId).OrderByDescending(w => w.Version).ToList());
 
     public Task<IReadOnlyList<WorkflowDefinitionDto>> GetPublishedAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.Where(w => w.Status == WorkflowStatus.Published && w.IsEnabled).ToList());
+        GetPublishedException is not null
+            ? Task.FromException<IReadOnlyList<WorkflowDefinitionDto>>(GetPublishedException)
+            : Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.Where(w => w.Status == WorkflowStatus.Published && w.IsEnabled).ToList());
 
     public IReadOnlyList<string> Validate(IReadOnlyList<WorkflowStepDto> steps) => ValidateErrors;
 
@@ -57,6 +72,11 @@ internal sealed class StubWorkflowService : IWorkflowService
         string name, string description, IReadOnlyList<WorkflowStepDto> steps, IReadOnlyList<TriggerType> triggerTypes,
         string createdByUserId, string organizationId, string branchId, CancellationToken cancellationToken = default)
     {
+        if (CreateDraftException is not null)
+        {
+            return Task.FromException<WorkflowDefinitionDto>(CreateDraftException);
+        }
+
         var id = Guid.NewGuid().ToString("N");
         var now = DateTimeOffset.UtcNow;
         var workflow = new WorkflowDefinitionDto(id, id, name, description, steps, triggerTypes, WorkflowStatus.Draft, 1, true, now, now, createdByUserId, organizationId, branchId);
@@ -72,6 +92,11 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public Task<WorkflowDefinitionDto> PublishAsync(string workflowId, CancellationToken cancellationToken = default)
     {
+        if (PublishException is not null)
+        {
+            return Task.FromException<WorkflowDefinitionDto>(PublishException);
+        }
+
         var published = Get(workflowId) with { Status = WorkflowStatus.Published };
         Replace(published);
         return Task.FromResult(published);
@@ -85,6 +110,11 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public Task<WorkflowDefinitionDto> RollbackAsync(string parentWorkflowId, int toVersion, string userId, CancellationToken cancellationToken = default)
     {
+        if (RollbackException is not null)
+        {
+            return Task.FromException<WorkflowDefinitionDto>(RollbackException);
+        }
+
         var target = _workflows.First(w => w.ParentWorkflowId == parentWorkflowId && w.Version == toVersion);
         var newVersion = _workflows.Where(w => w.ParentWorkflowId == parentWorkflowId).Max(w => w.Version) + 1;
         var draft = target with { Id = Guid.NewGuid().ToString("N"), Status = WorkflowStatus.Draft, Version = newVersion, CreatedByUserId = userId };
@@ -108,8 +138,14 @@ internal sealed class StubBusinessRuleService : IBusinessRuleService
 {
     private readonly List<BusinessRuleDto> _rules = [];
 
+    public Exception? GetAllException { get; set; }
+
+    public Exception? CreateException { get; set; }
+
     public Task<IReadOnlyList<BusinessRuleDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<BusinessRuleDto>>(_rules.ToList());
+        GetAllException is not null
+            ? Task.FromException<IReadOnlyList<BusinessRuleDto>>(GetAllException)
+            : Task.FromResult<IReadOnlyList<BusinessRuleDto>>(_rules.ToList());
 
     public Task<BusinessRuleDto?> GetByIdAsync(string id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_rules.FirstOrDefault(r => r.Id == id));
@@ -118,6 +154,11 @@ internal sealed class StubBusinessRuleService : IBusinessRuleService
         string name, string description, IReadOnlyList<BusinessRuleConditionDto> conditions, BusinessRuleActionDto action,
         int priority, string organizationId, string branchId, CancellationToken cancellationToken = default)
     {
+        if (CreateException is not null)
+        {
+            return Task.FromException<BusinessRuleDto>(CreateException);
+        }
+
         var now = DateTimeOffset.UtcNow;
         var rule = new BusinessRuleDto(Guid.NewGuid().ToString("N"), name, description, conditions, action, priority, true, now, now, organizationId, branchId);
         _rules.Add(rule);
@@ -157,14 +198,27 @@ internal sealed class StubScheduledJobService : IScheduledJobService
 
     public Func<string, WorkflowExecutionDto>? RunDueJobResultFactory { get; set; }
 
+    public Exception? GetAllException { get; set; }
+
+    public Exception? CreateException { get; set; }
+
+    public Exception? RunDueJobException { get; set; }
+
     public Task<IReadOnlyList<ScheduledJobDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<ScheduledJobDto>>(_jobs.ToList());
+        GetAllException is not null
+            ? Task.FromException<IReadOnlyList<ScheduledJobDto>>(GetAllException)
+            : Task.FromResult<IReadOnlyList<ScheduledJobDto>>(_jobs.ToList());
 
     public Task<ScheduledJobDto?> GetByIdAsync(string id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_jobs.FirstOrDefault(j => j.Id == id));
 
     public Task<ScheduledJobDto> CreateAsync(string name, ScheduleFrequency frequency, string? cronExpression, string workflowId, string organizationId, string branchId, CancellationToken cancellationToken = default)
     {
+        if (CreateException is not null)
+        {
+            return Task.FromException<ScheduledJobDto>(CreateException);
+        }
+
         var job = new ScheduledJobDto(Guid.NewGuid().ToString("N"), name, frequency, cronExpression, workflowId, true, DateTimeOffset.UtcNow.AddHours(1), null, organizationId, branchId);
         _jobs.Add(job);
         return Task.FromResult(job);
@@ -194,6 +248,11 @@ internal sealed class StubScheduledJobService : IScheduledJobService
 
     public Task<WorkflowExecutionDto> RunDueJobAsync(string jobId, CancellationToken cancellationToken = default)
     {
+        if (RunDueJobException is not null)
+        {
+            return Task.FromException<WorkflowExecutionDto>(RunDueJobException);
+        }
+
         var result = RunDueJobResultFactory?.Invoke(jobId) ?? new WorkflowExecutionDto(
             Guid.NewGuid().ToString("N"), jobId, 1, "Flow", WorkflowExecutionStatus.Completed, null, "scheduler", [], DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 5, null, "org-1", "branch-1");
         return Task.FromResult(result);
@@ -205,10 +264,16 @@ internal sealed class StubApprovalService : IApprovalService
 {
     private readonly List<ApprovalRequestDto> _requests = [];
 
+    public Exception? GetAllException { get; set; }
+
+    public Exception? DecideException { get; set; }
+
     public void Seed(ApprovalRequestDto request) => _requests.Add(request);
 
     public Task<IReadOnlyList<ApprovalRequestDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<ApprovalRequestDto>>(_requests.ToList());
+        GetAllException is not null
+            ? Task.FromException<IReadOnlyList<ApprovalRequestDto>>(GetAllException)
+            : Task.FromResult<IReadOnlyList<ApprovalRequestDto>>(_requests.ToList());
 
     public Task<ApprovalRequestDto?> GetByIdAsync(string id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_requests.FirstOrDefault(r => r.Id == id));
@@ -234,6 +299,11 @@ internal sealed class StubApprovalService : IApprovalService
 
     public Task<ApprovalRequestDto> DecideAsync(string requestId, bool approve, string userId, string? comment, CancellationToken cancellationToken = default)
     {
+        if (DecideException is not null)
+        {
+            return Task.FromException<ApprovalRequestDto>(DecideException);
+        }
+
         LastDecidedRequestId = requestId;
         LastDecisionComment = comment;
         var index = _requests.FindIndex(r => r.Id == requestId);
@@ -250,8 +320,17 @@ internal sealed class StubWorkflowExecutionEngine : IWorkflowExecutionEngine
 
     public int ExecuteCallCount { get; private set; }
 
+    public Exception? ExecuteException { get; set; }
+
+    public Exception? GetHistoryException { get; set; }
+
     public Task<WorkflowExecutionDto> ExecuteAsync(string workflowId, TriggerType? trigger, string triggeredByUserId, IReadOnlyDictionary<string, string> facts, string organizationId, string branchId, CancellationToken cancellationToken = default)
     {
+        if (ExecuteException is not null)
+        {
+            return Task.FromException<WorkflowExecutionDto>(ExecuteException);
+        }
+
         ExecuteCallCount++;
         var execution = new WorkflowExecutionDto(Guid.NewGuid().ToString("N"), workflowId, 1, "Flow", WorkflowExecutionStatus.Completed, trigger, triggeredByUserId, [], DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 5, null, organizationId, branchId);
         _executions.Insert(0, execution);
@@ -259,7 +338,9 @@ internal sealed class StubWorkflowExecutionEngine : IWorkflowExecutionEngine
     }
 
     public Task<IReadOnlyList<WorkflowExecutionDto>> GetHistoryAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<WorkflowExecutionDto>>(_executions.ToList());
+        GetHistoryException is not null
+            ? Task.FromException<IReadOnlyList<WorkflowExecutionDto>>(GetHistoryException)
+            : Task.FromResult<IReadOnlyList<WorkflowExecutionDto>>(_executions.ToList());
 
     public Task<WorkflowExecutionDto?> GetByIdAsync(string executionId, CancellationToken cancellationToken = default) =>
         Task.FromResult(_executions.FirstOrDefault(e => e.Id == executionId));
@@ -276,5 +357,10 @@ internal sealed class StubWorkflowExecutionEngine : IWorkflowExecutionEngine
 /// <summary>Stub <see cref="IAutomationDashboardQueryService"/> test double returning a fixed, caller-supplied summary.</summary>
 internal sealed class StubAutomationDashboardQueryService(AutomationDashboardSummaryDto summary) : IAutomationDashboardQueryService
 {
-    public Task<AutomationDashboardSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default) => Task.FromResult(summary);
+    public Exception? GetSummaryException { get; set; }
+
+    public Task<AutomationDashboardSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default) =>
+        GetSummaryException is not null
+            ? Task.FromException<AutomationDashboardSummaryDto>(GetSummaryException)
+            : Task.FromResult(summary);
 }

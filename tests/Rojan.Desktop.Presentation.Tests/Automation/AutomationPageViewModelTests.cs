@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 
 namespace Rojan.Desktop.Presentation.Tests.Automation;
@@ -13,6 +15,30 @@ public sealed class AutomationPageViewModelTests
         new StubScheduledJobService(),
         new StubApprovalService(),
         new StubWorkflowExecutionEngine());
+
+    [Fact]
+    public void Constructor_ForwardsEachTabLoggerToItsChild()
+    {
+        var workflowsLogger = new RecordingLogger<WorkflowsTabViewModel>();
+        var approvalsLogger = new RecordingLogger<ApprovalsTabViewModel>();
+
+        _ = new AutomationPageViewModel(
+            new FakeCurrentSessionService(),
+            new StubAutomationDashboardQueryService(new AutomationDashboardSummaryDto(0, 0, 0, 0, 0, 0, 0)),
+            new StubWorkflowService { GetAllException = new InvalidOperationException("workflows boom") },
+            new StubBusinessRuleService(),
+            new StubScheduledJobService(),
+            new StubApprovalService { GetAllException = new InvalidOperationException("approvals boom") },
+            new StubWorkflowExecutionEngine(),
+            workflowsLogger: workflowsLogger,
+            approvalsLogger: approvalsLogger);
+
+        var workflowsEntry = Assert.Single(workflowsLogger.Entries);
+        Assert.Equal(LogLevel.Error, workflowsEntry.Level);
+        Assert.Contains("Operation=LoadAsync", workflowsEntry.Message, StringComparison.Ordinal);
+        var approvalsEntry = Assert.Single(approvalsLogger.Entries);
+        Assert.Contains("Operation=LoadAsync", approvalsEntry.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void Constructor_CreatesAllFiveTabsAndLoadsThem()

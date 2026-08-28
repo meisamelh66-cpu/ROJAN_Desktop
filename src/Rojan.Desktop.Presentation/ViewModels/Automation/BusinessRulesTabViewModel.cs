@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -7,11 +9,12 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 namespace Rojan.Desktop.Presentation.ViewModels.Automation;
 
 /// <summary>Requirement 32.2's Business Rules Engine tab - "IF Customer is VIP → Apply Discount" etc. Each rule created here has exactly one condition; the underlying engine supports an AND-combined list (<see cref="BusinessRuleDto.Conditions"/>), a documented single-condition-form scope trim consistent with 32.1's "no visual designer yet" boundary.</summary>
-public sealed class BusinessRulesTabViewModel : ViewModelBase
+public sealed partial class BusinessRulesTabViewModel : ViewModelBase
 {
     private readonly IBusinessRuleService _businessRuleService;
     private readonly string _organizationId;
     private readonly string _branchId;
+    private readonly ILogger<BusinessRulesTabViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -23,11 +26,12 @@ public sealed class BusinessRulesTabViewModel : ViewModelBase
     private string _newRuleActionValue = string.Empty;
     private int _newRulePriority;
 
-    public BusinessRulesTabViewModel(IBusinessRuleService businessRuleService, string organizationId, string branchId)
+    public BusinessRulesTabViewModel(IBusinessRuleService businessRuleService, string organizationId, string branchId, ILogger<BusinessRulesTabViewModel>? logger = null)
     {
         _businessRuleService = businessRuleService;
         _organizationId = organizationId;
         _branchId = branchId;
+        _logger = logger ?? NullLogger<BusinessRulesTabViewModel>.Instance;
 
         Rules = [];
         AvailableOperators = Enum.GetValues<BusinessRuleOperator>();
@@ -140,6 +144,7 @@ public sealed class BusinessRulesTabViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -168,6 +173,7 @@ public sealed class BusinessRulesTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(CreateAsync));
         }
     }
 
@@ -182,4 +188,7 @@ public sealed class BusinessRulesTabViewModel : ViewModelBase
         await _businessRuleService.DeleteAsync(rule.Id).ConfigureAwait(true);
         await LoadAsync().ConfigureAwait(true);
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation business rules operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

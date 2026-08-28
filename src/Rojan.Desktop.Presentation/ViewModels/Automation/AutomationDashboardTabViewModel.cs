@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -7,10 +9,11 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 namespace Rojan.Desktop.Presentation.ViewModels.Automation;
 
 /// <summary>Requirement 32.12's Automation Dashboard tab: workflow count, today's executions, failures, success rate, average execution time, plus a recent-executions strip (Requirement 32.8's monitoring).</summary>
-public sealed class AutomationDashboardTabViewModel : ViewModelBase
+public sealed partial class AutomationDashboardTabViewModel : ViewModelBase
 {
     private readonly IAutomationDashboardQueryService _dashboardQueryService;
     private readonly IWorkflowExecutionEngine _executionEngine;
+    private readonly ILogger<AutomationDashboardTabViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -22,10 +25,11 @@ public sealed class AutomationDashboardTabViewModel : ViewModelBase
     private double _averageExecutionDurationMs;
     private int _pendingApprovals;
 
-    public AutomationDashboardTabViewModel(IAutomationDashboardQueryService dashboardQueryService, IWorkflowExecutionEngine executionEngine)
+    public AutomationDashboardTabViewModel(IAutomationDashboardQueryService dashboardQueryService, IWorkflowExecutionEngine executionEngine, ILogger<AutomationDashboardTabViewModel>? logger = null)
     {
         _dashboardQueryService = dashboardQueryService;
         _executionEngine = executionEngine;
+        _logger = logger ?? NullLogger<AutomationDashboardTabViewModel>.Instance;
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         RecentExecutions = [];
     }
@@ -117,6 +121,10 @@ public sealed class AutomationDashboardTabViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation dashboard operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -7,19 +9,21 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 namespace Rojan.Desktop.Presentation.ViewModels.Automation;
 
 /// <summary>Requirement 32.5's multi-step Approval Workflow tab - Leave/Expense/Inventory/Branch, plus whatever a workflow's Approval step raised automatically. Deciding a request that resolves a workflow-originated one (<c>ApprovalRequestDto.WorkflowExecutionId</c> set) transparently resumes/fails that paused execution - see <c>ApprovalService.DecideAsync</c>.</summary>
-public sealed class ApprovalsTabViewModel : ViewModelBase
+public sealed partial class ApprovalsTabViewModel : ViewModelBase
 {
     private readonly IApprovalService _approvalService;
     private readonly string _currentUserId;
+    private readonly ILogger<ApprovalsTabViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private string _decisionComment = string.Empty;
 
-    public ApprovalsTabViewModel(IApprovalService approvalService, string currentUserId)
+    public ApprovalsTabViewModel(IApprovalService approvalService, string currentUserId, ILogger<ApprovalsTabViewModel>? logger = null)
     {
         _approvalService = approvalService;
         _currentUserId = currentUserId;
+        _logger = logger ?? NullLogger<ApprovalsTabViewModel>.Instance;
 
         Requests = [];
 
@@ -74,6 +78,7 @@ public sealed class ApprovalsTabViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -89,6 +94,10 @@ public sealed class ApprovalsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(DecideAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation approvals operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

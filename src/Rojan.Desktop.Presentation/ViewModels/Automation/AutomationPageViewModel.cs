@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.Organizations;
@@ -29,17 +30,22 @@ public sealed class AutomationPageViewModel : ViewModelBase
         IBusinessRuleService businessRuleService,
         IScheduledJobService scheduledJobService,
         IApprovalService approvalService,
-        IWorkflowExecutionEngine executionEngine)
+        IWorkflowExecutionEngine executionEngine,
+        ILogger<AutomationDashboardTabViewModel>? dashboardLogger = null,
+        ILogger<WorkflowsTabViewModel>? workflowsLogger = null,
+        ILogger<BusinessRulesTabViewModel>? businessRulesLogger = null,
+        ILogger<ScheduledJobsTabViewModel>? scheduledJobsLogger = null,
+        ILogger<ApprovalsTabViewModel>? approvalsLogger = null)
     {
         var organizationId = currentSessionService.CurrentOrganization?.Id ?? string.Empty;
         var branchId = currentSessionService.CurrentBranch?.Id ?? string.Empty;
         var currentUserId = currentSessionService.CurrentRole.ToString();
 
-        Dashboard = new AutomationDashboardTabViewModel(dashboardQueryService, executionEngine);
-        Workflows = new WorkflowsTabViewModel(workflowService, executionEngine, currentUserId, organizationId, branchId);
-        BusinessRules = new BusinessRulesTabViewModel(businessRuleService, organizationId, branchId);
-        ScheduledJobs = new ScheduledJobsTabViewModel(scheduledJobService, workflowService, organizationId, branchId);
-        Approvals = new ApprovalsTabViewModel(approvalService, currentUserId);
+        Dashboard = new AutomationDashboardTabViewModel(dashboardQueryService, executionEngine, dashboardLogger);
+        Workflows = new WorkflowsTabViewModel(workflowService, executionEngine, currentUserId, organizationId, branchId, workflowsLogger);
+        BusinessRules = new BusinessRulesTabViewModel(businessRuleService, organizationId, branchId, businessRulesLogger);
+        ScheduledJobs = new ScheduledJobsTabViewModel(scheduledJobService, workflowService, organizationId, branchId, scheduledJobsLogger);
+        Approvals = new ApprovalsTabViewModel(approvalService, currentUserId, approvalsLogger);
 
         SelectTabCommand = new RelayCommand(parameter =>
         {

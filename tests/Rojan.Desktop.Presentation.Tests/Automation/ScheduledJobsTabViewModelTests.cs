@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -6,6 +8,8 @@ namespace Rojan.Desktop.Presentation.Tests.Automation;
 
 public sealed class ScheduledJobsTabViewModelTests
 {
+    private const string Secret = "cron-0-9-star-star-1-SECRET";
+
     private static WorkflowDefinitionDto PublishedWorkflow() => new(
         "w1", "w1", "Flow", "", [], [], WorkflowStatus.Published, 1, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "user-1", "org-1", "branch-1");
 
@@ -14,6 +18,69 @@ public sealed class ScheduledJobsTabViewModelTests
         var jobs = new StubScheduledJobService();
         var sut = new ScheduledJobsTabViewModel(jobs, workflows ?? new StubWorkflowService(), "org-1", "branch-1");
         return (sut, jobs);
+    }
+
+    [Fact]
+    public async Task LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var jobs = new StubScheduledJobService { GetAllException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<ScheduledJobsTabViewModel>();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1", logger);
+
+        await sut.LoadAsync();
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var jobs = new StubScheduledJobService { CreateException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<ScheduledJobsTabViewModel>();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1", logger);
+        sut.NewJobName = "Nightly Sync";
+        sut.NewJobWorkflow = PublishedWorkflow();
+
+        sut.CreateCommand.Execute(null);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=CreateAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RunNowAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var jobs = new StubScheduledJobService();
+        var logger = new RecordingLogger<ScheduledJobsTabViewModel>();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1", logger);
+        sut.NewJobName = "Nightly Sync";
+        sut.NewJobWorkflow = PublishedWorkflow();
+        sut.CreateCommand.Execute(null);
+        jobs.RunDueJobException = new InvalidOperationException(Secret);
+
+        sut.RunNowCommand.Execute(sut.Jobs[0]);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=RunNowAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var jobs = new StubScheduledJobService { GetAllException = new InvalidOperationException("boom") };
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1");
+
+        await sut.LoadAsync();
+
+        Assert.Equal(DashboardState.Error, sut.State);
     }
 
     [Fact]

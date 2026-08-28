@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Automation;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -7,12 +9,13 @@ using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 namespace Rojan.Desktop.Presentation.ViewModels.Automation;
 
 /// <summary>Requirement 32.4's Scheduled Jobs tab - Hourly/Daily/Weekly/Monthly, Cron-ready. Actual due-job execution is driven by <c>Infrastructure.Automation.WorkflowSchedulerService</c>'s background timer, not by this ViewModel - <see cref="RunNowCommand"/> is a manual "run immediately" override for testing/urgency.</summary>
-public sealed class ScheduledJobsTabViewModel : ViewModelBase
+public sealed partial class ScheduledJobsTabViewModel : ViewModelBase
 {
     private readonly IScheduledJobService _scheduledJobService;
     private readonly IWorkflowService _workflowService;
     private readonly string _organizationId;
     private readonly string _branchId;
+    private readonly ILogger<ScheduledJobsTabViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -21,12 +24,13 @@ public sealed class ScheduledJobsTabViewModel : ViewModelBase
     private string _newJobCronExpression = string.Empty;
     private WorkflowDefinitionDto? _newJobWorkflow;
 
-    public ScheduledJobsTabViewModel(IScheduledJobService scheduledJobService, IWorkflowService workflowService, string organizationId, string branchId)
+    public ScheduledJobsTabViewModel(IScheduledJobService scheduledJobService, IWorkflowService workflowService, string organizationId, string branchId, ILogger<ScheduledJobsTabViewModel>? logger = null)
     {
         _scheduledJobService = scheduledJobService;
         _workflowService = workflowService;
         _organizationId = organizationId;
         _branchId = branchId;
+        _logger = logger ?? NullLogger<ScheduledJobsTabViewModel>.Instance;
 
         Jobs = [];
         PublishedWorkflows = [];
@@ -130,6 +134,7 @@ public sealed class ScheduledJobsTabViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
 
@@ -153,6 +158,7 @@ public sealed class ScheduledJobsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(CreateAsync));
         }
     }
 
@@ -178,6 +184,10 @@ public sealed class ScheduledJobsTabViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ErrorMessage = exception.Message;
+            LogOperationFailed(nameof(RunNowAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation scheduled jobs operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }
