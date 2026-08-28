@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Support;
 using Rojan.Desktop.Presentation.Mvvm;
 
@@ -18,10 +20,11 @@ namespace Rojan.Desktop.Presentation.ViewModels.Support;
 /// message form discriminated by <see cref="SupportMessageType"/> rather
 /// than four near-identical forms.
 /// </summary>
-public sealed class SupportPageViewModel : ViewModelBase
+public sealed partial class SupportPageViewModel : ViewModelBase
 {
     private readonly ISupportMessageService _messageService;
     private readonly IDevelopmentApplicationService _applicationService;
+    private readonly ILogger<SupportPageViewModel> _logger;
 
     private SupportMessageType _messageType = SupportMessageType.General;
     private string _messageSubject = string.Empty;
@@ -45,10 +48,11 @@ public sealed class SupportPageViewModel : ViewModelBase
     private string? _applicationStatus;
     private string? _applicationError;
 
-    public SupportPageViewModel(IRojanBrandConfiguration brandConfiguration, ISupportMessageService messageService, IDevelopmentApplicationService applicationService)
+    public SupportPageViewModel(IRojanBrandConfiguration brandConfiguration, ISupportMessageService messageService, IDevelopmentApplicationService applicationService, ILogger<SupportPageViewModel>? logger = null)
     {
         _messageService = messageService;
         _applicationService = applicationService;
+        _logger = logger ?? NullLogger<SupportPageViewModel>.Instance;
 
         WebsiteUrl = brandConfiguration.WebsiteUrl;
         PhoneNumber = brandConfiguration.PhoneNumber;
@@ -248,8 +252,14 @@ public sealed class SupportPageViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             MessageError = exception.Message;
+            LogOperationFailed(nameof(SubmitMessageAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // or any form field (sender name/email, message content, applicant PII/URLs).
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Support page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task SubmitApplicationAsync()
     {
@@ -277,6 +287,7 @@ public sealed class SupportPageViewModel : ViewModelBase
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             ApplicationError = exception.Message;
+            LogOperationFailed(nameof(SubmitApplicationAsync));
         }
     }
 

@@ -1,15 +1,18 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Support;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Support;
 
 namespace Rojan.Desktop.Presentation.Tests.Support;
 
 public sealed class SupportPageViewModelTests
 {
-    private static (SupportPageViewModel Sut, StubSupportMessageService Messages, StubDevelopmentApplicationService Applications) CreateSut()
+    private static (SupportPageViewModel Sut, StubSupportMessageService Messages, StubDevelopmentApplicationService Applications) CreateSut(
+        RecordingLogger<SupportPageViewModel>? logger = null)
     {
         var messages = new StubSupportMessageService();
         var applications = new StubDevelopmentApplicationService();
-        var sut = new SupportPageViewModel(new StubRojanBrandConfiguration(), messages, applications);
+        var sut = new SupportPageViewModel(new StubRojanBrandConfiguration(), messages, applications, logger);
         return (sut, messages, applications);
     }
 
@@ -69,6 +72,69 @@ public sealed class SupportPageViewModelTests
         Assert.NotNull(sut.MessageError);
         Assert.Null(sut.MessageStatus);
         Assert.Equal("Subject", sut.MessageSubject);
+    }
+
+    // Phase 8.31 Support Page Logging: SubmitMessageAsync / SubmitApplicationAsync log at Error,
+    // operation name only - no form field (sender name/email, message body, applicant PII/URLs)
+    // and no exception detail enters the log. User-visible error is unchanged.
+
+    [Fact]
+    public void SubmitMessageCommand_ServiceThrows_LogsErrorWithoutLeakingFormData()
+    {
+        var logger = new RecordingLogger<SupportPageViewModel>();
+        var (sut, messages, _) = CreateSut(logger);
+        messages.ThrowsOnSubmit = true;
+        sut.MessageSubject = "Confidential subject line";
+        sut.MessageBody = "Body with private detail";
+        sut.MessageSenderName = "Sara Ahmadi";
+        sut.MessageSenderEmail = "sara@example.com";
+
+        sut.SubmitMessageCommand.Execute(null);
+
+        Assert.NotNull(sut.MessageError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("SubmitMessageAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("sara@example.com", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sara Ahmadi", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Confidential subject line", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Body with private detail", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SubmitApplicationCommand_ServiceThrows_LogsErrorWithoutLeakingApplicantData()
+    {
+        var logger = new RecordingLogger<SupportPageViewModel>();
+        var (sut, _, applications) = CreateSut(logger);
+        applications.ThrowsOnSubmit = true;
+        sut.ApplicantFirstName = "Sara";
+        sut.ApplicantLastName = "Ahmadi";
+        sut.CollaborationArea = "Backend";
+        sut.ApplicantEmail = "dev@example.com";
+        sut.ResumeUrl = "https://drive.example/sara-resume.pdf";
+
+        sut.SubmitApplicationCommand.Execute(null);
+
+        Assert.NotNull(sut.ApplicationError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("SubmitApplicationAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("dev@example.com", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("sara-resume.pdf", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_SubmitFailureNeverThrows()
+    {
+        var (sut, messages, _) = CreateSut();
+        messages.ThrowsOnSubmit = true;
+        sut.MessageSubject = "Subject";
+        sut.MessageBody = "Body";
+
+        var exception = Record.Exception(() => sut.SubmitMessageCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.NotNull(sut.MessageError);
     }
 
     [Fact]
