@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
@@ -30,7 +31,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.Specialists;
 /// <c>Domain.Specialists.SpecialistPerformanceCalculator</c> and
 /// <c>Application.Intelligence.IntelligenceEngine</c>), never here.
 /// </summary>
-public sealed class SpecialistProfileViewModel : ViewModelBase
+public sealed partial class SpecialistProfileViewModel : ViewModelBase
 {
     private readonly string _specialistId;
     private readonly ISpecialistProfileQueryService _profileQueryService;
@@ -39,6 +40,7 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
     private readonly IServiceQueryService _serviceQueryService;
     private readonly ISpecialistScheduleQueryService _scheduleQueryService;
     private readonly ISpecialistScheduleCommandService _scheduleCommandService;
+    private readonly ILogger<SpecialistProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -67,7 +69,8 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         ISpecialistScheduleQueryService scheduleQueryService,
         ISpecialistScheduleCommandService scheduleCommandService,
         ILogger<SpecialistScheduleViewModel>? scheduleLogger = null,
-        ILogger<SpecialistAvailabilityViewModel>? availabilityLogger = null)
+        ILogger<SpecialistAvailabilityViewModel>? availabilityLogger = null,
+        ILogger<SpecialistProfileViewModel>? logger = null)
     {
         _specialistId = specialistId;
         _profileQueryService = profileQueryService;
@@ -76,6 +79,7 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         _serviceQueryService = serviceQueryService;
         _scheduleQueryService = scheduleQueryService;
         _scheduleCommandService = scheduleCommandService;
+        _logger = logger ?? NullLogger<SpecialistProfileViewModel>.Instance;
 
         Skills = new ObservableCollection<SpecialistSkillDto>();
         AssignedServices = new ObservableCollection<AssignedServiceDto>();
@@ -308,8 +312,12 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Specialist profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task AddSkillAsync()
     {
@@ -374,6 +382,7 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
             EditableStatus = Specialist.Status;
             SaveErrorMessage = Strings.Specialists_SaveError;
             HasSaveError = true;
+            LogOperationFailed(nameof(SaveChangesAsync));
         }
     }
 
@@ -426,6 +435,7 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         {
             AssignmentErrorMessage = Strings.Specialists_AssignmentError;
             HasAssignmentError = true;
+            LogOperationFailed(nameof(AssignServiceAsync));
         }
     }
 
@@ -449,6 +459,7 @@ public sealed class SpecialistProfileViewModel : ViewModelBase
         {
             AssignmentErrorMessage = Strings.Specialists_AssignmentError;
             HasAssignmentError = true;
+            LogOperationFailed(nameof(RemoveServiceAssignmentAsync));
         }
     }
 }

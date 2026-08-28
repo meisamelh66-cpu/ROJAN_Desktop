@@ -31,6 +31,7 @@ public sealed partial class HrPageViewModel : ViewModelBase
     private readonly IPayrollQueryService _payrollQueryService;
     private readonly IPayrollCommandService _payrollCommandService;
     private readonly ILogger<HrPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -89,7 +90,8 @@ public sealed partial class HrPageViewModel : ViewModelBase
         ICommissionCommandService commissionCommandService,
         IPayrollQueryService payrollQueryService,
         IPayrollCommandService payrollCommandService,
-        ILogger<HrPageViewModel>? logger = null)
+        ILogger<HrPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _employeeQueryService = employeeQueryService;
         _employeeCommandService = employeeCommandService;
@@ -102,6 +104,7 @@ public sealed partial class HrPageViewModel : ViewModelBase
         _payrollQueryService = payrollQueryService;
         _payrollCommandService = payrollCommandService;
         _logger = logger ?? NullLogger<HrPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Employees = new ObservableCollection<EmployeeDto>();
         TodayAttendance = new ObservableCollection<AttendanceDto>();
@@ -247,7 +250,7 @@ public sealed partial class HrPageViewModel : ViewModelBase
             {
                 Profile = value is null
                     ? null
-                    : new EmployeeProfileViewModel(value.Id, _employeeQueryService, _employeeCommandService, () => _ = LoadAsync());
+                    : new EmployeeProfileViewModel(value.Id, _employeeQueryService, _employeeCommandService, () => _ = LoadAsync(), _loggerFactory?.CreateLogger<EmployeeProfileViewModel>());
             }
         }
     }

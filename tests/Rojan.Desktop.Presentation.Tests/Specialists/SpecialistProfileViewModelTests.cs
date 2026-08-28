@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Intelligence;
 using Rojan.Desktop.Application.Services;
@@ -492,5 +493,94 @@ public sealed class SpecialistProfileViewModelTests
         Assert.Contains(nameof(SpecialistProfileViewModel.PerformanceScore), raisedProperties);
         Assert.Contains(nameof(SpecialistProfileViewModel.PerformanceLevel), raisedProperties);
         Assert.Contains(nameof(SpecialistProfileViewModel.RecommendationSignal), raisedProperties);
+    }
+
+    // ---- Phase 8.51: PII-safe diagnostic logging (Wave 2C-3c) ----
+
+    private const string ProfileSecret = "jordan.lee@rojan.example / 555-0100 / Specializes in balayage / performance 55";
+
+    [Fact]
+    public void LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoPiiLeak()
+    {
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException(ProfileSecret)));
+        var logger = new RecordingLogger<SpecialistProfileViewModel>();
+
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), logger: logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(ProfileSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AssignServiceCommand_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var catalog = new List<ServiceDto> { MakeService("service-1", "Balayage") };
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile()));
+        var commandService = new StubSpecialistCommandService { AssignServiceException = new InvalidOperationException(ProfileSecret) };
+        var logger = new RecordingLogger<SpecialistProfileViewModel>();
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(catalog), MakeScheduleQueryService(), MakeScheduleCommandService(), logger: logger);
+        sut.SelectedServiceToAssign = sut.AvailableServicesToAssign[0];
+
+        sut.AssignServiceCommand.Execute(null);
+
+        Assert.True(sut.HasAssignmentError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=AssignServiceAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(ProfileSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RemoveServiceAssignmentCommand_Failure_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(
+            MakeProfile(assignedServices: [new AssignedServiceDto("service-1", "Balayage")])));
+        var commandService = new StubSpecialistCommandService { RemoveServiceAssignmentException = new InvalidOperationException(ProfileSecret) };
+        var logger = new RecordingLogger<SpecialistProfileViewModel>();
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), logger: logger);
+        var assignment = sut.AssignedServices[0];
+
+        sut.RemoveServiceAssignmentCommand.Execute(assignment);
+
+        Assert.True(sut.HasAssignmentError);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=RemoveServiceAssignmentAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(ProfileSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SaveChangesCommand_Failure_LogsErrorWithOperationNameOnly_AndStillRevertsEditableStatus()
+    {
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromResult(MakeProfile())); // MakeProfile's specialist is Active
+        var commandService = new StubSpecialistCommandService { UpdateSpecialistException = new InvalidOperationException(ProfileSecret) };
+        var logger = new RecordingLogger<SpecialistProfileViewModel>();
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), logger: logger)
+        {
+            EditableStatus = SpecialistStatus.Inactive,
+        };
+
+        sut.SaveChangesCommand.Execute(null);
+
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(SpecialistStatus.Active, sut.EditableStatus); // behaviour preserved: revert still happens
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=SaveChangesAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(ProfileSecret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException("boom")));
+
+        var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
     }
 }

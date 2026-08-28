@@ -45,6 +45,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
     private readonly ISpecialistScheduleCommandService _scheduleCommandService;
     private readonly ILogger<SpecialistScheduleViewModel>? _scheduleLogger;
     private readonly ILogger<SpecialistAvailabilityViewModel>? _availabilityLogger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -70,12 +71,14 @@ public sealed class SpecialistPageViewModel : ViewModelBase
         ISpecialistScheduleQueryService scheduleQueryService,
         ISpecialistScheduleCommandService scheduleCommandService,
         ILogger<SpecialistScheduleViewModel>? scheduleLogger = null,
-        ILogger<SpecialistAvailabilityViewModel>? availabilityLogger = null)
+        ILogger<SpecialistAvailabilityViewModel>? availabilityLogger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _queryService = queryService;
         _profileQueryService = profileQueryService;
         _scheduleLogger = scheduleLogger;
         _availabilityLogger = availabilityLogger;
+        _loggerFactory = loggerFactory;
         _commandService = commandService;
         _intelligenceEngine = intelligenceEngine;
         _serviceQueryService = serviceQueryService;
@@ -178,7 +181,7 @@ public sealed class SpecialistPageViewModel : ViewModelBase
 
                 Profile = value is null
                     ? null
-                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _serviceQueryService, _scheduleQueryService, _scheduleCommandService, _scheduleLogger, _availabilityLogger);
+                    : new SpecialistProfileViewModel(value.Id, _profileQueryService, _commandService, _intelligenceEngine, _serviceQueryService, _scheduleQueryService, _scheduleCommandService, _scheduleLogger, _availabilityLogger, _loggerFactory?.CreateLogger<SpecialistProfileViewModel>());
 
                 if (Profile is not null)
                 {

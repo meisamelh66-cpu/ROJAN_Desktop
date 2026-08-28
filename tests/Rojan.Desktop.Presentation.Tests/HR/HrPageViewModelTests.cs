@@ -25,7 +25,8 @@ public sealed class HrPageViewModelTests
         StubCommissionCommandService? commissionCommandService = null,
         StubPayrollQueryService? payrollQueryService = null,
         StubPayrollCommandService? payrollCommandService = null,
-        RecordingLogger<HrPageViewModel>? logger = null) => new(
+        RecordingLogger<HrPageViewModel>? logger = null,
+        RecordingLoggerFactory? loggerFactory = null) => new(
         employeeQueryService ?? new StubEmployeeQueryService(_ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]), getProfile: (id, _) => Task.FromResult(MakeProfile(id))),
         employeeCommandService ?? new StubEmployeeCommandService(),
         attendanceQueryService ?? new StubAttendanceQueryService(),
@@ -36,7 +37,28 @@ public sealed class HrPageViewModelTests
         commissionCommandService ?? new StubCommissionCommandService(),
         payrollQueryService ?? new StubPayrollQueryService(),
         payrollCommandService ?? new StubPayrollCommandService(),
-        logger);
+        logger,
+        loggerFactory);
+
+    [Fact]
+    public void LoggerFactory_ForwardedToEmployeeProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        const string secret = "child employee pii / salary 2500 / +1 555";
+        var employees = new List<EmployeeDto> { MakeEmployee("employee-1", "Jordan Lee") };
+        var queryService = new StubEmployeeQueryService(
+            _ => Task.FromResult<IReadOnlyList<EmployeeDto>>(employees),
+            getProfile: (_, _) => Task.FromException<EmployeeProfileDto>(new InvalidOperationException(secret)));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = MakeSut(queryService, loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(EmployeeProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void Constructor_EmployeesLoad_StateIsLoadedAndSelectsFirstEmployee()

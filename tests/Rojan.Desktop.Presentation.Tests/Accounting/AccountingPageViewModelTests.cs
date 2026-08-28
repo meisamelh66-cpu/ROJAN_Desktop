@@ -21,13 +21,35 @@ public sealed class AccountingPageViewModelTests
         StubPaymentQueryService? paymentQueryService = null,
         StubPaymentCommandService? paymentCommandService = null,
         StubDialogService? dialogService = null,
-        RecordingLogger<AccountingPageViewModel>? logger = null) => new(
+        RecordingLogger<AccountingPageViewModel>? logger = null,
+        RecordingLoggerFactory? loggerFactory = null) => new(
         queryService,
         commandService ?? new StubInvoiceCommandService(),
         paymentQueryService ?? new StubPaymentQueryService(),
         paymentCommandService ?? new StubPaymentCommandService(),
         dialogService ?? new StubDialogService(),
-        logger: logger);
+        logger: logger,
+        loggerFactory: loggerFactory);
+
+    [Fact]
+    public void LoggerFactory_ForwardedToInvoiceProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        const string secret = "child invoice financial secret / total 43.20 / Cash payment";
+        var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
+            getProfile: (_, _) => Task.FromException<InvoiceProfileDto>(new InvalidOperationException(secret)));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = MakeSut(queryService, loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(InvoiceProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()

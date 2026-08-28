@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -16,19 +18,24 @@ namespace Rojan.Desktop.Presentation.ViewModels.Accounting;
 /// page ViewModel, same as <c>Bookings.BookingPageViewModel.ChangeStatusAsync</c>
 /// operating on its own SelectedBooking rather than a child profile.
 /// </summary>
-public sealed class InvoiceProfileViewModel : ViewModelBase
+public sealed partial class InvoiceProfileViewModel : ViewModelBase
 {
     private readonly string _invoiceId;
     private readonly IInvoiceQueryService _queryService;
+    private readonly ILogger<InvoiceProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private InvoiceDto? _invoice;
 
-    public InvoiceProfileViewModel(string invoiceId, IInvoiceQueryService queryService)
+    public InvoiceProfileViewModel(
+        string invoiceId,
+        IInvoiceQueryService queryService,
+        ILogger<InvoiceProfileViewModel>? logger = null)
     {
         _invoiceId = invoiceId;
         _queryService = queryService;
+        _logger = logger ?? NullLogger<InvoiceProfileViewModel>.Instance;
 
         Items = new ObservableCollection<InvoiceItemDto>();
         Payments = new ObservableCollection<PaymentDto>();
@@ -105,6 +112,10 @@ public sealed class InvoiceProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Invoice profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

@@ -31,6 +31,7 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     private readonly ILogger<PosCheckoutViewModel>? _posCheckoutLogger;
     private readonly ILogger<AccountingPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -46,7 +47,8 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
         IPaymentCommandService paymentCommandService,
         IDialogService dialogService,
         ILogger<PosCheckoutViewModel>? posCheckoutLogger = null,
-        ILogger<AccountingPageViewModel>? logger = null)
+        ILogger<AccountingPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _invoiceQueryService = invoiceQueryService;
         _invoiceCommandService = invoiceCommandService;
@@ -55,6 +57,7 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
         _dialogService = dialogService;
         _posCheckoutLogger = posCheckoutLogger;
         _logger = logger ?? NullLogger<AccountingPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Invoices = new ObservableCollection<InvoiceDto>();
 
@@ -110,7 +113,7 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedInvoice, value))
             {
-                Profile = value is null ? null : new InvoiceProfileViewModel(value.Id, _invoiceQueryService);
+                Profile = value is null ? null : new InvoiceProfileViewModel(value.Id, _invoiceQueryService, _loggerFactory?.CreateLogger<InvoiceProfileViewModel>());
             }
         }
     }

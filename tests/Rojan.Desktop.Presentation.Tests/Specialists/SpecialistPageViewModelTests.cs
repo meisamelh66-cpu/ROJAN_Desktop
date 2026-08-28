@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Services;
 using Rojan.Desktop.Application.Specialists;
 using Rojan.Desktop.Presentation.Tests.Services;
@@ -8,6 +9,25 @@ namespace Rojan.Desktop.Presentation.Tests.Specialists;
 
 public sealed class SpecialistPageViewModelTests
 {
+    [Fact]
+    public void LoggerFactory_ForwardedToSpecialistProfileChild_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        const string secret = "child specialist pii / jordan.lee@rojan.example / 555-0100 / performance 55";
+        var specialists = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee") };
+        var queryService = new StubSpecialistQueryService(_ => Task.FromResult<IReadOnlyList<SpecialistDto>>(specialists));
+        var failingProfileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException(secret)));
+        var loggerFactory = new RecordingLoggerFactory();
+
+        var sut = new SpecialistPageViewModel(queryService, failingProfileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService(), loggerFactory: loggerFactory);
+
+        Assert.NotNull(sut.Profile);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(SpecialistProfileViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+    }
+
     private static SpecialistDto MakeSpecialist(string id, string fullName, string title = "", string email = "") =>
         new(id, fullName, title, email, string.Empty, SpecialistStatus.Active, string.Empty);
 

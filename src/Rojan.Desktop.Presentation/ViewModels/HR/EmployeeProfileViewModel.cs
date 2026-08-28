@@ -1,4 +1,6 @@
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -14,23 +16,30 @@ namespace Rojan.Desktop.Presentation.ViewModels.HR;
 /// pattern <c>Customers.CustomerProfileViewModel</c> established in
 /// Phase 10.
 /// </summary>
-public sealed class EmployeeProfileViewModel : ViewModelBase
+public sealed partial class EmployeeProfileViewModel : ViewModelBase
 {
     private readonly string _employeeId;
     private readonly IEmployeeQueryService _queryService;
     private readonly IEmployeeCommandService _commandService;
     private readonly Action? _onChanged;
+    private readonly ILogger<EmployeeProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private EmployeeProfileDto? _profile;
 
-    public EmployeeProfileViewModel(string employeeId, IEmployeeQueryService queryService, IEmployeeCommandService commandService, Action? onChanged = null)
+    public EmployeeProfileViewModel(
+        string employeeId,
+        IEmployeeQueryService queryService,
+        IEmployeeCommandService commandService,
+        Action? onChanged = null,
+        ILogger<EmployeeProfileViewModel>? logger = null)
     {
         _employeeId = employeeId;
         _queryService = queryService;
         _commandService = commandService;
         _onChanged = onChanged;
+        _logger = logger ?? NullLogger<EmployeeProfileViewModel>.Instance;
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         ActivateCommand = new AsyncRelayCommand(_ => ActivateAsync());
@@ -85,8 +94,12 @@ public sealed class EmployeeProfileViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Employee profile operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task ActivateAsync()
     {
