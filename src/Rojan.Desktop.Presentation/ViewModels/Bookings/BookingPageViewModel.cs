@@ -60,6 +60,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
     private readonly IBookingWorkflowService _workflowService;
     private readonly IDialogService _dialogService;
     private readonly ILogger<BookingPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -93,13 +94,15 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         IBookingCommandService commandService,
         IBookingWorkflowService workflowService,
         IDialogService dialogService,
-        ILogger<BookingPageViewModel>? logger = null)
+        ILogger<BookingPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _queryService = queryService;
         _commandService = commandService;
         _workflowService = workflowService;
         _dialogService = dialogService;
         _logger = logger ?? NullLogger<BookingPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         Bookings = new ObservableCollection<BookingDto>();
 
@@ -404,7 +407,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
 
     private void OpenWizard()
     {
-        var wizard = new BookingWizardViewModel(_workflowService, _dialogService, () => _ = LoadAsync());
+        var wizard = new BookingWizardViewModel(_workflowService, _dialogService, () => _ = LoadAsync(), _loggerFactory?.CreateLogger<BookingWizardViewModel>());
         _dialogService.ShowDialog(wizard);
     }
 

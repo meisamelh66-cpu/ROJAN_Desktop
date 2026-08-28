@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Bookings;
+using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Tests.BookingWorkflow;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Bookings;
+using Rojan.Desktop.Presentation.ViewModels.BookingWorkflow;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
 namespace Rojan.Desktop.Presentation.Tests.Bookings;
@@ -19,8 +21,9 @@ public sealed class BookingPageViewModelTests
         StubBookingCommandService? commandService = null,
         StubBookingWorkflowService? workflowService = null,
         StubDialogService? dialogService = null,
-        ILogger<BookingPageViewModel>? logger = null) =>
-        new(queryService, commandService ?? new StubBookingCommandService(), workflowService ?? new StubBookingWorkflowService(), dialogService ?? new StubDialogService(), logger);
+        ILogger<BookingPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null) =>
+        new(queryService, commandService ?? new StubBookingCommandService(), workflowService ?? new StubBookingWorkflowService(), dialogService ?? new StubDialogService(), logger, loggerFactory);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -338,6 +341,27 @@ public sealed class BookingPageViewModelTests
 
         var shown = Assert.Single(dialogService.ShownDialogs);
         Assert.IsType<Rojan.Desktop.Presentation.ViewModels.BookingWorkflow.BookingWizardViewModel>(shown);
+    }
+
+    [Fact]
+    public void OpenWizardCommand_ForwardsLoggerFactoryToWizard_ChildLoadFailureIsLoggedViaTheFactory()
+    {
+        const string secret = "guest booking secret / 555-0100";
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromException<BookingOptionsDto>(new InvalidOperationException(secret)));
+        var dialogService = new StubDialogService();
+        var loggerFactory = new RecordingLoggerFactory();
+        var sut = MakeSut(queryService, workflowService: workflowService, dialogService: dialogService, loggerFactory: loggerFactory);
+
+        sut.OpenWizardCommand.Execute(null);
+
+        Assert.Single(dialogService.ShownDialogs);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains(nameof(BookingWizardViewModel), entry.Category, StringComparison.Ordinal);
+        Assert.Contains("Operation=LoadOptionsAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]

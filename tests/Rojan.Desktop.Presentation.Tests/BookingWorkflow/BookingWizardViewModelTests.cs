@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.BookingWorkflow;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -314,9 +316,9 @@ public sealed class BookingWizardViewModelTests
         Assert.False(sut.BackCommand.CanExecute(null));
     }
 
-    private static BookingWizardViewModel MakeSutOnDateStep(StubBookingWorkflowService workflowService)
+    private static BookingWizardViewModel MakeSutOnDateStep(StubBookingWorkflowService workflowService, ILogger<BookingWizardViewModel>? logger = null)
     {
-        var sut = new BookingWizardViewModel(workflowService, new StubDialogService())
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService(), onBookingCreated: null, logger)
         {
             SelectedCustomer = MakeCustomer(),
         };
@@ -590,5 +592,138 @@ public sealed class BookingWizardViewModelTests
         sut.SelectedService = serviceB;
 
         Assert.Null(sut.SelectedSpecialist);
+    }
+
+    // ---- Phase 8.47: PII-safe diagnostic logging (Wave 2C-3b) ----
+
+    [Fact]
+    public void Constructor_OptionsQueryThrows_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        const string secret = "Amelia Hart / 555-0100 / VIP corner chair please";
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromException<BookingOptionsDto>(new InvalidOperationException(secret)));
+        var logger = new RecordingLogger<BookingWizardViewModel>();
+
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService(), onBookingCreated: null, logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadOptionsAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AddGuestCustomerCommand_Failure_LogsErrorWithOperationNameOnly_NoGuestPiiLeak()
+    {
+        const string guestName = "Walk-in Guest";
+        const string guestPhone = "555-0100";
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            createGuestCustomer: (name, phone, _) => Task.FromException<WorkflowCustomerOptionDto>(
+                new InvalidOperationException($"backend rejected {name} / {phone}")));
+        var logger = new RecordingLogger<BookingWizardViewModel>();
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService(), onBookingCreated: null, logger)
+        {
+            GuestFullName = guestName,
+            GuestPhone = guestPhone,
+        };
+
+        sut.AddGuestCustomerCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=AddGuestCustomerAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(guestName, entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(guestPhone, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NextCommand_FromDateStep_SlotsQueryThrows_LogsErrorWithOperationNameOnly_NoLeak()
+    {
+        const string secret = "specialist-1 / service-1 / booked slots for Amelia Hart";
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            getSlots: (_, _, _, _) => Task.FromException<IReadOnlyList<WorkflowSlotDto>>(new InvalidOperationException(secret)));
+        var logger = new RecordingLogger<BookingWizardViewModel>();
+        var sut = MakeSutOnDateStep(workflowService, logger);
+
+        sut.NextCommand.Execute(null); // Date -> TimeSlot
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=LoadAvailableSlotsAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConfirmBookingCommand_Failure_LogsErrorWithOperationNameOnly_NoNotesOrIdentityLeak()
+    {
+        const string notes = "VIP corner chair please";
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            getSlots: (_, _, _, _) => Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60))]),
+            createBooking: (request, _) => Task.FromException<BookingConfirmationDto>(new InvalidOperationException(
+                $"{request.CustomerName} / {request.ServiceName} / {request.SpecialistName} / {request.Notes} / {request.Price}")));
+        var logger = new RecordingLogger<BookingWizardViewModel>();
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService(), onBookingCreated: null, logger)
+        {
+            SelectedCustomer = MakeCustomer(),
+        };
+        sut.NextCommand.Execute(null); // Customer -> Service
+        sut.SelectedService = MakeService();
+        sut.NextCommand.Execute(null); // Service -> Specialist
+        sut.SelectedSpecialist = MakeSpecialist();
+        sut.NextCommand.Execute(null); // Specialist -> Date
+        sut.NextCommand.Execute(null); // Date -> TimeSlot
+        sut.SelectedSlot = new WorkflowSlotDto(SlotStart, SlotStart.AddMinutes(60));
+        sut.NextCommand.Execute(null); // TimeSlot -> Review
+        sut.Notes = notes;
+
+        sut.ConfirmBookingCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=ConfirmBookingAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(notes, entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Amelia Hart", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Jordan Lee", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("$65", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SearchNextAvailableDateAsync_ProbeFails_LogsNothing()
+    {
+        // Picked date returns no slots (-> Empty, which fires the best-effort probe); every
+        // forward candidate-date probe throws. The probe's swallow-by-design catch must stay
+        // silent - guards the Phase 8.46 decision NOT to instrument SearchNextAvailableDateAsync.
+        var pickedDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromResult(MakeOptions()),
+            getSlots: (_, _, date, _) => date == pickedDate
+                ? Task.FromResult<IReadOnlyList<WorkflowSlotDto>>([])
+                : Task.FromException<IReadOnlyList<WorkflowSlotDto>>(new InvalidOperationException("probe boom")));
+        var logger = new RecordingLogger<BookingWizardViewModel>();
+        var sut = MakeSutOnDateStep(workflowService, logger);
+
+        sut.NextCommand.Execute(null); // Date -> TimeSlot; picked date empty -> probe fires, each probe throws
+
+        Assert.Equal(DashboardState.Empty, sut.State);
+        Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
+    public void Constructor_OptionsQueryThrows_WithoutLogger_UsesNullLogger_NeverThrows()
+    {
+        var workflowService = new StubBookingWorkflowService(
+            getOptions: _ => Task.FromException<BookingOptionsDto>(new InvalidOperationException("boom")));
+
+        var sut = new BookingWizardViewModel(workflowService, new StubDialogService());
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.BookingWizard_Error_Generic, sut.ErrorMessage);
     }
 }

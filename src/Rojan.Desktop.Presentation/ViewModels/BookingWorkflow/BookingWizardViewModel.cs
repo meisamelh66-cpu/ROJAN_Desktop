@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Dialogs;
@@ -19,11 +21,12 @@ namespace Rojan.Desktop.Presentation.ViewModels.BookingWorkflow;
 /// services directly, keeping this ViewModel's own dependency surface
 /// small despite the wizard touching five business domains.
 /// </summary>
-public sealed class BookingWizardViewModel : ViewModelBase
+public sealed partial class BookingWizardViewModel : ViewModelBase
 {
     private readonly IBookingWorkflowService _workflowService;
     private readonly IDialogService _dialogService;
     private readonly Action? _onBookingCreated;
+    private readonly ILogger<BookingWizardViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -46,11 +49,16 @@ public sealed class BookingWizardViewModel : ViewModelBase
     private bool _isSearchingNextAvailableDate;
     private CancellationTokenSource? _nextAvailableDateSearchCts;
 
-    public BookingWizardViewModel(IBookingWorkflowService workflowService, IDialogService dialogService, Action? onBookingCreated = null)
+    public BookingWizardViewModel(
+        IBookingWorkflowService workflowService,
+        IDialogService dialogService,
+        Action? onBookingCreated = null,
+        ILogger<BookingWizardViewModel>? logger = null)
     {
         _workflowService = workflowService;
         _dialogService = dialogService;
         _onBookingCreated = onBookingCreated;
+        _logger = logger ?? NullLogger<BookingWizardViewModel>.Instance;
 
         Customers = new ObservableCollection<WorkflowCustomerOptionDto>();
         Services = new ObservableCollection<WorkflowServiceOptionDto>();
@@ -294,6 +302,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         {
             ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadOptionsAsync));
         }
     }
 
@@ -400,6 +409,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
             // hide the picker the way it would on a full-page ViewModel.
             ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
+            LogOperationFailed(nameof(AddGuestCustomerAsync));
         }
         finally
         {
@@ -487,6 +497,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         {
             ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAvailableSlotsAsync));
         }
     }
 
@@ -620,6 +631,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         {
             ErrorMessage = ToFriendlyErrorMessage(exception);
             State = DashboardState.Error;
+            LogOperationFailed(nameof(ConfirmBookingAsync));
         }
     }
 
@@ -643,4 +655,7 @@ public sealed class BookingWizardViewModel : ViewModelBase
         ApiTimeoutException or ApiConnectivityException => Strings.BookingWizard_Error_Network,
         _ => Strings.BookingWizard_Error_Generic,
     };
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Booking wizard operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }
