@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Presentation.Tests.Reporting;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Analytics;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -61,5 +63,35 @@ public sealed class AnalyticsPageViewModelTests
         sut.SelectedPeriod = AnalyticsPeriod.Daily;
 
         Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    // Phase 8.23 Logging Wave 2B: LoadAsync now logs at Error before surfacing the
+    // Error state - user-visible behaviour (State / ErrorMessage) is unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryThrows_LogsError()
+    {
+        var logger = new RecordingLogger<AnalyticsPageViewModel>();
+
+        var sut = new AnalyticsPageViewModel(new ThrowingKpiEngineQueryService(), new StubAnalyticsQueryService(Summary, Charts), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var exception = Record.Exception(() =>
+            new AnalyticsPageViewModel(new ThrowingKpiEngineQueryService(), new StubAnalyticsQueryService(Summary, Charts)));
+
+        Assert.Null(exception);
+    }
+
+    private sealed class ThrowingKpiEngineQueryService : IKpiEngineQueryService
+    {
+        public Task<IReadOnlyList<KpiValueDto>> GetKpisAsync(AnalyticsPeriod period, CancellationToken cancellationToken = default) =>
+            Task.FromException<IReadOnlyList<KpiValueDto>>(new InvalidOperationException("boom"));
     }
 }

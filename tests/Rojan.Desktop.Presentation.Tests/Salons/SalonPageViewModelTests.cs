@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Salons;
 
@@ -56,6 +58,53 @@ public sealed class SalonPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
+    }
+
+    // Phase 8.23 Logging Wave 2B: LoadAsync / CreateSalonAsync now log at Error before
+    // their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public void LoadAsync_QueryThrows_LogsError()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromException<SalonDto?>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<SalonPageViewModel>();
+
+        var sut = new SalonPageViewModel(queryService, new StubSalonCommandService(), logger);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CreateSalonAsync_CommandThrows_LogsError()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromResult<SalonDto?>(null));
+        var commandService = new StubSalonCommandService((_, _) => Task.FromException<SalonDto>(new InvalidOperationException("save boom")));
+        var logger = new RecordingLogger<SalonPageViewModel>();
+        var sut = new SalonPageViewModel(queryService, commandService, logger)
+        {
+            Name = "Glow Salon",
+            Phone = "+1 555 0100",
+            Address = "1 Main St",
+        };
+        await Task.Delay(10);
+
+        sut.CreateSalonCommand.Execute(null);
+        await Task.Delay(10);
+
+        Assert.Equal("save boom", sut.CreateErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("CreateSalonAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromException<SalonDto?>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => new SalonPageViewModel(queryService, new StubSalonCommandService()));
+
+        Assert.Null(exception);
     }
 
     [Fact]

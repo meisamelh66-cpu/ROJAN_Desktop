@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Reporting;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -12,20 +14,22 @@ namespace Rojan.Desktop.Presentation.ViewModels.Analytics;
 /// Engine's eight cards, and three native-rendered charts (no external
 /// charting library - see <c>Controls.Analytics.SimpleBarChart</c>).
 /// </summary>
-public sealed class AnalyticsPageViewModel : ViewModelBase
+public sealed partial class AnalyticsPageViewModel : ViewModelBase
 {
     private readonly IKpiEngineQueryService _kpiEngineQueryService;
     private readonly IAnalyticsQueryService _analyticsQueryService;
+    private readonly ILogger<AnalyticsPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
     private AnalyticsPeriod _selectedPeriod = AnalyticsPeriod.Daily;
     private AnalyticsSummaryDto? _summary;
 
-    public AnalyticsPageViewModel(IKpiEngineQueryService kpiEngineQueryService, IAnalyticsQueryService analyticsQueryService)
+    public AnalyticsPageViewModel(IKpiEngineQueryService kpiEngineQueryService, IAnalyticsQueryService analyticsQueryService, ILogger<AnalyticsPageViewModel>? logger = null)
     {
         _kpiEngineQueryService = kpiEngineQueryService;
         _analyticsQueryService = analyticsQueryService;
+        _logger = logger ?? NullLogger<AnalyticsPageViewModel>.Instance;
 
         Kpis = new ObservableCollection<KpiValueDto>();
         Charts = new ObservableCollection<ChartDefinitionDto>();
@@ -108,6 +112,12 @@ public sealed class AnalyticsPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // analytics data, or any backend response detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Analytics page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

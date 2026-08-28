@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.QrCodes;
 using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Presentation.Tests.Salons;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.QrCodes;
 
@@ -55,6 +57,48 @@ public sealed class QrCodesPageViewModelTests
         Assert.Equal(DashboardState.Error, sut.State);
         Assert.Equal("boom", sut.ErrorMessage);
         Assert.False(sut.IsReadyToPrint);
+    }
+
+    // Phase 8.23 Logging Wave 2B: LoadAsync / GenerateReceptionInviteAsync now log at
+    // Error before their existing handling - user-visible behaviour unchanged.
+
+    [Fact]
+    public async Task LoadAsync_QueryThrows_LogsError()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromException<SalonDto?>(new InvalidOperationException("boom")));
+        var logger = new RecordingLogger<QrCodesPageViewModel>();
+        var sut = new QrCodesPageViewModel(queryService, new StubSalonInviteService(), new StubStaticQrCodeGenerator([1]), logger);
+
+        await Task.Delay(10);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GenerateReceptionInviteCommand_BackendRejects_LogsError()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromResult<SalonDto?>(MakeSalon())) { GetSalonQrCode = (_, _) => Task.FromResult<byte[]>([1]) };
+        var inviteService = new StubSalonInviteService { CreateException = new InvalidOperationException("Forbidden") };
+        var logger = new RecordingLogger<QrCodesPageViewModel>();
+        var sut = new QrCodesPageViewModel(queryService, inviteService, new StubStaticQrCodeGenerator([1]), logger);
+        await Task.Delay(10);
+
+        sut.GenerateReceptionInviteCommand.Execute(null);
+        await Task.Delay(10);
+
+        Assert.Equal("Forbidden", sut.GenerateInviteErrorMessage);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("GenerateReceptionInviteAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_LoadFailureNeverThrows()
+    {
+        var queryService = new StubSalonQueryService(_ => Task.FromException<SalonDto?>(new InvalidOperationException("boom")));
+
+        var exception = Record.Exception(() => new QrCodesPageViewModel(queryService, new StubSalonInviteService(), new StubStaticQrCodeGenerator([1])));
+
+        Assert.Null(exception);
     }
 
     [Fact]

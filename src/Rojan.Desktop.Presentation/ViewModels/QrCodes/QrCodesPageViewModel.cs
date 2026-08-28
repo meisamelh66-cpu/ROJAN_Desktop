@@ -1,4 +1,6 @@
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.QrCodes;
 using Rojan.Desktop.Application.Salons;
@@ -30,7 +32,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.QrCodes;
 /// reads these same raw bytes directly (a FixedDocument needs the PNG
 /// bytes, not a BitmapImage, to lay out for printing).
 /// </summary>
-public sealed class QrCodesPageViewModel : ViewModelBase
+public sealed partial class QrCodesPageViewModel : ViewModelBase
 {
     /// <summary>The Manager app's real (if not-yet-`available`) download page - see ROJAN_Web's own <c>app-showcase.ts</c>/the new <c>/download/[appId]</c> route this sprint adds.</summary>
     public const string ManagerDownloadUrl = "https://rojanai.ir/download/manager";
@@ -40,6 +42,7 @@ public sealed class QrCodesPageViewModel : ViewModelBase
     private readonly ISalonQueryService _salonQueryService;
     private readonly ISalonInviteService _salonInviteService;
     private readonly IStaticQrCodeGenerator _staticQrCodeGenerator;
+    private readonly ILogger<QrCodesPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -50,11 +53,12 @@ public sealed class QrCodesPageViewModel : ViewModelBase
     private bool _isGeneratingReceptionInvite;
     private string? _generateInviteErrorMessage;
 
-    public QrCodesPageViewModel(ISalonQueryService salonQueryService, ISalonInviteService salonInviteService, IStaticQrCodeGenerator staticQrCodeGenerator)
+    public QrCodesPageViewModel(ISalonQueryService salonQueryService, ISalonInviteService salonInviteService, IStaticQrCodeGenerator staticQrCodeGenerator, ILogger<QrCodesPageViewModel>? logger = null)
     {
         _salonQueryService = salonQueryService;
         _salonInviteService = salonInviteService;
         _staticQrCodeGenerator = staticQrCodeGenerator;
+        _logger = logger ?? NullLogger<QrCodesPageViewModel>.Instance;
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         GenerateReceptionInviteCommand = new AsyncRelayCommand(_ => GenerateReceptionInviteAsync(), _ => !IsGeneratingReceptionInvite);
@@ -158,8 +162,14 @@ public sealed class QrCodesPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // salon/invite detail, or any backend response.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "QR codes page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task GenerateReceptionInviteAsync()
     {
@@ -181,6 +191,7 @@ public sealed class QrCodesPageViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             GenerateInviteErrorMessage = exception.Message;
+            LogOperationFailed(nameof(GenerateReceptionInviteAsync));
         }
         finally
         {

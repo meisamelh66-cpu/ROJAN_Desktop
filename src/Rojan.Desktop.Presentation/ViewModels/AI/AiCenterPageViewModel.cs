@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.AI;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
@@ -23,7 +25,7 @@ namespace Rojan.Desktop.Presentation.ViewModels.AI;
 /// path is async; the Chat send path never blocks the UI thread while the
 /// (Mock) provider is "thinking."
 /// </summary>
-public sealed class AiCenterPageViewModel : ViewModelBase
+public sealed partial class AiCenterPageViewModel : ViewModelBase
 {
     private readonly IAIService _aiService;
     private readonly IBusinessHealthService _businessHealthService;
@@ -38,6 +40,7 @@ public sealed class AiCenterPageViewModel : ViewModelBase
     private readonly IAISettingsService _settingsService;
     private readonly ITokenUsageTracker _tokenUsageTracker;
     private readonly ILocalizationService _localizationService;
+    private readonly ILogger<AiCenterPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -74,7 +77,8 @@ public sealed class AiCenterPageViewModel : ViewModelBase
         IAIConfigurationService configurationService,
         IAISettingsService settingsService,
         ITokenUsageTracker tokenUsageTracker,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        ILogger<AiCenterPageViewModel>? logger = null)
     {
         _aiService = aiService;
         _businessHealthService = businessHealthService;
@@ -89,6 +93,7 @@ public sealed class AiCenterPageViewModel : ViewModelBase
         _settingsService = settingsService;
         _tokenUsageTracker = tokenUsageTracker;
         _localizationService = localizationService;
+        _logger = logger ?? NullLogger<AiCenterPageViewModel>.Instance;
 
         Notifications = new ObservableCollection<SmartNotificationDto>();
         Insights = new ObservableCollection<AIInsightDto>();
@@ -326,8 +331,14 @@ public sealed class AiCenterPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // the user's chat text, AI responses, or any backend/token detail.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "AI Center page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private async Task ReloadSessionsAsync()
     {
@@ -394,6 +405,7 @@ public sealed class AiCenterPageViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             StatusMessage = exception.Message;
+            LogOperationFailed(nameof(SendMessageAsync));
         }
         finally
         {

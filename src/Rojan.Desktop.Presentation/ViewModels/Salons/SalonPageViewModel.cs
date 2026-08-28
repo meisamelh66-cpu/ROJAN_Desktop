@@ -1,4 +1,6 @@
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -27,10 +29,11 @@ namespace Rojan.Desktop.Presentation.ViewModels.Salons;
 /// create attempt must leave the form visible with the user's typed input
 /// intact for correction, not flip the whole page into the Error state.
 /// </summary>
-public sealed class SalonPageViewModel : ViewModelBase
+public sealed partial class SalonPageViewModel : ViewModelBase
 {
     private readonly ISalonQueryService _queryService;
     private readonly ISalonCommandService _commandService;
+    private readonly ILogger<SalonPageViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
@@ -44,10 +47,11 @@ public sealed class SalonPageViewModel : ViewModelBase
     private bool _isCreating;
     private string? _createErrorMessage;
 
-    public SalonPageViewModel(ISalonQueryService queryService, ISalonCommandService commandService)
+    public SalonPageViewModel(ISalonQueryService queryService, ISalonCommandService commandService, ILogger<SalonPageViewModel>? logger = null)
     {
         _queryService = queryService;
         _commandService = commandService;
+        _logger = logger ?? NullLogger<SalonPageViewModel>.Instance;
 
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         CreateSalonCommand = new AsyncRelayCommand(_ => CreateSalonAsync(), _ => CanCreate());
@@ -161,8 +165,14 @@ public sealed class SalonPageViewModel : ViewModelBase
         {
             ErrorMessage = exception.Message;
             State = DashboardState.Error;
+            LogOperationFailed(nameof(LoadAsync));
         }
     }
+
+    // Security: logs the operation name only - never the exception, its message,
+    // salon contact details (name/phone/email/address), or any backend response.
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Salon page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 
     private bool CanCreate() =>
         !IsCreating
@@ -191,6 +201,7 @@ public sealed class SalonPageViewModel : ViewModelBase
 #pragma warning restore CA1031
         {
             CreateErrorMessage = exception.Message;
+            LogOperationFailed(nameof(CreateSalonAsync));
         }
         finally
         {

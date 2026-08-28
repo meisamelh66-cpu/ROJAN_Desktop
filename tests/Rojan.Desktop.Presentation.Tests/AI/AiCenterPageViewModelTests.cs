@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.AI;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Settings;
+using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.AI;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -20,7 +22,8 @@ public sealed class AiCenterPageViewModelTests
         IReadOnlyList<SmartNotificationDto>? notifications = null,
         IReadOnlyList<AIInsightDto>? insights = null,
         IReadOnlyList<AIRecommendationDto>? recommendations = null,
-        IReadOnlyList<SuggestedTaskDto>? suggestedTasks = null)
+        IReadOnlyList<SuggestedTaskDto>? suggestedTasks = null,
+        RecordingLogger<AiCenterPageViewModel>? logger = null)
     {
         var repository = new StubAIRepository();
         var conversationManager = new ConversationManager(repository);
@@ -39,7 +42,8 @@ public sealed class AiCenterPageViewModelTests
             new AIConfigurationService(repository),
             new AISettingsService(repository),
             new TokenUsageTracker(repository),
-            new StubLocalizationService([EnUs], EnUs));
+            new StubLocalizationService([EnUs], EnUs),
+            logger);
 
         return (sut, aiService, repository);
     }
@@ -98,6 +102,38 @@ public sealed class AiCenterPageViewModelTests
         Assert.Equal(string.Empty, sut.ChatInputText);
         Assert.Equal(8, sut.TotalTokens);
         Assert.Single(sut.UsageHistory);
+    }
+
+    // Phase 8.23 Logging Wave 2B: the chat SendMessageAsync boundary now logs at Error,
+    // operation name only - the user's chat text is never included in the log line.
+
+    [Fact]
+    public void SendMessageCommand_ServiceThrows_LogsErrorWithoutLeakingChatText()
+    {
+        var logger = new RecordingLogger<AiCenterPageViewModel>();
+        var (sut, aiService, _) = CreateSut(logger: logger);
+        aiService.ResultFactory = (_, _, _) => throw new InvalidOperationException("upstream failed for customer Sarah Johnson");
+        sut.ChatInputText = "Is customer Sarah Johnson overdue?";
+
+        sut.SendMessageCommand.Execute(null);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("SendMessageAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sarah Johnson", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("overdue", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NoLoggerSupplied_UsesNullLogger_ChatFailureNeverThrows()
+    {
+        var (sut, aiService, _) = CreateSut();
+        aiService.ResultFactory = (_, _, _) => throw new InvalidOperationException("boom");
+        sut.ChatInputText = "Hello";
+
+        var exception = Record.Exception(() => sut.SendMessageCommand.Execute(null));
+
+        Assert.Null(exception);
     }
 
     [Fact]
