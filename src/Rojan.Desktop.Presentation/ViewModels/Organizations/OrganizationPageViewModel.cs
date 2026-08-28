@@ -36,6 +36,8 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private OrganizationSection _selectedSection = OrganizationSection.Organizations;
     private DateTimeOffset? _lastUpdated;
     private string _statusMessage = string.Empty;
@@ -149,6 +151,26 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
         private set => SetProperty(ref _errorMessage, value);
     }
 
+    /// <summary>
+    /// Non-destructive inline error shown when a user-triggered write command
+    /// (create org/branch, save branch settings, switch role) or a
+    /// selection-triggered secondary load fails - unlike
+    /// <see cref="ErrorMessage"/>/<see cref="State"/> it never blanks the page.
+    /// Production Hardening missing-guard sweep (Wave D), same shape as
+    /// HR.HrPageViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
+    }
+
     public OrganizationSection SelectedSection
     {
         get => _selectedSection;
@@ -174,7 +196,7 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedOrganization, value))
             {
-                _ = LoadBranchesForSelectedOrganizationAsync();
+                _ = ReloadBranchesForSelectionAsync();
             }
         }
     }
@@ -186,7 +208,7 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedBranch, value))
             {
-                _ = LoadSettingsForSelectedBranchAsync();
+                _ = ReloadSettingsForSelectionAsync();
             }
         }
     }
@@ -493,17 +515,72 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
         }
     }
 
+    // Guarded entry points for the selection-triggered fire-and-forget secondary
+    // loads (SelectedOrganization / SelectedBranch setters). The awaited paths
+    // inside LoadAsync / LoadBranchesForSelectedOrganizationAsync keep calling
+    // the originals directly and are unchanged - only the previously
+    // unobserved-task-exception setter path is wrapped here.
+    private async Task ReloadBranchesForSelectionAsync()
+    {
+        try
+        {
+            await LoadBranchesForSelectedOrganizationAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed selection-triggered load must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(LoadBranchesForSelectedOrganizationAsync));
+        }
+    }
+
+    private async Task ReloadSettingsForSelectionAsync()
+    {
+        try
+        {
+            await LoadSettingsForSelectedBranchAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed selection-triggered load must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(LoadSettingsForSelectedBranchAsync));
+        }
+    }
+
     private async Task CreateOrganizationAsync()
     {
-        await _commandService.CreateOrganizationAsync(NewOrgName, NewOrgLegalName, NewOrgTaxInformation, NewOrgSubscription, NewOrgCode, NewOrgPhone, NewOrgEmail, NewOrgAddress).ConfigureAwait(true);
-        NewOrgName = string.Empty;
-        NewOrgLegalName = string.Empty;
-        NewOrgTaxInformation = string.Empty;
-        NewOrgCode = string.Empty;
-        NewOrgPhone = string.Empty;
-        NewOrgEmail = string.Empty;
-        NewOrgAddress = string.Empty;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.CreateOrganizationAsync(NewOrgName, NewOrgLegalName, NewOrgTaxInformation, NewOrgSubscription, NewOrgCode, NewOrgPhone, NewOrgEmail, NewOrgAddress).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            NewOrgName = string.Empty;
+            NewOrgLegalName = string.Empty;
+            NewOrgTaxInformation = string.Empty;
+            NewOrgCode = string.Empty;
+            NewOrgPhone = string.Empty;
+            NewOrgEmail = string.Empty;
+            NewOrgAddress = string.Empty;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateOrganizationAsync));
+        }
     }
 
     private async Task CreateBranchAsync()
@@ -513,20 +590,33 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.CreateBranchAsync(
-            SelectedOrganization.Id, NewBranchName, NewBranchCode, NewBranchAddress, NewBranchPhone, NewBranchEmail, NewBranchManager, NewBranchTimeZone, NewBranchCurrency)
-            .ConfigureAwait(true);
+        try
+        {
+            await _commandService.CreateBranchAsync(
+                SelectedOrganization.Id, NewBranchName, NewBranchCode, NewBranchAddress, NewBranchPhone, NewBranchEmail, NewBranchManager, NewBranchTimeZone, NewBranchCurrency)
+                .ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        NewBranchName = string.Empty;
-        NewBranchCode = string.Empty;
-        NewBranchAddress = string.Empty;
-        NewBranchPhone = string.Empty;
-        NewBranchEmail = string.Empty;
-        NewBranchManager = string.Empty;
-        NewBranchTimeZone = string.Empty;
-        NewBranchCurrency = string.Empty;
+            NewBranchName = string.Empty;
+            NewBranchCode = string.Empty;
+            NewBranchAddress = string.Empty;
+            NewBranchPhone = string.Empty;
+            NewBranchEmail = string.Empty;
+            NewBranchManager = string.Empty;
+            NewBranchTimeZone = string.Empty;
+            NewBranchCurrency = string.Empty;
 
-        await LoadBranchesForSelectedOrganizationAsync().ConfigureAwait(true);
+            await LoadBranchesForSelectedOrganizationAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateBranchAsync));
+        }
     }
 
     private async Task SaveBranchSettingsAsync()
@@ -572,26 +662,55 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
             workingDays.Add(DayOfWeek.Sunday);
         }
 
-        var settings = new BranchSettingsDto(
-            SelectedBranch.Id,
-            new BusinessHoursDto(
-                TimeOnly.Parse(SettingsOpenTime, CultureInfo.InvariantCulture),
-                TimeOnly.Parse(SettingsCloseTime, CultureInfo.InvariantCulture)),
-            workingDays,
-            SettingsVatPercentage,
-            new ReceiptSettingsDto(SettingsReceiptHeader, SettingsReceiptFooter, SettingsShowLogo),
-            new AppointmentRulesDto(SettingsMinNoticeHours, SettingsMaxAdvanceBookingDays, SettingsAllowSameDayBooking),
-            new NotificationSettingsDto(SettingsEmailEnabled, SettingsSmsEnabled, SettingsReminderHoursBeforeAppointment));
+        try
+        {
+            var settings = new BranchSettingsDto(
+                SelectedBranch.Id,
+                new BusinessHoursDto(
+                    TimeOnly.Parse(SettingsOpenTime, CultureInfo.InvariantCulture),
+                    TimeOnly.Parse(SettingsCloseTime, CultureInfo.InvariantCulture)),
+                workingDays,
+                SettingsVatPercentage,
+                new ReceiptSettingsDto(SettingsReceiptHeader, SettingsReceiptFooter, SettingsShowLogo),
+                new AppointmentRulesDto(SettingsMinNoticeHours, SettingsMaxAdvanceBookingDays, SettingsAllowSameDayBooking),
+                new NotificationSettingsDto(SettingsEmailEnabled, SettingsSmsEnabled, SettingsReminderHoursBeforeAppointment));
 
-        CurrentBranchSettings = await _commandService.SetBranchSettingsAsync(settings).ConfigureAwait(true);
-        StatusMessage = Rojan.Desktop.Presentation.Localization.Strings.Organizations_SettingsSaved;
+            CurrentBranchSettings = await _commandService.SetBranchSettingsAsync(settings).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            StatusMessage = Rojan.Desktop.Presentation.Localization.Strings.Organizations_SettingsSaved;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write (or a malformed time input) must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SaveBranchSettingsAsync));
+        }
     }
 
     private async Task SwitchRoleAsync()
     {
-        await _currentSessionService.SwitchRoleAsync(SelectedRoleToSwitchTo).ConfigureAwait(true);
-        OnPropertyChanged(nameof(CurrentRole));
-        OnPropertyChanged(nameof(CurrentOrganizationName));
-        OnPropertyChanged(nameof(CurrentBranchName));
+        try
+        {
+            await _currentSessionService.SwitchRoleAsync(SelectedRoleToSwitchTo).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            OnPropertyChanged(nameof(CurrentRole));
+            OnPropertyChanged(nameof(CurrentOrganizationName));
+            OnPropertyChanged(nameof(CurrentBranchName));
+        }
+#pragma warning disable CA1031 // Command boundary: a failed session role switch must surface inline, not via the global dialog - same justified broad catch as the Wave A command guards.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            // The session's role is unchanged (the service threw before persisting).
+            // Revert the two-way-bound picker so it agrees with CurrentRole again.
+            SelectedRoleToSwitchTo = _currentSessionService.CurrentRole;
+            ActionErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SwitchRoleAsync));
+        }
     }
 }
