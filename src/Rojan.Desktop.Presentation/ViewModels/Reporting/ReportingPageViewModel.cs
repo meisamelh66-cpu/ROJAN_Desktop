@@ -33,6 +33,8 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private ReportingSection _selectedSection = ReportingSection.Catalog;
     private ReportDefinitionDto? _selectedReport;
     private ReportResultDto? _currentResult;
@@ -126,6 +128,25 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when a snapshot pin/unpin or delete
+    /// command fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/> it
+    /// never blanks the page, and unlike <see cref="StatusMessage"/> it does not
+    /// clobber the last report-run status. Production Hardening missing-guard
+    /// sweep (Reporting mini-wave), same shape as HR.HrPageViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     public ReportingSection SelectedSection
@@ -351,14 +372,40 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
 
     private async Task ToggleSavedAsync(ReportSnapshotDto snapshot)
     {
-        await _snapshotCommandService.ToggleSavedAsync(snapshot.Id, !snapshot.IsSaved).ConfigureAwait(true);
-        await ReloadSnapshotsAsync().ConfigureAwait(true);
+        try
+        {
+            await _snapshotCommandService.ToggleSavedAsync(snapshot.Id, !snapshot.IsSaved).ConfigureAwait(true);
+            await ReloadSnapshotsAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed snapshot pin/unpin must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(ToggleSavedAsync));
+        }
     }
 
     private async Task DeleteSnapshotAsync(ReportSnapshotDto snapshot)
     {
-        await _snapshotCommandService.DeleteSnapshotAsync(snapshot.Id).ConfigureAwait(true);
-        await ReloadSnapshotsAsync().ConfigureAwait(true);
+        try
+        {
+            await _snapshotCommandService.DeleteSnapshotAsync(snapshot.Id).ConfigureAwait(true);
+            await ReloadSnapshotsAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed snapshot delete must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(DeleteSnapshotAsync));
+        }
     }
 
     /// <summary>Releases <see cref="_runCancellation"/> - this ViewModel is registered transient and, like every other page ViewModel, is replaced (not explicitly disposed) on navigation away; implementing <see cref="IDisposable"/> here satisfies CA1001 and gives a real cleanup path if a future navigation-aware disposal hook is added.</summary>

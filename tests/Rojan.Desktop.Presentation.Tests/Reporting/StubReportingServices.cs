@@ -46,8 +46,13 @@ internal sealed class StubReportSnapshotQueryService : IReportSnapshotQueryServi
 
     public List<ReportSnapshotDto> Saved { get; } = [];
 
+    /// <summary>Production Hardening (missing-guard sweep, Reporting mini-wave): when set, GetRecentSnapshotsAsync throws this - lets a test exercise the ViewModel's guard when the follow-on ReloadSnapshotsAsync fails after a successful toggle/delete.</summary>
+    public Exception? GetRecentSnapshotsException { get; set; }
+
     public Task<IReadOnlyList<ReportSnapshotDto>> GetRecentSnapshotsAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<ReportSnapshotDto>>(Recent);
+        GetRecentSnapshotsException is not null
+            ? Task.FromException<IReadOnlyList<ReportSnapshotDto>>(GetRecentSnapshotsException)
+            : Task.FromResult<IReadOnlyList<ReportSnapshotDto>>(Recent);
 
     public Task<IReadOnlyList<ReportSnapshotDto>> GetSavedSnapshotsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<ReportSnapshotDto>>(Saved);
@@ -63,6 +68,11 @@ internal sealed class StubReportSnapshotCommandService : IReportSnapshotCommandS
 
     public string? LastDeletedId { get; private set; }
 
+    /// <summary>Production Hardening (missing-guard sweep, Reporting mini-wave): when set, the matching command throws this instead of succeeding - lets a test exercise the ViewModel's new try/catch without a real backend failure. Same seam pattern as Customers.StubCustomerCommandService.CreateCustomerException. The call is still recorded before the throw.</summary>
+    public Exception? ToggleSavedException { get; set; }
+
+    public Exception? DeleteSnapshotException { get; set; }
+
     public Task<ReportSnapshotDto> RecordSnapshotAsync(ReportResultDto result, CancellationToken cancellationToken = default)
     {
         RecordCount++;
@@ -73,13 +83,15 @@ internal sealed class StubReportSnapshotCommandService : IReportSnapshotCommandS
     {
         LastToggledId = snapshotId;
         LastToggledValue = isSaved;
-        return Task.FromResult(new ReportSnapshotDto(snapshotId, "revenue-report", "Revenue Report", DateTimeOffset.Now, [], 1, isSaved));
+        return ToggleSavedException is not null
+            ? Task.FromException<ReportSnapshotDto>(ToggleSavedException)
+            : Task.FromResult(new ReportSnapshotDto(snapshotId, "revenue-report", "Revenue Report", DateTimeOffset.Now, [], 1, isSaved));
     }
 
     public Task DeleteSnapshotAsync(string snapshotId, CancellationToken cancellationToken = default)
     {
         LastDeletedId = snapshotId;
-        return Task.CompletedTask;
+        return DeleteSnapshotException is not null ? Task.FromException(DeleteSnapshotException) : Task.CompletedTask;
     }
 }
 

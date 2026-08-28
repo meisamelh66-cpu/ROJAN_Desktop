@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Reporting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.Tests.Specialists;
+using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Reporting;
 
 namespace Rojan.Desktop.Presentation.Tests.Reporting;
@@ -13,19 +15,24 @@ public sealed class ReportingPageViewModelTests
         [new ReportColumnDto("date", "Date", ReportColumnDataType.Date)],
         [FilterType.DateRange, FilterType.Customer]);
 
+    private static ReportSnapshotDto MakeSnapshot(string id = "snapshot-1", bool isSaved = false) =>
+        new(id, "revenue-report", "Revenue Report", DateTimeOffset.Now, [], 3, isSaved);
+
     private static (ReportingPageViewModel Sut, StubReportExecutionQueryService Execution, StubReportSnapshotQueryService SnapshotQuery, StubReportSnapshotCommandService SnapshotCommand, StubDialogService Dialog) CreateSut(
         IReadOnlyList<ReportDefinitionDto>? definitions = null,
-        RecordingLogger<ReportingPageViewModel>? logger = null)
+        RecordingLogger<ReportingPageViewModel>? logger = null,
+        StubReportSnapshotQueryService? snapshotQuery = null,
+        StubReportSnapshotCommandService? snapshotCommand = null)
     {
         var catalog = new StubReportCatalogQueryService(definitions ?? [MakeDefinition()]);
         var execution = new StubReportExecutionQueryService();
-        var snapshotQuery = new StubReportSnapshotQueryService();
-        var snapshotCommand = new StubReportSnapshotCommandService();
+        var snapshotQueryService = snapshotQuery ?? new StubReportSnapshotQueryService();
+        var snapshotCommandService = snapshotCommand ?? new StubReportSnapshotCommandService();
         var export = new StubReportExportService();
         var dialog = new StubDialogService();
 
-        var sut = new ReportingPageViewModel(catalog, execution, snapshotQuery, snapshotCommand, export, dialog, logger);
-        return (sut, execution, snapshotQuery, snapshotCommand, dialog);
+        var sut = new ReportingPageViewModel(catalog, execution, snapshotQueryService, snapshotCommandService, export, dialog, logger);
+        return (sut, execution, snapshotQueryService, snapshotCommandService, dialog);
     }
 
     [Fact]
@@ -221,5 +228,111 @@ public sealed class ReportingPageViewModelTests
         var exception = Record.Exception(sut.Dispose);
 
         Assert.Null(exception);
+    }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Reporting mini-wave.
+    // ToggleSavedAsync / DeleteSnapshotAsync now surface a backend failure via
+    // the non-destructive ActionErrorMessage/HasActionError pair instead of the
+    // global dialog. Failures never expose revenue / customer / report data,
+    // and log operation-name-only. Report generation / cancellation / export
+    // are untouched.
+    // ---------------------------------------------------------------------
+
+    private const string ReportBackendSecret = "backend 500: snapshot revenue-2026-Q1 total=1,850,000 customer=Amelia Hart";
+
+    [Fact]
+    public void ToggleSavedCommand_Failure_DoesNotThrow_SetsActionErrorAndDoesNotClobberStatus()
+    {
+        var command = new StubReportSnapshotCommandService { ToggleSavedException = new InvalidOperationException(ReportBackendSecret) };
+        var (sut, _, _, _, _) = CreateSut(snapshotCommand: command);
+        sut.SelectReportCommand.Execute(sut.ReportDefinitions[0]);
+        sut.RunReportCommand.Execute(null);
+        var statusAfterRun = sut.StatusMessage;
+
+        var exception = Record.Exception(() => sut.ToggleSavedCommand.Execute(MakeSnapshot()));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+        Assert.Equal(statusAfterRun, sut.StatusMessage);
+        Assert.Equal("snapshot-1", command.LastToggledId);
+    }
+
+    [Fact]
+    public void DeleteSnapshotCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesSnapshotList()
+    {
+        var query = new StubReportSnapshotQueryService();
+        query.Saved.Add(MakeSnapshot("snapshot-1", isSaved: true));
+        query.Recent.Add(MakeSnapshot("snapshot-1", isSaved: true));
+        var command = new StubReportSnapshotCommandService { DeleteSnapshotException = new InvalidOperationException(ReportBackendSecret) };
+        var (sut, _, _, _, _) = CreateSut(snapshotQuery: query, snapshotCommand: command);
+        Assert.Single(sut.SavedSnapshots);
+
+        var exception = Record.Exception(() => sut.DeleteSnapshotCommand.Execute(MakeSnapshot("snapshot-1")));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Single(sut.SavedSnapshots);
+        Assert.Single(sut.RecentSnapshots);
+        Assert.Equal("snapshot-1", command.LastDeletedId);
+    }
+
+    [Fact]
+    public void ToggleSavedCommand_ReloadFailsAfterSuccessfulToggle_DoesNotThrow_SetsActionError()
+    {
+        var query = new StubReportSnapshotQueryService();
+        var (sut, _, snapshotQuery, _, _) = CreateSut(snapshotQuery: query);
+        snapshotQuery.GetRecentSnapshotsException = new InvalidOperationException(ReportBackendSecret);
+
+        var exception = Record.Exception(() => sut.ToggleSavedCommand.Execute(MakeSnapshot()));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void ToggleSavedCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var command = new StubReportSnapshotCommandService { ToggleSavedException = new InvalidOperationException("boom") };
+        var (sut, _, _, _, _) = CreateSut(snapshotCommand: command);
+        sut.ToggleSavedCommand.Execute(MakeSnapshot());
+        Assert.True(sut.HasActionError);
+
+        command.ToggleSavedException = null;
+        sut.ToggleSavedCommand.Execute(MakeSnapshot());
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void DeleteSnapshotCommand_Failure_LogsOperationNameOnly_NoRevenueOrCustomerLeak()
+    {
+        var command = new StubReportSnapshotCommandService { DeleteSnapshotException = new InvalidOperationException(ReportBackendSecret) };
+        var logger = new RecordingLogger<ReportingPageViewModel>();
+        var (sut, _, _, _, _) = CreateSut(logger: logger, snapshotCommand: command);
+
+        sut.DeleteSnapshotCommand.Execute(MakeSnapshot());
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=DeleteSnapshotAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(ReportBackendSecret, StringComparison.Ordinal));
+        Assert.DoesNotContain(ReportBackendSecret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToggleSavedCommand_Failure_LogsOperationNameOnly()
+    {
+        var command = new StubReportSnapshotCommandService { ToggleSavedException = new InvalidOperationException(ReportBackendSecret) };
+        var logger = new RecordingLogger<ReportingPageViewModel>();
+        var (sut, _, _, _, _) = CreateSut(logger: logger, snapshotCommand: command);
+
+        sut.ToggleSavedCommand.Execute(MakeSnapshot());
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=ToggleSavedAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(ReportBackendSecret, StringComparison.Ordinal));
     }
 }
