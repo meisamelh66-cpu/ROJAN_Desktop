@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -26,6 +27,8 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private ProductDto? _product;
     private InventoryItemDto? _stock;
     private StockTransactionType _selectedTransactionType = StockTransactionType.Received;
@@ -84,6 +87,24 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when a record-transaction / map /
+    /// unmap command fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/>
+    /// it never blanks the panel. Production Hardening missing-guard sweep
+    /// (Wave C), same shape as HR.EmployeeProfileViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     public ProductDto? Product
@@ -169,18 +190,46 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
 
     private async Task RecordTransactionAsync()
     {
-        await _commandService.RecordStockTransactionAsync(_productId, SelectedTransactionType, TransactionQuantity, TransactionNotes).ConfigureAwait(true);
-        TransactionQuantity = 1;
-        TransactionNotes = string.Empty;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.RecordStockTransactionAsync(_productId, SelectedTransactionType, TransactionQuantity, TransactionNotes).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            TransactionQuantity = 1;
+            TransactionNotes = string.Empty;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(RecordTransactionAsync));
+        }
     }
 
     private async Task MapServiceAsync()
     {
-        await _commandService.MapProductToServiceAsync(_productId, NewMappingServiceName, NewMappingQuantityPerService).ConfigureAwait(true);
-        NewMappingServiceName = string.Empty;
-        NewMappingQuantityPerService = 1;
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.MapProductToServiceAsync(_productId, NewMappingServiceName, NewMappingQuantityPerService).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            NewMappingServiceName = string.Empty;
+            NewMappingQuantityPerService = 1;
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(MapServiceAsync));
+        }
     }
 
     private async Task UnmapServiceAsync(ServiceProductMappingDto? mapping)
@@ -190,7 +239,21 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
             return;
         }
 
-        await _commandService.UnmapProductFromServiceAsync(_productId, mapping.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _commandService.UnmapProductFromServiceAsync(_productId, mapping.Id).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            await LoadAsync().ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(UnmapServiceAsync));
+        }
     }
 }

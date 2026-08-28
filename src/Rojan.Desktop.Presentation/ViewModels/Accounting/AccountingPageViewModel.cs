@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -35,6 +36,8 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private string _searchText = string.Empty;
     private InvoiceDto? _selectedInvoice;
     private InvoiceProfileViewModel? _profile;
@@ -92,6 +95,24 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when the cancel-invoice command
+    /// fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/> it never
+    /// blanks the page. Production Hardening missing-guard sweep (Wave C),
+    /// same shape as HR.HrPageViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     public string SearchText
@@ -221,9 +242,24 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
         }
 
         var invoiceId = SelectedInvoice.Id;
-        await _invoiceCommandService.CancelInvoiceAsync(invoiceId).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
-        SelectedInvoice = Invoices.FirstOrDefault(invoice => invoice.Id == invoiceId);
+
+        try
+        {
+            await _invoiceCommandService.CancelInvoiceAsync(invoiceId).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            await LoadAsync().ConfigureAwait(true);
+            SelectedInvoice = Invoices.FirstOrDefault(invoice => invoice.Id == invoiceId);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed invoice cancel must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A). No payment logic and no retry loop is introduced.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(_logger, nameof(CancelInvoiceAsync));
+        }
     }
 
     private void OpenPosCheckout()

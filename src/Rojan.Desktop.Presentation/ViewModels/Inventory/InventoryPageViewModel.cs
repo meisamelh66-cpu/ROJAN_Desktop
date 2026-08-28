@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -31,6 +32,8 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private string _searchText = string.Empty;
     private ProductDto? _selectedProduct;
     private InventoryProfileViewModel? _profile;
@@ -108,6 +111,25 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when a user-triggered write command
+    /// (create product, add category/supplier) fails - unlike
+    /// <see cref="ErrorMessage"/>/<see cref="State"/> it never blanks the page.
+    /// Production Hardening missing-guard sweep (Wave C), same shape as
+    /// HR.HrPageViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     /// <summary>Count of products at or below their reorder threshold - the low-stock monitoring signal shown at the top of the page.</summary>
@@ -323,30 +345,71 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
             NewProductInitialQuantity,
             NewProductReorderThreshold);
 
-        var created = await _commandService.CreateProductAsync(request).ConfigureAwait(true);
+        try
+        {
+            var created = await _commandService.CreateProductAsync(request).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
 
-        NewProductSku = string.Empty;
-        NewProductName = string.Empty;
-        NewProductDescription = string.Empty;
-        NewProductUnitPrice = string.Empty;
-        NewProductInitialQuantity = 1;
-        NewProductReorderThreshold = 5;
+            NewProductSku = string.Empty;
+            NewProductName = string.Empty;
+            NewProductDescription = string.Empty;
+            NewProductUnitPrice = string.Empty;
+            NewProductInitialQuantity = 1;
+            NewProductReorderThreshold = 5;
 
-        await LoadAsync().ConfigureAwait(true);
-        SelectedProduct = Products.FirstOrDefault(product => product.Id == created.Id);
+            await LoadAsync().ConfigureAwait(true);
+            SelectedProduct = Products.FirstOrDefault(product => product.Id == created.Id);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(CreateProductAsync));
+        }
     }
 
     private async Task AddCategoryAsync()
     {
-        var created = await _commandService.CreateCategoryAsync(NewCategoryName, string.Empty).ConfigureAwait(true);
-        NewCategoryName = string.Empty;
-        Categories.Add(created);
+        try
+        {
+            var created = await _commandService.CreateCategoryAsync(NewCategoryName, string.Empty).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            NewCategoryName = string.Empty;
+            Categories.Add(created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(AddCategoryAsync));
+        }
     }
 
     private async Task AddSupplierAsync()
     {
-        var created = await _commandService.CreateSupplierAsync(new CreateSupplierRequest(NewSupplierName, string.Empty, string.Empty, string.Empty)).ConfigureAwait(true);
-        NewSupplierName = string.Empty;
-        Suppliers.Add(created);
+        try
+        {
+            var created = await _commandService.CreateSupplierAsync(new CreateSupplierRequest(NewSupplierName, string.Empty, string.Empty, string.Empty)).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+
+            NewSupplierName = string.Empty;
+            Suppliers.Add(created);
+        }
+#pragma warning disable CA1031 // Command boundary: a failed write must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(AddSupplierAsync));
+        }
     }
 }

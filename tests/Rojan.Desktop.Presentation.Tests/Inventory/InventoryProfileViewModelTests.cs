@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Inventory;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Inventory;
@@ -169,5 +170,108 @@ public sealed class InventoryProfileViewModelTests
         var call = Assert.Single(commandService.UnmapServiceCalls);
         Assert.Equal("product-1", call.ProductId);
         Assert.Equal("mapping-1", call.MappingId);
+    }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Wave C. Record-transaction /
+    // map / unmap now surface a backend failure via ActionErrorMessage/
+    // HasActionError instead of the global dialog; the guarded LoadAsync
+    // reload never runs on failure so Stock / RecentTransactions / input keep
+    // their last-known-good values, and logging is operation-name-only.
+    // ---------------------------------------------------------------------
+
+    private static StubProductProfileQueryService LoadingProfileQuery() =>
+        new((_, _) => Task.FromResult(MakeProfile()));
+
+    [Fact]
+    public void RecordTransactionCommand_Failure_DoesNotThrow_SetsActionError_PreservesStockAndInput()
+    {
+        var commandService = new StubInventoryCommandService { RecordStockTransactionException = new InvalidOperationException(Secret) };
+        var sut = new InventoryProfileViewModel("product-1", LoadingProfileQuery(), commandService)
+        {
+            TransactionQuantity = 3,
+            TransactionNotes = "Retail sale.",
+        };
+
+        var exception = Record.Exception(() => sut.RecordTransactionCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(42, sut.Stock?.QuantityOnHand);
+        Assert.Single(sut.RecentTransactions);
+        Assert.Equal(3, sut.TransactionQuantity);
+        Assert.Equal("Retail sale.", sut.TransactionNotes);
+        Assert.Single(commandService.RecordTransactionCalls);
+    }
+
+    [Fact]
+    public void MapServiceCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var commandService = new StubInventoryCommandService { MapProductToServiceException = new InvalidOperationException(Secret) };
+        var sut = new InventoryProfileViewModel("product-1", LoadingProfileQuery(), commandService)
+        {
+            NewMappingServiceName = "Colour Touch-Up",
+            NewMappingQuantityPerService = 2,
+        };
+
+        var exception = Record.Exception(() => sut.MapServiceCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal("Colour Touch-Up", sut.NewMappingServiceName);
+    }
+
+    [Fact]
+    public void UnmapServiceCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var commandService = new StubInventoryCommandService { UnmapProductFromServiceException = new InvalidOperationException(Secret) };
+        var sut = new InventoryProfileViewModel("product-1", LoadingProfileQuery(), commandService);
+        var mapping = new ServiceProductMappingDto("mapping-1", "service-1", "Haircut & Style", "product-1", "Hydrating Shampoo 1L", 1);
+
+        var exception = Record.Exception(() => sut.UnmapServiceCommand.Execute(mapping));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Single(sut.ServiceMappings);
+    }
+
+    [Fact]
+    public void RecordTransactionCommand_Failure_LogsOperationNameOnly_NoLeak()
+    {
+        var commandService = new StubInventoryCommandService { RecordStockTransactionException = new InvalidOperationException(Secret) };
+        var logger = new RecordingLogger<InventoryProfileViewModel>();
+        var sut = new InventoryProfileViewModel("product-1", LoadingProfileQuery(), commandService, logger)
+        {
+            TransactionQuantity = 3,
+        };
+
+        sut.RecordTransactionCommand.Execute(null);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=RecordTransactionAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(Secret, StringComparison.Ordinal));
+        Assert.DoesNotContain(Secret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MapServiceCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var commandService = new StubInventoryCommandService { MapProductToServiceException = new InvalidOperationException("boom") };
+        var sut = new InventoryProfileViewModel("product-1", LoadingProfileQuery(), commandService)
+        {
+            NewMappingServiceName = "Colour Touch-Up",
+        };
+        sut.MapServiceCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        commandService.MapProductToServiceException = null;
+        sut.NewMappingServiceName = "Blow-Dry";
+        sut.MapServiceCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
     }
 }

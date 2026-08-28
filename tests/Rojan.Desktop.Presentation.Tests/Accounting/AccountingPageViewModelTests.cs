@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
@@ -206,6 +207,80 @@ public sealed class AccountingPageViewModelTests
 
         var call = Assert.Single(commandService.CancelledInvoiceIds);
         Assert.Equal("invoice-1", call);
+    }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Wave C. CancelInvoiceAsync
+    // now surfaces a backend failure via the non-destructive
+    // ActionErrorMessage/HasActionError pair instead of the global dialog.
+    // No invoice-cancellation / payment / rollback logic changed; no retry
+    // loop; logging stays static-form and operation-name-only.
+    // ---------------------------------------------------------------------
+
+    private const string InvoiceBackendSecret = "backend 500: invoice INV-8 total=1,850,000 customer=Amelia Hart card=****4242";
+
+    [Fact]
+    public void CancelInvoiceCommand_Failure_DoesNotThrow_SetsActionErrorAndPreservesInvoiceListAndSelection()
+    {
+        var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
+            getProfile: (invoiceId, _) => Task.FromResult(MakeProfile(invoiceId)));
+        var commandService = new StubInvoiceCommandService(
+            cancelInvoice: (_, _) => Task.FromException<InvoiceDto>(new InvalidOperationException(InvoiceBackendSecret)));
+        var sut = MakeSut(queryService, commandService);
+
+        var exception = Record.Exception(() => sut.CancelInvoiceCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+        Assert.Single(sut.Invoices);
+        Assert.Equal("invoice-1", sut.SelectedInvoice?.Id);
+        Assert.Single(commandService.CancelledInvoiceIds);
+    }
+
+    [Fact]
+    public void CancelInvoiceCommand_Failure_LogsOperationNameOnly_NoFinancialLeak()
+    {
+        var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
+            getProfile: (invoiceId, _) => Task.FromResult(MakeProfile(invoiceId)));
+        var commandService = new StubInvoiceCommandService(
+            cancelInvoice: (_, _) => Task.FromException<InvoiceDto>(new InvalidOperationException(InvoiceBackendSecret)));
+        var logger = new RecordingLogger<AccountingPageViewModel>();
+        var sut = MakeSut(queryService, commandService, logger: logger);
+
+        sut.CancelInvoiceCommand.Execute(null);
+
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=CancelInvoiceAsync", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(InvoiceBackendSecret, StringComparison.Ordinal));
+        Assert.DoesNotContain(InvoiceBackendSecret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CancelInvoiceCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
+        var shouldFail = true;
+        var queryService = new StubInvoiceQueryService(
+            _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
+            getProfile: (invoiceId, _) => Task.FromResult(MakeProfile(invoiceId)));
+        var commandService = new StubInvoiceCommandService(
+            cancelInvoice: (id, _) => shouldFail
+                ? Task.FromException<InvoiceDto>(new InvalidOperationException("boom"))
+                : Task.FromResult(new InvoiceDto(id, "customer-1", "Amelia Hart", string.Empty, string.Empty, DateTimeOffset.Now, InvoiceStatus.Cancelled, 40m, 3.20m, 43.20m, string.Empty)));
+        var sut = MakeSut(queryService, commandService);
+        sut.CancelInvoiceCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        shouldFail = false;
+        sut.CancelInvoiceCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
     }
 
     [Fact]
