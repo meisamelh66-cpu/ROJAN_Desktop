@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -21,6 +22,8 @@ public sealed class InvoiceProfileViewModelTests
         var sut = new InvoiceProfileViewModel("invoice-1", queryService, logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(FinancialSecret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
@@ -37,7 +40,7 @@ public sealed class InvoiceProfileViewModelTests
         var sut = new InvoiceProfileViewModel("invoice-1", queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     private static InvoiceDto MakeInvoice(string id) =>
@@ -66,7 +69,7 @@ public sealed class InvoiceProfileViewModelTests
     }
 
     [Fact]
-    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubInvoiceQueryService(
             _ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]),
@@ -75,6 +78,6 @@ public sealed class InvoiceProfileViewModelTests
         var sut = new InvoiceProfileViewModel("invoice-1", queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 }

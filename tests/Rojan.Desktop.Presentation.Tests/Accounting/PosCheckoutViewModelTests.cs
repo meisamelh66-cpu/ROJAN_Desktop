@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Accounting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Accounting;
@@ -49,16 +50,17 @@ public sealed class PosCheckoutViewModelTests
     }
 
     [Fact]
-    public void Constructor_OptionsQueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_OptionsQueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubInvoiceQueryService(
             _ => Task.FromResult<IReadOnlyList<InvoiceDto>>([]),
-            getCheckoutOptions: _ => Task.FromException<CheckoutOptionsDto>(new InvalidOperationException("boom")));
+            getCheckoutOptions: _ => Task.FromException<CheckoutOptionsDto>(new InvalidOperationException("boom for customer Amelia Hart")));
 
         var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Amelia Hart", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -224,7 +226,7 @@ public sealed class PosCheckoutViewModelTests
     // not the error-state behavior itself (already covered above/pre-existing).
 
     [Fact]
-    public void LoadCommand_QueryThrows_LogsTheFailure_OperationNameOnly_NoLeak()
+    public void LoadCommand_QueryThrows_LogsTheFailure_OperationNameOnly_NoLeak_InLogOrUi()
     {
         const string backendBody = "HTTP 500: backend response body / payment secret";
         var logger = new RecordingLogger<PosCheckoutViewModel>();
@@ -232,15 +234,18 @@ public sealed class PosCheckoutViewModelTests
 
         var sut = MakeSut(queryService, logger: logger);
 
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadOptionsAsync", StringComparison.Ordinal));
         Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ProceedToPaymentCommand_BackendThrows_LogsTheFailure()
+    public void ProceedToPaymentCommand_BackendThrows_LogsTheFailure_AndSurfacesGenericMessage()
     {
         var logger = new RecordingLogger<PosCheckoutViewModel>();
-        var commandService = new StubInvoiceCommandService((_, _) => Task.FromException<InvoiceDto>(new InvalidOperationException("boom")));
+        var commandService = new StubInvoiceCommandService((_, _) => Task.FromException<InvoiceDto>(new InvalidOperationException("invoice total 1,850 for customer Amelia Hart")));
         var sut = MakeSut(commandService: commandService, logger: logger);
         sut.SelectedCustomer = MakeCustomer();
         sut.SelectedProductToAdd = MakeProduct();
@@ -249,20 +254,25 @@ public sealed class PosCheckoutViewModelTests
         sut.ProceedToPaymentCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Amelia Hart", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
 
     [Fact]
-    public void ChargeCommand_BackendThrows_LogsTheFailureAndLeavesInvoiceReChargeable()
+    public void ChargeCommand_BackendThrows_LogsTheFailureAndLeavesInvoiceReChargeable_AndSurfacesGenericMessage()
     {
         var logger = new RecordingLogger<PosCheckoutViewModel>();
-        var paymentCommandService = new StubPaymentCommandService((_, _) => Task.FromException<PaymentDto>(new InvalidOperationException("boom")));
+        var paymentCommandService = new StubPaymentCommandService((_, _) => Task.FromException<PaymentDto>(new InvalidOperationException("gateway declined: merchant acct 4929-XXXX, code 51")));
         var sut = MakeSutOnPaymentStep(paymentCommandService: paymentCommandService, logger: logger);
         var invoiceBeforeCharge = sut.CreatedInvoice;
 
         sut.ChargeCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("4929", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("gateway", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
         // Flagged in the audit report, not fixed here (payment business logic is out of scope):
         // CreatedInvoice/AmountTendered are left unchanged after a failed charge, so ChargeCommand

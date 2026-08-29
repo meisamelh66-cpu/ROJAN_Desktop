@@ -231,10 +231,10 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
             State = _allReportDefinitions.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }
@@ -305,10 +305,10 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
             StatusMessage = Localization.Strings.Reporting_RunCancelled;
         }
 #pragma warning disable CA1031 // Report generation must surface any failure as a status message, not crash the page.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            StatusMessage = exception.Message;
+            StatusMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(RunReportAsync));
         }
         finally
@@ -336,10 +336,10 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
             StatusMessage = $"{CurrentResult.Rows.Count} {Localization.Strings.Reporting_Rows}";
         }
 #pragma warning disable CA1031 // Report generation must surface any failure as a status message, not crash the page.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            StatusMessage = exception.Message;
+            StatusMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(RerunSnapshotAsync));
         }
         finally

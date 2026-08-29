@@ -93,19 +93,22 @@ public sealed class ReportingPageViewModelTests
     }
 
     // Phase 8.19 Logging Wave 2A: LoadAsync / RunReportAsync / RerunSnapshotAsync now log at Error
-    // before their existing handling - user-visible behaviour unchanged.
+    // before their existing handling.
+    // Phase 8.104 P2 sub-wave 1: the failure status/error surface is now the generic
+    // Strings.Common_ActionFailedMessage, never the raw exception message.
 
     [Fact]
-    public void RunReportCommand_ExecutionThrows_LogsError()
+    public void RunReportCommand_ExecutionThrows_LogsError_AndSurfacesGenericMessage()
     {
         var logger = new RecordingLogger<ReportingPageViewModel>();
         var (sut, execution, _, _, _) = CreateSut(logger: logger);
-        execution.ResultFactory = (_, _) => throw new InvalidOperationException("boom");
+        execution.ResultFactory = (_, _) => throw new InvalidOperationException("boom for customer Sarah Johnson");
         sut.SelectReportCommand.Execute(sut.ReportDefinitions[0]);
 
         sut.RunReportCommand.Execute(null);
 
-        Assert.Equal("boom", sut.StatusMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.StatusMessage);
+        Assert.DoesNotContain("Sarah Johnson", sut.StatusMessage, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("RunReportAsync", StringComparison.Ordinal));
     }
 
@@ -119,7 +122,7 @@ public sealed class ReportingPageViewModelTests
         var exception = Record.Exception(() => sut.RunReportCommand.Execute(null));
 
         Assert.Null(exception);
-        Assert.Equal("boom", sut.StatusMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.StatusMessage);
     }
 
     [Fact]
@@ -218,6 +221,40 @@ public sealed class ReportingPageViewModelTests
         Assert.Equal(ReportingSection.Viewer, sut.SelectedSection);
         Assert.Equal(1, execution.RunCount);
         Assert.Equal(storedFilters, execution.LastFilters);
+    }
+
+    [Fact]
+    public void RerunSnapshotCommand_ExecutionThrows_SurfacesGenericMessage_NoLeak()
+    {
+        var logger = new RecordingLogger<ReportingPageViewModel>();
+        var (sut, execution, _, _, _) = CreateSut(logger: logger);
+        execution.ResultFactory = (_, _) => throw new InvalidOperationException("revenue 1,850,000 for customer Sarah Johnson");
+        var snapshot = new ReportSnapshotDto("snapshot-1", "revenue-report", "Revenue Report", DateTimeOffset.Now, [], 3, false);
+
+        var exception = Record.Exception(() => sut.RerunSnapshotCommand.Execute(snapshot));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.StatusMessage);
+        Assert.DoesNotContain("Sarah Johnson", sut.StatusMessage, StringComparison.Ordinal);
+        Assert.DoesNotContain("1,850,000", sut.StatusMessage, StringComparison.Ordinal);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=RerunSnapshotAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Constructor_LoadFails_StateIsError_SurfacesGenericMessage_NoLeak()
+    {
+        var logger = new RecordingLogger<ReportingPageViewModel>();
+        var snapshotQuery = new StubReportSnapshotQueryService
+        {
+            GetRecentSnapshotsException = new InvalidOperationException("revenue 1,850,000 for customer Sarah Johnson"),
+        };
+        var (sut, _, _, _, _) = CreateSut(logger: logger, snapshotQuery: snapshotQuery);
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Sarah Johnson", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("1,850,000", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -170,10 +170,10 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
                 : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(_logger, nameof(LoadAsync));
         }
@@ -201,12 +201,12 @@ public sealed partial class AccountingPageViewModel : ViewModelBase
             ReplaceInvoices(results);
         }
 #pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must surface as the Error state, not crash the page.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
             if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
             {
-                ErrorMessage = exception.Message;
+                ErrorMessage = Strings.Common_ActionFailedMessage;
                 State = DashboardState.Error;
                 LogOperationFailed(_logger, nameof(SearchAsync));
             }

@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -107,10 +108,10 @@ public sealed partial class InvoiceProfileViewModel : ViewModelBase
             State = DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page/profile ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }

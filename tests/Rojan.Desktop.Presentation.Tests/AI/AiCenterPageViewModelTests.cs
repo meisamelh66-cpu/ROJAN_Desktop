@@ -106,9 +106,12 @@ public sealed class AiCenterPageViewModelTests
 
     // Phase 8.23 Logging Wave 2B: the chat SendMessageAsync boundary now logs at Error,
     // operation name only - the user's chat text is never included in the log line.
+    // Phase 8.104 P2 sub-wave 1: the chat StatusMessage / page ErrorMessage surface on failure
+    // is now the generic Strings.Common_ActionFailedMessage, never the raw exception message
+    // (which can quote the prompt or a customer name).
 
     [Fact]
-    public void SendMessageCommand_ServiceThrows_LogsErrorWithoutLeakingChatText()
+    public void SendMessageCommand_ServiceThrows_LogsErrorAndSurfacesGenericMessage_NoChatTextLeak()
     {
         var logger = new RecordingLogger<AiCenterPageViewModel>();
         var (sut, aiService, _) = CreateSut(logger: logger);
@@ -122,6 +125,26 @@ public sealed class AiCenterPageViewModelTests
         Assert.Contains("SendMessageAsync", entry.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("Sarah Johnson", entry.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("overdue", entry.Message, StringComparison.Ordinal);
+
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.StatusMessage);
+        Assert.DoesNotContain("Sarah Johnson", sut.StatusMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LoadCommand_Failure_StateIsError_SurfacesGenericMessage_NoLeak()
+    {
+        var logger = new RecordingLogger<AiCenterPageViewModel>();
+        var (sut, _, repo) = CreateSut(logger: logger);
+        repo.GetSessionsException = new InvalidOperationException("backend body: revenue 1,850,000 for customer Sarah Johnson");
+
+        var exception = Record.Exception(() => sut.LoadCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Sarah Johnson", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("1,850,000", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
     }
 
     [Fact]

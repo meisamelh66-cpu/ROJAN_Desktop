@@ -92,7 +92,7 @@ public sealed class AccountingPageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubInvoiceQueryService(
             _ => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("boom")));
@@ -100,14 +100,15 @@ public sealed class AccountingPageViewModelTests
         var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
-    // Phase 8.11 Logging Hardening: LoadAsync and SearchAsync now log at Error
-    // before surfacing the Error state - user-visible behaviour unchanged.
+    // Phase 8.11 Logging Hardening: LoadAsync and SearchAsync log at Error before surfacing the Error state.
+    // Phase 8.104 P2 sub-wave 1: the Error-state ErrorMessage is now the generic
+    // Strings.Common_ActionFailedMessage, never the raw exception message (which can carry a backend body).
 
     [Fact]
-    public void LoadAsync_QueryServiceThrows_LogsErrorWithOperation_NoExceptionLeak()
+    public void LoadAsync_QueryServiceThrows_LogsErrorWithOperation_NoExceptionLeak_InLogOrUi()
     {
         const string backendBody = "HTTP 500: backend response body / customer secret";
         var queryService = new StubInvoiceQueryService(
@@ -117,18 +118,19 @@ public sealed class AccountingPageViewModelTests
         var sut = MakeSut(queryService, logger: logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(backendBody, sut.ErrorMessage); // user-facing behaviour unchanged
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
         Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void SearchAsync_QueryServiceThrows_LogsErrorWithOperation()
+    public void SearchAsync_QueryServiceThrows_LogsErrorWithOperation_AndSurfacesGenericMessage()
     {
         var invoices = new List<InvoiceDto> { MakeInvoice("invoice-1", "Amelia Hart") };
         var queryService = new StubInvoiceQueryService(
             _ => Task.FromResult<IReadOnlyList<InvoiceDto>>(invoices),
-            searchInvoices: (_, _) => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("search boom")),
+            searchInvoices: (_, _) => Task.FromException<IReadOnlyList<InvoiceDto>>(new InvalidOperationException("search boom for Amelia Hart")),
             getProfile: (invoiceId, _) => Task.FromResult(MakeProfile(invoiceId)));
         var logger = new RecordingLogger<AccountingPageViewModel>();
         var sut = MakeSut(queryService, logger: logger);
@@ -136,6 +138,8 @@ public sealed class AccountingPageViewModelTests
         sut.SearchText = "sophia";
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Amelia Hart", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("SearchAsync", StringComparison.Ordinal));
     }
 

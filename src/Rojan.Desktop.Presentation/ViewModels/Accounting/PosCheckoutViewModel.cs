@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Accounting;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -271,10 +272,10 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
             State = Customers.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadOptionsAsync));
         }
@@ -367,10 +368,10 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
             State = DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level command boundary: any failure must surface as the Error state, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(ProceedToPaymentAsync));
         }
@@ -395,10 +396,10 @@ public sealed partial class PosCheckoutViewModel : ViewModelBase
             _onCompleted?.Invoke();
         }
 #pragma warning disable CA1031 // Top-level command boundary: any failure must surface as the Error state, not crash the dialog - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(ChargeAsync));
         }
