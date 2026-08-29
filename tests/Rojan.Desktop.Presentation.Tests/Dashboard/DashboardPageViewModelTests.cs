@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -67,7 +68,7 @@ public sealed class DashboardPageViewModelTests
         var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]
@@ -80,9 +81,10 @@ public sealed class DashboardPageViewModelTests
 
         var sut = CreateSut(queryService, logger: logger);
 
-        // User-visible behaviour unchanged - the log is additive.
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(backendBody, sut.ErrorMessage);
+        // P2 sub-wave 6: the surface is the generic localized message, never the raw backend body.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
         Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }

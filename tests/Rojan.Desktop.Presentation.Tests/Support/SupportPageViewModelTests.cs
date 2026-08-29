@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Support;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Support;
 
@@ -69,7 +70,9 @@ public sealed class SupportPageViewModelTests
 
         sut.SubmitMessageCommand.Execute(null);
 
-        Assert.NotNull(sut.MessageError);
+        // P2 sub-wave 6: the surface is the generic localized message, never the raw backend validation body.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.MessageError);
+        Assert.DoesNotContain("failed validation", sut.MessageError ?? string.Empty, StringComparison.Ordinal);
         Assert.Null(sut.MessageStatus);
         Assert.Equal("Subject", sut.MessageSubject);
     }
@@ -91,7 +94,7 @@ public sealed class SupportPageViewModelTests
 
         sut.SubmitMessageCommand.Execute(null);
 
-        Assert.NotNull(sut.MessageError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.MessageError);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("SubmitMessageAsync", entry.Message, StringComparison.Ordinal);
@@ -115,7 +118,7 @@ public sealed class SupportPageViewModelTests
 
         sut.SubmitApplicationCommand.Execute(null);
 
-        Assert.NotNull(sut.ApplicationError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ApplicationError);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("SubmitApplicationAsync", entry.Message, StringComparison.Ordinal);
@@ -134,7 +137,7 @@ public sealed class SupportPageViewModelTests
         var exception = Record.Exception(() => sut.SubmitMessageCommand.Execute(null));
 
         Assert.Null(exception);
-        Assert.NotNull(sut.MessageError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.MessageError);
     }
 
     [Fact]
@@ -181,7 +184,8 @@ public sealed class SupportPageViewModelTests
 
         sut.SubmitApplicationCommand.Execute(null);
 
-        Assert.NotNull(sut.ApplicationError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ApplicationError);
+        Assert.DoesNotContain("failed validation", sut.ApplicationError ?? string.Empty, StringComparison.Ordinal);
         Assert.Null(sut.ApplicationStatus);
         Assert.Equal("Sara", sut.ApplicantFirstName);
     }

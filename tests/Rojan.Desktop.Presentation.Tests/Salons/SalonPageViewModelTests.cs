@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Salons;
@@ -57,7 +58,7 @@ public sealed class SalonPageViewModelTests
         var sut = new SalonPageViewModel(queryService, new StubSalonCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     // Phase 8.23 Logging Wave 2B: LoadAsync / CreateSalonAsync now log at Error before
@@ -72,7 +73,7 @@ public sealed class SalonPageViewModelTests
         var sut = new SalonPageViewModel(queryService, new StubSalonCommandService(), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 
@@ -93,7 +94,7 @@ public sealed class SalonPageViewModelTests
         sut.CreateSalonCommand.Execute(null);
         await Task.Delay(10);
 
-        Assert.Equal("save boom", sut.CreateErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.CreateErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("CreateSalonAsync", StringComparison.Ordinal));
     }
 
@@ -223,7 +224,9 @@ public sealed class SalonPageViewModelTests
         Assert.False(sut.HasSalon);
         Assert.True(sut.NeedsSalon);
         Assert.False(sut.IsCreating);
-        Assert.Equal("Validation failed", sut.CreateErrorMessage);
+        // P2 sub-wave 6: the surface is the generic localized message, never the raw backend validation body.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.CreateErrorMessage);
+        Assert.DoesNotContain("Validation failed", sut.CreateErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.True(sut.HasCreateError);
         // The typed input must survive a failed attempt, so the owner can correct and retry.
         Assert.Equal("Glow Salon", sut.Name);

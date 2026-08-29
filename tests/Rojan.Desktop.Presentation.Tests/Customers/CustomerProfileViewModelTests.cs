@@ -21,6 +21,9 @@ public sealed class CustomerProfileViewModelTests
         var sut = new CustomerProfileViewModel("customer-1", profileQuery, new StubCustomerCommandService(), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        // P2 sub-wave 6: the surface carries the generic localized message, never the customer PII.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(PiiSecret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
@@ -35,7 +38,7 @@ public sealed class CustomerProfileViewModelTests
         var sut = new CustomerProfileViewModel("customer-1", profileQuery, new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     private static CustomerProfileDto MakeProfile(string customerId = "customer-1", CustomerBookingSummaryDto? bookingSummary = null, CustomerInsightsDto? insights = null) =>
@@ -90,7 +93,7 @@ public sealed class CustomerProfileViewModelTests
         var sut = new CustomerProfileViewModel("customer-1", profileQuery, commandService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]

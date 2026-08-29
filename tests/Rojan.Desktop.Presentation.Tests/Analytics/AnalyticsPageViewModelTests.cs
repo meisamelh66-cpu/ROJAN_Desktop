@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Reporting;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Reporting;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Analytics;
@@ -76,7 +77,7 @@ public sealed class AnalyticsPageViewModelTests
         var sut = new AnalyticsPageViewModel(new ThrowingKpiEngineQueryService(), new StubAnalyticsQueryService(Summary, Charts), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 

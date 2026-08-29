@@ -251,7 +251,7 @@ public sealed partial class SupportPageViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            MessageError = exception.Message;
+            MessageError = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(SubmitMessageAsync));
         }
     }
@@ -286,7 +286,7 @@ public sealed partial class SupportPageViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ApplicationError = exception.Message;
+            ApplicationError = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(SubmitApplicationAsync));
         }
     }

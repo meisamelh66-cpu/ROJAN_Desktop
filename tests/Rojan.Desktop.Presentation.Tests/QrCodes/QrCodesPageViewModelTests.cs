@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.QrCodes;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Salons;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -55,7 +56,7 @@ public sealed class QrCodesPageViewModelTests
         await Task.Delay(10);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.False(sut.IsReadyToPrint);
     }
 
@@ -72,6 +73,7 @@ public sealed class QrCodesPageViewModelTests
         await Task.Delay(10);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 
@@ -87,7 +89,8 @@ public sealed class QrCodesPageViewModelTests
         sut.GenerateReceptionInviteCommand.Execute(null);
         await Task.Delay(10);
 
-        Assert.Equal("Forbidden", sut.GenerateInviteErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.GenerateInviteErrorMessage);
+        Assert.DoesNotContain("Forbidden", sut.GenerateInviteErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("GenerateReceptionInviteAsync", StringComparison.Ordinal));
     }
 
@@ -135,7 +138,7 @@ public sealed class QrCodesPageViewModelTests
 
         Assert.Null(sut.ReceptionInviteQrBytes);
         Assert.True(sut.HasGenerateInviteError);
-        Assert.Equal("Forbidden", sut.GenerateInviteErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.GenerateInviteErrorMessage);
     }
 
     private sealed class StubStaticQrCodeGenerator(byte[] bytes) : IStaticQrCodeGenerator
