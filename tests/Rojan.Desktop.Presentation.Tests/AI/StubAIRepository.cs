@@ -19,20 +19,47 @@ internal sealed class StubAIRepository : DomainAI.IAIRepository
             .ToList();
     }
 
+    /// <summary>Production Hardening (missing-guard sweep, Wave E / AI Center): when set, the matching repository method throws this instead of succeeding - lets a test exercise AiCenterPageViewModel's new try/catch (via the real ConversationManager / AIHistoryService / AISettingsService / AIConfigurationService) without a real backend failure. Same seam pattern as Customers.StubCustomerCommandService.CreateCustomerException. Null path is byte-identical.</summary>
+    public Exception? GetSessionsException { get; set; }
+
+    public Exception? CreateSessionException { get; set; }
+
+    public Exception? UpdateSessionException { get; set; }
+
+    public Exception? DeleteSessionException { get; set; }
+
+    public Exception? GetMessagesException { get; set; }
+
+    public Exception? SetSettingsException { get; set; }
+
+    public Exception? SetProviderConfigurationException { get; set; }
+
     public Task<IReadOnlyList<DomainAI.ConversationSession>> GetSessionsAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<DomainAI.ConversationSession>>(_sessions.ToList());
+        GetSessionsException is not null
+            ? Task.FromException<IReadOnlyList<DomainAI.ConversationSession>>(GetSessionsException)
+            : Task.FromResult<IReadOnlyList<DomainAI.ConversationSession>>(_sessions.ToList());
 
     public Task<DomainAI.ConversationSession?> GetSessionByIdAsync(string sessionId, CancellationToken cancellationToken = default) =>
         Task.FromResult(_sessions.FirstOrDefault(s => s.Id == sessionId));
 
     public Task<DomainAI.ConversationSession> CreateSessionAsync(DomainAI.ConversationSession session, CancellationToken cancellationToken = default)
     {
+        if (CreateSessionException is not null)
+        {
+            return Task.FromException<DomainAI.ConversationSession>(CreateSessionException);
+        }
+
         _sessions.Add(session);
         return Task.FromResult(session);
     }
 
     public Task<DomainAI.ConversationSession> UpdateSessionAsync(DomainAI.ConversationSession session, CancellationToken cancellationToken = default)
     {
+        if (UpdateSessionException is not null)
+        {
+            return Task.FromException<DomainAI.ConversationSession>(UpdateSessionException);
+        }
+
         var index = _sessions.FindIndex(s => s.Id == session.Id);
         if (index < 0)
         {
@@ -45,13 +72,20 @@ internal sealed class StubAIRepository : DomainAI.IAIRepository
 
     public Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
     {
+        if (DeleteSessionException is not null)
+        {
+            return Task.FromException(DeleteSessionException);
+        }
+
         _sessions.RemoveAll(s => s.Id == sessionId);
         _messages.RemoveAll(m => m.SessionId == sessionId);
         return Task.CompletedTask;
     }
 
     public Task<IReadOnlyList<DomainAI.ConversationMessage>> GetMessagesAsync(string sessionId, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<DomainAI.ConversationMessage>>(_messages.Where(m => m.SessionId == sessionId).ToList());
+        GetMessagesException is not null
+            ? Task.FromException<IReadOnlyList<DomainAI.ConversationMessage>>(GetMessagesException)
+            : Task.FromResult<IReadOnlyList<DomainAI.ConversationMessage>>(_messages.Where(m => m.SessionId == sessionId).ToList());
 
     public Task<DomainAI.ConversationMessage> AddMessageAsync(DomainAI.ConversationMessage message, CancellationToken cancellationToken = default)
     {
@@ -70,6 +104,11 @@ internal sealed class StubAIRepository : DomainAI.IAIRepository
 
     public Task<DomainAI.AIProviderConfiguration> SetProviderConfigurationAsync(DomainAI.AIProviderConfiguration configuration, CancellationToken cancellationToken = default)
     {
+        if (SetProviderConfigurationException is not null)
+        {
+            return Task.FromException<DomainAI.AIProviderConfiguration>(SetProviderConfigurationException);
+        }
+
         _configuration = configuration;
         return Task.FromResult(_configuration);
     }
@@ -79,6 +118,11 @@ internal sealed class StubAIRepository : DomainAI.IAIRepository
 
     public Task<DomainAI.AISettings> SetSettingsAsync(DomainAI.AISettings settings, CancellationToken cancellationToken = default)
     {
+        if (SetSettingsException is not null)
+        {
+            return Task.FromException<DomainAI.AISettings>(SetSettingsException);
+        }
+
         _settings = settings;
         return Task.FromResult(_settings);
     }

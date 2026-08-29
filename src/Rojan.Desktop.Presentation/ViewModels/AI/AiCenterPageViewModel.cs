@@ -44,6 +44,8 @@ public sealed partial class AiCenterPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private string? _actionErrorMessage;
+    private bool _hasActionError;
     private AiCenterSection _selectedSection = AiCenterSection.Home;
     private BusinessHealthScoreDto? _healthScore;
     private BusinessSummaryDto? _dailySummary;
@@ -179,6 +181,26 @@ public sealed partial class AiCenterPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>
+    /// Non-destructive inline error shown when a user-triggered AI Center action
+    /// (new/open/pin/delete conversation, search/clear history, export, save
+    /// settings/config) fails - unlike <see cref="ErrorMessage"/>/<see cref="State"/>
+    /// it never blanks the page, and unlike <see cref="StatusMessage"/> it does
+    /// not clobber the last chat / save status. Production Hardening missing-guard
+    /// sweep (Wave E), same shape as HR.HrPageViewModel.ActionErrorMessage.
+    /// </summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set => SetProperty(ref _actionErrorMessage, value);
+    }
+
+    public bool HasActionError
+    {
+        get => _hasActionError;
+        private set => SetProperty(ref _hasActionError, value);
     }
 
     public AiCenterSection SelectedSection
@@ -415,72 +437,194 @@ public sealed partial class AiCenterPageViewModel : ViewModelBase
 
     private async Task NewConversationAsync()
     {
-        var created = await _conversationManager.CreateSessionAsync("New conversation").ConfigureAwait(true);
-        CurrentSessionId = created.Id;
-        CurrentSessionTitle = created.Title;
-        Messages.Clear();
-        await ReloadSessionsAsync().ConfigureAwait(true);
-        SelectedSection = AiCenterSection.Chat;
+        try
+        {
+            var created = await _conversationManager.CreateSessionAsync("New conversation").ConfigureAwait(true);
+            CurrentSessionId = created.Id;
+            CurrentSessionTitle = created.Title;
+            Messages.Clear();
+            await ReloadSessionsAsync().ConfigureAwait(true);
+            SelectedSection = AiCenterSection.Chat;
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(NewConversationAsync));
+        }
     }
 
     private async Task OpenConversationAsync(ConversationSessionDto session)
     {
-        CurrentSessionId = session.Id;
-        CurrentSessionTitle = session.Title;
-        await LoadMessagesAsync().ConfigureAwait(true);
-        SelectedSection = AiCenterSection.Chat;
+        try
+        {
+            CurrentSessionId = session.Id;
+            CurrentSessionTitle = session.Title;
+            await LoadMessagesAsync().ConfigureAwait(true);
+            SelectedSection = AiCenterSection.Chat;
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(OpenConversationAsync));
+        }
     }
 
     private async Task TogglePinAsync(ConversationSessionDto session)
     {
-        await _conversationManager.TogglePinAsync(session.Id).ConfigureAwait(true);
-        await ReloadSessionsAsync().ConfigureAwait(true);
+        try
+        {
+            await _conversationManager.TogglePinAsync(session.Id).ConfigureAwait(true);
+            await ReloadSessionsAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(TogglePinAsync));
+        }
     }
 
     private async Task DeleteSessionAsync(ConversationSessionDto session)
     {
-        await _conversationManager.DeleteSessionAsync(session.Id).ConfigureAwait(true);
-        if (CurrentSessionId == session.Id)
+        try
         {
-            CurrentSessionId = null;
-            Messages.Clear();
-        }
+            await _conversationManager.DeleteSessionAsync(session.Id).ConfigureAwait(true);
+            if (CurrentSessionId == session.Id)
+            {
+                CurrentSessionId = null;
+                Messages.Clear();
+            }
 
-        await ReloadSessionsAsync().ConfigureAwait(true);
-        if (CurrentSessionId is null)
+            await ReloadSessionsAsync().ConfigureAwait(true);
+            if (CurrentSessionId is null)
+            {
+                await EnsureActiveSessionAsync().ConfigureAwait(true);
+            }
+
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
         {
-            await EnsureActiveSessionAsync().ConfigureAwait(true);
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(DeleteSessionAsync));
         }
     }
 
-    private async Task SearchHistoryAsync() =>
-        ReplaceCollection(SearchResults, await _aiHistoryService.SearchAsync(SearchText).ConfigureAwait(true));
+    private async Task SearchHistoryAsync()
+    {
+        try
+        {
+            ReplaceCollection(SearchResults, await _aiHistoryService.SearchAsync(SearchText).ConfigureAwait(true));
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SearchHistoryAsync));
+        }
+    }
 
     private async Task ClearHistoryAsync()
     {
-        await _conversationManager.ClearHistoryAsync().ConfigureAwait(true);
-        CurrentSessionId = null;
-        Messages.Clear();
-        await ReloadSessionsAsync().ConfigureAwait(true);
-        await EnsureActiveSessionAsync().ConfigureAwait(true);
+        try
+        {
+            await _conversationManager.ClearHistoryAsync().ConfigureAwait(true);
+            CurrentSessionId = null;
+            Messages.Clear();
+            await ReloadSessionsAsync().ConfigureAwait(true);
+            await EnsureActiveSessionAsync().ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(ClearHistoryAsync));
+        }
     }
 
-    private async Task ExportSessionAsync(ConversationSessionDto session) =>
-        ExportPreviewText = await _conversationManager.ExportSessionAsync(session.Id).ConfigureAwait(true);
+    private async Task ExportSessionAsync(ConversationSessionDto session)
+    {
+        try
+        {
+            ExportPreviewText = await _conversationManager.ExportSessionAsync(session.Id).ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+        }
+#pragma warning disable CA1031 // Command boundary: a failed export must surface inline, not via the global dialog - and the catch binds no exception variable, so no partial transcript / generated content can leak.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(ExportSessionAsync));
+        }
+    }
 
     private async Task SaveSettingsAsync()
     {
         var updated = new AISettingsDto(InsightsEnabled, SmartNotificationsEnabled, DailySummaryEnabled, AutoGenerateRecommendations);
-        ApplySettings(await _settingsService.UpdateSettingsAsync(updated).ConfigureAwait(true));
-        StatusMessage = "Settings saved.";
+        try
+        {
+            ApplySettings(await _settingsService.UpdateSettingsAsync(updated).ConfigureAwait(true));
+            ActionErrorMessage = null;
+            HasActionError = false;
+            StatusMessage = "Settings saved.";
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SaveSettingsAsync));
+        }
     }
 
     private async Task SaveConfigurationAsync()
     {
-        Configuration = await _configurationService
-            .SetConfigurationAsync(SelectedProviderType, ModelIdInput, IsProviderEnabled)
-            .ConfigureAwait(true);
-        StatusMessage = "Model configuration saved.";
+        try
+        {
+            Configuration = await _configurationService
+                .SetConfigurationAsync(SelectedProviderType, ModelIdInput, IsProviderEnabled)
+                .ConfigureAwait(true);
+            ActionErrorMessage = null;
+            HasActionError = false;
+            StatusMessage = "Model configuration saved.";
+        }
+#pragma warning disable CA1031 // Command boundary: a failed AI Center action must surface inline, not via the global dialog - same justified broad catch as Services.ServicePageViewModel.CreateServiceAsync (Wave A).
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
+            HasActionError = true;
+            LogOperationFailed(nameof(SaveConfigurationAsync));
+        }
     }
 
     private void ApplySettings(AISettingsDto settings)

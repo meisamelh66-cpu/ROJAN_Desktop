@@ -240,4 +240,209 @@ public sealed class AiCenterPageViewModelTests
         Assert.Equal("claude-test", sut.Configuration.ModelId);
         Assert.False(sut.Configuration.IsEnabled);
     }
+
+    // ---------------------------------------------------------------------
+    // Production Hardening - Missing-Guard Sweep Wave E (AI Center).
+    // Every user-triggered AI Center action (new/open/pin/delete conversation,
+    // search/clear history, export, save settings/config) now surfaces a
+    // backend failure via the non-destructive ActionErrorMessage/HasActionError
+    // pair instead of the global dialog. Failures never expose prompts, AI
+    // responses, transcripts, or backend bodies, and log operation-name-only.
+    // LoadAsync / SendMessageAsync (already guarded) are untouched.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void NewConversationCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var (sut, _, repo) = CreateSut();
+        repo.CreateSessionException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.NewConversationCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+    }
+
+    [Fact]
+    public void OpenConversationCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var (sut, _, repo) = CreateSut();
+        var session = sut.RecentSessions[0];
+        repo.GetMessagesException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.OpenConversationCommand.Execute(session));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+    }
+
+    [Fact]
+    public void TogglePinCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var (sut, _, repo) = CreateSut();
+        var session = sut.RecentSessions[0];
+        repo.UpdateSessionException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.TogglePinCommand.Execute(session));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void DeleteSessionCommand_Failure_DoesNotThrow_SetsActionErrorAndKeepsSession()
+    {
+        var (sut, _, repo) = CreateSut();
+        var session = sut.RecentSessions[0];
+        repo.DeleteSessionException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.DeleteSessionCommand.Execute(session));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Contains(sut.RecentSessions, s => s.Id == session.Id);
+    }
+
+    [Fact]
+    public void SearchHistoryCommand_Failure_DoesNotThrow_SetsActionError()
+    {
+        var (sut, _, repo) = CreateSut();
+        sut.SearchText = "New";
+        repo.GetSessionsException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.SearchHistoryCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void ClearHistoryCommand_Failure_DoesNotThrow_SetsActionErrorAndKeepsHistory()
+    {
+        var (sut, _, repo) = CreateSut();
+        repo.DeleteSessionException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.ClearHistoryCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.NotEmpty(sut.RecentSessions);
+    }
+
+    [Fact]
+    public void ExportSessionCommand_Failure_DoesNotThrow_SetsActionErrorAndLeavesExportPreviewSafe()
+    {
+        var (sut, _, repo) = CreateSut();
+        var session = sut.RecentSessions[0];
+        repo.GetMessagesException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.ExportSessionCommand.Execute(session));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Null(sut.ExportPreviewText);            // no partial transcript
+    }
+
+    [Fact]
+    public void SaveSettingsCommand_Failure_DoesNotThrow_SetsActionErrorAndDoesNotShowSaved()
+    {
+        var (sut, _, repo) = CreateSut();
+        sut.InsightsEnabled = false;
+        repo.SetSettingsException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.SaveSettingsCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.NotEqual("Settings saved.", sut.StatusMessage);
+    }
+
+    [Fact]
+    public void SaveConfigurationCommand_Failure_DoesNotThrow_SetsActionErrorAndLeavesConfigurationUnchanged()
+    {
+        var (sut, _, repo) = CreateSut();
+        var originalProvider = sut.Configuration!.ProviderType;
+        sut.SelectedProviderType = AIProviderType.Anthropic;
+        sut.ModelIdInput = "claude-test";
+        repo.SetProviderConfigurationException = new InvalidOperationException("boom");
+
+        var exception = Record.Exception(() => sut.SaveConfigurationCommand.Execute(null));
+
+        Assert.Null(exception);
+        Assert.True(sut.HasActionError);
+        Assert.NotEqual("Model configuration saved.", sut.StatusMessage);
+        Assert.Equal(originalProvider, sut.Configuration!.ProviderType);
+    }
+
+    [Fact]
+    public void SaveSettingsCommand_SuccessAfterFailure_ClearsActionError()
+    {
+        var (sut, _, repo) = CreateSut();
+        repo.SetSettingsException = new InvalidOperationException("boom");
+        sut.SaveSettingsCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        repo.SetSettingsException = null;
+        sut.SaveSettingsCommand.Execute(null);
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
+        Assert.Equal("Settings saved.", sut.StatusMessage);
+    }
+
+    [Fact]
+    public void DeleteSessionCommand_Failure_LogsOperationNameOnly()
+    {
+        var logger = new RecordingLogger<AiCenterPageViewModel>();
+        var (sut, _, repo) = CreateSut(logger: logger);
+        var session = sut.RecentSessions[0];
+        repo.DeleteSessionException = new InvalidOperationException("session id 42 belongs to customer Sarah Johnson");
+
+        sut.DeleteSessionCommand.Execute(session);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=DeleteSessionAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sarah Johnson", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ExportSessionCommand_Failure_LogsOperationNameOnly_NoPromptOrTranscriptLeak()
+    {
+        const string secret = "transcript: user asked 'is customer Sarah Johnson overdue by 1,850,000?' assistant replied 'yes, 3 invoices'";
+        var logger = new RecordingLogger<AiCenterPageViewModel>();
+        var (sut, _, repo) = CreateSut(logger: logger);
+        var session = sut.RecentSessions[0];
+        repo.GetMessagesException = new InvalidOperationException(secret);
+
+        sut.ExportSessionCommand.Execute(session);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Contains("Operation=ExportSessionAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sarah Johnson", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("1,850,000", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, sut.ActionErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SaveConfigurationCommand_Failure_LogsOperationNameOnly_NoModelIdLeak()
+    {
+        var logger = new RecordingLogger<AiCenterPageViewModel>();
+        var (sut, _, repo) = CreateSut(logger: logger);
+        sut.ModelIdInput = "internal-model-xyz-secret";
+        repo.SetProviderConfigurationException = new InvalidOperationException("provider rejected internal-model-xyz-secret");
+
+        sut.SaveConfigurationCommand.Execute(null);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Contains("Operation=SaveConfigurationAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("internal-model-xyz-secret", entry.Message, StringComparison.Ordinal);
+    }
 }
