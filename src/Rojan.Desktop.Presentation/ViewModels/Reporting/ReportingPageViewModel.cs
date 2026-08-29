@@ -28,6 +28,7 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
     private readonly IReportExportService _exportService;
     private readonly IDialogService _dialogService;
     private readonly ILogger<ReportingPageViewModel> _logger;
+    private readonly ILoggerFactory? _loggerFactory;
 
     private CancellationTokenSource? _runCancellation;
 
@@ -52,7 +53,8 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
         IReportSnapshotCommandService snapshotCommandService,
         IReportExportService exportService,
         IDialogService dialogService,
-        ILogger<ReportingPageViewModel>? logger = null)
+        ILogger<ReportingPageViewModel>? logger = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _catalogQueryService = catalogQueryService;
         _executionQueryService = executionQueryService;
@@ -61,6 +63,7 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
         _exportService = exportService;
         _dialogService = dialogService;
         _logger = logger ?? NullLogger<ReportingPageViewModel>.Instance;
+        _loggerFactory = loggerFactory;
 
         ReportDefinitions = new ObservableCollection<ReportDefinitionDto>();
         AdditionalFilters = new ObservableCollection<FilterEntryViewModel>();
@@ -367,7 +370,7 @@ public sealed partial class ReportingPageViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        _dialogService.ShowDialog(new ExportDialogViewModel(CurrentResult, _exportService, _dialogService));
+        _dialogService.ShowDialog(new ExportDialogViewModel(CurrentResult, _exportService, _dialogService, _loggerFactory));
     }
 
     private async Task ToggleSavedAsync(ReportSnapshotDto snapshot)

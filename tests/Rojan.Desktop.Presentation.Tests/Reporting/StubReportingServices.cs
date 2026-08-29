@@ -99,10 +99,21 @@ internal sealed class StubReportExportService : IReportExportService
 {
     public ExportFormat? LastFormat { get; private set; }
 
+    /// <summary>Production Hardening (missing-guard sweep, Export Dialog micro-phase): when set, ExportAsync throws this instead of returning a result - lets a test exercise ExportDialogViewModel's new try/catch without a real file-system failure. The format is still recorded before the throw.</summary>
+    public Exception? ExportException { get; set; }
+
+    /// <summary>When set, ExportAsync returns this exact result instead of the default success - lets a test assert the honest "not yet implemented" / CSV-success message paths are preserved.</summary>
+    public ExportResultDto? Result { get; set; }
+
     public Task<ExportResultDto> ExportAsync(ReportResultDto result, ExportFormat format, CancellationToken cancellationToken = default)
     {
         LastFormat = format;
-        return Task.FromResult(new ExportResultDto(true, "Exported.", @"C:\temp\report.csv"));
+        if (ExportException is not null)
+        {
+            return Task.FromException<ExportResultDto>(ExportException);
+        }
+
+        return Task.FromResult(Result ?? new ExportResultDto(true, "Exported.", @"C:\temp\report.csv"));
     }
 }
 
