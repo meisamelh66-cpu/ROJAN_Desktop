@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Presentation.Localization;
@@ -25,13 +27,14 @@ namespace Rojan.Desktop.Presentation.ViewModels.Settings;
 /// both sections share one <see cref="RestartCommand"/> since a single
 /// relaunch applies whichever (or both) of the pending selections.
 /// </summary>
-public sealed class SettingsPageViewModel : ViewModelBase
+public sealed partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly ILocalizationService _localizationService;
     private readonly ILanguagePackRepository _packRepository;
     private readonly IThemeService _themeService;
     private readonly IAuthenticationService _authenticationService;
     private readonly IApiEnvironmentService _apiEnvironmentService;
+    private readonly ILogger<SettingsPageViewModel> _logger;
 
     private LanguageInfo? _selectedLanguage;
     private string _statusMessage = string.Empty;
@@ -40,19 +43,22 @@ public sealed class SettingsPageViewModel : ViewModelBase
     private ApiEnvironment _selectedApiEnvironment;
     private string _productionUrlInput;
     private string _apiEnvironmentStatusMessage = string.Empty;
+    private string _accountStatusMessage = string.Empty;
 
     public SettingsPageViewModel(
         ILocalizationService localizationService,
         ILanguagePackRepository packRepository,
         IThemeService themeService,
         IAuthenticationService authenticationService,
-        IApiEnvironmentService apiEnvironmentService)
+        IApiEnvironmentService apiEnvironmentService,
+        ILogger<SettingsPageViewModel>? logger = null)
     {
         _localizationService = localizationService;
         _packRepository = packRepository;
         _themeService = themeService;
         _authenticationService = authenticationService;
         _apiEnvironmentService = apiEnvironmentService;
+        _logger = logger ?? NullLogger<SettingsPageViewModel>.Instance;
 
         BuiltInLanguages = new ObservableCollection<LanguageInfo>(
             localizationService.AvailableLanguages.Where(language => language.IsBuiltIn));
@@ -72,7 +78,7 @@ public sealed class SettingsPageViewModel : ViewModelBase
         RemovePackCommand = new AsyncRelayCommand(parameter => RemovePackAsync(parameter as LanguageInfo));
         SelectThemeModeCommand = new RelayCommand(parameter => SelectedThemeMode = (ThemeMode)parameter!);
         ApplyThemeCommand = new AsyncRelayCommand(_ => ApplyThemeAsync());
-        SignOutCommand = new AsyncRelayCommand(_ => _authenticationService.SignOutAsync());
+        SignOutCommand = new AsyncRelayCommand(_ => SignOutAsync());
         SelectApiEnvironmentCommand = new RelayCommand(parameter => SelectedApiEnvironment = (ApiEnvironment)parameter!);
         ApplyApiEnvironmentCommand = new AsyncRelayCommand(_ => ApplyApiEnvironmentAsync());
 
@@ -170,6 +176,13 @@ public sealed class SettingsPageViewModel : ViewModelBase
         private set => SetProperty(ref _apiEnvironmentStatusMessage, value);
     }
 
+    /// <summary>Account-section feedback - empty on success; set to <see cref="Strings.Common_ActionFailedMessage"/> when <see cref="SignOutCommand"/> fails so the sign-out failure surfaces in-page rather than through the global crash dialog.</summary>
+    public string AccountStatusMessage
+    {
+        get => _accountStatusMessage;
+        private set => SetProperty(ref _accountStatusMessage, value);
+    }
+
     private async Task ApplyLanguageAsync()
     {
         if (SelectedLanguage is null)
@@ -184,24 +197,40 @@ public sealed class SettingsPageViewModel : ViewModelBase
 
     private async Task ApplyThemeAsync()
     {
-        await _themeService.SetThemeModeAsync(SelectedThemeMode).ConfigureAwait(true);
-        OnPropertyChanged(nameof(CurrentThemeMode));
-        OnPropertyChanged(nameof(CurrentThemeDisplay));
-        OnPropertyChanged(nameof(IsThemeRestartRequired));
-        ThemeStatusMessage = _themeService.IsRestartRequired ? Strings.Settings_Theme_RestartRequired : string.Empty;
+        try
+        {
+            await _themeService.SetThemeModeAsync(SelectedThemeMode).ConfigureAwait(true);
+            OnPropertyChanged(nameof(CurrentThemeMode));
+            OnPropertyChanged(nameof(CurrentThemeDisplay));
+            OnPropertyChanged(nameof(IsThemeRestartRequired));
+            ThemeStatusMessage = _themeService.IsRestartRequired ? Strings.Settings_Theme_RestartRequired : string.Empty;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ThemeStatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(ApplyThemeAsync));
+        }
     }
 
     private async Task ApplyApiEnvironmentAsync()
     {
-        var productionUrl = SelectedApiEnvironment == ApiEnvironment.Production && !string.IsNullOrWhiteSpace(ProductionUrlInput)
-            ? ProductionUrlInput.Trim()
-            : null;
+        try
+        {
+            var productionUrl = SelectedApiEnvironment == ApiEnvironment.Production && !string.IsNullOrWhiteSpace(ProductionUrlInput)
+                ? ProductionUrlInput.Trim()
+                : null;
 
-        await _apiEnvironmentService.SetEnvironmentAsync(SelectedApiEnvironment, productionUrl).ConfigureAwait(true);
-        OnPropertyChanged(nameof(CurrentApiEnvironment));
-        OnPropertyChanged(nameof(CurrentApiEnvironmentDisplay));
-        OnPropertyChanged(nameof(IsApiEnvironmentRestartRequired));
-        ApiEnvironmentStatusMessage = _apiEnvironmentService.IsRestartRequired ? Strings.Settings_ApiEnvironment_RestartRequired : string.Empty;
+            await _apiEnvironmentService.SetEnvironmentAsync(SelectedApiEnvironment, productionUrl).ConfigureAwait(true);
+            OnPropertyChanged(nameof(CurrentApiEnvironment));
+            OnPropertyChanged(nameof(CurrentApiEnvironmentDisplay));
+            OnPropertyChanged(nameof(IsApiEnvironmentRestartRequired));
+            ApiEnvironmentStatusMessage = _apiEnvironmentService.IsRestartRequired ? Strings.Settings_ApiEnvironment_RestartRequired : string.Empty;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ApiEnvironmentStatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(ApplyApiEnvironmentAsync));
+        }
     }
 
     private static string ThemeModeDisplayName(ThemeMode mode) => mode switch
@@ -223,13 +252,35 @@ public sealed class SettingsPageViewModel : ViewModelBase
         System.Windows.Application.Current.Shutdown();
     }
 
+    private async Task SignOutAsync()
+    {
+        try
+        {
+            await _authenticationService.SignOutAsync().ConfigureAwait(true);
+            AccountStatusMessage = string.Empty;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            AccountStatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(SignOutAsync));
+        }
+    }
+
     private async Task RefreshAvailablePacksAsync()
     {
-        var catalog = await _packRepository.GetAvailableLanguagePacksAsync().ConfigureAwait(true);
-        AvailableLanguagePacks.Clear();
-        foreach (var entry in catalog)
+        try
         {
-            AvailableLanguagePacks.Add(entry);
+            var catalog = await _packRepository.GetAvailableLanguagePacksAsync().ConfigureAwait(true);
+            AvailableLanguagePacks.Clear();
+            foreach (var entry in catalog)
+            {
+                AvailableLanguagePacks.Add(entry);
+            }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            StatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(RefreshAvailablePacksAsync));
         }
     }
 
@@ -248,6 +299,11 @@ public sealed class SettingsPageViewModel : ViewModelBase
         {
             StatusMessage = exception.Message;
         }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            StatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(DownloadOrInstallAsync));
+        }
     }
 
     private async Task RemovePackAsync(LanguageInfo? language)
@@ -265,5 +321,13 @@ public sealed class SettingsPageViewModel : ViewModelBase
         {
             StatusMessage = exception.Message;
         }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            StatusMessage = Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(RemovePackAsync));
+        }
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Settings page operation failed. Operation={Operation}")]
+    private partial void LogOperationFailed(string operation);
 }

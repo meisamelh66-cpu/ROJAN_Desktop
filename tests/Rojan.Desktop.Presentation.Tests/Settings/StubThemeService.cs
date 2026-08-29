@@ -22,10 +22,18 @@ internal sealed class StubThemeService : IThemeService
 
     public string? LastSetMode { get; private set; }
 
+    /// <summary>Optional failure hook - when set, <see cref="SetThemeModeAsync"/> faults with this exception (call not recorded).</summary>
+    public Exception? SetThemeModeException { get; set; }
+
     public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public Task SetThemeModeAsync(ThemeMode mode, CancellationToken cancellationToken = default)
     {
+        if (SetThemeModeException is not null)
+        {
+            return Task.FromException(SetThemeModeException);
+        }
+
         LastSetMode = mode.ToString();
 
         var newlyResolved = mode == ThemeMode.System ? _resolvedForSystem : mode;

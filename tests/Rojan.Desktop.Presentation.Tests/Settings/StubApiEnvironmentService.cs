@@ -13,10 +13,18 @@ internal sealed class StubApiEnvironmentService(ApiEnvironment selectedEnvironme
 
     public Uri? ResolvedBaseAddress => null;
 
+    /// <summary>Optional failure hook - when set, <see cref="SetEnvironmentAsync"/> faults with this exception (no state change).</summary>
+    public Exception? SetEnvironmentException { get; set; }
+
     public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public Task SetEnvironmentAsync(ApiEnvironment environment, string? newProductionUrl, CancellationToken cancellationToken = default)
     {
+        if (SetEnvironmentException is not null)
+        {
+            return Task.FromException(SetEnvironmentException);
+        }
+
         if (environment != SelectedEnvironment || (newProductionUrl is not null && newProductionUrl != ProductionUrl))
         {
             IsRestartRequired = true;

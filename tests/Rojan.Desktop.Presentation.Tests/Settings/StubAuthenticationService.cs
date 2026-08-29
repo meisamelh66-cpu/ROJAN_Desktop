@@ -9,6 +9,9 @@ internal sealed class StubAuthenticationService : IAuthenticationService
 {
     public int SignOutCallCount { get; private set; }
 
+    /// <summary>Optional failure hook - when set, <see cref="SignOutAsync"/> faults with this exception (call still recorded, auth state unchanged).</summary>
+    public Exception? SignOutException { get; set; }
+
     public AuthenticationState CurrentState { get; private set; } = AuthenticationState.Authenticated;
 
     public SessionIdentity? CurrentSession => null;
@@ -33,6 +36,11 @@ internal sealed class StubAuthenticationService : IAuthenticationService
     public Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         SignOutCallCount++;
+        if (SignOutException is not null)
+        {
+            return Task.FromException(SignOutException);
+        }
+
         CurrentState = AuthenticationState.SignedOut;
         StateChanged?.Invoke(this, CurrentState);
         return Task.CompletedTask;

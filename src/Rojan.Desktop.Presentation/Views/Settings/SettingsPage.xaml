@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <converters:BoolToFlowDirectionConverter x:Key="BoolToFlowDirectionConverter" />
+        <converters:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter" />
     </UserControl.Resources>
 
     <!--
@@ -429,6 +430,13 @@
                             Style="{StaticResource Rojan.Style.ButtonOutlinedDanger}"
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
+
+                    <TextBlock Text="{Binding AccountStatusMessage}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
+                               Foreground="{StaticResource Rojan.Brush.Warning}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0"
+                               Visibility="{Binding AccountStatusMessage, Converter={StaticResource CollectionToVisibilityConverter}}" />
                 </StackPanel>
             </dashboardControls:DashboardCard>
 

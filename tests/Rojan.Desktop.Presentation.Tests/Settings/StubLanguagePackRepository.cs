@@ -12,12 +12,24 @@ internal sealed class StubLanguagePackRepository : ILanguagePackRepository
         _catalog = catalog?.ToList() ?? [];
     }
 
+    /// <summary>Optional failure hook - when set, <see cref="GetAvailableLanguagePacksAsync"/> faults with this exception.</summary>
+    public Exception? GetAvailableLanguagePacksException { get; set; }
+
+    /// <summary>Optional failure hook - when set, <see cref="DownloadAndInstallAsync"/> / <see cref="RemovePackAsync"/> fault with this exception instead of the default <see cref="NotSupportedException"/>.</summary>
+    public Exception? PackMutationException { get; set; }
+
     public Task<IReadOnlyList<LanguagePackCatalogEntry>> GetAvailableLanguagePacksAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<LanguagePackCatalogEntry>>(_catalog);
+        GetAvailableLanguagePacksException is not null
+            ? Task.FromException<IReadOnlyList<LanguagePackCatalogEntry>>(GetAvailableLanguagePacksException)
+            : Task.FromResult<IReadOnlyList<LanguagePackCatalogEntry>>(_catalog);
 
     public Task<LanguageInfo> DownloadAndInstallAsync(string languageCode, CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("Online language pack downloads are not available yet - Phase 19A ships the framework only.");
+        PackMutationException is not null
+            ? Task.FromException<LanguageInfo>(PackMutationException)
+            : throw new NotSupportedException("Online language pack downloads are not available yet - Phase 19A ships the framework only.");
 
     public Task RemovePackAsync(string languageCode, CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("Language pack removal is not available yet - Phase 19A ships the framework only.");
+        PackMutationException is not null
+            ? Task.FromException(PackMutationException)
+            : throw new NotSupportedException("Language pack removal is not available yet - Phase 19A ships the framework only.");
 }
