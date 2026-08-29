@@ -160,10 +160,10 @@ public sealed partial class AcceptInviteViewModel : ViewModelBase
             Details = await _inviteService.GetDetailsAsync(Token.Trim()).ConfigureAwait(true);
         }
 #pragma warning disable CA1031 // Top-level command boundary: any failure must surface via LookupErrorMessage, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            LookupErrorMessage = exception.Message;
+            LookupErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(LookupAsync));
         }
         finally
@@ -205,10 +205,10 @@ public sealed partial class AcceptInviteViewModel : ViewModelBase
             IsAccepted = true;
         }
 #pragma warning disable CA1031 // Top-level command boundary: any failure must surface via AcceptErrorMessage, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            AcceptErrorMessage = exception.Message;
+            AcceptErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(AcceptAsync));
         }
         finally

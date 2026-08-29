@@ -87,30 +87,50 @@ public sealed class HrPageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_QueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
-        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom")));
+        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom: payroll 15,000 for New Hire")));
 
         var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("15,000", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
-    // Phase 8.19 Logging Wave 2A: LoadAsync / SearchAsync now log at Error before
-    // their existing handling - user-visible behaviour unchanged.
+    // Phase 8.19 Logging Wave 2A: LoadAsync / SearchAsync log at Error before their existing handling.
+    // Phase 8.108 P2 sub-wave 2: the Error-state ErrorMessage is now the generic
+    // Strings.Common_ActionFailedMessage, never the raw exception message (which can carry salary/payroll data).
 
     [Fact]
-    public void LoadAsync_QueryThrows_LogsError()
+    public void LoadAsync_QueryThrows_LogsError_AndSurfacesGenericMessage()
     {
-        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom")));
+        var queryService = new StubEmployeeQueryService(_ => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("boom: payroll 15,000 for New Hire")));
         var logger = new RecordingLogger<HrPageViewModel>();
 
         var sut = MakeSut(queryService, logger: logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("15,000", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SearchAsync_QueryThrows_LogsError_AndSurfacesGenericMessage()
+    {
+        var queryService = new StubEmployeeQueryService(
+            _ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]),
+            searchEmployees: (_, _) => Task.FromException<IReadOnlyList<EmployeeDto>>(new InvalidOperationException("search boom: salary 15,000 for New Hire")));
+        var logger = new RecordingLogger<HrPageViewModel>();
+        var sut = MakeSut(queryService, logger: logger);
+
+        sut.SearchText = "hire";
+
+        Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("15,000", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("SearchAsync", StringComparison.Ordinal));
     }
 
     [Fact]

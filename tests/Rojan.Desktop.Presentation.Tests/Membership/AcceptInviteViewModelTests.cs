@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Membership;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Salons;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Membership;
@@ -48,7 +49,7 @@ public sealed class AcceptInviteViewModelTests
 
         Assert.False(sut.HasDetails);
         Assert.True(sut.HasLookupError);
-        Assert.Equal("Salon invite not found or no longer available", sut.LookupErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.LookupErrorMessage);
         Assert.Equal("does-not-exist", sut.Token);
     }
 
@@ -118,15 +119,17 @@ public sealed class AcceptInviteViewModelTests
     }
 
     // Phase 8.35 AcceptInvite Security Logging: the LookupAsync / AcceptAsync broad-catch
-    // boundaries now log at Error, operation name only. The invite token, the user's
-    // identity (resolved by ICurrentSessionService.InitializeAsync), and any backend
-    // response detail must never enter the log line. User-visible error is unchanged,
-    // verified by LookupCommand_Failure_* / AcceptCommand_Failure_* above.
+    // boundaries log at Error, operation name only - the invite token, the user's identity
+    // (resolved by ICurrentSessionService.InitializeAsync), and any backend response detail
+    // never enter the log line.
+    // Phase 8.108 P2 sub-wave 2: the same detail is also kept out of the UI - LookupErrorMessage
+    // / AcceptErrorMessage are now the generic Strings.Common_ActionFailedMessage, never the raw
+    // exception message (which previously showed the invite token / invitee email / user id).
 
     private const string SecretToken = "SECRET-INVITE-TOKEN-xyz789";
 
     [Fact]
-    public void LookupCommand_Failure_LogsErrorWithoutLeakingToken()
+    public void LookupCommand_Failure_LogsErrorAndSurfacesGenericMessage_NoTokenLeak()
     {
         var inviteService = new StubSalonInviteService
         {
@@ -141,7 +144,8 @@ public sealed class AcceptInviteViewModelTests
         sut.LookupCommand.Execute(null);
 
         Assert.True(sut.HasLookupError);
-        Assert.Contains(SecretToken, sut.LookupErrorMessage!, StringComparison.Ordinal); // the user still sees the raw backend message
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.LookupErrorMessage);
+        Assert.DoesNotContain(SecretToken, sut.LookupErrorMessage!, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("LookupAsync", entry.Message, StringComparison.Ordinal);
@@ -166,6 +170,8 @@ public sealed class AcceptInviteViewModelTests
         sut.AcceptCommand.Execute(null);
 
         Assert.True(sut.HasAcceptError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.AcceptErrorMessage);
+        Assert.DoesNotContain(SecretToken, sut.AcceptErrorMessage!, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("AcceptAsync", entry.Message, StringComparison.Ordinal);
@@ -195,6 +201,9 @@ public sealed class AcceptInviteViewModelTests
 
         Assert.True(sut.HasAcceptError);
         Assert.False(sut.IsAccepted);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.AcceptErrorMessage);
+        Assert.DoesNotContain("owner@salon.example", sut.AcceptErrorMessage!, StringComparison.Ordinal);
+        Assert.DoesNotContain("u-4821", sut.AcceptErrorMessage!, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("AcceptAsync", entry.Message, StringComparison.Ordinal);

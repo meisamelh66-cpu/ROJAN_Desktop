@@ -22,6 +22,8 @@ public sealed class EmployeeProfileViewModelTests
         var sut = new EmployeeProfileViewModel("employee-1", queryService, new StubEmployeeCommandService(), onChanged: null, logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(PiiSecret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
@@ -29,7 +31,7 @@ public sealed class EmployeeProfileViewModelTests
     }
 
     [Fact]
-    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows_AndSurfacesGenericMessage()
     {
         var queryService = new StubEmployeeQueryService(
             _ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]),
@@ -38,7 +40,7 @@ public sealed class EmployeeProfileViewModelTests
         var sut = new EmployeeProfileViewModel("employee-1", queryService, new StubEmployeeCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     private static EmployeeDto MakeEmployee(string id, EmployeeStatus status = EmployeeStatus.Active) =>
@@ -61,7 +63,7 @@ public sealed class EmployeeProfileViewModelTests
     }
 
     [Fact]
-    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubEmployeeQueryService(
             _ => Task.FromResult<IReadOnlyList<EmployeeDto>>([]),
@@ -70,7 +72,7 @@ public sealed class EmployeeProfileViewModelTests
         var sut = new EmployeeProfileViewModel("employee-1", queryService, new StubEmployeeCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]

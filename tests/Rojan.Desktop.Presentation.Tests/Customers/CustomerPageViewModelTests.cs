@@ -55,31 +55,34 @@ public sealed class CustomerPageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubCustomerQueryService(
-            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom for customer Amelia Hart")));
 
         var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Amelia Hart", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
-    // Phase 8.19 Logging Wave 2A: LoadAsync now logs at Error before surfacing the
-    // Error state - user-visible behaviour (State / ErrorMessage) is unchanged.
+    // Phase 8.19 Logging Wave 2A: LoadAsync logs at Error before surfacing the Error state.
+    // Phase 8.108 P2 sub-wave 2: the Error-state ErrorMessage is now the generic
+    // Strings.Common_ActionFailedMessage, never the raw exception message (which can carry customer PII).
 
     [Fact]
-    public void LoadAsync_QueryServiceThrows_LogsError()
+    public void LoadAsync_QueryServiceThrows_LogsError_AndSurfacesGenericMessage()
     {
         var queryService = new StubCustomerQueryService(
-            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom for customer Amelia Hart")));
         var logger = new RecordingLogger<CustomerPageViewModel>();
 
         var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService(), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Amelia Hart", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 
