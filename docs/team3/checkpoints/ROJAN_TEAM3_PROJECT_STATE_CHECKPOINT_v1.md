@@ -1465,3 +1465,37 @@ only new `docs/team3/*.md` files. Commit `docs(team3): add desktop hardening aud
 `feature/team3-desktop-completion` (then fast-forwarded to `main` or landed via PR). Deliverable
 `ROJAN_PHASE8_142_AUDIT_TRAIL_COMMIT_REPORT_v1.md`.
 **NOTE:** this checkpoint file now lives at `docs/team3/checkpoints/ROJAN_TEAM3_PROJECT_STATE_CHECKPOINT_v1.md`.
+
+---
+
+**Phases 8.143 – 8.172** (release-readiness, local install validation, handoff — **no source/test/project
+change in any of them**; documentation + local machine operations only):
+- **8.143** local install validation — installed the RC on this Windows 10 machine, first-run reached the
+  login screen. **8.144** installer completion — installed Inno Setup 6.7.3, built the real
+  `ROJAN Reception Setup.exe`, validated install/uninstall/launch.
+- **8.145** RC final validation → verdict READY WITH BLOCKERS (no P0; P1×4 external; P2×3). **8.146** release
+  handoff package. **8.147** release-engineering readiness review. **8.148** artifact package review.
+  **8.149** signing & distribution readiness — signing toolchain wired, no certificate. **8.150** release
+  closure GO/NO-GO — **Desktop GO, Production NO-GO** (7 external gates). **8.151** release execution sprint —
+  confirmed none of the 6 external gates are executable from this environment (no cert, no backend route, no
+  clean VM, no CI access, no product authority); **no release tag pushed**. **8.152–8.167** ownership handoff,
+  tracking board, owner action package, gate checklists, war-room log, evidence intake/verification/queue/
+  processing structures — all documentation, all showing PASS 1 = 0/4, Production = NO-GO.
+- **8.168** local final install validation — Release build 0/0, suite 2,715/2,715, fresh installer built
+  (SHA-256 `4974531f…2b6d7`), install/first-run/uninstall all PASS; backend-unavailable handling shows the
+  sanitized localized message (no crash). **8.169** cleaned two orphaned old install folders
+  (`ROJAN Desktop\`, `ROJAN Desktop (Local Test - f7d1150)\`) + old shortcuts; fresh-installed v1.0.0;
+  created the Desktop shortcut — machine now has exactly one ROJAN Reception. **8.170** login backend
+  connection diagnostic — root cause of "خطا در اتصال به سرور": fresh install defaults to
+  `http://localhost:8080` (Development), nothing listening → `SocketException: ConnectionRefused` (10061) →
+  `ApiConnectivityException` → `Strings.Login_Error_Network`; `api.rojanai.ir` reachable on TCP 443 but
+  HTTPS times out from this environment. Expected behaviour, not a defect; open decision = external gate B7.
+- **8.172** desktop handoff final checkpoint — preservation commit adding `docs/team3/phases/` reports
+  8.142–8.170 + `docs/team3/DESKTOP_HANDOFF_v1.0.md`; release tag **`ROJAN-DESKTOP-v1.0.0`** created at the
+  final Team 3 baseline commit (`src`/`tests` == `main` `77414de`). Quality gates re-confirmed: Debug/Release
+  build 0/0, suite **2,715/2,715** (0 skipped) both configs, Architecture **7/7**. Deliverables
+  `DESKTOP_HANDOFF_v1.0.md` + `ROJAN_PHASE8_172_DESKTOP_HANDOFF_FINAL_REPORT_v1.md`.
+
+**TEAM 3 DESKTOP ENGAGEMENT: COMPLETE.** Code frozen on `main` `77414de`. Remaining work is external
+(signing, live login, clean VM, pipeline run, API-env decision, product sign-off, release notes) — see
+`docs/team3/DESKTOP_HANDOFF_v1.0.md` §21.
