@@ -76,7 +76,7 @@ public sealed partial class ApprovalsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }
@@ -93,7 +93,7 @@ public sealed partial class ApprovalsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(DecideAsync));
         }
     }

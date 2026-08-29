@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -23,6 +24,8 @@ public sealed class AutomationDashboardTabViewModelTests
         await sut.LoadAsync();
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);

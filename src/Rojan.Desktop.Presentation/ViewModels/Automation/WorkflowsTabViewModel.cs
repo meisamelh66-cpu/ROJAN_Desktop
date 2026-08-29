@@ -141,7 +141,7 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }
@@ -187,7 +187,7 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(CreateDraftAsync));
         }
     }
@@ -212,7 +212,7 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(PublishAsync));
         }
     }
@@ -253,7 +253,7 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(RunNowAsync));
         }
     }
@@ -267,7 +267,7 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(RollbackAsync));
         }
     }

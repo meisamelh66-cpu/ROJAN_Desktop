@@ -31,6 +31,8 @@ public sealed class ScheduledJobsTabViewModelTests
         await sut.LoadAsync();
 
         Assert.Equal(DashboardState.Error, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
@@ -48,6 +50,8 @@ public sealed class ScheduledJobsTabViewModelTests
 
         sut.CreateCommand.Execute(null);
 
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=CreateAsync", entry.Message, StringComparison.Ordinal);
@@ -67,6 +71,8 @@ public sealed class ScheduledJobsTabViewModelTests
 
         sut.RunNowCommand.Execute(sut.Jobs[0]);
 
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=RunNowAsync", entry.Message, StringComparison.Ordinal);

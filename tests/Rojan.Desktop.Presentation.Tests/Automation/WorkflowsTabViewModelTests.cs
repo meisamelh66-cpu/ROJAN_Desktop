@@ -35,6 +35,14 @@ public sealed class WorkflowsTabViewModelTests
         Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
     }
 
+    // Phase 8.116 P2 sub-wave 4: the ErrorMessage surface on a filtered-catch failure is now the generic
+    // Strings.Common_ActionFailedMessage, never the raw exception message (which can carry a workflow definition).
+    private static void AssertGenericSurfaceNoLeak(WorkflowsTabViewModel sut)
+    {
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task LoadAsync_Failure_LogsErrorWithOperationNameOnly_NoLeak()
     {
@@ -45,6 +53,7 @@ public sealed class WorkflowsTabViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         AssertSingleErrorFor(logger, nameof(sut.LoadAsync));
+        AssertGenericSurfaceNoLeak(sut);
     }
 
     [Fact]
@@ -57,6 +66,7 @@ public sealed class WorkflowsTabViewModelTests
         sut.CreateDraftCommand.Execute(null);
 
         AssertSingleErrorFor(logger, "CreateDraftAsync");
+        AssertGenericSurfaceNoLeak(sut);
     }
 
     [Fact]
@@ -70,6 +80,7 @@ public sealed class WorkflowsTabViewModelTests
         sut.PublishCommand.Execute(sut.Workflows[0]);
 
         AssertSingleErrorFor(logger, "PublishAsync");
+        AssertGenericSurfaceNoLeak(sut);
     }
 
     [Fact]
@@ -83,6 +94,7 @@ public sealed class WorkflowsTabViewModelTests
         sut.RunNowCommand.Execute(sut.Workflows[0]);
 
         AssertSingleErrorFor(logger, "RunNowAsync");
+        AssertGenericSurfaceNoLeak(sut);
     }
 
     [Fact]
@@ -96,6 +108,7 @@ public sealed class WorkflowsTabViewModelTests
         sut.RollbackCommand.Execute(sut.Workflows[0]);
 
         AssertSingleErrorFor(logger, "RollbackAsync");
+        AssertGenericSurfaceNoLeak(sut);
     }
 
     [Fact]
