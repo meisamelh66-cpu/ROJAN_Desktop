@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -182,6 +183,92 @@ public sealed class WorkflowsTabViewModelTests
         sut.DeleteCommand.Execute(draft);
 
         Assert.Empty(sut.Workflows);
+    }
+
+    [Fact]
+    public void ArchiveCommand_Failure_ShowsGenericError_PreservesWorkflow_LogsOperationOnly()
+    {
+        var (sut, workflows, _, logger) = CreateLoggedSut();
+        sut.NewWorkflowName = "Welcome Flow";
+        sut.CreateDraftCommand.Execute(null);
+        var draft = sut.Workflows[0];
+        workflows.ArchiveException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.ArchiveCommand.Execute(draft));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Workflows);
+        AssertSingleErrorFor(logger, "ArchiveAsync");
+    }
+
+    [Fact]
+    public void DeleteCommand_Failure_ShowsGenericError_PreservesWorkflow_LogsOperationOnly()
+    {
+        var (sut, workflows, _, logger) = CreateLoggedSut();
+        sut.NewWorkflowName = "Welcome Flow";
+        sut.CreateDraftCommand.Execute(null);
+        var draft = sut.Workflows[0];
+        workflows.DeleteException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.DeleteCommand.Execute(draft));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Workflows);
+        AssertSingleErrorFor(logger, "DeleteAsync");
+    }
+
+    [Fact]
+    public void SelectingAWorkflow_VersionHistoryCancellation_StaysSilent_NoErrorNoLog()
+    {
+        var (sut, workflows, _, logger) = CreateLoggedSut();
+        sut.NewWorkflowName = "Welcome Flow";
+        sut.CreateDraftCommand.Execute(null);
+        var draft = sut.Workflows[0];
+        workflows.GetVersionsException = new OperationCanceledException();
+
+        var exception = Record.Exception(() => sut.SelectedWorkflow = draft);
+
+        Assert.Null(exception);
+        Assert.Same(draft, sut.SelectedWorkflow);
+        Assert.Null(sut.ErrorMessage);
+        Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
+    public void SelectingAWorkflow_VersionHistoryFailure_ShowsGenericError_PreservesSelection_LogsOperationOnly()
+    {
+        var (sut, workflows, _, logger) = CreateLoggedSut();
+        sut.NewWorkflowName = "Welcome Flow";
+        sut.CreateDraftCommand.Execute(null);
+        var draft = sut.Workflows[0];
+        workflows.GetVersionsException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.SelectedWorkflow = draft);
+
+        Assert.Null(exception);
+        Assert.Same(draft, sut.SelectedWorkflow);
+        Assert.Empty(sut.VersionHistory);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        AssertSingleErrorFor(logger, "LoadVersionHistoryAsync");
+    }
+
+    [Fact]
+    public void SelectingAWorkflow_VersionHistorySuccess_ClearsPriorError()
+    {
+        var (sut, workflows, _, _) = CreateLoggedSut();
+        sut.NewWorkflowName = "Welcome Flow";
+        sut.CreateDraftCommand.Execute(null);
+        var draft = sut.Workflows[0];
+        workflows.ArchiveException = new InvalidOperationException(Secret);
+        sut.ArchiveCommand.Execute(draft);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+
+        sut.SelectedWorkflow = draft;
+
+        Assert.Null(sut.ErrorMessage);
+        Assert.NotEmpty(sut.VersionHistory);
     }
 
     [Fact]

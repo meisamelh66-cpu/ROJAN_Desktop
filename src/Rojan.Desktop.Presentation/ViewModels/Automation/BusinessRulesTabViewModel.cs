@@ -179,14 +179,30 @@ public sealed partial class BusinessRulesTabViewModel : ViewModelBase
 
     private async Task ToggleEnabledAsync(BusinessRuleDto rule)
     {
-        await _businessRuleService.SetEnabledAsync(rule.Id, !rule.IsEnabled).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _businessRuleService.SetEnabledAsync(rule.Id, !rule.IsEnabled).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(ToggleEnabledAsync));
+        }
     }
 
     private async Task DeleteAsync(BusinessRuleDto rule)
     {
-        await _businessRuleService.DeleteAsync(rule.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _businessRuleService.DeleteAsync(rule.Id).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(DeleteAsync));
+        }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Automation business rules operation failed. Operation={Operation}")]

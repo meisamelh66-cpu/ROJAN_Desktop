@@ -149,16 +149,26 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
 
     private async Task LoadVersionHistoryAsync()
     {
-        VersionHistory.Clear();
-        if (SelectedWorkflow is null)
+        try
         {
-            return;
-        }
+            VersionHistory.Clear();
+            if (SelectedWorkflow is null)
+            {
+                return;
+            }
 
-        var versions = await _workflowService.GetVersionsAsync(SelectedWorkflow.ParentWorkflowId).ConfigureAwait(true);
-        foreach (var version in versions)
+            var versions = await _workflowService.GetVersionsAsync(SelectedWorkflow.ParentWorkflowId).ConfigureAwait(true);
+            foreach (var version in versions)
+            {
+                VersionHistory.Add(version);
+            }
+
+            ErrorMessage = null;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            VersionHistory.Add(version);
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(LoadVersionHistoryAsync));
         }
     }
 
@@ -209,14 +219,30 @@ public sealed partial class WorkflowsTabViewModel : ViewModelBase
 
     private async Task ArchiveAsync(WorkflowDefinitionDto workflow)
     {
-        await _workflowService.ArchiveAsync(workflow.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _workflowService.ArchiveAsync(workflow.Id).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(ArchiveAsync));
+        }
     }
 
     private async Task DeleteAsync(WorkflowDefinitionDto workflow)
     {
-        await _workflowService.DeleteAsync(workflow.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _workflowService.DeleteAsync(workflow.Id).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(DeleteAsync));
+        }
     }
 
     private async Task RunNowAsync(WorkflowDefinitionDto workflow)

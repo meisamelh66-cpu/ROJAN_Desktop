@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -150,6 +151,69 @@ public sealed class ScheduledJobsTabViewModelTests
         sut.RunNowCommand.Execute(job);
 
         Assert.Equal(DashboardState.Loaded, sut.State);
+    }
+
+    [Fact]
+    public void ToggleEnabledCommand_Failure_ShowsGenericError_PreservesJobState_LogsOperationOnly()
+    {
+        var jobs = new StubScheduledJobService();
+        var logger = new RecordingLogger<ScheduledJobsTabViewModel>();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1", logger);
+        sut.NewJobName = "Nightly Sync";
+        sut.NewJobWorkflow = PublishedWorkflow();
+        sut.CreateCommand.Execute(null);
+        jobs.SetEnabledException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.ToggleEnabledCommand.Execute(sut.Jobs[0]));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.True(sut.Jobs[0].IsEnabled);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=ToggleEnabledAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToggleEnabledCommand_SuccessAfterFailure_ClearsError()
+    {
+        var jobs = new StubScheduledJobService();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1");
+        sut.NewJobName = "Nightly Sync";
+        sut.NewJobWorkflow = PublishedWorkflow();
+        sut.CreateCommand.Execute(null);
+        jobs.SetEnabledException = new InvalidOperationException(Secret);
+        sut.ToggleEnabledCommand.Execute(sut.Jobs[0]);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+
+        jobs.SetEnabledException = null;
+        sut.ToggleEnabledCommand.Execute(sut.Jobs[0]);
+
+        Assert.Null(sut.ErrorMessage);
+        Assert.False(sut.Jobs[0].IsEnabled);
+    }
+
+    [Fact]
+    public void DeleteCommand_Failure_ShowsGenericError_PreservesJob_LogsOperationOnly()
+    {
+        var jobs = new StubScheduledJobService();
+        var logger = new RecordingLogger<ScheduledJobsTabViewModel>();
+        var sut = new ScheduledJobsTabViewModel(jobs, new StubWorkflowService(), "org-1", "branch-1", logger);
+        sut.NewJobName = "Nightly Sync";
+        sut.NewJobWorkflow = PublishedWorkflow();
+        sut.CreateCommand.Execute(null);
+        jobs.DeleteException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.DeleteCommand.Execute(sut.Jobs[0]));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Jobs);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=DeleteAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]

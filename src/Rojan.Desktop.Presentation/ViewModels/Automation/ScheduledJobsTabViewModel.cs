@@ -164,14 +164,30 @@ public sealed partial class ScheduledJobsTabViewModel : ViewModelBase
 
     private async Task ToggleEnabledAsync(ScheduledJobDto job)
     {
-        await _scheduledJobService.SetEnabledAsync(job.Id, !job.IsEnabled).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _scheduledJobService.SetEnabledAsync(job.Id, !job.IsEnabled).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(ToggleEnabledAsync));
+        }
     }
 
     private async Task DeleteAsync(ScheduledJobDto job)
     {
-        await _scheduledJobService.DeleteAsync(job.Id).ConfigureAwait(true);
-        await LoadAsync().ConfigureAwait(true);
+        try
+        {
+            await _scheduledJobService.DeleteAsync(job.Id).ConfigureAwait(true);
+            await LoadAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            ErrorMessage = Localization.Strings.Common_ActionFailedMessage;
+            LogOperationFailed(nameof(DeleteAsync));
+        }
     }
 
     private async Task RunNowAsync(ScheduledJobDto job)

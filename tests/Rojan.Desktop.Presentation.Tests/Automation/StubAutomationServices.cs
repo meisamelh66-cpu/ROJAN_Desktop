@@ -50,6 +50,12 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public Exception? RollbackException { get; set; }
 
+    public Exception? GetVersionsException { get; set; }
+
+    public Exception? ArchiveException { get; set; }
+
+    public Exception? DeleteException { get; set; }
+
     public Task<IReadOnlyList<WorkflowDefinitionDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
         GetAllException is not null
             ? Task.FromException<IReadOnlyList<WorkflowDefinitionDto>>(GetAllException)
@@ -59,7 +65,9 @@ internal sealed class StubWorkflowService : IWorkflowService
         Task.FromResult(_workflows.FirstOrDefault(w => w.Id == id));
 
     public Task<IReadOnlyList<WorkflowDefinitionDto>> GetVersionsAsync(string parentWorkflowId, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.Where(w => w.ParentWorkflowId == parentWorkflowId).OrderByDescending(w => w.Version).ToList());
+        GetVersionsException is not null
+            ? Task.FromException<IReadOnlyList<WorkflowDefinitionDto>>(GetVersionsException)
+            : Task.FromResult<IReadOnlyList<WorkflowDefinitionDto>>(_workflows.Where(w => w.ParentWorkflowId == parentWorkflowId).OrderByDescending(w => w.Version).ToList());
 
     public Task<IReadOnlyList<WorkflowDefinitionDto>> GetPublishedAsync(CancellationToken cancellationToken = default) =>
         GetPublishedException is not null
@@ -104,6 +112,11 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public Task ArchiveAsync(string workflowId, CancellationToken cancellationToken = default)
     {
+        if (ArchiveException is not null)
+        {
+            return Task.FromException(ArchiveException);
+        }
+
         Replace(Get(workflowId) with { Status = WorkflowStatus.Archived });
         return Task.CompletedTask;
     }
@@ -124,6 +137,11 @@ internal sealed class StubWorkflowService : IWorkflowService
 
     public Task DeleteAsync(string workflowId, CancellationToken cancellationToken = default)
     {
+        if (DeleteException is not null)
+        {
+            return Task.FromException(DeleteException);
+        }
+
         _workflows.RemoveAll(w => w.Id == workflowId);
         return Task.CompletedTask;
     }
@@ -141,6 +159,10 @@ internal sealed class StubBusinessRuleService : IBusinessRuleService
     public Exception? GetAllException { get; set; }
 
     public Exception? CreateException { get; set; }
+
+    public Exception? SetEnabledException { get; set; }
+
+    public Exception? DeleteException { get; set; }
 
     public Task<IReadOnlyList<BusinessRuleDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
         GetAllException is not null
@@ -173,6 +195,11 @@ internal sealed class StubBusinessRuleService : IBusinessRuleService
 
     public Task SetEnabledAsync(string id, bool isEnabled, CancellationToken cancellationToken = default)
     {
+        if (SetEnabledException is not null)
+        {
+            return Task.FromException(SetEnabledException);
+        }
+
         var index = _rules.FindIndex(r => r.Id == id);
         _rules[index] = _rules[index] with { IsEnabled = isEnabled };
         return Task.CompletedTask;
@@ -180,6 +207,11 @@ internal sealed class StubBusinessRuleService : IBusinessRuleService
 
     public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (DeleteException is not null)
+        {
+            return Task.FromException(DeleteException);
+        }
+
         _rules.RemoveAll(r => r.Id == id);
         return Task.CompletedTask;
     }
@@ -203,6 +235,10 @@ internal sealed class StubScheduledJobService : IScheduledJobService
     public Exception? CreateException { get; set; }
 
     public Exception? RunDueJobException { get; set; }
+
+    public Exception? SetEnabledException { get; set; }
+
+    public Exception? DeleteException { get; set; }
 
     public Task<IReadOnlyList<ScheduledJobDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
         GetAllException is not null
@@ -232,6 +268,11 @@ internal sealed class StubScheduledJobService : IScheduledJobService
 
     public Task SetEnabledAsync(string id, bool isEnabled, CancellationToken cancellationToken = default)
     {
+        if (SetEnabledException is not null)
+        {
+            return Task.FromException(SetEnabledException);
+        }
+
         var index = _jobs.FindIndex(j => j.Id == id);
         _jobs[index] = _jobs[index] with { IsEnabled = isEnabled };
         return Task.CompletedTask;
@@ -239,6 +280,11 @@ internal sealed class StubScheduledJobService : IScheduledJobService
 
     public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (DeleteException is not null)
+        {
+            return Task.FromException(DeleteException);
+        }
+
         _jobs.RemoveAll(j => j.Id == id);
         return Task.CompletedTask;
     }

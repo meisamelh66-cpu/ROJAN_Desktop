@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Automation;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Automation;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -115,6 +116,50 @@ public sealed class BusinessRulesTabViewModelTests
         sut.ToggleEnabledCommand.Execute(rule);
 
         Assert.False(sut.Rules[0].IsEnabled);
+    }
+
+    [Fact]
+    public void ToggleEnabledCommand_Failure_ShowsGenericError_PreservesRuleState_LogsOperationOnly()
+    {
+        var rules = new StubBusinessRuleService();
+        var logger = new RecordingLogger<BusinessRulesTabViewModel>();
+        var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1", logger);
+        sut.NewRuleName = "VIP Discount";
+        sut.NewRuleField = "IsVip";
+        sut.CreateCommand.Execute(null);
+        rules.SetEnabledException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.ToggleEnabledCommand.Execute(sut.Rules[0]));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.True(sut.Rules[0].IsEnabled);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=ToggleEnabledAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DeleteCommand_Failure_ShowsGenericError_PreservesRule_LogsOperationOnly()
+    {
+        var rules = new StubBusinessRuleService();
+        var logger = new RecordingLogger<BusinessRulesTabViewModel>();
+        var sut = new BusinessRulesTabViewModel(rules, "org-1", "branch-1", logger);
+        sut.NewRuleName = "VIP Discount";
+        sut.NewRuleField = "IsVip";
+        sut.CreateCommand.Execute(null);
+        rules.DeleteException = new InvalidOperationException(Secret);
+
+        var exception = Record.Exception(() => sut.DeleteCommand.Execute(sut.Rules[0]));
+
+        Assert.Null(exception);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Rules);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Contains("Operation=DeleteAsync", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Secret, entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
