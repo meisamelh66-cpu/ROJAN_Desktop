@@ -50,14 +50,14 @@ public sealed class SpecialistPageViewModelTests
     }
 
     [Fact]
-    public void LoadAsync_Failure_WithoutLoggerFactory_UsesNullLogger_NeverThrows()
+    public void LoadAsync_Failure_WithoutLoggerFactory_UsesNullLogger_NeverThrows_AndSurfacesGenericMessage()
     {
         var queryService = new StubSpecialistQueryService(_ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom")));
 
         var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]
@@ -137,15 +137,17 @@ public sealed class SpecialistPageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubSpecialistQueryService(
-            _ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<SpecialistDto>>(new InvalidOperationException("boom for specialist s-42 / Jordan Lee")));
 
         var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("s-42", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("Jordan Lee", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     // Sprint 5 Commit 4: premium specialist search and profile foundation. Text/field-matching

@@ -45,15 +45,16 @@ public sealed class ServiceProfileViewModelTests
     }
 
     [Fact]
-    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
-        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException("boom")));
+        var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException("boom: price 45.00 / commission 15%")));
         var commandService = new StubServiceCommandService();
 
         var sut = new ServiceProfileViewModel("service-1", profileQuery, commandService, new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("45.00", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -291,13 +292,13 @@ public sealed class ServiceProfileViewModelTests
     }
 
     [Fact]
-    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows_AndSurfacesGenericMessage()
     {
         var profileQuery = new StubServiceProfileQueryService((_, _) => Task.FromException<ServiceProfileDto>(new InvalidOperationException("boom")));
 
         var sut = new ServiceProfileViewModel("service-1", profileQuery, new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 }

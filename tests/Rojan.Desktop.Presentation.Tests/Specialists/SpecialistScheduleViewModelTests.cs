@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Specialists.Schedule;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
 
@@ -49,11 +50,11 @@ public sealed class SpecialistScheduleViewModelTests
     }
 
     [Fact]
-    public async Task LoadCommand_QueryThrows_StateIsErrorAndSetsErrorMessage()
+    public async Task LoadCommand_QueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubSpecialistScheduleQueryService
         {
-            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("boom")),
+            WeeklyAvailability = _ => Task.FromException<IReadOnlyList<WeeklyAvailabilityDto>>(new InvalidOperationException("boom for specialist-1 / 09:00-17:00")),
         };
         var sut = new SpecialistScheduleViewModel("specialist-1", queryService, new StubSpecialistScheduleCommandService());
 
@@ -61,7 +62,8 @@ public sealed class SpecialistScheduleViewModelTests
         await Task.Yield();
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("specialist-1", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.False(sut.IsPermissionDenied);
     }
 
@@ -136,6 +138,26 @@ public sealed class SpecialistScheduleViewModelTests
         Assert.True(sut.IsPermissionDenied);
         // The input buffer must not be cleared - a denied mutation never "succeeded".
         Assert.Equal("09:00", sut.NewAvailabilityStartText);
+    }
+
+    [Fact]
+    public async Task SetWeeklyAvailabilityCommand_BackendThrows_SetsGenericErrorMessage_NoLeak()
+    {
+        var commandService = new StubSpecialistScheduleCommandService { Fail = new InvalidOperationException("backend body: specialist-1 / 09:00-13:00 / status 500") };
+        var sut = new SpecialistScheduleViewModel("specialist-1", new StubSpecialistScheduleQueryService(), commandService)
+        {
+            NewAvailabilityStartText = "09:00",
+            NewAvailabilityEndText = "13:00",
+        };
+        await Task.Yield();
+
+        sut.SetWeeklyAvailabilityCommand.Execute(null);
+        await Task.Yield();
+
+        Assert.False(sut.IsPermissionDenied);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("specialist-1", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("status 500", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]

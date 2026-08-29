@@ -329,12 +329,12 @@ public sealed partial class ServicePageViewModel : ViewModelBase
                 : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - this is the one place a broad catch is the correct behavior, not a code smell.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
             if (requestVersion == _filterVersion)
             {
-                ErrorMessage = exception.Message;
+                ErrorMessage = Strings.Common_ActionFailedMessage;
                 State = DashboardState.Error;
                 LogOperationFailed(nameof(LoadAsync));
             }

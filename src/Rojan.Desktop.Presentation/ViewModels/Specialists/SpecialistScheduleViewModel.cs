@@ -278,10 +278,10 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
             LogPermissionDenied(nameof(LoadAsync));
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page/profile ViewModel in this app (see SpecialistProfileViewModel.LoadAsync).
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }
@@ -468,10 +468,10 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
             return false;
         }
 #pragma warning disable CA1031 // Mutation boundary: any failure must surface as ErrorMessage, never crash - same justified broad catch as SpecialistProfileViewModel's own save/assignment boundaries.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(operationName);
             return false;
         }

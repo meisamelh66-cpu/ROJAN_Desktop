@@ -435,10 +435,10 @@ public sealed partial class OrganizationPageViewModel : ViewModelBase
             State = Organizations.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Rojan.Desktop.Presentation.Localization.Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(LoadAsync));
         }

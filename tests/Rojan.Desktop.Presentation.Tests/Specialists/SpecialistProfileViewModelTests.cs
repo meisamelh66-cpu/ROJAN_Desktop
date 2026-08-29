@@ -61,15 +61,16 @@ public sealed class SpecialistProfileViewModelTests
     }
 
     [Fact]
-    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_ProfileQueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
-        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException("boom")));
+        var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException("boom for Jordan Lee / jordan.lee@rojan.example")));
         var commandService = new StubSpecialistCommandService();
 
         var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, commandService, new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("Jordan Lee", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -613,13 +614,13 @@ public sealed class SpecialistProfileViewModelTests
     }
 
     [Fact]
-    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows()
+    public void LoadAsync_Failure_WithoutLogger_UsesNullLogger_NeverThrows_AndSurfacesGenericMessage()
     {
         var profileQuery = new StubSpecialistProfileQueryService((_, _) => Task.FromException<SpecialistProfileDto>(new InvalidOperationException("boom")));
 
         var sut = new SpecialistProfileViewModel("specialist-1", profileQuery, new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 }

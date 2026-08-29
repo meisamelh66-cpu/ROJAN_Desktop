@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Specialists.Schedule;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Specialists;
 
@@ -51,11 +52,11 @@ public sealed class SpecialistAvailabilityViewModelTests
     }
 
     [Fact]
-    public async Task LoadCommand_QueryThrows_StateIsErrorAndSetsErrorMessage()
+    public async Task LoadCommand_QueryThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubSpecialistScheduleQueryService
         {
-            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("boom")),
+            Overrides = _ => Task.FromException<IReadOnlyList<ScheduleOverrideDto>>(new InvalidOperationException("boom for specialist-1 / 09:00-17:00")),
         };
         var sut = new SpecialistAvailabilityViewModel("specialist-1", queryService);
 
@@ -63,7 +64,8 @@ public sealed class SpecialistAvailabilityViewModelTests
         await Task.Yield();
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("specialist-1", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
     // Phase 7.4.1 Production Hardening: see SpecialistScheduleViewModelTests' own tests for the

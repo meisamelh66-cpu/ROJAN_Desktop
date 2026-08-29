@@ -36,15 +36,17 @@ public sealed class OrganizationPageViewModelTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void LoadAsync_QueryThrows_LogsError()
+    public void LoadAsync_QueryThrows_LogsError_AndSurfacesGenericMessage()
     {
-        var queryService = new StubOrganizationQueryService { GetOrganizationsException = new InvalidOperationException("boom") };
+        var queryService = new StubOrganizationQueryService { GetOrganizationsException = new InvalidOperationException("boom: branch b-77 / role SalonManager") };
         var logger = new RecordingLogger<OrganizationPageViewModel>();
 
         var sut = CreateSut(queryService, logger: logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("b-77", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("SalonManager", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 

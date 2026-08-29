@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 using Rojan.Desktop.Presentation.ViewModels.Services;
@@ -54,31 +55,35 @@ public sealed class ServicePageViewModelTests
     }
 
     [Fact]
-    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsErrorMessage()
+    public void Constructor_QueryServiceThrows_StateIsErrorAndSetsGenericErrorMessage()
     {
         var queryService = new StubServiceQueryService(
-            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom: price 45.00 / cost 12.00 / commission 15%")));
 
         var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("45.00", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("commission", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
     }
 
-    // Phase 8.19 Logging Wave 2A: LoadAsync / LoadCategoriesAsync / CreateServiceAsync now log at
-    // Error before their existing handling - user-visible behaviour unchanged.
+    // Phase 8.19 Logging Wave 2A: LoadAsync / LoadCategoriesAsync / CreateServiceAsync log at Error before their existing handling.
+    // Phase 8.112 P2 sub-wave 3: the Error-state ErrorMessage is now the generic Strings.Common_ActionFailedMessage,
+    // never the raw exception message (which can carry pricing / cost / commission data).
 
     [Fact]
-    public void LoadAsync_QueryServiceThrows_LogsError()
+    public void LoadAsync_QueryServiceThrows_LogsError_AndSurfacesGenericMessage()
     {
         var queryService = new StubServiceQueryService(
-            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom")));
+            _ => Task.FromException<IReadOnlyList<ServiceDto>>(new InvalidOperationException("boom: price 45.00 / cost 12.00 / commission 15%")));
         var logger = new RecordingLogger<ServicePageViewModel>();
 
         var sut = new ServicePageViewModel(queryService, MakeProfileQueryService(), new StubServiceCommandService(), new StubIntelligenceEngine(), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain("45.00", sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 
