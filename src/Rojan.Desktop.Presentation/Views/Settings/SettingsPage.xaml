@@ -132,21 +132,15 @@
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
 
+                    <!-- Visibility is driven by the message text being non-empty (not IsRestartRequired) so that
+                         a failure StatusMessage - restart-required, pack refresh/download/remove failure, etc. -
+                         is actually shown. Same pattern as AccountStatusMessage. -->
                     <TextBlock Text="{Binding StatusMessage}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
                                Foreground="{StaticResource Rojan.Brush.Warning}"
                                TextWrapping="Wrap"
-                               Margin="0,8,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsRestartRequired}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                               Margin="0,8,0,0"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource CollectionToVisibilityConverter}}" />
 
                     <Button Content="{x:Static loc:Strings.Settings_Language_RestartNow}"
                             Command="{Binding RestartCommand}"
@@ -227,21 +221,14 @@
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
 
+                    <!-- Visibility is driven by the message text being non-empty (not IsThemeRestartRequired)
+                         so a failure ThemeStatusMessage is actually shown. Same pattern as AccountStatusMessage. -->
                     <TextBlock Text="{Binding ThemeStatusMessage}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
                                Foreground="{StaticResource Rojan.Brush.Warning}"
                                TextWrapping="Wrap"
-                               Margin="0,8,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsThemeRestartRequired}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                               Margin="0,8,0,0"
+                               Visibility="{Binding ThemeStatusMessage, Converter={StaticResource CollectionToVisibilityConverter}}" />
 
                     <Button Content="{x:Static loc:Strings.Settings_Theme_RestartNow}"
                             Command="{Binding RestartCommand}"
@@ -384,21 +371,14 @@
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
 
+                    <!-- Visibility is driven by the message text being non-empty (not IsApiEnvironmentRestartRequired)
+                         so a failure ApiEnvironmentStatusMessage is actually shown. Same pattern as AccountStatusMessage. -->
                     <TextBlock Text="{Binding ApiEnvironmentStatusMessage}"
+                               Style="{StaticResource Rojan.TextStyle.Caption}"
                                Foreground="{StaticResource Rojan.Brush.Warning}"
                                TextWrapping="Wrap"
-                               Margin="0,8,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsApiEnvironmentRestartRequired}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                               Margin="0,8,0,0"
+                               Visibility="{Binding ApiEnvironmentStatusMessage, Converter={StaticResource CollectionToVisibilityConverter}}" />
 
                     <Button Content="{x:Static loc:Strings.Settings_Theme_RestartNow}"
                             Command="{Binding RestartCommand}"
