@@ -20,6 +20,9 @@ public sealed class InventoryProfileViewModelTests
         var sut = new InventoryProfileViewModel("product-1", profileQuery, new StubInventoryCommandService(), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
+        // P2 sub-wave 5: the surface carries the generic localized message, never the SKU/supplier/cost detail.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(Secret, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
@@ -34,7 +37,7 @@ public sealed class InventoryProfileViewModelTests
         var sut = new InventoryProfileViewModel("product-1", profileQuery, new StubInventoryCommandService());
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     private static ProductProfileDto MakeProfile(string productId = "product-1") =>
@@ -80,7 +83,7 @@ public sealed class InventoryProfileViewModelTests
         var sut = new InventoryProfileViewModel("product-1", profileQuery, commandService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]

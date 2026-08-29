@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
 
@@ -214,10 +215,10 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
             SelectedService = Services[0];
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogLoadFailed(nameof(InitializeAsync));
         }
@@ -258,10 +259,10 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
             State = Slots.Count == 0 ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Same top-level boundary reasoning as InitializeAsync.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogLoadFailed(nameof(LoadDailyAvailabilityAsync));
         }
@@ -298,10 +299,10 @@ public sealed partial class CalendarPageViewModel : ViewModelBase
             State = WeekDays.All(day => day.Slots.Count == 0) ? DashboardState.Empty : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Same top-level boundary reasoning as InitializeAsync.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogLoadFailed(nameof(LoadWeeklyAvailabilityAsync));
         }

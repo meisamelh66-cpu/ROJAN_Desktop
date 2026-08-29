@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.BookingWorkflow;
 using Rojan.Desktop.Presentation.Tests.Dialogs;
 using Rojan.Desktop.Presentation.Tests.Specialists;
@@ -69,7 +70,7 @@ public sealed class BookingPageViewModelTests
         var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     [Fact]
@@ -586,7 +587,9 @@ public sealed class BookingPageViewModelTests
         sut.CreateBookingCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(backendBody, sut.ErrorMessage);
+        // P2 sub-wave 5: the surface is the generic localized message, never the raw backend body.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         // The user's input must survive a failed submission so they can retry, not lose it.
         Assert.Equal("Amelia Hart", sut.NewBookingCustomerName);
         Assert.Equal("Haircut", sut.NewBookingServiceName);
@@ -606,7 +609,7 @@ public sealed class BookingPageViewModelTests
         sut.ConfirmBookingCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
 
@@ -622,7 +625,7 @@ public sealed class BookingPageViewModelTests
         sut.CancelBookingCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
 
@@ -640,7 +643,7 @@ public sealed class BookingPageViewModelTests
         sut.RescheduleBookingCommand.Execute(null);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.NotNull(sut.RescheduleDate);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }

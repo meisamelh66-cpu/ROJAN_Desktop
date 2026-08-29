@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Rojan.Desktop.Application.Bookings;
 using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Mvvm;
 using Rojan.Desktop.Presentation.ViewModels.BookingWorkflow;
 using Rojan.Desktop.Presentation.ViewModels.Dashboard;
@@ -349,12 +350,12 @@ public sealed partial class BookingPageViewModel : ViewModelBase
                 : DashboardState.Loaded;
         }
 #pragma warning disable CA1031 // Top-level load boundary: any failure must surface as the Error state, not crash the page - same justified broad catch as every other page ViewModel in this app.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
             if (requestVersion == _filterVersion)
             {
-                ErrorMessage = exception.Message;
+                ErrorMessage = Strings.Common_ActionFailedMessage;
                 State = DashboardState.Error;
                 LogOperationFailed(nameof(LoadAsync));
             }
@@ -394,12 +395,12 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: top-level command boundary - any failure must surface as the Error state (never crash, never the input the user just typed silently discarded) - same justified broad catch as LoadAsync's own boundary in this class.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
             // Deliberately does not clear the New Booking form fields here - a failed submission
             // should let the user retry with what they already typed, not lose it.
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(CreateBookingAsync));
         }
@@ -427,10 +428,10 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(ChangeStatusAsync));
         }
@@ -461,10 +462,10 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(CancelSelectedBookingAsync));
         }
@@ -497,10 +498,10 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class - deliberately does not clear RescheduleDate here, same "let the user retry" reasoning as CreateBookingAsync's own form fields.
-        catch (Exception exception)
+        catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Common_ActionFailedMessage;
             State = DashboardState.Error;
             LogOperationFailed(nameof(RescheduleSelectedBookingAsync));
         }

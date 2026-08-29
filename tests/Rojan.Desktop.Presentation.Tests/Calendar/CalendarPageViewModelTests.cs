@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Services;
+using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Tests.Services;
 using Rojan.Desktop.Presentation.Tests.Specialists;
 using Rojan.Desktop.Presentation.ViewModels.Calendar;
@@ -93,7 +94,7 @@ public sealed class CalendarPageViewModelTests
         var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")));
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     // Phase 8.11 Logging Hardening: the three broad-catch load boundaries
@@ -113,7 +114,9 @@ public sealed class CalendarPageViewModelTests
         var sut = new CalendarPageViewModel(queryService, MakeServiceQueryService(MakeService("service-1", "Haircut")), logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(backendBody, sut.ErrorMessage);
+        // P2 sub-wave 5: the surface is the generic localized message, never the raw backend body.
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=InitializeAsync", StringComparison.Ordinal));
         Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
     }

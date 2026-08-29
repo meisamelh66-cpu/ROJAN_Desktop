@@ -69,7 +69,7 @@ public sealed class InventoryPageViewModelTests
         var sut = MakeSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
     }
 
     // Phase 8.19 Logging Wave 2A: LoadAsync / SearchAsync now log at Error before
@@ -85,7 +85,7 @@ public sealed class InventoryPageViewModelTests
         var sut = MakeSut(queryService, logger: logger);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal("boom", sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("LoadAsync", StringComparison.Ordinal));
     }
 
