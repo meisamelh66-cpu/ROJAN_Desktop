@@ -34,11 +34,11 @@ public sealed class BackendAuthenticationServiceTests : IDisposable
         var handler = new FakeHttpMessageHandler((request, _) =>
         {
             Assert.Equal("/api/v1/auth/login", request.RequestUri?.AbsolutePath);
-            return Task.FromResult(JsonResponse(HttpStatusCode.OK, """
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, $$"""
                 {
                   "user": {"id":"owner-1","email":"owner@example.com","fullName":"Salon Owner","role":"MANAGER"},
-                  "accessToken":"real-access","accessTokenExpiresAt":"2026-08-04T12:15:00Z",
-                  "refreshToken":"real-refresh","refreshTokenExpiresAt":"2026-09-03T12:00:00Z"
+                  "accessToken":"real-access","accessTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddMinutes(15):O}}",
+                  "refreshToken":"real-refresh","refreshTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddDays(30):O}}"
                 }
                 """));
         });
@@ -131,11 +131,11 @@ public sealed class BackendAuthenticationServiceTests : IDisposable
         var handler = new FakeHttpMessageHandler((request, _) =>
         {
             Assert.Equal("/api/v1/auth/otp/verify", request.RequestUri?.AbsolutePath);
-            return Task.FromResult(JsonResponse(HttpStatusCode.OK, """
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, $$"""
                 {
                   "user": {"id":"owner-1","email":null,"phoneNumber":"+989123456789","fullName":"Salon Owner","role":"MANAGER"},
-                  "accessToken":"real-access","accessTokenExpiresAt":"2026-08-04T12:15:00Z",
-                  "refreshToken":"real-refresh","refreshTokenExpiresAt":"2026-09-03T12:00:00Z"
+                  "accessToken":"real-access","accessTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddMinutes(15):O}}",
+                  "refreshToken":"real-refresh","refreshTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddDays(30):O}}"
                 }
                 """));
         });
@@ -195,8 +195,8 @@ public sealed class BackendAuthenticationServiceTests : IDisposable
     [Fact]
     public async Task SignOutAsync_ClearsTheSession()
     {
-        var handler = new FakeHttpMessageHandler((_, _) => Task.FromResult(JsonResponse(HttpStatusCode.OK, """
-            {"user":{"id":"owner-1","email":"o@example.com","fullName":"Owner","role":"MANAGER"},"accessToken":"a","accessTokenExpiresAt":"2026-08-04T12:15:00Z","refreshToken":"r","refreshTokenExpiresAt":"2026-09-03T12:00:00Z"}
+        var handler = new FakeHttpMessageHandler((_, _) => Task.FromResult(JsonResponse(HttpStatusCode.OK, $$"""
+            {"user":{"id":"owner-1","email":"o@example.com","fullName":"Owner","role":"MANAGER"},"accessToken":"a","accessTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddMinutes(15):O}}","refreshToken":"r","refreshTokenExpiresAt":"{{DateTimeOffset.UtcNow.AddDays(30):O}}"}
             """)));
         using var service = CreateService(handler);
         await service.SignInWithCredentialsAsync("o@example.com", "pw");
