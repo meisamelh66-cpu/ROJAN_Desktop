@@ -17,6 +17,26 @@
 - **Verified with a real install → verify → uninstall → verify cycle**, twice this sprint (once before, once after the branding rebuild): silent install succeeds, `Rojan.Desktop.Shell.exe` present with the real icon, Start Menu shortcut created, Add/Remove Programs shows `DisplayVersion 1.0.0`; silent uninstall removes the app directory, Start Menu folder, and registry uninstall key completely.
 - **Code signing: hooks ready, not signed.** `build/publish-installer.ps1` accepts `-CertificatePath`/`-CertificatePassword`/`-TimestampUrl` and signs both the packaged `.exe` and the installer/uninstaller via `signtool.exe`; `RojanReception.iss` has the matching `#ifdef SignInstaller` block. No certificate was purchased (explicitly out of scope) — see `docs/standards/code-signing.md` for exactly what's needed and how a future purchase plugs in with zero redesign. Until then, real users will see a SmartScreen "Unknown Publisher" warning on first run.
 
+### 2a. Fresh-Install Production Default Fix — ✅ Verified
+
+**Bug:** `ApiEnvironmentService`'s compiled default is (and must stay) `Development` (`http://localhost:8080`) — the zero-config target `Rojan.Server`'s local `docker-compose` loop relies on for `dotnet run`/Visual Studio. A real customer install has no local backend and no way to reach the in-app Settings environment switcher before first sign-in (it lives behind the login gate), so a fresh install was silently stuck pointed at `localhost:8080` with no path forward, surfacing as a connection-failure message on first launch.
+
+**Fix (installer-only, zero C# change):** `build/installer/RojanReception.iss` gained a `[Code]` section (`ProvisionProductionEnvironmentIfAbsent`, run at `ssPostInstall`) that writes `%LocalAppData%\RojanDesktop\api\environment.json` = `{"environment": "Production", "productionUrl": null}` — but only when that file does not already exist. `ApiEnvironmentService.cs`'s compiled default, and the `dotnet run`/Visual Studio workflow, are completely untouched.
+
+**Verified this session**, on this machine, using a real install/upgrade/uninstall/reinstall cycle (existing local ROJAN Reception data was isolated aside beforehand and restored afterward, confirmed byte-identical):
+
+| Check | Result |
+|---|---|
+| Inno Setup syntax (`ISCC.exe` compile) | ✅ Compiles clean (one real bug caught and fixed: `[Code]` needs `//` comments, not `;`) |
+| Fresh install → `environment.json` created | ✅ `{"environment": "Production", "productionUrl": null}` |
+| Resolves to `https://api.rojanai.ir` | ✅ (identical JSON shape already covered by `ApiEnvironmentServiceTests.InitializeAsync_ReloadingAPersistedProductionSelectionWithNoStoredUrl_StillResolvesToTheRealDefault`, re-run this session, passing) |
+| Upgrade over an install with an existing (possibly customized) `environment.json` | ✅ File left byte-for-byte untouched |
+| Uninstall | ✅ Removes `environment.json` along with the rest of `RojanDesktop\` (pre-existing `[UninstallDelete]` behavior, unaffected) |
+| Reinstall after uninstall | ✅ Re-provisions Production again, same as a genuine fresh install |
+| Full existing test suite (`RojanDesktop.sln`, Release) | ✅ 2,713/2,715 passing — the 2 failures (`BackendAuthenticationServiceTests`, token-expiry-clock related) reproduce identically on unmodified `main`, confirmed pre-existing and unrelated |
+
+**Not verified this session:** a live OTP request against production from the installed app (would require a real phone number and send a real SMS — same "out of scope, needs a real phone number" boundary §3 and the smoke test plan already document). The base-address resolution itself is proven at the file/unit-test level above.
+
 ## 3. API Status: ✅ Reachable & contract-verified (read-only), ⚠️ not live-user-tested
 
 Per your decision this sprint, verification is **read-only + code-level** — no real OTP SMS was sent, no production data was written. All probes below were re-run at `2026-08-21T10:16Z` against `https://api.rojanai.ir`, safely (either GET, or POST with intentionally invalid input that fails validation before touching SMS/DB):
