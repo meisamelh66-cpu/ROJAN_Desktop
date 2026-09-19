@@ -98,3 +98,55 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(
 ; and is intentionally included: an uninstall is a real removal, not a
 ; "keep credentials around for a future reinstall" scenario.
 Type: filesandordirs; Name: "{userappdata}\..\Local\RojanDesktop"
+
+[Code]
+// Production Environment Bootstrap: ApiEnvironmentService.cs's own compiled
+// default is, and must stay, Development (http://localhost:8080) - that is
+// the zero-config target Rojan.Server's local docker-compose loop already
+// relies on for dotnet run/Visual Studio, and this installer must never
+// change it. The gap this closes is narrower: a real customer install has
+// no local backend and no way to reach the in-app Settings environment
+// switcher before first sign-in (it lives behind the login gate), so a
+// fresh install was silently stuck pointed at localhost with no path
+// forward. Writing the exact same persisted-settings JSON shape
+// ApiEnvironmentService.Persist()/ReadPersisted() already read/write
+// (Infrastructure/Api/ApiEnvironmentService.cs) - camelCase keys, since
+// that class serializes with JsonSerializerDefaults.Web - makes a fresh
+// install resolve Production immediately, the same way a user who had
+// manually switched to Production in Settings always would have. Guarded
+// by FileExists so an upgrade over an install that already has this file
+// (Production, or a deliberate Development/staging override set via
+// Settings or ROJAN_API_BASE_URL) is left untouched - this only ever fills
+// in the untouched, [UninstallDelete]-cleaned first-run state.
+procedure ProvisionProductionEnvironmentIfAbsent();
+var
+  SettingsDir, SettingsFile: String;
+  JsonContent: String;
+begin
+  SettingsDir := ExpandConstant('{localappdata}\RojanDesktop\api');
+  SettingsFile := SettingsDir + '\environment.json';
+
+  if not FileExists(SettingsFile) then
+  begin
+    if not DirExists(SettingsDir) then
+      ForceDirectories(SettingsDir);
+
+    JsonContent :=
+      '{' + #13#10 +
+      '  "environment": "Production",' + #13#10 +
+      '  "productionUrl": null' + #13#10 +
+      '}';
+
+    SaveStringToFile(SettingsFile, JsonContent, False);
+  end;
+end;
+
+// Runs at ssPostInstall - after [Files] copies the app but before [Run]
+// launches it (postinstall there fires after CurStepChanged's ssPostInstall
+// call completes) - so the very first OnStartup/ApiEnvironmentService.
+// InitializeAsync() call in the freshly-launched app already sees this file.
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+    ProvisionProductionEnvironmentIfAbsent();
+end;
