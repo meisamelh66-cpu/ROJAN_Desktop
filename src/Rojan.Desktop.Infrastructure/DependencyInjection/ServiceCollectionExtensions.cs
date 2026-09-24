@@ -268,6 +268,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApiClient, HttpApiClient>();
         services.AddSingleton<ISyncQueueService, SyncQueueService>();
 
+        // Phase B: Windows Reception Device Registration - depends on IApiClient/
+        // IDeviceRegistrationService, both already registered above.
+        services.AddSingleton<IDeviceAuthorizationService, BackendDeviceAuthorizationService>();
+
         // Phase 26: Smart Context Help.
         services.AddSingleton<IHelpRepository, HelpTopicRegistry>();
         services.AddSingleton<IHelpFavoritesStore, LocalHelpFavoritesStore>();

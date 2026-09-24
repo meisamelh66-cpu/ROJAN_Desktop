@@ -11,20 +11,24 @@ using Rojan.Desktop.Application.DependencyInjection;
 using Rojan.Desktop.Application.Identity;
 using Rojan.Desktop.Application.Notifications;
 using Rojan.Desktop.Application.Organizations;
+using Rojan.Desktop.Application.Salons;
 using Rojan.Desktop.Application.Security;
 using Rojan.Desktop.Domain.Security;
 using Rojan.Desktop.Infrastructure.DependencyInjection;
-using Rojan.Desktop.Infrastructure.Observability;
 using Rojan.Desktop.Infrastructure.Persistence;
 using Rojan.Desktop.Presentation.DependencyInjection;
 using Rojan.Desktop.Presentation.Dialogs;
+using Rojan.Desktop.Presentation.Features;
 using Rojan.Desktop.Presentation.Localization;
 using Rojan.Desktop.Presentation.Modules;
 using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.Theming;
+using Rojan.Desktop.Presentation.ViewModels.Features;
+using Rojan.Desktop.Presentation.ViewModels.Salons;
 using Rojan.Desktop.Presentation.Workspaces;
 using Rojan.Desktop.Shell.Dialogs;
+using Rojan.Desktop.Shell.Features;
 using Rojan.Desktop.Shell.Localization;
 using Rojan.Desktop.Shell.Modules;
 using Rojan.Desktop.Infrastructure.Automation;
@@ -56,11 +60,6 @@ public partial class App
 
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices(ConfigureServices)
-            // P1-5 - Desktop Observability Foundation: additive to the default
-            // Console/Debug providers CreateDefaultBuilder() already wires up -
-            // not a replacement. See LocalFileLoggerProvider's own doc comment
-            // for what it does and does not log.
-            .ConfigureLogging(logging => logging.AddProvider(new LocalFileLoggerProvider()))
             .Build();
 
         // Blocking (not awaiting) is deliberate here, not an oversight: this
@@ -181,6 +180,46 @@ public partial class App
 
         authenticationService.StateChanged += OnAuthenticationStateChanged;
 
+        // PASS D6 (Active Salon Context Correctness): resolves the real candidate salon list
+        // (GET /me/salon-access, via the same cached ISalonContextService every salon-scoped
+        // repository already depends on) and, only when the account has more than one real
+        // candidate and none is already the active context (a fresh install, or a persisted
+        // selection that no longer resolves), shows SalonSelectionWindow before anything else runs -
+        // same "gate before MainWindow, exit cleanly if declined" shape as the login gate just above.
+        // A single real candidate auto-selects inside GetAccessSummaryAsync itself (Rule 1) - this
+        // branch is only ever reached for the genuine multi-salon case, never shown otherwise. Placed
+        // before InitializeSessionWithRetry below so CurrentSessionService.InitializeAsync (inside
+        // it) resolves the real, now-decided active salon, not an ambiguous null.
+        var salonContextService = _host.Services.GetRequiredService<ISalonContextService>();
+        var salonAccessSummary = salonContextService.GetAccessSummaryAsync().GetAwaiter().GetResult();
+        if (salonAccessSummary.ActiveSalonId is null && salonAccessSummary.Candidates.Count > 1)
+        {
+            // cultureService/localizationService are already resolved above (culture setup, before
+            // the login gate) - reused here rather than re-resolved.
+            var salonSelectionViewModel = new SalonSelectionWindowViewModel(salonContextService, salonAccessSummary.Candidates);
+            var salonSelectionWindow = new SalonSelectionWindow(salonSelectionViewModel, cultureService, localizationService);
+            var salonSelected = salonSelectionWindow.ShowDialog() == true;
+            if (!salonSelected)
+            {
+                Shutdown();
+                return;
+            }
+        }
+
+        // Phase B: Windows Reception Device Registration. Runs only now - after the real,
+        // authorized active salon is known (auto-selected above for the single-candidate case,
+        // or just explicitly chosen via SalonSelectionWindow for the multi-salon case) - never a
+        // locally-guessed salonId. See RegisterDeviceForActiveSalon's own doc comment for the full
+        // reasoning; extracted the same way, and for the same reason, InitializeSessionWithRetry
+        // below already is - a plain static method over injected seams, testable without a WPF
+        // host/dispatcher.
+        var deviceAuthorizationService = _host.Services.GetRequiredService<IDeviceAuthorizationService>();
+        RegisterDeviceForActiveSalon(salonContextService, deviceAuthorizationService, (outcome, errorMessage) =>
+        {
+            var deviceRegistrationLogger = _host.Services.GetRequiredService<ILogger<App>>();
+            LogDeviceRegistrationFailed(deviceRegistrationLogger, outcome, errorMessage);
+        });
+
         // Reception Production Integration: moved from before the login gate
         // (its original Phase 22 position) to here. Resolving the current
         // organization/branch/role now means resolving the *signed-in user's*
@@ -211,6 +250,31 @@ public partial class App
             return;
         }
 
+        // PASS D10 (Feature Personalization & Modular Workspace): resolves the current salon's saved
+        // feature configuration (see IFeatureConfigurationService's own doc comment for how "current
+        // salon" is scoped) - placed right after CurrentSessionService.InitializeAsync above so the
+        // salon scope it reads is already the real, resolved one, mirroring the exact ordering
+        // reasoning SalonSelectionWindow's own gate documents for itself. Skipped entirely for
+        // DesktopContextState.NoBusinessContext - a brand-new invitee with nothing to personalize yet
+        // (no real salon, likely mid Accept-Invite) must not be blocked behind a workspace-setup
+        // dialog before they can even reach that flow, same "do not trap a brand-new session" reasoning
+        // MainWindowViewModel.SelectInitialNavigationItem's own doc comment already establishes for the
+        // sidebar's initial selection.
+        var featureConfigurationService = _host.Services.GetRequiredService<IFeatureConfigurationService>();
+        featureConfigurationService.InitializeAsync().GetAwaiter().GetResult();
+        if (!featureConfigurationService.HasConfiguration && currentSessionService.ContextState != DesktopContextState.NoBusinessContext)
+        {
+            var moduleRegistry = _host.Services.GetRequiredService<IModuleRegistry>();
+            var featureSetupViewModel = new FeatureSetupWindowViewModel(featureConfigurationService, moduleRegistry.Modules);
+            var featureSetupWindow = new FeatureSetupWindow(featureSetupViewModel, cultureService, localizationService);
+            var configured = featureSetupWindow.ShowDialog() == true;
+            if (!configured)
+            {
+                Shutdown();
+                return;
+            }
+        }
+
         var certificateService = _host.Services.GetRequiredService<ICertificateService>();
         certificateService.InitializeAsync().GetAwaiter().GetResult();
         if (certificateService.CurrentState == CertificateState.NotIssued)
@@ -239,6 +303,19 @@ public partial class App
         workflowSchedulerService.Start();
 
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+
+        // PASS D3: with ShutdownMode=OnExplicitShutdown (App.xaml), closing
+        // MainWindow no longer auto-exits the app the way it did implicitly
+        // under the previous default (OnLastWindowClose) - that default is
+        // exactly what caused the real production bug this pass fixes (see
+        // App.xaml's own doc comment: LoginWindow being the sole open window
+        // when it closed was tearing the whole app down before MainWindow
+        // ever got a chance to render). This restores the pre-existing,
+        // correct "closing the main window exits the app" behavior
+        // explicitly, the same way every other real exit path in this
+        // method already calls Shutdown() rather than relying on implicit
+        // window-count bookkeeping.
+        mainWindow.Closed += (_, _) => Shutdown();
         mainWindow.Show();
 
         base.OnStartup(e);
@@ -393,6 +470,11 @@ public partial class App
         services.AddSingleton<ICurrentSessionService>(sp => sp.GetRequiredService<CurrentSessionService>());
         services.AddSingleton<IEnterpriseContext>(sp => sp.GetRequiredService<CurrentSessionService>());
 
+        // PASS D10 (Feature Personalization & Modular Workspace): same "interface in Presentation,
+        // concrete implementation in Shell" split as CurrentSessionService above - needs file-system
+        // access (persisted per-salon selection) that only the composition root should own.
+        services.AddSingleton<IFeatureConfigurationService, FeatureConfigurationService>();
+
         RegisterModules(services);
         services.AddSingleton<IModuleRegistry, ModuleRegistry>();
 
@@ -502,6 +584,10 @@ public partial class App
     [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled exception ({Source})")]
     private static partial void LogUnhandledException(ILogger logger, string source, Exception exception);
 
+    /// <summary>Phase B: Windows Reception Device Registration - a non-<see cref="DeviceRegistrationOutcome.Registered"/> result is a real, already-handled outcome (see <see cref="DeviceRegistrationResult"/>'s own doc comment), never an unhandled exception - logged here rather than routed through <see cref="LogException"/>/<see cref="ShowErrorDialog"/>, which are reserved for the three unhandled-exception surfaces this class owns.</summary>
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Desktop device registration did not succeed ({Outcome}): {ErrorMessage}")]
+    private static partial void LogDeviceRegistrationFailed(ILogger logger, DeviceRegistrationOutcome outcome, string? errorMessage);
+
     private static void ShowErrorDialog(Exception exception)
     {
         // "ROJAN Desktop" (both the message text and the dialog title) is
@@ -549,6 +635,42 @@ public partial class App
                 }
             }
 #pragma warning restore CA1031
+        }
+    }
+
+    /// <summary>
+    /// Phase B: Windows Reception Device Registration. Reads the caller's real, already-resolved
+    /// active salon (<see cref="ISalonContextService.GetSalonIdAsync"/> - the same cache
+    /// <see cref="SalonSelectionWindow"/>'s own <see cref="ISalonContextService.SelectSalonAsync"/>
+    /// call just updated for the multi-salon case, per that interface's own "one cache" doc
+    /// comment, so this reflects a just-made explicit choice correctly, never a stale value) and
+    /// registers this Desktop installation for it. No-op for an account with no salon access at
+    /// all (<c>activeSalonId</c> stays <see langword="null"/> - nothing to register a device for).
+    /// A non-<see cref="DeviceRegistrationOutcome.Registered"/> result is reported via
+    /// <paramref name="onRegistrationNotSucceeded"/> rather than thrown or ignored - this
+    /// foundation phase does not yet gate app usage on registration succeeding (unlike the login/
+    /// salon-selection/session gates above, which do exit on failure), but a failure must never be
+    /// silently treated as success either; the real success/failure distinction is entirely owned
+    /// by <see cref="IDeviceAuthorizationService.RegisterAsync"/> itself, never re-derived here.
+    /// Extracted as a plain static method over injected seams for the same reason
+    /// <see cref="InitializeSessionWithRetry"/> already is - unit-testable without a WPF host/
+    /// dispatcher (see <c>Rojan.Desktop.Shell.Tests.AppTests</c>'s own doc comment on that method).
+    /// </summary>
+    internal static void RegisterDeviceForActiveSalon(
+        ISalonContextService salonContextService,
+        IDeviceAuthorizationService deviceAuthorizationService,
+        Action<DeviceRegistrationOutcome, string?> onRegistrationNotSucceeded)
+    {
+        var activeSalonId = salonContextService.GetSalonIdAsync().GetAwaiter().GetResult();
+        if (activeSalonId is null)
+        {
+            return;
+        }
+
+        var result = deviceAuthorizationService.RegisterAsync(activeSalonId).GetAwaiter().GetResult();
+        if (result.Outcome != DeviceRegistrationOutcome.Registered)
+        {
+            onRegistrationNotSucceeded(result.Outcome, result.ErrorMessage);
         }
     }
 
