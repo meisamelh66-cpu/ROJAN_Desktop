@@ -25,6 +25,7 @@ using Rojan.Desktop.Domain.Notifications;
 using Rojan.Desktop.Domain.Organizations;
 using Rojan.Desktop.Domain.Reporting;
 using Rojan.Desktop.Domain.Automation;
+using Rojan.Desktop.Domain.Media;
 using Rojan.Desktop.Domain.Salons;
 using Rojan.Desktop.Domain.Specialists;
 using Rojan.Desktop.Domain.Specialists.Schedule;
@@ -39,6 +40,7 @@ using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Customers;
 using Rojan.Desktop.Infrastructure.Dashboard;
+using Rojan.Desktop.Infrastructure.Media;
 using Rojan.Desktop.Infrastructure.Help;
 using Rojan.Desktop.Infrastructure.HR;
 using Rojan.Desktop.Infrastructure.Identity;
@@ -181,6 +183,11 @@ public static class ServiceCollectionExtensions
         // update-service method at all, so catalog authoring remains out of
         // scope, same pre-existing gap as before this swap.
         services.AddSingleton<DomainServices.IServiceRepository, BackendServiceRepository>();
+
+        // Phase F (Salon Media Integration): real GET against ROJAN_Backend's existing
+        // /salons/{salonId}/media endpoint - read-only, no new media API. See
+        // ISalonMediaRepository's own doc comment for why this stays read-only.
+        services.AddSingleton<ISalonMediaRepository, BackendSalonMediaRepository>();
 
         // Remediation Phase 3A (Calendar Dead Code Cleanup): the
         // ICalendarRepository -> EfCalendarRepository registration that used to sit here (Sprint 6
