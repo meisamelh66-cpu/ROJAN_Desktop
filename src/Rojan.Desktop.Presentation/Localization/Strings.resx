@@ -312,6 +312,15 @@
   <data name="Settings_Theme_RestartNow" xml:space="preserve">
     <value>راه‌اندازی مجدد اکنون</value>
   </data>
+  <data name="FeatureSetup_Title" xml:space="preserve">
+    <value>محیط کار خودت را بچین</value>
+  </data>
+  <data name="FeatureSetup_Subtitle" xml:space="preserve">
+    <value>فقط ابزارهایی را ببین که هر روز به آن‌ها نیاز داری. هر زمان خواستی می‌توانی امکانات بیشتری اضافه کنی.</value>
+  </data>
+  <data name="FeatureSetup_Continue" xml:space="preserve">
+    <value>شروع کن</value>
+  </data>
   <data name="Nav_Organizations" xml:space="preserve">
     <value>سازمان‌ها</value>
   </data>
@@ -3033,6 +3042,15 @@
   </data>
   <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
     <value>مشاهده برنامه کامل</value>
+  </data>
+  <data name="SalonSelection_Title" xml:space="preserve">
+    <value>انتخاب سالن</value>
+  </data>
+  <data name="SalonSelection_Subtitle" xml:space="preserve">
+    <value>این حساب به چند سالن دسترسی دارد. سالنی را که می‌خواهید در این نشست کار کنید انتخاب کنید.</value>
+  </data>
+  <data name="SalonSelection_Error_InvalidSelection" xml:space="preserve">
+    <value>این سالن دیگر در دسترس نیست. لطفاً سالن دیگری را انتخاب کنید.</value>
   </data>
   <data name="Login_Title" xml:space="preserve">
     <value>ورود به روژان دسکتاپ</value>

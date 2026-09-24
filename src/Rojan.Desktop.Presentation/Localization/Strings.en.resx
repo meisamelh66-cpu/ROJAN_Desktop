@@ -300,6 +300,15 @@
   <data name="Settings_Theme_RestartNow" xml:space="preserve">
     <value>Restart Now</value>
   </data>
+  <data name="FeatureSetup_Title" xml:space="preserve">
+    <value>Set up your workspace</value>
+  </data>
+  <data name="FeatureSetup_Subtitle" xml:space="preserve">
+    <value>See only the tools you use every day. You can always add more later.</value>
+  </data>
+  <data name="FeatureSetup_Continue" xml:space="preserve">
+    <value>Get started</value>
+  </data>
   <data name="Nav_Organizations" xml:space="preserve">
     <value>Organizations</value>
   </data>
@@ -3021,6 +3030,15 @@ Use the action buttons in the detail panel to make changes.</value>
   </data>
   <data name="Dashboard_Schedule_ViewFull" xml:space="preserve">
     <value>View Full Schedule</value>
+  </data>
+  <data name="SalonSelection_Title" xml:space="preserve">
+    <value>Select Salon</value>
+  </data>
+  <data name="SalonSelection_Subtitle" xml:space="preserve">
+    <value>This account has access to multiple salons. Choose the one you want to work with for this session.</value>
+  </data>
+  <data name="SalonSelection_Error_InvalidSelection" xml:space="preserve">
+    <value>This salon is no longer available. Please choose a different one.</value>
   </data>
   <data name="Login_Title" xml:space="preserve">
     <value>Sign in to ROJAN Desktop</value>

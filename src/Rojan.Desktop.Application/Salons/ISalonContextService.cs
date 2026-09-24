@@ -61,7 +61,31 @@ public interface ISalonContextService
     /// </summary>
     public Task<SalonContext?> GetCurrentContextAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<SalonContext?>(null);
+
+    /// <summary>
+    /// PASS D6 (Active Salon Context Correctness): the real candidate list this account actually has
+    /// access to (never silently collapsed to "the first one"), plus whichever one, if any, is
+    /// already the active context. <c>Shell.App.OnStartup</c> is the one real caller - it decides
+    /// whether an explicit selection is needed (more than one candidate, none already active) before
+    /// any salon-scoped module runs. Defaults to an empty summary for the same "existing test doubles
+    /// keep compiling unchanged" reason <see cref="Invalidate"/> already documents.
+    /// </summary>
+    public Task<SalonAccessSummary> GetAccessSummaryAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(new SalonAccessSummary([], null));
+
+    /// <summary>
+    /// PASS D6: the one way the active salon changes after the automatic single-candidate case -
+    /// validated against the real candidate list, never an arbitrary/unvalidated id. Returns
+    /// <see langword="false"/> without changing anything if <paramref name="salonId"/> isn't one of
+    /// the real candidates. Defaults to <see langword="false"/> for the same reason every other
+    /// default here does - only the real implementation persists a selection.
+    /// </summary>
+    public Task<bool> SelectSalonAsync(string salonId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(false);
 }
+
+/// <summary>See <see cref="ISalonContextService.GetAccessSummaryAsync"/>. <see cref="SalonAccessSummary.ActiveSalonId"/> is <see langword="null"/> until exactly one candidate exists (auto-selected) or <see cref="ISalonContextService.SelectSalonAsync"/> has been called with a valid choice - never an arbitrary member of <see cref="SalonAccessSummary.Candidates"/>.</summary>
+public sealed record SalonAccessSummary(IReadOnlyList<SalonContext> Candidates, string? ActiveSalonId);
 
 /// <summary>
 /// See <see cref="ISalonContextService.GetCurrentContextAsync"/>. <see cref="IsOwner"/> true means <see cref="MembershipRole"/> is always null (an owner's role is never a <c>SalonRole</c> membership - see ROJAN_Backend's own <c>SalonRole</c> doc comment); false means <see cref="MembershipRole"/> carries the raw backend role string (<c>"MANAGER"</c>/<c>"RECEPTIONIST"</c>).

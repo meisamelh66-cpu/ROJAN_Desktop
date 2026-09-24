@@ -1,0 +1,93 @@
+<Window x:Class="Rojan.Desktop.Shell.FeatureSetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:Rojan.Desktop.Presentation.Localization;assembly=Rojan.Desktop.Presentation"
+        xmlns:features="clr-namespace:Rojan.Desktop.Presentation.ViewModels.Features;assembly=Rojan.Desktop.Presentation"
+        Title="ROJAN Reception"
+        Width="460"
+        Height="620"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        Background="{StaticResource Rojan.Brush.Background}">
+
+    <!--
+        PASS D10 (Feature Personalization & Modular Workspace): a standalone top-level Window, same
+        "shown entirely before MainWindow/MainWindowViewModel are constructed, via App.xaml.cs's
+        OnStartup gating" shape as SalonSelectionWindow.xaml's own doc comment - shown only when the
+        current salon has no saved feature configuration yet. Each row is a Rojan.Style.Card surface
+        (not the Border+MouseBinding "click to navigate away" idiom SalonSelectionWindow's rows use -
+        these rows toggle in place, they never close the window) with a Rojan.Style.ToggleSwitch, the
+        same premium-feel design-system tokens every other page in this app already uses - no generic
+        Windows checkbox list.
+    -->
+    <Grid Margin="32,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="{x:Static loc:Strings.FeatureSetup_Title}"
+                       Style="{StaticResource Rojan.TextStyle.Display}"
+                       Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,0,0,8" />
+            <TextBlock Text="{x:Static loc:Strings.FeatureSetup_Subtitle}"
+                       Style="{StaticResource Rojan.TextStyle.Caption}"
+                       Foreground="{StaticResource Rojan.Brush.MutedText}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type features:FeatureSetupItem}">
+                        <Border Style="{StaticResource Rojan.Style.Card}"
+                                Padding="14,12"
+                                Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Title}"
+                                           Style="{StaticResource Rojan.TextStyle.Body}"
+                                           Foreground="{StaticResource Rojan.Brush.TextPrimary}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+
+                                <ToggleButton Grid.Column="1"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              AutomationProperties.Name="{Binding Title}">
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource Rojan.Style.ToggleSwitch}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMandatory}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="False" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Button Grid.Row="2"
+                Content="{x:Static loc:Strings.FeatureSetup_Continue}"
+                Style="{StaticResource Rojan.Style.ButtonPrimary}"
+                Command="{Binding ContinueCommand}"
+                HorizontalAlignment="Stretch"
+                Margin="0,16,0,0" />
+    </Grid>
+</Window>

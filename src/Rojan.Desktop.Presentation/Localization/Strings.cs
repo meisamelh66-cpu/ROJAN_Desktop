@@ -313,6 +313,15 @@ public static class Strings
 
     public static string Settings_Theme_RestartNow => Get(nameof(Settings_Theme_RestartNow));
 
+    // PASS D10 (Feature Personalization & Modular Workspace): first-run workspace setup window.
+    // Minimal-fix import (Shell build repair) - only the window's own strings, not the Settings
+    // personalization section's (that UI was not imported - see this commit's own message).
+    public static string FeatureSetup_Title => Get(nameof(FeatureSetup_Title));
+
+    public static string FeatureSetup_Subtitle => Get(nameof(FeatureSetup_Subtitle));
+
+    public static string FeatureSetup_Continue => Get(nameof(FeatureSetup_Continue));
+
     public static string Nav_Organizations => Get(nameof(Nav_Organizations));
 
     public static string Shell_BranchSwitcher => Get(nameof(Shell_BranchSwitcher));
@@ -1672,6 +1681,15 @@ public static class Strings
     public static string Dashboard_Schedule_Now => Get(nameof(Dashboard_Schedule_Now));
 
     public static string Dashboard_Schedule_ViewFull => Get(nameof(Dashboard_Schedule_ViewFull));
+
+    // PASS D6 (Active Salon Context Correctness). Minimal-fix import (Shell build repair) - only the
+    // selection window's own strings; Shell_ActiveSalonTooltip (MainWindow header UI polish) was not
+    // imported - see this commit's own message.
+    public static string SalonSelection_Title => Get(nameof(SalonSelection_Title));
+
+    public static string SalonSelection_Subtitle => Get(nameof(SalonSelection_Subtitle));
+
+    public static string SalonSelection_Error_InvalidSelection => Get(nameof(SalonSelection_Error_InvalidSelection));
 
     // Owner App Login Experience.
     public static string Login_Title => Get(nameof(Login_Title));
