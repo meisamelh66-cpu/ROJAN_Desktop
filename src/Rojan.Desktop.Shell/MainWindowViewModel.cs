@@ -550,7 +550,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     /// keeps every surviving entry's existing instance. Both sequences are ordered subsequences of the
     /// same registered module list, so a single forward pass is enough.
     /// </summary>
-    private void SyncNavigationItems(IReadOnlyList<NavigationItem> desired)
+    private void SyncNavigationItems(List<NavigationItem> desired)
     {
         var desiredIds = desired.Select(ModuleIdOf).ToHashSet(StringComparer.Ordinal);
         for (var i = NavigationItems.Count - 1; i >= 0; i--)
