@@ -7,6 +7,7 @@ using Rojan.Desktop.Application.BookingWorkflow;
 using Rojan.Desktop.Application.Calendar;
 using Rojan.Desktop.Application.Common;
 using Rojan.Desktop.Application.Customers;
+using Rojan.Desktop.Application.Banners;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.HR;
 using Rojan.Desktop.Application.Intelligence;
@@ -41,6 +42,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddSingleton<IDashboardQueryService, DashboardQueryService>();
+        services.AddSingleton<IDashboardBannerService, DashboardBannerService>();
         // Phase 1.2 Owner App Create Salon Flow: SalonCommandService is registered
         // directly as ISalonCommandService, unlike every *CommandService below it -
         // deliberately not permission-gated, see that class's own doc comment for why.

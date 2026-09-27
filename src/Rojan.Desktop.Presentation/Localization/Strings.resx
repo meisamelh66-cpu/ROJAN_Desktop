@@ -3253,4 +3253,10 @@
   <data name="Common_Inactive" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
+  <data name="Dashboard_Banner_Cta" xml:space="preserve">
+    <value>مشاهده</value>
+  </data>
+  <data name="Dashboard_KpiLoadFailed" xml:space="preserve">
+    <value>خطا در دریافت شاخص‌ها. لطفاً دوباره تلاش کنید.</value>
+  </data>
 </root>

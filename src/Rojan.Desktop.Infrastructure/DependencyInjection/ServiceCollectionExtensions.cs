@@ -16,6 +16,7 @@ using Rojan.Desktop.Domain.Accounting;
 using Rojan.Desktop.Domain.AI;
 using Rojan.Desktop.Domain.Bookings;
 using Rojan.Desktop.Domain.Customers;
+using Rojan.Desktop.Domain.Banners;
 using Rojan.Desktop.Domain.Dashboard;
 using Rojan.Desktop.Domain.Help;
 using Rojan.Desktop.Domain.HR;
@@ -39,6 +40,7 @@ using Rojan.Desktop.Infrastructure.Bookings;
 using Rojan.Desktop.Infrastructure.Calendar;
 using Rojan.Desktop.Infrastructure.Connectivity;
 using Rojan.Desktop.Infrastructure.Customers;
+using Rojan.Desktop.Infrastructure.Banners;
 using Rojan.Desktop.Infrastructure.Dashboard;
 using Rojan.Desktop.Infrastructure.Media;
 using Rojan.Desktop.Infrastructure.Help;
@@ -98,6 +100,10 @@ public static class ServiceCollectionExtensions
         // stays in the codebase, unreferenced - same convention as every
         // Sprint 6 Fake->real swap below.
         services.AddSingleton<IDashboardRepository, BackendDashboardRepository>();
+
+        // Dashboard hero banner: read-only consumer of ROJAN_Backend's existing public banner module
+        // (managed from the Admin Panel's /rojan-admin/banners, target DESKTOP) - see BackendBannerRepository.
+        services.AddSingleton<IBannerRepository, BackendBannerRepository>();
 
         // Owner App Customer CRM Integration: real GET/POST/PATCH/DELETE
         // against ROJAN_Backend's Customer CRM endpoints, replacing

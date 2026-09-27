@@ -1615,6 +1615,10 @@ public static class Strings
 
     public static string Dashboard_Hero_Headline => Get(nameof(Dashboard_Hero_Headline));
 
+    public static string Dashboard_Banner_Cta => Get(nameof(Dashboard_Banner_Cta));
+
+    public static string Dashboard_KpiLoadFailed => Get(nameof(Dashboard_KpiLoadFailed));
+
     public static string Dashboard_Hero_Subtitle => Get(nameof(Dashboard_Hero_Subtitle));
 
     public static string Dashboard_Hero_CtaFormat => Get(nameof(Dashboard_Hero_CtaFormat));

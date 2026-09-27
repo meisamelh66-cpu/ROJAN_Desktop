@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Rojan.Desktop.Application.Banners;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Application.Reporting;
@@ -38,15 +39,18 @@ public sealed partial class DashboardPageViewModel : ViewModelBase
     private static readonly CompositeFormat HeroCtaFormat = CompositeFormat.Parse(Strings.Dashboard_Hero_CtaFormat);
 
     private readonly IDashboardQueryService _queryService;
+    private readonly IDashboardBannerService _bannerService;
     private readonly IPermissionEngine _permissionEngine;
     private readonly ICurrentSessionService _currentSessionService;
     private readonly ILogger<DashboardPageViewModel> _logger;
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private DashboardBannerDto? _banner;
 
-    public DashboardPageViewModel(IDashboardQueryService queryService, IPermissionEngine permissionEngine, ICurrentSessionService currentSessionService, ILogger<DashboardPageViewModel>? logger = null)
+    public DashboardPageViewModel(IDashboardQueryService queryService, IPermissionEngine permissionEngine, ICurrentSessionService currentSessionService, IDashboardBannerService bannerService, ILogger<DashboardPageViewModel>? logger = null)
     {
         _queryService = queryService;
+        _bannerService = bannerService;
         _permissionEngine = permissionEngine;
         _currentSessionService = currentSessionService;
         _logger = logger ?? NullLogger<DashboardPageViewModel>.Instance;
@@ -179,7 +183,34 @@ public sealed partial class DashboardPageViewModel : ViewModelBase
         // and represents it via State/ErrorMessage, so there is nothing
         // left that could become an unobserved task exception.
         _ = LoadAsync();
+
+        // Independent of the KPI load: the banner never delays or breaks the rest of the Dashboard.
+        _ = LoadBannerAsync();
     }
+
+    /// <summary>
+    /// Dashboard hero banner - the first active Desktop banner published from the Admin Panel
+    /// (<c>/rojan-admin/banners</c>, target "دسکتاپ"). Hidden (no reserved space) while loading, when
+    /// none is published, or when loading fails.
+    /// </summary>
+    public bool IsBannerVisible => _banner is not null;
+
+    public string? BannerTitle => _banner?.Title;
+
+    public string? BannerSubtitle => _banner?.Subtitle;
+
+    /// <summary>The banner image; <see langword="null"/> when unavailable, in which case the view shows its fallback surface instead of a broken image.</summary>
+    public byte[]? BannerImageBytes => _banner?.ImageBytes;
+
+    public bool HasBannerImage => _banner?.ImageBytes is { Length: > 0 };
+
+    /// <summary>The admin-configured CTA target, accepted only as an absolute http(s) URL; <see langword="null"/> hides the CTA.</summary>
+    public Uri? BannerCtaUri =>
+        Uri.TryCreate(_banner?.Href, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)
+            ? uri
+            : null;
+
+    public bool HasBannerCta => BannerCtaUri is not null;
 
     public ObservableCollection<KpiMetricDto> KpiMetrics { get; }
 
@@ -288,10 +319,33 @@ public sealed partial class DashboardPageViewModel : ViewModelBase
         catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = Strings.Common_ActionFailedMessage;
+            ErrorMessage = Strings.Dashboard_KpiLoadFailed;
             State = DashboardState.Error;
             LogLoadFailed(nameof(LoadAsync));
         }
+    }
+
+    private async Task LoadBannerAsync()
+    {
+#pragma warning disable CA1031 // The banner is optional content: any failure leaves it hidden and must never affect the rest of the Dashboard.
+        try
+        {
+            _banner = await _bannerService.GetDashboardBannerAsync().ConfigureAwait(true);
+        }
+        catch (Exception)
+        {
+            _banner = null;
+            LogLoadFailed(nameof(LoadBannerAsync));
+        }
+#pragma warning restore CA1031
+
+        OnPropertyChanged(nameof(IsBannerVisible));
+        OnPropertyChanged(nameof(BannerTitle));
+        OnPropertyChanged(nameof(BannerSubtitle));
+        OnPropertyChanged(nameof(BannerImageBytes));
+        OnPropertyChanged(nameof(HasBannerImage));
+        OnPropertyChanged(nameof(BannerCtaUri));
+        OnPropertyChanged(nameof(HasBannerCta));
     }
 
     // Operation name only: the caught exception is never passed to the logger

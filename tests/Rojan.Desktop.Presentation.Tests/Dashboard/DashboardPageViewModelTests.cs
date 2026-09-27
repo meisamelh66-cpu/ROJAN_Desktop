@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Rojan.Desktop.Application.Banners;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Presentation.Localization;
@@ -21,8 +22,8 @@ public sealed class DashboardPageViewModelTests
         return new DashboardOverviewDto(metrics, activity);
     }
 
-    private static DashboardPageViewModel CreateSut(StubDashboardQueryService queryService, WorkspaceRole role = WorkspaceRole.PlatformOwner, RecordingLogger<DashboardPageViewModel>? logger = null) =>
-        new(queryService, new PermissionEngine(), new FakeCurrentSessionService { CurrentRole = role }, logger);
+    private static DashboardPageViewModel CreateSut(StubDashboardQueryService queryService, WorkspaceRole role = WorkspaceRole.PlatformOwner, RecordingLogger<DashboardPageViewModel>? logger = null, IDashboardBannerService? bannerService = null) =>
+        new(queryService, new PermissionEngine(), new FakeCurrentSessionService { CurrentRole = role }, bannerService ?? new StubDashboardBannerService(_ => Task.FromResult<DashboardBannerDto?>(null)), logger);
 
     [Fact]
     public void Constructor_QueryServiceStillLoading_StateIsLoading()
@@ -68,7 +69,7 @@ public sealed class DashboardPageViewModelTests
         var sut = CreateSut(queryService);
 
         Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(Strings.Dashboard_KpiLoadFailed, sut.ErrorMessage);
     }
 
     [Fact]
@@ -83,7 +84,7 @@ public sealed class DashboardPageViewModelTests
 
         Assert.Equal(DashboardState.Error, sut.State);
         // P2 sub-wave 6: the surface is the generic localized message, never the raw backend body.
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(Strings.Dashboard_KpiLoadFailed, sut.ErrorMessage);
         Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("Operation=LoadAsync", StringComparison.Ordinal));
         Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(backendBody, StringComparison.Ordinal));
