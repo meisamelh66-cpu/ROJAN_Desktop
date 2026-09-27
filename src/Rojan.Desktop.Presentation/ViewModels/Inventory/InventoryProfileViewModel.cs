@@ -26,6 +26,7 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
     private readonly ILogger<InventoryProfileViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
+    private bool _isRefreshing;
     private string? _errorMessage;
     private string? _actionErrorMessage;
     private bool _hasActionError;
@@ -81,6 +82,13 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
     {
         get => _state;
         private set => SetProperty(ref _state, value);
+    }
+
+    /// <summary>Page Stability: true while this already-displayed profile is reloaded in place after an action (its content stays visible) - see <see cref="DashboardStateExtensions"/>.</summary>
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set => SetProperty(ref _isRefreshing, value);
     }
 
     public string? ErrorMessage
@@ -151,8 +159,19 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        State = DashboardState.Loading;
+        // Page Stability: only the first load (or a retry from Error) hides the profile behind
+        // Loading - the post-action reload of a profile already on screen is a refresh, see
+        // DashboardStateExtensions.
+        var isRefresh = State.HasSettledResult();
         ErrorMessage = null;
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+        else
+        {
+            State = DashboardState.Loading;
+        }
 
         try
         {
@@ -179,9 +198,24 @@ public sealed partial class InventoryProfileViewModel : ViewModelBase
         catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            if (isRefresh)
+            {
+                // The action itself already succeeded; only re-reading it failed. Keep the profile
+                // (and the user's place in it) on screen and report inline, next to the actions.
+                ActionErrorMessage = Strings.Common_ActionFailedMessage;
+                HasActionError = true;
+            }
+            else
+            {
+                ErrorMessage = Strings.Common_ActionFailedMessage;
+                State = DashboardState.Error;
+            }
+
             LogOperationFailed(nameof(LoadAsync));
+        }
+        finally
+        {
+            IsRefreshing = false;
         }
     }
 

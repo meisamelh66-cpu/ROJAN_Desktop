@@ -11,7 +11,7 @@ public sealed class SettingsModule : IModule
 
     public SettingsModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SettingsPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SettingsPageViewModel>(), typeof(SettingsPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

@@ -28,7 +28,7 @@ public sealed class QrCodesModule : IModule
 
     public QrCodesModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<QrCodesPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<QrCodesPageViewModel>(), typeof(QrCodesPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

@@ -11,7 +11,7 @@ public sealed class AccountingModule : IModule
 
     public AccountingModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AccountingPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AccountingPageViewModel>(), typeof(AccountingPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

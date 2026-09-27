@@ -11,7 +11,7 @@ public sealed class AnalyticsModule : IModule
 
     public AnalyticsModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AnalyticsPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AnalyticsPageViewModel>(), typeof(AnalyticsPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

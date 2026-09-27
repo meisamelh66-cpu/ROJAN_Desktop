@@ -401,4 +401,49 @@ public sealed class CustomerPageViewModelTests
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("child boom", entry.Message, StringComparison.Ordinal);
     }
+
+    // Page Stability: a refresh keeps the list on screen and the same customer's profile panel
+    // (with any in-progress edits) instead of rebuilding it.
+
+    [Fact]
+    public void SearchText_ChangedAfterLoad_SameCustomerStillListed_KeepsTheSameProfileInstance()
+    {
+        var initial = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart"), MakeCustomer("customer-2", "Noah Bennett") };
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromResult<IReadOnlyList<CustomerDto>>(initial),
+            searchCustomersByFilter: (filter, _) => Task.FromResult<IReadOnlyList<CustomerDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? initial
+                    : [MakeCustomer("customer-2", "Noah Bennett", company: "Updated Co")]));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+        sut.SelectedCustomer = sut.Customers[1];
+        var profileBefore = sut.Profile;
+
+        sut.SearchText = "Noah";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.False(sut.IsRefreshing);
+        Assert.Equal("customer-2", sut.SelectedCustomer?.Id);
+        Assert.Equal("Updated Co", sut.SelectedCustomer?.Company);
+        Assert.Same(profileBefore, sut.Profile);
+    }
+
+    [Fact]
+    public void SearchText_ChangedAfterLoad_RefreshFails_KeepsListLoadedAndReportsInline()
+    {
+        var initial = new List<CustomerDto> { MakeCustomer("customer-1", "Amelia Hart") };
+        var queryService = new StubCustomerQueryService(
+            _ => Task.FromResult<IReadOnlyList<CustomerDto>>(initial),
+            searchCustomersByFilter: (filter, _) => string.IsNullOrEmpty(filter.SearchText)
+                ? Task.FromResult<IReadOnlyList<CustomerDto>>(initial)
+                : Task.FromException<IReadOnlyList<CustomerDto>>(new InvalidOperationException("boom")));
+        var sut = new CustomerPageViewModel(queryService, MakeProfileQueryService(), new StubCustomerCommandService());
+
+        sut.SearchText = "Amelia";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Customers);
+        Assert.NotNull(sut.Profile);
+    }
 }

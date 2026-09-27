@@ -11,7 +11,7 @@ public sealed class SpecialistModule : IModule
 
     public SpecialistModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SpecialistPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SpecialistPageViewModel>(), typeof(SpecialistPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

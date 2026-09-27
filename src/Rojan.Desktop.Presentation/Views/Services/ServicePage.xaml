@@ -290,6 +290,7 @@
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Services_AllServices}"
                                                 State="{Binding State}"
+                                                IsRefreshing="{Binding IsRefreshing}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,24,0,0">
@@ -382,6 +383,7 @@
                          here, Backend's update contract has no field to change it once a service is created. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Services_Details}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -489,6 +491,7 @@
                     <!-- Intelligence (Sprint 5 Commit 5C): calculated popularity score/level/recommendation, composed by Application's IntelligenceEngine from booking data already queried elsewhere in the app - no new query added here, only display. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Services_Intelligence}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">

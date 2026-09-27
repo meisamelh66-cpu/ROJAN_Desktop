@@ -23,7 +23,7 @@ public sealed class AcceptInviteModule : IModule
 
     public AcceptInviteModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AcceptInviteViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AcceptInviteViewModel>(), typeof(AcceptInviteViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

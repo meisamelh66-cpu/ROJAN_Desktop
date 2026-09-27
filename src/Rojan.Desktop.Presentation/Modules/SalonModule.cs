@@ -22,7 +22,7 @@ public sealed class SalonModule : IModule
 
     public SalonModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SalonPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SalonPageViewModel>(), typeof(SalonPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

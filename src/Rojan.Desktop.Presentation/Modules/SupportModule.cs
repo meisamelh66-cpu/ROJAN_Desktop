@@ -11,7 +11,7 @@ public sealed class SupportModule : IModule
 
     public SupportModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SupportPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<SupportPageViewModel>(), typeof(SupportPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

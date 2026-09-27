@@ -11,7 +11,7 @@ public sealed class DashboardModule : IModule
 
     public DashboardModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<DashboardPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<DashboardPageViewModel>(), typeof(DashboardPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

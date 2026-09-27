@@ -339,4 +339,89 @@ public sealed class InventoryPageViewModelTests
         Assert.Contains("Operation=LoadAsync", entry.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("child boom", entry.Message, StringComparison.Ordinal);
     }
+
+    // Page Stability: SearchAsync used to replace the rows without ever touching State, so a page
+    // that had been Empty or Error stayed hidden behind that earlier state whatever later searches
+    // returned, until a manual Retry.
+
+    [Fact]
+    public void SearchText_AfterEmptyInitialLoad_SearchFindsProducts_StateBecomesLoaded()
+    {
+        var queryService = new StubProductQueryService(
+            _ => Task.FromResult<IReadOnlyList<ProductDto>>([]),
+            searchProducts: (_, _) => Task.FromResult<IReadOnlyList<ProductDto>>([MakeProduct("product-1", "Hydrating Shampoo 1L")]));
+        var sut = MakeSut(queryService);
+        Assert.Equal(DashboardState.Empty, sut.State);
+
+        sut.SearchText = "Shampoo";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Single(sut.Products);
+        Assert.False(sut.IsRefreshing);
+    }
+
+    [Fact]
+    public void SearchText_AfterInitialLoadFailed_SearchSucceeds_StateBecomesLoadedAndErrorIsCleared()
+    {
+        var queryService = new StubProductQueryService(
+            _ => Task.FromException<IReadOnlyList<ProductDto>>(new InvalidOperationException("boom")),
+            searchProducts: (_, _) => Task.FromResult<IReadOnlyList<ProductDto>>([MakeProduct("product-1", "Hydrating Shampoo 1L")]));
+        var sut = MakeSut(queryService);
+        Assert.Equal(DashboardState.Error, sut.State);
+
+        sut.SearchText = "Shampoo";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Null(sut.ErrorMessage);
+    }
+
+    [Fact]
+    public void SearchText_GenuinelyNoResults_StateBecomesEmpty()
+    {
+        var products = new List<ProductDto> { MakeProduct("product-1", "Hydrating Shampoo 1L") };
+        var queryService = new StubProductQueryService(
+            _ => Task.FromResult<IReadOnlyList<ProductDto>>(products),
+            searchProducts: (text, _) => Task.FromResult<IReadOnlyList<ProductDto>>(text == "zzz" ? [] : products));
+        var sut = MakeSut(queryService);
+
+        sut.SearchText = "zzz";
+
+        Assert.Equal(DashboardState.Empty, sut.State);
+        Assert.Empty(sut.Products);
+    }
+
+    [Fact]
+    public void SearchText_AfterLoad_SearchFails_KeepsProductsAndReportsInline()
+    {
+        var products = new List<ProductDto> { MakeProduct("product-1", "Hydrating Shampoo 1L") };
+        var queryService = new StubProductQueryService(
+            _ => Task.FromResult<IReadOnlyList<ProductDto>>(products),
+            searchProducts: (_, _) => Task.FromException<IReadOnlyList<ProductDto>>(new InvalidOperationException("boom")));
+        var sut = MakeSut(queryService);
+
+        sut.SearchText = "Shampoo";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Single(sut.Products);
+        Assert.False(sut.IsRefreshing);
+    }
+
+    [Fact]
+    public void SearchText_SameProductReturnedAsNewInstance_KeepsSelectionAndTheSameProfile()
+    {
+        var products = new List<ProductDto> { MakeProduct("product-1", "Hydrating Shampoo 1L"), MakeProduct("product-2", "Argan Oil") };
+        var queryService = new StubProductQueryService(
+            _ => Task.FromResult<IReadOnlyList<ProductDto>>(products),
+            searchProducts: (_, _) => Task.FromResult<IReadOnlyList<ProductDto>>([MakeProduct("product-2", "Argan Oil 100ml")]));
+        var sut = MakeSut(queryService);
+        sut.SelectedProduct = sut.Products[1];
+        var profileBefore = sut.Profile;
+
+        sut.SearchText = "Argan";
+
+        Assert.Equal("product-2", sut.SelectedProduct?.Id);
+        Assert.Equal("Argan Oil 100ml", sut.SelectedProduct?.Name);
+        Assert.Same(profileBefore, sut.Profile);
+    }
 }

@@ -133,6 +133,23 @@
                             Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
+
+                    <!-- Page Stability: inline, non-destructive create-failure message (form kept) - same idiom as Services' CreateErrorMessage/HasCreateError. -->
+                    <TextBlock Text="{Binding CreateErrorMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Error}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasCreateError}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
@@ -203,6 +220,7 @@
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Bookings_AllBookings}"
                                                 State="{Binding State}"
+                                                IsRefreshing="{Binding IsRefreshing}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,24,0,0">
@@ -353,6 +371,23 @@
                                 Command="{Binding DataContext.RescheduleBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Style="{StaticResource Rojan.Style.ButtonSecondary}" />
                     </StackPanel>
+
+                    <!-- Page Stability: a failed status/cancel/reschedule action reports here, next to the actions - the booking list and this selection stay on screen. -->
+                    <TextBlock Text="{Binding DataContext.ActionErrorMessage, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               Foreground="{StaticResource Rojan.Brush.Error}"
+                               TextWrapping="Wrap"
+                               Margin="0,12,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DataContext.HasActionError, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </Grid>
         </dashboardControls:DashboardCard>

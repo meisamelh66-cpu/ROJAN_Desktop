@@ -11,7 +11,7 @@ public sealed class HrModule : IModule
 
     public HrModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<HrPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<HrPageViewModel>(), typeof(HrPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

@@ -19,6 +19,17 @@ internal sealed class StubNavigationService : INavigationService
 
     public void NavigateTo(ModuleDescriptor descriptor) => NavigatedDescriptors.Add(descriptor);
 
+    public void Reload(ModuleDescriptor descriptor)
+    {
+    }
+
+    // Never raised: CommandPaletteViewModel only calls into navigation, it does not observe it.
+    public event EventHandler<NavigatedEventArgs>? Navigated
+    {
+        add { }
+        remove { }
+    }
+
     public void GoBack()
     {
     }

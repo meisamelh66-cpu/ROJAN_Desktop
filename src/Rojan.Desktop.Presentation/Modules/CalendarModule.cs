@@ -21,7 +21,7 @@ public sealed class CalendarModule : IModule
 
     public CalendarModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<CalendarPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<CalendarPageViewModel>(), typeof(CalendarPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

@@ -40,6 +40,8 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private bool _isRefreshing;
+    private bool _isReplacingCustomers;
     private string? _createErrorMessage;
     private bool _hasCreateError;
     private string _searchText = string.Empty;
@@ -98,6 +100,13 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
     {
         get => _errorMessage;
         private set => SetProperty(ref _errorMessage, value);
+    }
+
+    /// <summary>Page Stability: true while an already-displayed list is reloaded in place (the list stays visible) - see <see cref="DashboardStateExtensions"/>.</summary>
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set => SetProperty(ref _isRefreshing, value);
     }
 
     /// <summary>
@@ -180,7 +189,19 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
         get => _selectedCustomer;
         set
         {
-            if (SetProperty(ref _selectedCustomer, value))
+            // Page Stability: Customers.Clear() inside ReplaceAll makes the bound ListBox push null back
+            // here - that is the collection being rebuilt, not the user deselecting, so it must not
+            // tear down the detail panel ReplaceAll is about to keep by Id.
+            if (value is null && _isReplacingCustomers)
+            {
+                return;
+            }
+
+            var previousId = _selectedCustomer?.Id;
+
+            // A refreshed row is a new record instance for the same entity - only a genuinely
+            // different selection rebuilds the detail panel (and loses its in-progress edits).
+            if (SetProperty(ref _selectedCustomer, value) && value?.Id != previousId)
             {
                 Profile = value is null
                     ? null
@@ -222,8 +243,18 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        State = DashboardState.Loading;
+        // Page Stability: only a first load (or a retry from Error) hides the list behind Loading -
+        // reloading a list that is already on screen is a refresh, see DashboardStateExtensions.
+        var isRefresh = State.HasSettledResult();
         ErrorMessage = null;
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+        else
+        {
+            State = DashboardState.Loading;
+        }
 
         var requestVersion = ++_filterVersion;
 
@@ -251,9 +282,22 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
         {
             if (requestVersion == _filterVersion)
             {
+                // A failed refresh keeps the still-valid list on screen; DashboardWidget shows
+                // ErrorMessage inline (with Retry) while State stays Loaded/Empty.
                 ErrorMessage = Strings.Common_ActionFailedMessage;
-                State = DashboardState.Error;
+                if (!isRefresh)
+                {
+                    State = DashboardState.Error;
+                }
+
                 LogOperationFailed(nameof(LoadAsync));
+            }
+        }
+        finally
+        {
+            if (requestVersion == _filterVersion)
+            {
+                IsRefreshing = false;
             }
         }
     }
@@ -297,17 +341,36 @@ public sealed partial class CustomerPageViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Page Stability: rebuilds <see cref="Customers"/> while keeping the current selection by its stable Id
+    /// (a reload returns new record instances, so the old reference-and-value check lost the
+    /// selection after every edit and jumped to the first row, rebuilding the detail panel). Falls
+    /// back to the first row only when there was no selection, or the selected item is no longer in
+    /// the (filtered) result.
+    /// </summary>
     private void ReplaceAll(IReadOnlyList<CustomerDto> customers)
     {
-        Customers.Clear();
-        foreach (var customer in customers)
+        var selectedId = SelectedCustomer?.Id;
+
+        _isReplacingCustomers = true;
+        try
         {
-            Customers.Add(customer);
+            Customers.Clear();
+            foreach (var item in customers)
+            {
+                Customers.Add(item);
+            }
+        }
+        finally
+        {
+            _isReplacingCustomers = false;
         }
 
-        if (SelectedCustomer is null || !Customers.Contains(SelectedCustomer))
-        {
-            SelectedCustomer = Customers.Count > 0 ? Customers[0] : null;
-        }
+        var preserved = selectedId is null ? null : Customers.FirstOrDefault(item => item.Id == selectedId);
+        SelectedCustomer = preserved ?? (Customers.Count > 0 ? Customers[0] : null);
+
+        // Re-announce even when the preserved record compares equal to the old one: Clear() already
+        // reset the bound ListBox's own SelectedItem, which only re-syncs on a change notification.
+        OnPropertyChanged(nameof(SelectedCustomer));
     }
 }

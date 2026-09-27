@@ -12,7 +12,7 @@ public sealed class AutomationModule : IModule
 
     public AutomationModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AutomationPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AutomationPageViewModel>(), typeof(AutomationPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

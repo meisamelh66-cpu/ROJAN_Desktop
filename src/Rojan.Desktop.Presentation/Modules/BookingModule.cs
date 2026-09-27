@@ -11,7 +11,7 @@ public sealed class BookingModule : IModule
 
     public BookingModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<BookingPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<BookingPageViewModel>(), typeof(BookingPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

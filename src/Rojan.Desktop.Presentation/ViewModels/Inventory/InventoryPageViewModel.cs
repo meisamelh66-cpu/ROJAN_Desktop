@@ -32,6 +32,8 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private bool _isRefreshing;
+    private bool _isReplacingProducts;
     private string? _actionErrorMessage;
     private bool _hasActionError;
     private string _searchText = string.Empty;
@@ -107,6 +109,13 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
         private set => SetProperty(ref _state, value);
     }
 
+    /// <summary>Page Stability: true while an already-displayed product list is reloaded or searched in place (the list stays visible) - see <see cref="DashboardStateExtensions"/>.</summary>
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set => SetProperty(ref _isRefreshing, value);
+    }
+
     public string? ErrorMessage
     {
         get => _errorMessage;
@@ -156,7 +165,19 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
         get => _selectedProduct;
         set
         {
-            if (SetProperty(ref _selectedProduct, value))
+            // Page Stability: Products.Clear() inside ReplaceProducts makes the bound ListBox push null
+            // back here - that is the collection being rebuilt, not the user deselecting, so it must
+            // not tear down the product profile ReplaceProducts is about to keep by Id.
+            if (value is null && _isReplacingProducts)
+            {
+                return;
+            }
+
+            var previousId = _selectedProduct?.Id;
+
+            // A refreshed row is a new record instance for the same product - only a genuinely
+            // different selection rebuilds the profile (and loses its in-progress inputs).
+            if (SetProperty(ref _selectedProduct, value) && value?.Id != previousId)
             {
                 Profile = value is null
                     ? null
@@ -234,8 +255,18 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        State = DashboardState.Loading;
+        // Page Stability: only a first load (or a retry from Error) hides the list behind Loading -
+        // reloading a list that is already on screen is a refresh, see DashboardStateExtensions.
+        var isRefresh = State.HasSettledResult();
         ErrorMessage = null;
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+        else
+        {
+            State = DashboardState.Loading;
+        }
 
         try
         {
@@ -267,9 +298,19 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
         catch (Exception)
 #pragma warning restore CA1031
         {
+            // A failed refresh keeps the still-valid list on screen; DashboardWidget shows
+            // ErrorMessage inline (with Retry) while State stays Loaded/Empty.
             ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            if (!isRefresh)
+            {
+                State = DashboardState.Error;
+            }
+
             LogOperationFailed(nameof(LoadAsync));
+        }
+        finally
+        {
+            IsRefreshing = false;
         }
     }
 
@@ -286,9 +327,21 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
     /// started, <paramref name="searchText"/> no longer matches
     /// <see cref="SearchText"/> by the time the result arrives, and the
     /// stale result is discarded.
+    ///
+    /// Page Stability: a successful search now always settles <see cref="State"/> from its own
+    /// result (Loaded when it found products, Empty when it genuinely found none) and clears any
+    /// earlier <see cref="ErrorMessage"/>. Previously it only replaced the rows and never touched
+    /// State, so once the page had been Empty or Error the product list stayed hidden behind that
+    /// earlier state no matter what later searches returned, until a manual Retry.
     /// </summary>
     private async Task SearchAsync(string searchText)
     {
+        var isRefresh = State.HasSettledResult();
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+
         try
         {
             var results = await _queryService.SearchProductsAsync(searchText).ConfigureAwait(true);
@@ -298,32 +351,68 @@ public sealed partial class InventoryPageViewModel : ViewModelBase
             }
 
             ReplaceProducts(results);
+            ErrorMessage = null;
+            State = results.Count == 0
+                ? DashboardState.Empty
+                : DashboardState.Loaded;
         }
-#pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must surface as the Error state, not crash the page.
+#pragma warning disable CA1031 // Same top-level boundary reasoning as LoadAsync - a failed search must never crash the page.
         catch (Exception)
 #pragma warning restore CA1031
         {
             if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
             {
+                // Same refresh rule as LoadAsync: a failed search over a list already on screen keeps
+                // that list and reports inline; only a page with nothing settled yet shows Error.
                 ErrorMessage = Strings.Common_ActionFailedMessage;
-                State = DashboardState.Error;
+                if (!isRefresh)
+                {
+                    State = DashboardState.Error;
+                }
+
                 LogOperationFailed(nameof(SearchAsync));
+            }
+        }
+        finally
+        {
+            if (string.Equals(searchText, SearchText, StringComparison.Ordinal))
+            {
+                IsRefreshing = false;
             }
         }
     }
 
+    /// <summary>
+    /// Page Stability: rebuilds <see cref="Products"/> while keeping the selected product by its
+    /// stable Id (a reload returns new record instances, so the old value-equality check lost the
+    /// selection after every stock change and jumped to the first row, rebuilding the profile).
+    /// Falls back to the first row only when there was no selection, or the selected product is no
+    /// longer in the result.
+    /// </summary>
     private void ReplaceProducts(IReadOnlyList<ProductDto> products)
     {
-        Products.Clear();
-        foreach (var product in products)
+        var selectedId = SelectedProduct?.Id;
+
+        _isReplacingProducts = true;
+        try
         {
-            Products.Add(product);
+            Products.Clear();
+            foreach (var product in products)
+            {
+                Products.Add(product);
+            }
+        }
+        finally
+        {
+            _isReplacingProducts = false;
         }
 
-        if (SelectedProduct is null || !Products.Contains(SelectedProduct))
-        {
-            SelectedProduct = Products.Count > 0 ? Products[0] : null;
-        }
+        var preserved = selectedId is null ? null : Products.FirstOrDefault(product => product.Id == selectedId);
+        SelectedProduct = preserved ?? (Products.Count > 0 ? Products[0] : null);
+
+        // Re-announce even when the preserved record compares equal to the old one: Clear() already
+        // reset the bound ListBox's own SelectedItem, which only re-syncs on a change notification.
+        OnPropertyChanged(nameof(SelectedProduct));
     }
 
     private async Task CreateProductAsync()

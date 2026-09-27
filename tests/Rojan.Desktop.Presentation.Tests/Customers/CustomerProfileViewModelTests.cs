@@ -460,4 +460,28 @@ public sealed class CustomerProfileViewModelTests
         Assert.Equal(EngagementStatus.Active, sut.EngagementStatus);
         Assert.Equal(10, sut.DaysSinceLastVisit);
     }
+
+    // Page Stability: the reload after a successful action is a refresh - a failure there keeps the
+    // profile on screen (State stays Loaded) and reports inline instead of switching to Error.
+
+    [Fact]
+    public void AddNoteCommand_Succeeds_ButRefreshFails_ProfileStaysLoadedAndSaveErrorIsShown()
+    {
+        var calls = 0;
+        var profileQuery = new StubCustomerProfileQueryService((_, _) => ++calls == 1
+            ? Task.FromResult(MakeProfile())
+            : Task.FromException<CustomerProfileDto>(new InvalidOperationException("boom")));
+        var sut = new CustomerProfileViewModel("customer-1", profileQuery, new StubCustomerCommandService())
+        {
+            NewNoteText = "Prefers evenings.",
+        };
+        Assert.Equal(DashboardState.Loaded, sut.State);
+
+        sut.AddNoteCommand.Execute(null);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.False(sut.IsRefreshing);
+        Assert.True(sut.HasSaveError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.SaveErrorMessage);
+    }
 }

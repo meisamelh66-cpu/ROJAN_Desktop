@@ -11,7 +11,7 @@ public sealed class ServiceModule : IModule
 
     public ServiceModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<ServicePageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<ServicePageViewModel>(), typeof(ServicePageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

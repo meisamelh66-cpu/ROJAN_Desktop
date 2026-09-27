@@ -12,7 +12,7 @@ public sealed class OrganizationModule : IModule
 
     public OrganizationModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<OrganizationPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<OrganizationPageViewModel>(), typeof(OrganizationPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

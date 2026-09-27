@@ -53,6 +53,17 @@ namespace Rojan.Desktop.Presentation.ViewModels.Bookings;
 /// no change to what any of these methods call, when they are allowed to
 /// run (<c>CanExecute</c> predicates, unchanged), or what
 /// <c>Domain.Bookings.BookingRules</c>/the backend actually decide.
+///
+/// Page Stability: a failed action no longer switches the whole page to
+/// <see cref="DashboardState.Error"/> - that replaced the booking list (and
+/// the user's selection) with a Retry panel that only a full reload could
+/// clear. A failed Create now reports via <see cref="CreateErrorMessage"/>
+/// (form kept), a failed Confirm/Start/Complete/No-Show/Cancel/Reschedule via
+/// <see cref="ActionErrorMessage"/> next to the details actions; the list
+/// stays exactly as it was. Every post-action/filter reload of an already
+/// displayed list is a refresh (<see cref="IsRefreshing"/>, see
+/// <see cref="DashboardStateExtensions"/>) that keeps the list visible and
+/// the selected booking selected by Id.
 /// </summary>
 public sealed partial class BookingPageViewModel : ViewModelBase
 {
@@ -65,7 +76,11 @@ public sealed partial class BookingPageViewModel : ViewModelBase
 
     private DashboardState _state = DashboardState.Loading;
     private string? _errorMessage;
+    private bool _isRefreshing;
+    private string? _actionErrorMessage;
+    private string? _createErrorMessage;
     private BookingDto? _selectedBooking;
+    private bool _isReplacingBookings;
     private string _newBookingCustomerName = string.Empty;
     private string _newBookingServiceName = string.Empty;
     private string _newBookingSpecialistName = string.Empty;
@@ -189,10 +204,63 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         private set => SetProperty(ref _errorMessage, value);
     }
 
+    /// <summary>Page Stability: true while an already-displayed booking list is reloaded in place (the list stays visible) - see <see cref="DashboardStateExtensions"/>.</summary>
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set => SetProperty(ref _isRefreshing, value);
+    }
+
+    /// <summary>Page Stability: inline, non-destructive failure message for the selected booking's status/cancel/reschedule actions - never a page-wide Error state.</summary>
+    public string? ActionErrorMessage
+    {
+        get => _actionErrorMessage;
+        private set
+        {
+            if (SetProperty(ref _actionErrorMessage, value))
+            {
+                OnPropertyChanged(nameof(HasActionError));
+            }
+        }
+    }
+
+    public bool HasActionError => !string.IsNullOrEmpty(ActionErrorMessage);
+
+    /// <summary>Page Stability: inline, non-destructive failure message for the quick-add New Booking form - the form's contents are kept for a retry.</summary>
+    public string? CreateErrorMessage
+    {
+        get => _createErrorMessage;
+        private set
+        {
+            if (SetProperty(ref _createErrorMessage, value))
+            {
+                OnPropertyChanged(nameof(HasCreateError));
+            }
+        }
+    }
+
+    public bool HasCreateError => !string.IsNullOrEmpty(CreateErrorMessage);
+
     public BookingDto? SelectedBooking
     {
         get => _selectedBooking;
-        set => SetProperty(ref _selectedBooking, value);
+        set
+        {
+            // Page Stability: Bookings.Clear() inside ReplaceBookings makes the bound ListBox push
+            // null back here - that is the collection being rebuilt, not the user deselecting, so it
+            // must not drop the selection ReplaceBookings is about to restore by Id.
+            if (value is null && _isReplacingBookings)
+            {
+                return;
+            }
+
+            var previousId = _selectedBooking?.Id;
+            if (SetProperty(ref _selectedBooking, value) && value?.Id != previousId)
+            {
+                // A message about a different booking's failed action no longer applies.
+                ActionErrorMessage = null;
+            }
+        }
     }
 
     public string NewBookingCustomerName
@@ -313,8 +381,18 @@ public sealed partial class BookingPageViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        State = DashboardState.Loading;
+        // Page Stability: only a first load (or a retry from Error) hides the list behind Loading -
+        // reloading a list that is already on screen is a refresh, see DashboardStateExtensions.
+        var isRefresh = State.HasSettledResult();
         ErrorMessage = null;
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+        else
+        {
+            State = DashboardState.Loading;
+        }
 
         var requestVersion = ++_filterVersion;
 
@@ -330,20 +408,7 @@ public sealed partial class BookingPageViewModel : ViewModelBase
                 return;
             }
 
-            Bookings.Clear();
-            foreach (var booking in bookings)
-            {
-                Bookings.Add(booking);
-            }
-
-            if (SelectedBooking is null || Bookings.All(booking => booking.Id != SelectedBooking.Id))
-            {
-                SelectedBooking = Bookings.Count > 0 ? Bookings[0] : null;
-            }
-            else
-            {
-                SelectedBooking = Bookings.First(booking => booking.Id == SelectedBooking.Id);
-            }
+            ReplaceBookings(bookings);
 
             State = Bookings.Count == 0
                 ? DashboardState.Empty
@@ -355,11 +420,56 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         {
             if (requestVersion == _filterVersion)
             {
+                // A failed refresh keeps the still-valid list on screen; DashboardWidget shows
+                // ErrorMessage inline (with Retry) while State stays Loaded/Empty.
                 ErrorMessage = Strings.Common_ActionFailedMessage;
-                State = DashboardState.Error;
+                if (!isRefresh)
+                {
+                    State = DashboardState.Error;
+                }
+
                 LogOperationFailed(nameof(LoadAsync));
             }
         }
+        finally
+        {
+            if (requestVersion == _filterVersion)
+            {
+                IsRefreshing = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Page Stability: rebuilds <see cref="Bookings"/> while keeping the selected booking selected by
+    /// its stable Id (a reload returns new <see cref="BookingDto"/> instances). Falls back to the
+    /// first row only when there was no selection, or the selected booking is no longer in the
+    /// (filtered) result at all.
+    /// </summary>
+    private void ReplaceBookings(IReadOnlyList<BookingDto> bookings)
+    {
+        var selectedId = SelectedBooking?.Id;
+
+        _isReplacingBookings = true;
+        try
+        {
+            Bookings.Clear();
+            foreach (var booking in bookings)
+            {
+                Bookings.Add(booking);
+            }
+        }
+        finally
+        {
+            _isReplacingBookings = false;
+        }
+
+        var preserved = selectedId is null ? null : Bookings.FirstOrDefault(booking => booking.Id == selectedId);
+        SelectedBooking = preserved ?? (Bookings.Count > 0 ? Bookings[0] : null);
+
+        // Re-announce even when the preserved record compares equal to the old one: Clear() already
+        // reset the bound ListBox's own SelectedItem, which only re-syncs on a change notification.
+        OnPropertyChanged(nameof(SelectedBooking));
     }
 
     private BookingSearchFilter BuildFilter() => new(
@@ -381,29 +491,33 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             NewBookingDurationMinutes,
             string.Empty);
 
+        BookingDto created;
+        CreateErrorMessage = null;
         try
         {
-            var created = await _commandService.CreateBookingAsync(request).ConfigureAwait(true);
-
-            NewBookingCustomerName = string.Empty;
-            NewBookingServiceName = string.Empty;
-            NewBookingSpecialistName = string.Empty;
-            NewBookingDate = DateTime.Today.AddDays(1);
-            NewBookingDurationMinutes = 60;
-
-            await LoadAsync().ConfigureAwait(true);
-            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id);
+            created = await _commandService.CreateBookingAsync(request).ConfigureAwait(true);
         }
-#pragma warning disable CA1031 // Phase 7.4.4: top-level command boundary - any failure must surface as the Error state (never crash, never the input the user just typed silently discarded) - same justified broad catch as LoadAsync's own boundary in this class.
+#pragma warning disable CA1031 // Phase 7.4.4: top-level command boundary - any failure must surface inline (never crash, never the input the user just typed silently discarded) - same justified broad catch as LoadAsync's own boundary in this class.
         catch (Exception)
 #pragma warning restore CA1031
         {
             // Deliberately does not clear the New Booking form fields here - a failed submission
-            // should let the user retry with what they already typed, not lose it.
-            ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            // should let the user retry with what they already typed, not lose it. Page Stability:
+            // reported inline on the form, never as a page-wide Error that would hide the list.
+            CreateErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(CreateBookingAsync));
+            return;
         }
+
+        NewBookingCustomerName = string.Empty;
+        NewBookingServiceName = string.Empty;
+        NewBookingSpecialistName = string.Empty;
+        NewBookingDate = DateTime.Today.AddDays(1);
+        NewBookingDurationMinutes = 60;
+
+        // LoadAsync owns its own failure handling (a failed refresh keeps the list, reported inline).
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == created.Id) ?? SelectedBooking;
     }
 
     private void OpenWizard()
@@ -420,21 +534,24 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         }
 
         var bookingId = SelectedBooking.Id;
+        ActionErrorMessage = null;
 
         try
         {
             await _commandService.UpdateBookingStatusAsync(bookingId, status).ConfigureAwait(true);
-            await LoadAsync().ConfigureAwait(true);
-            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
         catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            // Page Stability: inline next to the actions - the list and selection stay as they were.
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(ChangeStatusAsync));
+            return;
         }
+
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
     }
 
     /// <summary>
@@ -454,21 +571,23 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         }
 
         var bookingId = SelectedBooking.Id;
+        ActionErrorMessage = null;
 
         try
         {
             await _workflowService.CancelBookingAsync(bookingId).ConfigureAwait(true);
-            await LoadAsync().ConfigureAwait(true);
-            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class.
         catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(CancelSelectedBookingAsync));
+            return;
         }
+
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
     }
 
     /// <summary>
@@ -489,22 +608,24 @@ public sealed partial class BookingPageViewModel : ViewModelBase
         var originalTimeOfDay = SelectedBooking.ScheduledAt.TimeOfDay;
         var newScheduledAt = new DateTimeOffset(RescheduleDate.Value.Date + originalTimeOfDay, SelectedBooking.ScheduledAt.Offset);
 
+        ActionErrorMessage = null;
+
         try
         {
             await _workflowService.RescheduleBookingAsync(bookingId, newScheduledAt).ConfigureAwait(true);
-
-            RescheduleDate = null;
-            await LoadAsync().ConfigureAwait(true);
-            SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
         }
 #pragma warning disable CA1031 // Phase 7.4.4: same justified broad catch as CreateBookingAsync's own boundary in this class - deliberately does not clear RescheduleDate here, same "let the user retry" reasoning as CreateBookingAsync's own form fields.
         catch (Exception)
 #pragma warning restore CA1031
         {
-            ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            ActionErrorMessage = Strings.Common_ActionFailedMessage;
             LogOperationFailed(nameof(RescheduleSelectedBookingAsync));
+            return;
         }
+
+        RescheduleDate = null;
+        await LoadAsync().ConfigureAwait(true);
+        SelectedBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
     }
 
     // Operation name only: the caught exception is never passed to the logger

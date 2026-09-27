@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Rojan.Desktop.Application.Organizations;
 using Rojan.Desktop.Infrastructure.Organizations;
+using Rojan.Desktop.Presentation.Modules;
+using Rojan.Desktop.Presentation.Navigation;
 using Rojan.Desktop.Presentation.Organizations;
 using Rojan.Desktop.Presentation.ViewModels.Modules;
 using Rojan.Desktop.Presentation.ViewModels.Organizations;
@@ -207,6 +209,96 @@ public sealed class NavigationServiceTests
         Assert.Equal("page-2", CurrentTitle(sut));
         Assert.False(sut.CanGoForward);
         Assert.True(sut.CanGoBack);
+    }
+
+    // ---------------------------------------------------------------------
+    // Shell Navigation (page stability): Navigated event, same-module no-op,
+    // and the explicit Reload used for a genuine business-context change.
+    // ---------------------------------------------------------------------
+
+    private static ModuleDescriptor CountingModule(string id, List<PlaceholderModuleViewModel> created) =>
+        new(new ModuleMetadata(id, id, string.Empty, 0), _ =>
+        {
+            var viewModel = new PlaceholderModuleViewModel(id);
+            created.Add(viewModel);
+            return viewModel;
+        });
+
+    [Fact]
+    public void NavigateTo_ModuleAlreadyDisplayed_KeepsThatPageInsteadOfCreatingANewOne()
+    {
+        var created = new List<PlaceholderModuleViewModel>();
+        var customers = CountingModule("customers", created);
+        var sut = CreateSut(new ServiceCollection().BuildServiceProvider(), WorkspaceRole.Support);
+        var raised = 0;
+        sut.Navigated += (_, _) => raised++;
+
+        sut.NavigateTo(customers);
+        var firstPage = sut.Current;
+        sut.NavigateTo(customers);
+
+        Assert.Single(created);
+        Assert.Same(firstPage, sut.Current);
+        Assert.Equal(1, raised);
+        Assert.False(sut.CanGoBack);
+    }
+
+    [Fact]
+    public void NavigateTo_Descriptor_RaisesNavigatedWithTheModuleId()
+    {
+        var sut = CreateSut(new ServiceCollection().BuildServiceProvider(), WorkspaceRole.Support);
+        NavigatedEventArgs? args = null;
+        sut.Navigated += (_, e) => args = e;
+
+        sut.NavigateTo(CountingModule("reports", []));
+
+        Assert.NotNull(args);
+        Assert.Equal("reports", args.ModuleId);
+        Assert.Same(sut.Current, args.ViewModel);
+    }
+
+    [Fact]
+    public void NavigateTo_Typed_RaisesNavigatedWithoutAModuleId_ForTheShellToResolveByType()
+    {
+        var sut = CreateSutWithSequentialPlaceholderPages();
+        NavigatedEventArgs? args = null;
+        sut.Navigated += (_, e) => args = e;
+
+        sut.NavigateTo<PlaceholderModuleViewModel>();
+
+        Assert.NotNull(args);
+        Assert.Null(args.ModuleId);
+        Assert.IsType<PlaceholderModuleViewModel>(args.ViewModel);
+    }
+
+    [Fact]
+    public void Reload_CreatesAFreshPageForTheSameModule_WithoutAddingAStaleBackEntry()
+    {
+        var created = new List<PlaceholderModuleViewModel>();
+        var customers = CountingModule("customers", created);
+        var sut = CreateSut(new ServiceCollection().BuildServiceProvider(), WorkspaceRole.Support);
+        sut.NavigateTo(customers);
+        var stalePage = sut.Current;
+
+        sut.Reload(customers);
+
+        Assert.Equal(2, created.Count);
+        Assert.NotSame(stalePage, sut.Current);
+        Assert.False(sut.CanGoBack);
+    }
+
+    [Fact]
+    public void GoBack_ReportsTheModuleIdOfTheEntryItReturnsTo()
+    {
+        var sut = CreateSut(new ServiceCollection().BuildServiceProvider(), WorkspaceRole.Support);
+        sut.NavigateTo(CountingModule("customers", []));
+        sut.NavigateTo(CountingModule("bookings", []));
+        NavigatedEventArgs? args = null;
+        sut.Navigated += (_, e) => args = e;
+
+        sut.GoBack();
+
+        Assert.Equal("customers", args?.ModuleId);
     }
 
     private sealed class StubOrganizationCommandService : IOrganizationCommandService

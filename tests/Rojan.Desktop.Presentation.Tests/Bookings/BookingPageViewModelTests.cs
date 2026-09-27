@@ -571,9 +571,13 @@ public sealed class BookingPageViewModelTests
     // Phase 7.4.4 Booking/Checkout Error Hardening: CreateBookingAsync/ChangeStatusAsync/
     // CancelSelectedBookingAsync/RescheduleSelectedBookingAsync previously had no try/catch at all
     // - these tests exercise the new guards directly, not just that the app "doesn't crash".
+    //
+    // Page Stability: a failed action is now reported inline (CreateErrorMessage /
+    // ActionErrorMessage) and never switches the whole page to DashboardState.Error - that used to
+    // replace the booking list and the user's selection with a Retry panel.
 
     [Fact]
-    public void CreateBookingCommand_BackendThrows_SetsErrorStateAndLogsWithoutClearingForm()
+    public void CreateBookingCommand_BackendThrows_SetsInlineCreateErrorAndLogsWithoutClearingForm()
     {
         const string backendBody = "HTTP 409: backend response body / booking secret";
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>([]));
@@ -586,10 +590,13 @@ public sealed class BookingPageViewModelTests
 
         sut.CreateBookingCommand.Execute(null);
 
-        Assert.Equal(DashboardState.Error, sut.State);
+        // The (empty) list stays exactly as it was - no page-wide Error state.
+        Assert.Equal(DashboardState.Empty, sut.State);
+        Assert.Null(sut.ErrorMessage);
         // P2 sub-wave 5: the surface is the generic localized message, never the raw backend body.
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
-        Assert.DoesNotContain(backendBody, sut.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.True(sut.HasCreateError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.CreateErrorMessage);
+        Assert.DoesNotContain(backendBody, sut.CreateErrorMessage ?? string.Empty, StringComparison.Ordinal);
         // The user's input must survive a failed submission so they can retry, not lose it.
         Assert.Equal("Amelia Hart", sut.NewBookingCustomerName);
         Assert.Equal("Haircut", sut.NewBookingServiceName);
@@ -598,7 +605,7 @@ public sealed class BookingPageViewModelTests
     }
 
     [Fact]
-    public void ConfirmBookingCommand_BackendThrows_SetsErrorState()
+    public void ConfirmBookingCommand_BackendThrows_KeepsPageLoadedAndSetsInlineActionError()
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
@@ -608,13 +615,17 @@ public sealed class BookingPageViewModelTests
 
         sut.ConfirmBookingCommand.Execute(null);
 
-        Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Null(sut.ErrorMessage);
+        Assert.True(sut.HasActionError);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Single(sut.Bookings);
+        Assert.Equal("booking-1", sut.SelectedBooking?.Id);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
 
     [Fact]
-    public void CancelBookingCommand_WorkflowThrows_SetsErrorState()
+    public void CancelBookingCommand_WorkflowThrows_KeepsPageLoadedAndSetsInlineActionError()
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
@@ -624,13 +635,31 @@ public sealed class BookingPageViewModelTests
 
         sut.CancelBookingCommand.Execute(null);
 
-        Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Null(sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal("booking-1", sut.SelectedBooking?.Id);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
 
     [Fact]
-    public void RescheduleBookingCommand_WorkflowThrows_SetsErrorStateAndDoesNotClearRescheduleDate()
+    public void ActionError_ThenDifferentBookingSelected_MessageIsCleared()
+    {
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart"), MakeBooking("booking-2", "Ben Cole") };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService { UpdateStatusFailure = new InvalidOperationException("boom") };
+        var sut = MakeSut(queryService, commandService);
+        sut.ConfirmBookingCommand.Execute(null);
+        Assert.True(sut.HasActionError);
+
+        sut.SelectedBooking = sut.Bookings[1];
+
+        Assert.False(sut.HasActionError);
+        Assert.Null(sut.ActionErrorMessage);
+    }
+
+    [Fact]
+    public void RescheduleBookingCommand_WorkflowThrows_KeepsPageLoadedSetsInlineActionErrorAndDoesNotClearRescheduleDate()
     {
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
@@ -642,8 +671,10 @@ public sealed class BookingPageViewModelTests
 
         sut.RescheduleBookingCommand.Execute(null);
 
-        Assert.Equal(DashboardState.Error, sut.State);
-        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Null(sut.ErrorMessage);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ActionErrorMessage);
+        Assert.Equal("booking-1", sut.SelectedBooking?.Id);
         Assert.NotNull(sut.RescheduleDate);
         Assert.Contains(logger.Entries, entry => entry.Level == LogLevel.Error);
     }
@@ -664,6 +695,116 @@ public sealed class BookingPageViewModelTests
         var exception = Record.Exception(() => sut.CreateBookingCommand.Execute(null));
 
         Assert.Null(exception);
+        Assert.NotEqual(DashboardState.Error, sut.State);
+        Assert.True(sut.HasCreateError);
+    }
+
+    // Page Stability: reloading a list that is already on screen is a refresh - the list, the
+    // selection and the page's State stay put (DashboardWidget keeps showing the content under a
+    // thin IsRefreshing indicator) instead of dropping back to Loading.
+
+    [Fact]
+    public void SearchText_ChangedAfterLoad_RefreshesInPlace_WithoutLeavingLoaded()
+    {
+        var initial = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart") };
+        var pendingRefresh = new TaskCompletionSource<IReadOnlyList<BookingDto>>();
+        var queryService = new StubBookingQueryService(
+            _ => Task.FromResult<IReadOnlyList<BookingDto>>(initial),
+            (filter, _) => filter.SearchText is null ? Task.FromResult<IReadOnlyList<BookingDto>>(initial) : pendingRefresh.Task);
+        var sut = MakeSut(queryService);
+        Assert.Equal(DashboardState.Loaded, sut.State);
+
+        sut.SearchText = "Amelia";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.True(sut.IsRefreshing);
+        Assert.Single(sut.Bookings);
+        Assert.Equal("booking-1", sut.SelectedBooking?.Id);
+
+        pendingRefresh.SetResult([MakeBooking("booking-1", "Amelia Hart")]);
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.False(sut.IsRefreshing);
+    }
+
+    [Fact]
+    public void SearchText_ChangedAfterLoad_RefreshFails_KeepsListAndSelectionAndReportsInline()
+    {
+        var initial = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart"), MakeBooking("booking-2", "Ben Cole") };
+        var queryService = new StubBookingQueryService(
+            _ => Task.FromResult<IReadOnlyList<BookingDto>>(initial),
+            (filter, _) => filter.SearchText is null
+                ? Task.FromResult<IReadOnlyList<BookingDto>>(initial)
+                : Task.FromException<IReadOnlyList<BookingDto>>(new InvalidOperationException("boom")));
+        var sut = MakeSut(queryService);
+        sut.SelectedBooking = sut.Bookings[1];
+
+        sut.SearchText = "Ben";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.False(sut.IsRefreshing);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.Equal(2, sut.Bookings.Count);
+        Assert.Equal("booking-2", sut.SelectedBooking?.Id);
+    }
+
+    [Fact]
+    public void InitialLoadFails_ThenFilterChangeSucceeds_ShowsTheFullLoadingThenLoadedFlow()
+    {
+        // A page with nothing settled yet (Error) is not refreshed in place - its next load is a
+        // real first load, so it still goes through Loading and clears the Error.
+        var calls = 0;
+        var queryService = new StubBookingQueryService(
+            _ => Task.FromResult<IReadOnlyList<BookingDto>>([]),
+            (_, _) => ++calls == 1
+                ? Task.FromException<IReadOnlyList<BookingDto>>(new InvalidOperationException("boom"))
+                : Task.FromResult<IReadOnlyList<BookingDto>>([MakeBooking("booking-1", "Amelia Hart")]));
+        var sut = MakeSut(queryService);
         Assert.Equal(DashboardState.Error, sut.State);
+
+        sut.SearchText = "Amelia";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Null(sut.ErrorMessage);
+        Assert.False(sut.IsRefreshing);
+    }
+
+    [Fact]
+    public void Refresh_ReturnsNewInstances_KeepsSelectionById_NotTheFirstRow()
+    {
+        var initial = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart"), MakeBooking("booking-2", "Ben Cole") };
+        var refreshed = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart"), MakeBooking("booking-2", "Ben Cole", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(
+            _ => Task.FromResult<IReadOnlyList<BookingDto>>(initial),
+            (filter, _) => Task.FromResult<IReadOnlyList<BookingDto>>(filter.SearchText is null ? initial : refreshed));
+        var sut = MakeSut(queryService);
+        sut.SelectedBooking = sut.Bookings[1];
+
+        sut.SearchText = "e";
+
+        Assert.Equal("booking-2", sut.SelectedBooking?.Id);
+        Assert.Equal(BookingStatus.Confirmed, sut.SelectedBooking?.Status); // the refreshed record, not the stale one
+    }
+
+    [Fact]
+    public void Refresh_BoundListPushesNullWhileCollectionIsCleared_SelectionIsStillKeptById()
+    {
+        // Simulates the WPF ListBox bound two-way to SelectedBooking: when ItemsSource is cleared it
+        // writes null back to the source. That null must not be mistaken for a user deselect.
+        var initial = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart"), MakeBooking("booking-2", "Ben Cole") };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(initial));
+        var sut = MakeSut(queryService);
+        sut.SelectedBooking = sut.Bookings[1];
+        sut.Bookings.CollectionChanged += (_, e) =>
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                sut.SelectedBooking = null;
+            }
+        };
+
+        sut.SearchText = "Ben";
+
+        Assert.Equal("booking-2", sut.SelectedBooking?.Id);
     }
 }

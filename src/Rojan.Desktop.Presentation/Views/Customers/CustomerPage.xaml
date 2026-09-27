@@ -177,6 +177,23 @@
                             Style="{StaticResource Rojan.Style.ButtonPrimary}"
                             HorizontalAlignment="Left"
                             Margin="0,16,0,0" />
+
+                    <!-- Page Stability: inline, non-destructive create-failure message (form kept) - the view model already set it, nothing displayed it. -->
+                    <TextBlock Text="{Binding CreateErrorMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Error}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasCreateError}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </dashboardControls:DashboardCard>
 
@@ -230,6 +247,7 @@
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Customers_AllCustomers}"
                                                 State="{Binding State}"
+                                                IsRefreshing="{Binding IsRefreshing}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,24,0,0">
@@ -339,12 +357,30 @@
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         Margin="12,0,0,0" />
                             </StackPanel>
+
+                            <!-- Page Stability: inline failure message for this profile's save/tag/note actions (and a failed post-action refresh) - the profile stays on screen. -->
+                            <TextBlock Text="{Binding SaveErrorMessage}"
+                                       Foreground="{StaticResource Rojan.Brush.Error}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSaveError}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
 
                     <!-- Statistics: Lifetime Value, Total/Completed bookings, Tags, Notes - StatTile instead of the old KPIValue-in-DashboardCard grid -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Statistics}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -378,6 +414,7 @@
                     <!-- Customer Intelligence (Sprint 4 Commit 5): calculated score/loyalty/engagement, composed by CustomerInsightsCalculator from the same booking/activity data the Statistics and Appointments sections already use - no new query, no new storage. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Insights}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -420,6 +457,7 @@
                     <!-- Upcoming Appointments (Sprint 4 Commit 3, Premium pass Commit 4): composed from Bookings' own query service via CustomerBookingSummaryDto -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_UpcomingAppointments}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -467,6 +505,7 @@
                     <!-- Booking History: recent past appointments -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_BookingHistory}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -593,6 +632,7 @@
                     <!-- Timeline -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Customers_Timeline}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,32">

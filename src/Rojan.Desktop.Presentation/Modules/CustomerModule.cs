@@ -11,7 +11,7 @@ public sealed class CustomerModule : IModule
 
     public CustomerModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<CustomerPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<CustomerPageViewModel>(), typeof(CustomerPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

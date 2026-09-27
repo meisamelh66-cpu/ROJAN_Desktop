@@ -68,6 +68,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     private string _statusMessage = Strings.Common_Ready;
     private object? _activeDialog;
 
+    /// <summary>Shell Navigation: the organization/branch the currently displayed page was loaded for - see <see cref="OnSessionChanged"/>.</summary>
+    private (string? OrganizationId, string? BranchId) _displayedBusinessContext;
+
     private List<BranchSwitcherGroup> _allBranchGroups = [];
     private Dictionary<string, BranchDto> _allBranchesById = [];
     private string _branchSearchText = string.Empty;
@@ -173,6 +176,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         SelectLanguageCommand = new AsyncRelayCommand(parameter => SelectLanguageAsync(parameter as LanguageInfo));
 
         _currentSessionService.SessionChanged += (_, _) => OnSessionChanged();
+        _displayedBusinessContext = CaptureBusinessContext();
+
+        // Shell Navigation: keeps the sidebar selection in sync with navigations this class did not
+        // start itself (Dashboard shortcuts, Command Palette, Back/Forward).
+        _navigationService.Navigated += OnNavigated;
 
         // Goes through the property setter (not a raw field assignment) so
         // the initial selection navigates too - the first module in
@@ -221,20 +229,28 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
     /// <summary>Header display form of <see cref="Breadcrumbs"/> - a single "Home › Dashboard" string, recomputed whenever the collection changes.</summary>
     public string BreadcrumbText => string.Join(" › ", Breadcrumbs);
 
+    /// <summary>
+    /// The sidebar selection - setting it navigates to that module. Shell Navigation: a
+    /// <see langword="null"/> write is ignored. The sidebar ListBox's two-way SelectedItem binding
+    /// pushes null whenever the selected entry leaves <see cref="NavigationItems"/> (a collection
+    /// rebuild or removal); accepting it used to leave the field null and then throw inside this
+    /// setter (swallowed by WPF's binding engine), after which re-selecting the very same module
+    /// looked like a change and recreated the current page from scratch.
+    /// </summary>
     public NavigationItem SelectedNavigationItem
     {
         get => _selectedNavigationItem;
         set
         {
+            if (value is null)
+            {
+                return;
+            }
+
             if (SetProperty(ref _selectedNavigationItem, value))
             {
                 Navigate(() => _navigationService.NavigateTo(value.Descriptor));
-                StatusMessage = Strings.Common_ViewingFormat.Replace("{0}", value.Title, StringComparison.Ordinal);
-                Breadcrumbs.Clear();
-                Breadcrumbs.Add(Strings.Common_Home);
-                Breadcrumbs.Add(value.Title);
-                OnPropertyChanged(nameof(BreadcrumbText));
-                WorkspaceHost.SetPrimaryModuleId(value.Descriptor.Metadata.Id);
+                ApplySelectionChrome(value);
             }
         }
     }
@@ -394,6 +410,50 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         CommandManager.InvalidateRequerySuggested();
     }
 
+    /// <summary>Status bar, breadcrumb and workspace primary-module updates for a newly selected module - shared by a sidebar selection and a <see cref="OnNavigated"/> sync.</summary>
+    private void ApplySelectionChrome(NavigationItem item)
+    {
+        StatusMessage = Strings.Common_ViewingFormat.Replace("{0}", item.Title, StringComparison.Ordinal);
+        Breadcrumbs.Clear();
+        Breadcrumbs.Add(Strings.Common_Home);
+        Breadcrumbs.Add(item.Title);
+        OnPropertyChanged(nameof(BreadcrumbText));
+        WorkspaceHost.SetPrimaryModuleId(item.Descriptor.Metadata.Id);
+    }
+
+    /// <summary>
+    /// Shell Navigation: re-points the sidebar selection (and its breadcrumb/status chrome) at the
+    /// module that is now actually displayed - without navigating again, since the content is
+    /// already shown. Previously only sidebar clicks updated the selection, so after a Dashboard
+    /// shortcut, a Command Palette jump, or Back/Forward the sidebar kept highlighting the old
+    /// module, and clicking that highlighted module did nothing (it was already "selected").
+    /// Resolves the module by the navigation's own module id when known, else by the page's
+    /// ViewModel type (<see cref="ModuleDescriptor.ViewModelType"/>); a no-op when it maps to no
+    /// visible sidebar item.
+    /// </summary>
+    private void OnNavigated(object? sender, NavigatedEventArgs e)
+    {
+        CanGoBack = _navigationService.CanGoBack;
+        CanGoForward = _navigationService.CanGoForward;
+
+        var moduleId = e.ModuleId
+            ?? _allModules.FirstOrDefault(descriptor => descriptor.ViewModelType == e.ViewModel.GetType())?.Metadata.Id;
+        if (moduleId is null)
+        {
+            return;
+        }
+
+        var item = NavigationItems.FirstOrDefault(i => i.Descriptor.Metadata.Id == moduleId);
+        if (item is null || Equals(item, _selectedNavigationItem))
+        {
+            return;
+        }
+
+        _selectedNavigationItem = item;
+        OnPropertyChanged(nameof(SelectedNavigationItem));
+        ApplySelectionChrome(item);
+    }
+
     /// <summary>Handles <see cref="WorkspaceHostViewModel.PrimaryModuleChangeRequested"/> (restoring the last workspace, switching workspaces, or falling back after deleting the active one) by re-pointing <see cref="SelectedNavigationItem"/> - a no-op if the requested module isn't currently visible (e.g. hidden by a role change since the workspace was saved).</summary>
     private void ApplyPrimaryModuleFromWorkspace(string moduleId)
     {
@@ -445,22 +505,90 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         return NavigationItems[0];
     }
 
-    /// <summary>Rebuilds <see cref="NavigationItems"/> after a branch/role switch - re-selects the current item if it's still visible, otherwise falls back to the first visible one (never leaves <see cref="SelectedNavigationItem"/> pointing at a now-hidden module).</summary>
-    private void RefreshNavigationItems()
+    /// <summary>
+    /// Re-applies the permission filter to <see cref="NavigationItems"/> after a branch/role switch -
+    /// keeps the current item if it's still visible, otherwise falls back to the first visible one
+    /// (never leaves <see cref="SelectedNavigationItem"/> pointing at a now-hidden module).
+    ///
+    /// Shell Navigation: no longer clears and rebuilds the whole sidebar. When the visible set is
+    /// unchanged (e.g. a favorite-branch toggle, or a role switch that grants/revokes nothing
+    /// visible) nothing is touched at all; otherwise the collection is edited in place (only the
+    /// entries that appeared/disappeared), so the selected entry - and the page it shows - stays
+    /// put unless that module itself is no longer visible. Returns whether the fallback navigation
+    /// happened.
+    /// </summary>
+    private bool RefreshNavigationItems()
     {
-        var previousSelectionId = _selectedNavigationItem?.Descriptor.Metadata.Id;
-
-        NavigationItems.Clear();
-        foreach (var item in BuildVisibleNavigationItems())
+        var desired = BuildVisibleNavigationItems().ToList();
+        if (!desired.Select(ModuleIdOf).SequenceEqual(NavigationItems.Select(ModuleIdOf), StringComparer.Ordinal))
         {
-            NavigationItems.Add(item);
+            SyncNavigationItems(desired);
         }
 
-        var stillVisible = NavigationItems.FirstOrDefault(item => item.Descriptor.Metadata.Id == previousSelectionId);
-        SelectedNavigationItem = stillVisible ?? NavigationItems[0];
+        if (NavigationItems.Count == 0)
+        {
+            return false;
+        }
+
+        var currentId = _selectedNavigationItem is null ? null : ModuleIdOf(_selectedNavigationItem);
+        var stillVisible = NavigationItems.FirstOrDefault(item => ModuleIdOf(item) == currentId);
+        if (stillVisible is null)
+        {
+            SelectedNavigationItem = NavigationItems[0];
+            return true;
+        }
+
+        // An in-place removal/insertion can disturb the sidebar ListBox's own SelectedItem - re-announce
+        // so it re-highlights the unchanged selection (no navigation: the value itself did not change).
+        OnPropertyChanged(nameof(SelectedNavigationItem));
+        return false;
     }
 
-    /// <summary>Republishes every header/sidebar property <see cref="ICurrentSessionService"/> backs, then rebuilds navigation - the one handler for both <see cref="SwitchBranchAsync"/> and a role switch fired from elsewhere (e.g. the Organization page's own Session section).</summary>
+    /// <summary>
+    /// Edits <see cref="NavigationItems"/> into <paramref name="desired"/> with the fewest changes:
+    /// removes entries no longer visible, inserts newly visible ones at their display position, and
+    /// keeps every surviving entry's existing instance. Both sequences are ordered subsequences of the
+    /// same registered module list, so a single forward pass is enough.
+    /// </summary>
+    private void SyncNavigationItems(IReadOnlyList<NavigationItem> desired)
+    {
+        var desiredIds = desired.Select(ModuleIdOf).ToHashSet(StringComparer.Ordinal);
+        for (var i = NavigationItems.Count - 1; i >= 0; i--)
+        {
+            if (!desiredIds.Contains(ModuleIdOf(NavigationItems[i])))
+            {
+                NavigationItems.RemoveAt(i);
+            }
+        }
+
+        for (var i = 0; i < desired.Count; i++)
+        {
+            if (i >= NavigationItems.Count || ModuleIdOf(NavigationItems[i]) != ModuleIdOf(desired[i]))
+            {
+                NavigationItems.Insert(i, desired[i]);
+            }
+        }
+    }
+
+    private static string ModuleIdOf(NavigationItem item) => item.Descriptor.Metadata.Id;
+
+    private (string? OrganizationId, string? BranchId) CaptureBusinessContext() =>
+        (_currentSessionService.CurrentOrganization?.Id, _currentSessionService.CurrentBranch?.Id);
+
+    /// <summary>
+    /// Republishes every header/sidebar property <see cref="ICurrentSessionService"/> backs, then
+    /// refreshes navigation - the one handler for both <see cref="SwitchBranchAsync"/> and a role
+    /// switch fired from elsewhere (e.g. the Organization page's own Session section).
+    ///
+    /// Shell Navigation: <see cref="ICurrentSessionService.SessionChanged"/> fires for cosmetic
+    /// changes too (a favorite-branch toggle), so the displayed page is only replaced when it is
+    /// genuinely stale: it was loaded for an organization/branch (salon) and that organization or
+    /// branch has now changed. Then the current module is reloaded in place for the new context.
+    /// A role-only change keeps the page (same data; the permission filter above still hides it if
+    /// it is no longer allowed), and so does a first-time context (e.g. an invite just accepted from
+    /// a session with no organization yet) - that page showed no business data to go stale, and
+    /// reloading it would discard the result the user is looking at (Accept Invite's success state).
+    /// </summary>
     private void OnSessionChanged()
     {
         OnPropertyChanged(nameof(CurrentBranch));
@@ -468,7 +596,19 @@ public sealed class MainWindowViewModel : ViewModelBase, IDialogService
         OnPropertyChanged(nameof(CurrentOrganizationName));
         OnPropertyChanged(nameof(CurrentRoleDisplayName));
         OnPropertyChanged(nameof(CurrentSubscriptionPlanDisplayName));
-        RefreshNavigationItems();
+
+        var previousContext = _displayedBusinessContext;
+        var currentContext = CaptureBusinessContext();
+        _displayedBusinessContext = currentContext;
+
+        var navigatedAway = RefreshNavigationItems();
+        var displayedPageIsStale = previousContext.OrganizationId is not null && previousContext != currentContext;
+        if (!navigatedAway && displayedPageIsStale && _selectedNavigationItem is not null)
+        {
+            var descriptor = _selectedNavigationItem.Descriptor;
+            Navigate(() => _navigationService.Reload(descriptor));
+        }
+
         RefreshRecentAndFavoriteBranches();
     }
 

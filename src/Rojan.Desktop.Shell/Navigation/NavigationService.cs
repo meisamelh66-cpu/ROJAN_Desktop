@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,19 @@ namespace Rojan.Desktop.Shell.Navigation;
 /// declaration (currently just <see cref="AutomationModule"/>/
 /// <see cref="OrganizationModule"/>/<see cref="ReportingModule"/>) -
 /// covered by <c>NavigationServiceTests</c>.
+///
+/// Shell Navigation (page stability): <see cref="Navigated"/> is raised after
+/// every content change so the shell can keep the sidebar selection in sync
+/// with navigations it did not start itself (Dashboard shortcuts, Command
+/// Palette, Back/Forward). <see cref="NavigateTo(ModuleDescriptor)"/> to the
+/// module that is already displayed is a no-op - previously it always
+/// constructed a new transient page ViewModel, discarding the current page's
+/// state and unsaved input - with <see cref="Reload"/> as the one explicit way
+/// to get a fresh instance of the current module (a genuine business-context
+/// change). The typed <see cref="NavigateTo{TViewModel}"/> deliberately has no
+/// such guard: one ViewModel type can back several modules
+/// (<see cref="PlaceholderModule"/>), so a type match alone does not mean
+/// "same page".
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
@@ -87,6 +101,14 @@ public sealed class NavigationService : INavigationService
     private readonly ICurrentSessionService _currentSessionService;
     private readonly LinkedList<ViewModelBase> _backStack = new();
     private readonly Stack<ViewModelBase> _forwardStack = new();
+
+    /// <summary>
+    /// The module id each descriptor-navigated entry belongs to, so Back/Forward can report it too.
+    /// Weak keys: an entry evicted from the bounded history (Phase 8.6) must stay collectable - see
+    /// <c>NavigationServiceTests.Navigate_ExceedsMaxDepth_EvictedViewModelIsReleasedForCollection</c>.
+    /// </summary>
+    private readonly ConditionalWeakTable<ViewModelBase, string> _moduleIds = new();
+
     private ContentControl? _host;
     private ViewModelBase? _current;
 
@@ -103,6 +125,8 @@ public sealed class NavigationService : INavigationService
     public bool CanGoBack => _backStack.Count > 0;
 
     public bool CanGoForward => _forwardStack.Count > 0;
+
+    public event EventHandler<NavigatedEventArgs>? Navigated;
 
     /// <summary>
     /// Test-only seam (mirrors <see cref="CanGoBack"/>'s role in
@@ -155,7 +179,38 @@ public sealed class NavigationService : INavigationService
 
     public void NavigateTo(ModuleDescriptor descriptor)
     {
-        Navigate(descriptor.CreateViewModel(_serviceProvider));
+        if (IsCurrentModule(descriptor))
+        {
+            return;
+        }
+
+        var viewModel = descriptor.CreateViewModel(_serviceProvider);
+        _moduleIds.AddOrUpdate(viewModel, descriptor.Metadata.Id);
+        Navigate(viewModel);
+    }
+
+    public void Reload(ModuleDescriptor descriptor)
+    {
+        var viewModel = descriptor.CreateViewModel(_serviceProvider);
+        _moduleIds.AddOrUpdate(viewModel, descriptor.Metadata.Id);
+        _forwardStack.Clear();
+        SetContent(viewModel);
+    }
+
+    /// <summary>Whether <paramref name="descriptor"/>'s module is the one displayed - by recorded module id when known (descriptor navigations), else by page ViewModel type (typed navigations).</summary>
+    private bool IsCurrentModule(ModuleDescriptor descriptor)
+    {
+        if (_current is null)
+        {
+            return false;
+        }
+
+        if (_moduleIds.TryGetValue(_current, out var currentModuleId))
+        {
+            return string.Equals(currentModuleId, descriptor.Metadata.Id, StringComparison.Ordinal);
+        }
+
+        return descriptor.ViewModelType is not null && _current.GetType() == descriptor.ViewModelType;
     }
 
     public void GoBack()
@@ -234,6 +289,9 @@ public sealed class NavigationService : INavigationService
         {
             ApplyContent(_host, viewModel);
         }
+
+        var moduleId = _moduleIds.TryGetValue(viewModel, out var id) ? id : null;
+        Navigated?.Invoke(this, new NavigatedEventArgs(viewModel, moduleId));
     }
 
     /// <summary>

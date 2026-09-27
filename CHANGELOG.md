@@ -1275,6 +1275,31 @@ see `docs/standards/versioning.md`.
   `MethodUnderTest_Scenario_ExpectedResult` test-naming convention
   (`coding-standards.md` §7) could not actually build under
   `TreatWarningsAsErrors`.
+- Page stability — pages no longer disappear, go blank, or need to be
+  re-opened after an action. A reload of content that is already on screen
+  is now a refresh: the list/profile stays visible under a thin in-place
+  indicator (`DashboardWidget.IsRefreshing`) instead of being replaced by
+  "Loading…", and a failed refresh keeps the content and shows the error
+  inline with Retry (`DashboardWidget.HasInlineError`) instead of replacing
+  the page with the Error panel (`DashboardStateExtensions.HasSettledResult`).
+  Booking actions (Confirm/Start/Complete/No-Show/Cancel/Reschedule/Create)
+  report failures inline (`ActionErrorMessage`/`CreateErrorMessage`) and
+  never switch the whole Bookings page to Error. Inventory search now always
+  settles to Loaded/Empty (previously a page that had been Empty or Error
+  stayed hidden). Customers/Services/Specialists/Inventory keep the selected
+  row by Id across reloads and no longer rebuild the detail panel for the same
+  entity (Specialists previously rebuilt the profile twice after every save).
+  Previously-unshown inline errors are now displayed on the Customer create
+  form, Customer profile, and Inventory pages.
+- Shell navigation — the sidebar is no longer cleared and rebuilt on every
+  session change (the WPF ListBox's resulting null write used to recreate the
+  current page); a null selection write is ignored, the visible set is edited
+  in place, and the current page is only reloaded when its organization/branch
+  actually changed. `INavigationService.Navigated` keeps the sidebar selection
+  in sync with Dashboard shortcuts, Command Palette and Back/Forward;
+  navigating to the module already displayed no longer creates a new page
+  ViewModel (`INavigationService.Reload` is the explicit context-change path;
+  `ModuleDescriptor.ViewModelType` maps typed navigation to its module).
 
 ## [0.1.0-alpha] - Unreleased
 

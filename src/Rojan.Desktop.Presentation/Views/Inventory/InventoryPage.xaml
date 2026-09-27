@@ -149,6 +149,23 @@
                                 Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0" />
+
+                    <!-- Page Stability: inline failure message for create product/category/supplier - the view model already set it, nothing displayed it. -->
+                    <TextBlock Text="{Binding ActionErrorMessage}"
+                               Foreground="{StaticResource Rojan.Brush.Error}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasActionError}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     </StackPanel>
                 </dashboardControls:DashboardCard>
 
@@ -249,6 +266,7 @@
                         <!-- Stock level + record a transaction -->
                         <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Inventory_Stock}"
                                                             State="{Binding State}"
+                                                            IsRefreshing="{Binding IsRefreshing}"
                                                             ErrorMessage="{Binding ErrorMessage}"
                                                             RetryCommand="{Binding LoadCommand}"
                                                             Margin="0,16,0,0">
@@ -304,6 +322,23 @@
                                         Style="{StaticResource Rojan.Style.ButtonPrimary}"
                                         HorizontalAlignment="Left"
                                         Margin="0,12,0,0" />
+
+                                <!-- Page Stability: inline failure message for this product's stock/mapping actions (and a failed post-action refresh) - the profile stays on screen. -->
+                                <TextBlock Text="{Binding ActionErrorMessage}"
+                                           Foreground="{StaticResource Rojan.Brush.Error}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,8,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Rojan.TextStyle.Caption}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasActionError}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </dashboardControls:DashboardWidget>
 
@@ -402,6 +437,7 @@
             <dashboardControls:DashboardWidget Grid.Row="1"
                                                 Title="{x:Static loc:Strings.Inventory_AllProducts}"
                                                 State="{Binding State}"
+                                                IsRefreshing="{Binding IsRefreshing}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,16,0,0">

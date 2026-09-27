@@ -11,7 +11,7 @@ public sealed class InventoryModule : IModule
 
     public InventoryModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<InventoryPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<InventoryPageViewModel>(), typeof(InventoryPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

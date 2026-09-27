@@ -401,4 +401,30 @@ public sealed class SpecialistPageViewModelTests
         Assert.Equal(SpecialistStatus.Inactive, sut.SelectedSpecialist?.Status);
         Assert.Contains(sut.Specialists, specialist => specialist.Id == "specialist-1" && specialist.Status == SpecialistStatus.Inactive);
     }
+
+    // Page Stability: a refreshed row is a new record instance for the same specialist - the old
+    // value-equality check lost the selection after every edit, jumped to the first row and rebuilt
+    // the profile panel (twice, via OnProfileSpecialistUpdated). Selection is now kept by Id.
+
+    [Fact]
+    public void SearchText_ChangedAfterLoad_SelectedSpecialistUpdated_KeepsSelectionByIdAndTheSameProfile()
+    {
+        var initial = new List<SpecialistDto> { MakeSpecialist("specialist-1", "Jordan Lee"), MakeSpecialist("specialist-2", "Mia Park") };
+        var queryService = new StubSpecialistQueryService(
+            _ => Task.FromResult<IReadOnlyList<SpecialistDto>>(initial),
+            searchSpecialistsByFilter: (filter, _) => Task.FromResult<IReadOnlyList<SpecialistDto>>(
+                string.IsNullOrEmpty(filter.SearchText)
+                    ? initial
+                    : [MakeSpecialist("specialist-1", "Jordan Lee"), MakeSpecialist("specialist-2", "Mia Park", title: "Senior Stylist")]));
+        var sut = new SpecialistPageViewModel(queryService, MakeProfileQueryService(), new StubSpecialistCommandService(), new StubIntelligenceEngine(), MakeServiceQueryService(), MakeScheduleQueryService(), MakeScheduleCommandService());
+        sut.SelectedSpecialist = sut.Specialists[1];
+        var profileBefore = sut.Profile;
+
+        sut.SearchText = "a";
+
+        Assert.Equal(DashboardState.Loaded, sut.State);
+        Assert.Equal("specialist-2", sut.SelectedSpecialist?.Id);
+        Assert.Equal("Senior Stylist", sut.SelectedSpecialist?.Title);
+        Assert.Same(profileBefore, sut.Profile);
+    }
 }

@@ -59,6 +59,7 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
     private readonly ILogger<SpecialistScheduleViewModel> _logger;
 
     private DashboardState _state = DashboardState.Loading;
+    private bool _isRefreshing;
     private string? _errorMessage;
     private bool _isPermissionDenied;
     private string? _inputErrorMessage;
@@ -140,6 +141,13 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
     {
         get => _state;
         private set => SetProperty(ref _state, value);
+    }
+
+    /// <summary>Page Stability: true while the already-displayed schedule is reloaded in place after a change (the schedule and its input forms stay visible) - see <see cref="DashboardStateExtensions"/>.</summary>
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set => SetProperty(ref _isRefreshing, value);
     }
 
     public string? ErrorMessage
@@ -249,9 +257,19 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        State = DashboardState.Loading;
+        // Page Stability: only the first load (or a retry from Error) hides the schedule behind
+        // Loading - the reload after an add/remove is a refresh, see DashboardStateExtensions.
+        var isRefresh = State.HasSettledResult();
         ErrorMessage = null;
         IsPermissionDenied = false;
+        if (isRefresh)
+        {
+            IsRefreshing = true;
+        }
+        else
+        {
+            State = DashboardState.Loading;
+        }
 
         try
         {
@@ -281,9 +299,19 @@ public sealed partial class SpecialistScheduleViewModel : ViewModelBase
         catch (Exception)
 #pragma warning restore CA1031
         {
+            // A failed refresh keeps the still-valid schedule on screen; DashboardWidget shows
+            // ErrorMessage inline (with Retry) while State stays Loaded/Empty.
             ErrorMessage = Strings.Common_ActionFailedMessage;
-            State = DashboardState.Error;
+            if (!isRefresh)
+            {
+                State = DashboardState.Error;
+            }
+
             LogOperationFailed(nameof(LoadAsync));
+        }
+        finally
+        {
+            IsRefreshing = false;
         }
     }
 

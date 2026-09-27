@@ -11,7 +11,7 @@ public sealed class AiCenterModule : IModule
 
     public AiCenterModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AiCenterPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<AiCenterPageViewModel>(), typeof(AiCenterPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }

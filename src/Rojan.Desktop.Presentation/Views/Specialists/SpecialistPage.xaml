@@ -196,6 +196,7 @@
             <dashboardControls:DashboardWidget Grid.Row="3"
                                                 Title="{x:Static loc:Strings.Specialists_AllSpecialists}"
                                                 State="{Binding State}"
+                                                IsRefreshing="{Binding IsRefreshing}"
                                                 ErrorMessage="{Binding ErrorMessage}"
                                                 RetryCommand="{Binding LoadCommand}"
                                                 Margin="0,24,0,0">
@@ -433,6 +434,7 @@
                     <!-- Intelligence (Sprint 5 Commit 5C): calculated performance score/level/recommendation, composed by Application's IntelligenceEngine from booking data already queried elsewhere in the app - no new query added here, only display. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Intelligence}"
                                                         State="{Binding State}"
+                                                        IsRefreshing="{Binding IsRefreshing}"
                                                         ErrorMessage="{Binding ErrorMessage}"
                                                         RetryCommand="{Binding LoadCommand}"
                                                         Margin="0,16,0,0">
@@ -489,6 +491,7 @@
                          replacement of anything above. -->
                     <dashboardControls:DashboardWidget Title="{x:Static loc:Strings.Specialists_Schedule_ManagerTitle}"
                                                         State="{Binding Schedule.State}"
+                                                        IsRefreshing="{Binding Schedule.IsRefreshing}"
                                                         ErrorMessage="{Binding Schedule.ErrorMessage}"
                                                         RetryCommand="{Binding Schedule.LoadCommand}"
                                                         Margin="0,16,0,0">

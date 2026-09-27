@@ -12,7 +12,7 @@ public sealed class ReportingModule : IModule
 
     public ReportingModule()
     {
-        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<ReportingPageViewModel>());
+        Descriptor = new ModuleDescriptor(Metadata, sp => sp.GetRequiredService<ReportingPageViewModel>(), typeof(ReportingPageViewModel));
     }
 
     public ModuleDescriptor Descriptor { get; }
