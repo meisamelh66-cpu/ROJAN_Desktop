@@ -66,7 +66,7 @@ public partial class DashboardPage : UserControl
     /// <summary>Below this Dashboard content width the card rows restack to one card per line.</summary>
     public const double CompactWidth = 900;
 
-    private const double CardGap = 16;
+    private const double CardGap = 4;
 
     private DashboardPageViewModel? _subscribedViewModel;
 
@@ -134,8 +134,8 @@ public partial class DashboardPage : UserControl
 
     // Keeps the single Dashboard grid readable at any width: the KPI grid picks its column count,
     // and each three-column card row (OperationalRowA/B, AnalyticsRow) either places its cards in
-    // columns 0/2/4 (1* / 1* / 1.4*, with the 16px gap columns between) or, below CompactWidth,
-    // stacks them full width in reading order with the same 16px gap.
+    // columns 0/2/4 (1* / 1* / 1.4*, with the 4px gap columns between) or, below CompactWidth,
+    // stacks them full width in reading order with the same 4px gap.
     private void UpdateResponsiveLayout(double width)
     {
         KpiColumns = ComputeKpiColumns(width);

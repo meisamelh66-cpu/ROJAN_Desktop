@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Rojan.Desktop.Application.Api;
 using Rojan.Desktop.Application.Api.Contracts;
 using Rojan.Desktop.Domain.Banners;
@@ -22,7 +23,7 @@ public sealed class BackendBannerRepository : IBannerRepository
     private readonly Func<Uri, CancellationToken, Task<byte[]>> _downloadImage;
 
     public BackendBannerRepository(IApiClient apiClient)
-        : this(apiClient, (uri, cancellationToken) => ImageClient.GetByteArrayAsync(uri, cancellationToken))
+        : this(apiClient, DownloadImageAsync)
     {
     }
 
@@ -30,6 +31,17 @@ public sealed class BackendBannerRepository : IBannerRepository
     {
         _apiClient = apiClient;
         _downloadImage = downloadImage;
+    }
+
+    // "no-cache" makes any proxy/CDN on the way revalidate with the origin, so an image the admin
+    // replaced is never served stale (HttpClient itself keeps no response cache).
+    private static async Task<byte[]> DownloadImageAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+        using var response = await ImageClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<Banner>> GetActiveDesktopBannersAsync(CancellationToken cancellationToken = default)

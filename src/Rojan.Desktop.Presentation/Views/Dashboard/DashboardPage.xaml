@@ -31,7 +31,7 @@
             structure so all six cards look, space, and animate identically.
         -->
         <DataTemplate DataType="{x:Type appDashboard:KpiMetricDto}">
-            <dashboardControls:DashboardCard MinWidth="220" Margin="8">
+            <dashboardControls:DashboardCard MinWidth="220" Margin="2">
                 <StackPanel>
                     <shared:KPIValue Label="{Binding Converter={StaticResource KpiLabelConverter}}"
                                                  Value="{Binding Value}"
@@ -50,7 +50,7 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type dashboardControls:DerivedKpiSpec}">
-            <dashboardControls:DashboardCard MinWidth="220" Margin="8">
+            <dashboardControls:DashboardCard MinWidth="220" Margin="2">
                 <StackPanel>
                     <shared:KPIValue Label="{Binding Id, Converter={StaticResource DerivedKpiLabelConverter}}"
                                                  Icon="{Binding Id, Converter={StaticResource KpiIconConverter}}"
@@ -133,16 +133,16 @@
                 Dashboard Layout Cleanup: one continuous column of full-width sections -
                 hero banner, KPIs, operational grid, analytics grid - with no side column, so
                 no section can leave an unexplained blank area beside another. Every card row
-                shares the same three columns (1* / 1* / 1.4*, 16px gaps), so card edges line
+                shares the same three columns (1* / 1* / 1.4*, 4px gaps - adjacent cards read as one connected surface; 12px only between sections), so card edges line
                 up from row to row; cards in a row stretch to that row's height. Under the app's
                 RightToLeft flow Column 0 is the rightmost. Below CompactWidth the rows restack
-                to one card per line and the KPI grid drops columns - see
+                to one card per line (same 4px gap) and the KPI grid drops columns - see
                 DashboardPage.UpdateResponsiveLayout.
             -->
             <StackPanel x:Name="DashboardLayout" Margin="24,16,24,24" SizeChanged="DashboardLayout_SizeChanged">
 
                 <!-- Admin-managed hero banner - the first content element; collapsed (with its margin) when there is none. -->
-                <dashboardControls:DashboardHeroBanner Margin="0,0,0,24"
+                <dashboardControls:DashboardHeroBanner Margin="0,0,0,12"
                                                        Visibility="{Binding IsBannerVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                        Title="{Binding BannerTitle}"
                                                        Subtitle="{Binding BannerSubtitle}"
@@ -183,7 +183,7 @@
                         Resources declare implicit, DataType-keyed templates instead) since
                         each item needs its own template by runtime type.
                     -->
-                    <ItemsControl ItemsSource="{Binding KpiMetrics, Converter={StaticResource KpiMetricsWithDerivedConverter}}" Margin="-8">
+                    <ItemsControl ItemsSource="{Binding KpiMetrics, Converter={StaticResource KpiMetricsWithDerivedConverter}}" Margin="-2">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <UniformGrid Columns="{Binding KpiColumns, RelativeSource={RelativeSource AncestorType=UserControl}}" />
@@ -193,15 +193,15 @@
                 </dashboardControls:DashboardWidget>
 
                 <!-- Operational: news ticker, then two card rows -->
-                <dashboardControls:NewsTicker Margin="0,24,0,0"
+                <dashboardControls:NewsTicker Margin="0,12,0,0"
                                               ItemsSource="{Binding NewsTickerItems, ElementName=Root}" />
 
-                <Grid x:Name="OperationalRowA" Margin="0,16,0,0">
+                <Grid x:Name="OperationalRowA" Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1.4*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -332,12 +332,12 @@
                     </dashboardControls:DashboardCard>
                 </Grid>
 
-                <Grid x:Name="OperationalRowB" Margin="0,16,0,0">
+                <Grid x:Name="OperationalRowB" Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1.4*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -393,12 +393,12 @@
                 </Grid>
 
                 <!-- Analytics: Revenue Trend (widest column) + Top Services + Salon Health -->
-                <Grid x:Name="AnalyticsRow" Margin="0,24,0,0">
+                <Grid x:Name="AnalyticsRow" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="1.4*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
