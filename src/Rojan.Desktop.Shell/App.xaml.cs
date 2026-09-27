@@ -52,6 +52,9 @@ public partial class App
 {
     private IHost? _host;
 
+    /// <summary>Set once MainWindow is shown - see <see cref="OnDispatcherUnhandledException"/>.</summary>
+    private bool _isMainWindowShown;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -317,6 +320,7 @@ public partial class App
         // window-count bookkeeping.
         mainWindow.Closed += (_, _) => Shutdown();
         mainWindow.Show();
+        _isMainWindowShown = true;
 
         base.OnStartup(e);
     }
@@ -550,6 +554,14 @@ public partial class App
         LogException(e.Exception, "UI thread");
         ShowErrorDialog(e.Exception);
         e.Handled = true;
+
+        // ShutdownMode is OnExplicitShutdown (App.xaml): a failure during startup, before MainWindow
+        // exists (e.g. after LoginWindow closed), leaves no window to close - without this the process
+        // would keep running invisibly instead of exiting.
+        if (!_isMainWindowShown)
+        {
+            Shutdown();
+        }
     }
 
     /// <summary>
