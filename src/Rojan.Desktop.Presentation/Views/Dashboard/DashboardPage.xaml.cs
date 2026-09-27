@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using Rojan.Desktop.Application.Dashboard;
 using Rojan.Desktop.Presentation.Controls.Dashboard;
 using Rojan.Desktop.Presentation.Localization;
@@ -24,12 +23,11 @@ namespace Rojan.Desktop.Presentation.Views.Dashboard;
 
 /// <summary>
 /// Dashboard layout. DataContext is the resolved DashboardPageViewModel, set
-/// by WPF's implicit DataTemplate resolution - unchanged. Dashboard
-/// Modernization Sprint: adds a live, View-local greeting/date/time header
-/// (GreetingText/DateText/TimeText dependency properties, driven by a
-/// DispatcherTimer off the real system clock) - deliberately not on the
-/// ViewModel, since it is pure presentation state with no repository/domain
-/// meaning.
+/// by WPF's implicit DataTemplate resolution - unchanged. Dashboard Layout
+/// Cleanup: the former greeting/date/time header (and its clock timer) and
+/// the top New Booking button were removed - the admin-managed hero banner is
+/// now the first content element. UpdateResponsiveLayout keeps the single
+/// dashboard grid readable at any width (see its own comment).
 ///
 /// Bug fix: Quick Action buttons now really navigate. DashboardPageViewModel's
 /// QuickActionCommand is an intentional no-op and off-limits (ViewModels
@@ -40,10 +38,7 @@ namespace Rojan.Desktop.Presentation.Views.Dashboard;
 /// navigate to the matching existing page, or shows a "coming soon" message
 /// for the one action (Create Task) with no real destination yet.
 ///
-/// UX Improvements - Dashboard Layout: New Booking is promoted out of the
-/// Quick Actions list into its own prominent top-of-page button
-/// (NewBookingButton_Click) - same NavigateOrShowComingSoon&lt;BookingPageViewModel&gt;
-/// destination as before, just a different trigger. The three Analytics
+/// UX Improvements - Dashboard Layout: the three Analytics
 /// Row charts (SalonHealthChart_Click/TopServicesChart_Click/
 /// RevenueTrendChart_Click) are new real navigation, following this same
 /// "real navigation lives here, not on the ViewModel's no-op *Command
@@ -68,29 +63,19 @@ public partial class DashboardPage : UserControl
 {
     private static readonly CompositeFormat ActiveClientsTrendFormat = CompositeFormat.Parse(Strings.News_ActiveClientsTrend);
 
-    private readonly DispatcherTimer _clockTimer;
+    /// <summary>Below this Dashboard content width the card rows restack to one card per line.</summary>
+    public const double CompactWidth = 900;
+
+    private const double CardGap = 16;
+
     private DashboardPageViewModel? _subscribedViewModel;
 
-    public static readonly DependencyProperty GreetingTextProperty =
+    public static readonly DependencyProperty KpiColumnsProperty =
         DependencyProperty.Register(
-            nameof(GreetingText),
-            typeof(string),
+            nameof(KpiColumns),
+            typeof(int),
             typeof(DashboardPage),
-            new PropertyMetadata(string.Empty));
-
-    public static readonly DependencyProperty DateTextProperty =
-        DependencyProperty.Register(
-            nameof(DateText),
-            typeof(string),
-            typeof(DashboardPage),
-            new PropertyMetadata(string.Empty));
-
-    public static readonly DependencyProperty TimeTextProperty =
-        DependencyProperty.Register(
-            nameof(TimeText),
-            typeof(string),
-            typeof(DashboardPage),
-            new PropertyMetadata(string.Empty));
+            new PropertyMetadata(3));
 
     public static readonly DependencyProperty NewsTickerItemsProperty =
         DependencyProperty.Register(
@@ -103,38 +88,11 @@ public partial class DashboardPage : UserControl
     {
         InitializeComponent();
 
-        _clockTimer = new DispatcherTimer(DispatcherPriority.Background)
-        {
-            Interval = TimeSpan.FromSeconds(1),
-        };
-        _clockTimer.Tick += (_, _) => UpdateClock();
-
-        Loaded += (_, _) =>
-        {
-            UpdateClock();
-            _clockTimer.Start();
-        };
-        Unloaded += (_, _) => _clockTimer.Stop();
+        // Place the cards in their wide-layout columns before the first layout pass; the real width
+        // arrives with DashboardLayout's first SizeChanged.
+        UpdateResponsiveLayout(CompactWidth);
 
         DataContextChanged += OnDataContextChanged;
-    }
-
-    public string GreetingText
-    {
-        get => (string)GetValue(GreetingTextProperty);
-        private set => SetValue(GreetingTextProperty, value);
-    }
-
-    public string DateText
-    {
-        get => (string)GetValue(DateTextProperty);
-        private set => SetValue(DateTextProperty, value);
-    }
-
-    public string TimeText
-    {
-        get => (string)GetValue(TimeTextProperty);
-        private set => SetValue(TimeTextProperty, value);
     }
 
     public IEnumerable? NewsTickerItems
@@ -143,19 +101,58 @@ public partial class DashboardPage : UserControl
         private set => SetValue(NewsTickerItemsProperty, value);
     }
 
-    private void UpdateClock()
+    /// <summary>Column count of the KPI card grid - see <see cref="ComputeKpiColumns"/>.</summary>
+    public int KpiColumns
     {
-        var now = DateTime.Now;
+        get => (int)GetValue(KpiColumnsProperty);
+        private set => SetValue(KpiColumnsProperty, value);
+    }
 
-        GreetingText = now.Hour switch
+    /// <summary>
+    /// KPI grid columns for a given Dashboard content width: 6 (one row) on wide screens, 3 (two
+    /// even rows of the six cards) on typical laptops, then 2 and 1 - always a divisor of six so the
+    /// last row is never a lone card. Public and static so it is testable without a WPF control.
+    /// </summary>
+    public static int ComputeKpiColumns(double width) => width switch
+    {
+        >= 1500 => 6,
+        >= 720 => 3,
+        >= 480 => 2,
+        _ => 1,
+    };
+
+    /// <summary>True when the three-column card rows should restack to one card per line.</summary>
+    public static bool IsCompactWidth(double width) => width < CompactWidth;
+
+    private void DashboardLayout_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (e.WidthChanged)
         {
-            < 12 => Strings.Dashboard_Greeting_Morning,
-            < 18 => Strings.Dashboard_Greeting_Afternoon,
-            _ => Strings.Dashboard_Greeting_Evening,
-        };
+            UpdateResponsiveLayout(e.NewSize.Width);
+        }
+    }
 
-        DateText = now.ToString("D", CultureInfo.CurrentCulture);
-        TimeText = now.ToString("t", CultureInfo.CurrentCulture);
+    // Keeps the single Dashboard grid readable at any width: the KPI grid picks its column count,
+    // and each three-column card row (OperationalRowA/B, AnalyticsRow) either places its cards in
+    // columns 0/2/4 (1* / 1* / 1.4*, with the 16px gap columns between) or, below CompactWidth,
+    // stacks them full width in reading order with the same 16px gap.
+    private void UpdateResponsiveLayout(double width)
+    {
+        KpiColumns = ComputeKpiColumns(width);
+
+        var compact = IsCompactWidth(width);
+        foreach (var row in new[] { OperationalRowA, OperationalRowB, AnalyticsRow })
+        {
+            var index = 0;
+            foreach (FrameworkElement card in row.Children)
+            {
+                Grid.SetColumn(card, compact ? 0 : index * 2);
+                Grid.SetColumnSpan(card, compact ? row.ColumnDefinitions.Count : 1);
+                Grid.SetRow(card, compact ? index : 0);
+                card.Margin = new Thickness(0, compact && index > 0 ? CardGap : 0, 0, 0);
+                index++;
+            }
+        }
     }
 
     private void QuickActionButton_Click(object sender, RoutedEventArgs e)
@@ -166,7 +163,7 @@ public partial class DashboardPage : UserControl
         }
 
         // New Booking no longer appears in this list (see DashboardPageViewModel's
-        // own doc comment) - promoted to NewBookingButton_Click instead.
+        // own doc comment).
         if (item.Label == Strings.Dashboard_QuickAction_AddClient)
         {
             NavigateOrShowComingSoon<CustomerPageViewModel>();
@@ -182,9 +179,6 @@ public partial class DashboardPage : UserControl
             ShowComingSoon();
         }
     }
-
-    /// <summary>UX Improvements - Dashboard Layout: the promoted, top-of-page primary action - same destination the old Quick Action used.</summary>
-    private void NewBookingButton_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<BookingPageViewModel>();
 
     /// <summary>UX Improvements - Dashboard Layout: Salon Health's chart click target - see Rojan.Style.ClickableChart's own doc comment.</summary>
     private void SalonHealthChart_Click(object sender, RoutedEventArgs e) => NavigateOrShowComingSoon<AnalyticsPageViewModel>();
