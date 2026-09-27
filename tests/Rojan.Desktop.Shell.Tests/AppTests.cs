@@ -98,7 +98,7 @@ public sealed class AppTests
 
 /// <summary>
 /// Phase B: Windows Reception Device Registration. Exercises
-/// <see cref="App.RegisterDeviceForActiveSalon"/> - the extracted, pure static method
+/// <see cref="App.RegisterDeviceForActiveSalonAsync"/> - the extracted, pure static method
 /// <see cref="App.OnStartup"/> calls only after the real, resolved active salon is known (see that
 /// method's own doc comment). Same "plain static method over injected seams, no WPF host/dispatcher
 /// needed" shape as <see cref="AppTests"/>'s own <c>InitializeSessionWithRetry</c> coverage above.
@@ -108,14 +108,14 @@ public sealed class RegisterDeviceForActiveSalonTests
     private static readonly DateTimeOffset Now = DateTimeOffset.UtcNow;
 
     [Fact]
-    public void SingleResolvedSalon_RegistersDevice_ForThatSalon()
+    public async Task SingleResolvedSalon_RegistersDevice_ForThatSalon()
     {
         var salonContext = new StubSalonContextService("salon-1");
         var deviceAuthorization = new StubDeviceAuthorizationService(
             DeviceRegistrationResult.Registered(new DeviceRegistrationResponse("record-1", "salon-1", "device-1", Now, Now, null)));
         var failureCalls = new List<(DeviceRegistrationOutcome Outcome, string? Message)>();
 
-        App.RegisterDeviceForActiveSalon(salonContext, deviceAuthorization, (outcome, message) => failureCalls.Add((outcome, message)));
+        await App.RegisterDeviceForActiveSalonAsync(salonContext, deviceAuthorization, (outcome, message) => failureCalls.Add((outcome, message)));
 
         Assert.Equal("salon-1", deviceAuthorization.LastSalonIdRegistered);
         Assert.Empty(failureCalls);
@@ -128,13 +128,13 @@ public sealed class RegisterDeviceForActiveSalonTests
     /// first" doc comment). Must never guess a salon to register for.
     /// </summary>
     [Fact]
-    public void MultiSalonNotYetResolved_NeverRegistersAnySalon()
+    public async Task MultiSalonNotYetResolved_NeverRegistersAnySalon()
     {
         var salonContext = new StubSalonContextService(activeSalonId: null);
         var deviceAuthorization = new StubDeviceAuthorizationService(
             DeviceRegistrationResult.Registered(new DeviceRegistrationResponse("record-1", "salon-1", "device-1", Now, Now, null)));
 
-        App.RegisterDeviceForActiveSalon(salonContext, deviceAuthorization, (_, _) => throw new InvalidOperationException("must not be called - registration must never run at all"));
+        await App.RegisterDeviceForActiveSalonAsync(salonContext, deviceAuthorization, (_, _) => throw new InvalidOperationException("must not be called - registration must never run at all"));
 
         Assert.False(deviceAuthorization.WasCalled);
     }
@@ -145,25 +145,25 @@ public sealed class RegisterDeviceForActiveSalonTests
     /// now resolves the chosen salon, not <see langword="null"/> and not an arbitrary candidate.
     /// </summary>
     [Fact]
-    public void MultiSalonExplicitlyResolved_RegistersForTheChosenSalon_NotAnArbitraryOne()
+    public async Task MultiSalonExplicitlyResolved_RegistersForTheChosenSalon_NotAnArbitraryOne()
     {
         var salonContext = new StubSalonContextService("salon-2");
         var deviceAuthorization = new StubDeviceAuthorizationService(
             DeviceRegistrationResult.Registered(new DeviceRegistrationResponse("record-1", "salon-2", "device-1", Now, Now, null)));
 
-        App.RegisterDeviceForActiveSalon(salonContext, deviceAuthorization, (_, _) => throw new InvalidOperationException("must not be called"));
+        await App.RegisterDeviceForActiveSalonAsync(salonContext, deviceAuthorization, (_, _) => throw new InvalidOperationException("must not be called"));
 
         Assert.Equal("salon-2", deviceAuthorization.LastSalonIdRegistered);
     }
 
     [Fact]
-    public void RegistrationOutcomeNotRegistered_InvokesCallback_NeverThrows_StartupCanContinue()
+    public async Task RegistrationOutcomeNotRegistered_InvokesCallback_NeverThrows_StartupCanContinue()
     {
         var salonContext = new StubSalonContextService("salon-1");
         var deviceAuthorization = new StubDeviceAuthorizationService(DeviceRegistrationResult.NetworkUnavailable("offline"));
         (DeviceRegistrationOutcome Outcome, string? Message)? captured = null;
 
-        App.RegisterDeviceForActiveSalon(salonContext, deviceAuthorization, (outcome, message) => captured = (outcome, message));
+        await App.RegisterDeviceForActiveSalonAsync(salonContext, deviceAuthorization, (outcome, message) => captured = (outcome, message));
 
         Assert.NotNull(captured);
         Assert.Equal(DeviceRegistrationOutcome.NetworkUnavailable, captured!.Value.Outcome);

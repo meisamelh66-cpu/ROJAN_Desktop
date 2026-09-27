@@ -54,6 +54,23 @@ public sealed class SalonSelectionWindowViewModelTests
         Assert.Equal(Strings.SalonSelection_Error_InvalidSelection, sut.ErrorMessage);
     }
 
+    /// <summary>Startup stability: a failure while applying the selection (e.g. persisting active-salon.json) keeps the dialog usable with an inline message - it must not escape (the dispatcher's unhandled-exception handler shuts the app down while MainWindow is not shown yet) and must not raise <see cref="SalonSelectionWindowViewModel.Selected"/>.</summary>
+    [Fact]
+    public async Task SelectCommand_ServiceThrows_ShowsInlineErrorKeepsDialogUsableAndNeverRaisesSelected()
+    {
+        var salonContextService = new StubSalonContextService { SelectSalonFailure = new IOException("disk full") };
+        var sut = new SalonSelectionWindowViewModel(salonContextService, [SalonOne, SalonTwo]);
+        var selectedRaised = false;
+        sut.Selected += (_, _) => selectedRaised = true;
+
+        var exception = await Record.ExceptionAsync(() => ExecuteAsync(sut.SelectCommand, SalonOne, sut));
+
+        Assert.Null(exception);
+        Assert.False(selectedRaised);
+        Assert.Equal(Strings.Common_ActionFailedMessage, sut.ErrorMessage);
+        Assert.False(sut.IsBusy);
+    }
+
     /// <summary>AsyncRelayCommand.Execute is "async void" (ICommand's contract) - awaiting the underlying task directly is not possible from here, so this drives it through the command and polls IsBusy back to false, same technique <c>MobileOtpLoginViewModelTests.ExecuteAsync</c> already establishes.</summary>
     private static async Task ExecuteAsync(System.Windows.Input.ICommand command, object parameter, SalonSelectionWindowViewModel viewModel)
     {
@@ -72,10 +89,12 @@ public sealed class SalonSelectionWindowViewModelTests
 
         public Task<string?> GetSalonIdAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
 
+        public Exception? SelectSalonFailure { get; set; }
+
         public Task<bool> SelectSalonAsync(string salonId, CancellationToken cancellationToken = default)
         {
             LastSelectedSalonId = salonId;
-            return Task.FromResult(SelectSalonResult);
+            return SelectSalonFailure is null ? Task.FromResult(SelectSalonResult) : Task.FromException<bool>(SelectSalonFailure);
         }
     }
 }

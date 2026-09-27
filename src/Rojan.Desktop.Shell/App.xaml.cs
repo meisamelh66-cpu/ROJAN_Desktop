@@ -193,6 +193,12 @@ public partial class App
         // branch is only ever reached for the genuine multi-salon case, never shown otherwise. Placed
         // before InitializeSessionWithRetry below so CurrentSessionService.InitializeAsync (inside
         // it) resolves the real, now-decided active salon, not an ambiguous null.
+        // TEMPORARY startup-transition trace (Login -> Salon -> MainWindow investigation): Warning level
+        // only because LocalFileLoggerProvider writes Warning and above. Remove once the transition is
+        // verified on Windows.
+        var startupLogger = _host.Services.GetRequiredService<ILogger<App>>();
+        var startupClock = System.Diagnostics.Stopwatch.StartNew();
+
         var salonContextService = _host.Services.GetRequiredService<ISalonContextService>();
         var salonAccessSummary = salonContextService.GetAccessSummaryAsync().GetAwaiter().GetResult();
         if (salonAccessSummary.ActiveSalonId is null && salonAccessSummary.Candidates.Count > 1)
@@ -202,6 +208,7 @@ public partial class App
             var salonSelectionViewModel = new SalonSelectionWindowViewModel(salonContextService, salonAccessSummary.Candidates);
             var salonSelectionWindow = new SalonSelectionWindow(salonSelectionViewModel, cultureService, localizationService);
             var salonSelected = salonSelectionWindow.ShowDialog() == true;
+            LogStartupStep(startupLogger, salonSelected ? "SalonSelectionDialog returned: salon selected" : "SalonSelectionDialog returned: declined", startupClock.ElapsedMilliseconds);
             if (!salonSelected)
             {
                 Shutdown();
@@ -209,20 +216,11 @@ public partial class App
             }
         }
 
-        // Phase B: Windows Reception Device Registration. Runs only now - after the real,
-        // authorized active salon is known (auto-selected above for the single-candidate case,
-        // or just explicitly chosen via SalonSelectionWindow for the multi-salon case) - never a
-        // locally-guessed salonId. See RegisterDeviceForActiveSalon's own doc comment for the full
-        // reasoning; extracted the same way, and for the same reason, InitializeSessionWithRetry
-        // below already is - a plain static method over injected seams, testable without a WPF
-        // host/dispatcher.
-        var deviceAuthorizationService = _host.Services.GetRequiredService<IDeviceAuthorizationService>();
-        RegisterDeviceForActiveSalon(salonContextService, deviceAuthorizationService, (outcome, errorMessage) =>
-        {
-            var deviceRegistrationLogger = _host.Services.GetRequiredService<ILogger<App>>();
-            LogDeviceRegistrationFailed(deviceRegistrationLogger, outcome, errorMessage);
-        });
-
+        // Phase B: Windows Reception Device Registration no longer runs here. It used to block the UI
+        // thread on a network round-trip (30s timeout x up to 5 retries) at the one moment no window
+        // is visible (the salon dialog already closed, MainWindow not yet shown), while nothing below
+        // depends on its result - it is only logged. It now starts after MainWindow.Show(), in the
+        // background - see RegisterDeviceInBackgroundAsync.
         // Reception Production Integration: moved from before the login gate
         // (its original Phase 22 position) to here. Resolving the current
         // organization/branch/role now means resolving the *signed-in user's*
@@ -247,11 +245,14 @@ public partial class App
         // comment); a declined retry exits the same clean way the login
         // gate above already does for "user declined."
         var currentSessionService = _host.Services.GetRequiredService<ICurrentSessionService>();
+        LogStartupStep(startupLogger, "Session initialization started", startupClock.ElapsedMilliseconds);
         if (!InitializeSessionWithRetry(currentSessionService, ConfirmSessionResolutionRetry))
         {
             Shutdown();
             return;
         }
+
+        LogStartupStep(startupLogger, "Session initialization completed", startupClock.ElapsedMilliseconds);
 
         // PASS D10 (Feature Personalization & Modular Workspace): resolves the current salon's saved
         // feature configuration (see IFeatureConfigurationService's own doc comment for how "current
@@ -305,6 +306,7 @@ public partial class App
         var workflowSchedulerService = _host.Services.GetRequiredService<WorkflowSchedulerService>();
         workflowSchedulerService.Start();
 
+        LogStartupStep(startupLogger, "MainWindow construction started", startupClock.ElapsedMilliseconds);
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
 
         // PASS D3: with ShutdownMode=OnExplicitShutdown (App.xaml), closing
@@ -319,8 +321,15 @@ public partial class App
         // method already calls Shutdown() rather than relying on implicit
         // window-count bookkeeping.
         mainWindow.Closed += (_, _) => Shutdown();
+        LogStartupStep(startupLogger, "MainWindow.Show() started", startupClock.ElapsedMilliseconds);
         mainWindow.Show();
         _isMainWindowShown = true;
+        LogStartupStep(startupLogger, "MainWindow.Show() completed", startupClock.ElapsedMilliseconds);
+
+        // Phase B: Windows Reception Device Registration - deliberately not awaited: MainWindow is
+        // already visible and nothing in the app reads the registration result (it is logged only).
+        var deviceAuthorizationService = _host.Services.GetRequiredService<IDeviceAuthorizationService>();
+        _ = RegisterDeviceInBackgroundAsync(salonContextService, deviceAuthorizationService, startupLogger, startupClock);
 
         base.OnStartup(e);
     }
@@ -600,6 +609,14 @@ public partial class App
     [LoggerMessage(Level = LogLevel.Warning, Message = "Desktop device registration did not succeed ({Outcome}): {ErrorMessage}")]
     private static partial void LogDeviceRegistrationFailed(ILogger logger, DeviceRegistrationOutcome outcome, string? errorMessage);
 
+    // Exception type only - the message could carry backend response detail.
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Desktop device registration failed with an exception ({ExceptionType})")]
+    private static partial void LogDeviceRegistrationThrew(ILogger logger, string exceptionType);
+
+    // TEMPORARY startup-transition trace - see OnStartup. Warning level so LocalFileLoggerProvider writes it.
+    [LoggerMessage(Level = LogLevel.Warning, Message = "[Startup] {Step} (+{ElapsedMs} ms)")]
+    private static partial void LogStartupStep(ILogger logger, string step, long elapsedMs);
+
     private static void ShowErrorDialog(Exception exception)
     {
         // "ROJAN Desktop" (both the message text and the dialog title) is
@@ -668,22 +685,57 @@ public partial class App
     /// <see cref="InitializeSessionWithRetry"/> already is - unit-testable without a WPF host/
     /// dispatcher (see <c>Rojan.Desktop.Shell.Tests.AppTests</c>'s own doc comment on that method).
     /// </summary>
-    internal static void RegisterDeviceForActiveSalon(
+    internal static async Task RegisterDeviceForActiveSalonAsync(
         ISalonContextService salonContextService,
         IDeviceAuthorizationService deviceAuthorizationService,
         Action<DeviceRegistrationOutcome, string?> onRegistrationNotSucceeded)
     {
-        var activeSalonId = salonContextService.GetSalonIdAsync().GetAwaiter().GetResult();
+        var activeSalonId = await salonContextService.GetSalonIdAsync().ConfigureAwait(false);
         if (activeSalonId is null)
         {
             return;
         }
 
-        var result = deviceAuthorizationService.RegisterAsync(activeSalonId).GetAwaiter().GetResult();
+        var result = await deviceAuthorizationService.RegisterAsync(activeSalonId).ConfigureAwait(false);
         if (result.Outcome != DeviceRegistrationOutcome.Registered)
         {
             onRegistrationNotSucceeded(result.Outcome, result.ErrorMessage);
         }
+    }
+
+    /// <summary>
+    /// Runs <see cref="RegisterDeviceForActiveSalonAsync"/> after MainWindow is shown, without blocking
+    /// the UI thread. Registration is secondary to showing the app: a non-registered outcome is logged
+    /// exactly as before, and anything it throws (e.g. a timeout while reading the response body, or a
+    /// local-state write failure) is logged here - it never reaches the dispatcher's unhandled-exception
+    /// handler, never closes MainWindow, and never shuts the app down.
+    /// </summary>
+    private static async Task RegisterDeviceInBackgroundAsync(
+        ISalonContextService salonContextService,
+        IDeviceAuthorizationService deviceAuthorizationService,
+        ILogger logger,
+        System.Diagnostics.Stopwatch startupClock)
+    {
+        LogStartupStep(logger, "Device registration started", startupClock.ElapsedMilliseconds);
+#pragma warning disable CA1031 // Background, non-critical work: every failure is logged, none may escape to the UI thread.
+        try
+        {
+            await RegisterDeviceForActiveSalonAsync(
+                salonContextService,
+                deviceAuthorizationService,
+                (outcome, errorMessage) =>
+                {
+                    LogDeviceRegistrationFailed(logger, outcome, errorMessage);
+                    LogStartupStep(logger, "Device registration failed", startupClock.ElapsedMilliseconds);
+                }).ConfigureAwait(false);
+            LogStartupStep(logger, "Device registration completed", startupClock.ElapsedMilliseconds);
+        }
+        catch (Exception exception)
+        {
+            LogDeviceRegistrationThrew(logger, exception.GetType().Name);
+            LogStartupStep(logger, "Device registration failed", startupClock.ElapsedMilliseconds);
+        }
+#pragma warning restore CA1031
     }
 
     private static bool ConfirmSessionResolutionRetry() =>

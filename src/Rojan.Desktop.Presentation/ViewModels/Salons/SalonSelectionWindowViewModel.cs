@@ -70,6 +70,12 @@ public sealed class SalonSelectionWindowViewModel : ViewModelBase
                 ErrorMessage = Strings.SalonSelection_Error_InvalidSelection;
             }
         }
+#pragma warning disable CA1031 // Startup dialog boundary: a failure (e.g. persisting active-salon.json) must keep this window open with an inline message, never escape to the dispatcher's unhandled-exception handler, which shuts the app down while MainWindow is not shown yet.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            ErrorMessage = Strings.Common_ActionFailedMessage;
+        }
         finally
         {
             IsBusy = false;
