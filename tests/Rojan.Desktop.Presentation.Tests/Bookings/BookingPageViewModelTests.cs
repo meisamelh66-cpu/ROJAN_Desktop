@@ -174,6 +174,28 @@ public sealed class BookingPageViewModelTests
     }
 
     [Theory]
+    [InlineData(BookingStatus.Pending, false)]
+    [InlineData(BookingStatus.Confirmed, true)]
+    [InlineData(BookingStatus.InProgress, false)]
+    [InlineData(BookingStatus.Completed, false)]
+    [InlineData(BookingStatus.Cancelled, false)]
+    [InlineData(BookingStatus.NoShow, false)]
+    public void CompleteBookingCommand_CanExecute_WhenBackendDoesNotSupportInProgress_TrueOnlyWhenConfirmed(BookingStatus status, bool expectedCanExecute)
+    {
+        // Desktop Booking Lifecycle Contract Fix: ROJAN_Backend's BookingStatus has no InProgress,
+        // so a backend-connected command service (SupportsInProgressAndNoShowStatuses == false)
+        // must allow Complete directly from Confirmed - InProgress is never reachable in this mode
+        // (StartBookingCommand is disabled), so it must NOT be required here the way the
+        // InProgress-supporting-mode test above requires it.
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", status) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService { SupportsInProgressAndNoShowStatuses = false };
+        var sut = MakeSut(queryService, commandService);
+
+        Assert.Equal(expectedCanExecute, sut.CompleteBookingCommand.CanExecute(null));
+    }
+
+    [Theory]
     [InlineData(BookingStatus.Pending, true)]
     [InlineData(BookingStatus.Confirmed, true)]
     [InlineData(BookingStatus.InProgress, false)]
@@ -255,6 +277,23 @@ public sealed class BookingPageViewModelTests
         var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.InProgress) };
         var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
         var commandService = new StubBookingCommandService();
+        var sut = MakeSut(queryService, commandService);
+
+        sut.CompleteBookingCommand.Execute(null);
+
+        var call = Assert.Single(commandService.UpdateStatusCalls);
+        Assert.Equal("booking-1", call.BookingId);
+        Assert.Equal(BookingStatus.Completed, call.Status);
+    }
+
+    [Fact]
+    public void CompleteBookingCommand_Executed_WhenBackendDoesNotSupportInProgress_CallsCommandServiceFromConfirmed()
+    {
+        // Desktop Booking Lifecycle Contract Fix: the real end-to-end path for a backend-connected
+        // session - Confirmed, not InProgress, is the real pre-Completed state there.
+        var bookings = new List<BookingDto> { MakeBooking("booking-1", "Amelia Hart", BookingStatus.Confirmed) };
+        var queryService = new StubBookingQueryService(_ => Task.FromResult<IReadOnlyList<BookingDto>>(bookings));
+        var commandService = new StubBookingCommandService { SupportsInProgressAndNoShowStatuses = false };
         var sut = MakeSut(queryService, commandService);
 
         sut.CompleteBookingCommand.Execute(null);

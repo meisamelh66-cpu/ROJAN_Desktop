@@ -13,6 +13,7 @@ public sealed class BookingRulesTests
     [InlineData(BookingStatus.Confirmed, BookingStatus.InProgress, true)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.Cancelled, true)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.NoShow, true)]
+    [InlineData(BookingStatus.Confirmed, BookingStatus.Completed, true)]
     [InlineData(BookingStatus.Confirmed, BookingStatus.Pending, false)]
     [InlineData(BookingStatus.InProgress, BookingStatus.Completed, true)]
     [InlineData(BookingStatus.InProgress, BookingStatus.Cancelled, true)]
