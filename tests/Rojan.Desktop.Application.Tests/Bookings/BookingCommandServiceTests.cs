@@ -122,15 +122,21 @@ public sealed class BookingCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateBookingStatusAsync_ConfirmedToCompleted_ThrowsInvalidOperationException()
+    public async Task UpdateBookingStatusAsync_ConfirmedToCompleted_UpdatesStatus()
     {
-        // Completed is only reachable via InProgress - Confirmed -> Completed must stay rejected
-        // (this is the transition BookingPageViewModel's CompleteBookingCommand used to allow
-        // through a stale CanExecute check before Sprint 3 Commit 3 fixed it).
+        // Desktop Booking Lifecycle Contract Fix: ROJAN_Backend's BookingStatus (the authoritative
+        // contract) has no InProgress - its own complete() guards only `status == Confirmed`, and a
+        // backend-connected session can never reach InProgress at all (Start is disabled there via
+        // SupportsInProgressAndNoShowStatuses). Confirmed -> Completed must be legal here, or the
+        // real PATCH /complete call (BackendBookingRepository) would be unreachable for every real
+        // booking. This replaces the old test that asserted the opposite, pre-fix behavior.
         var repository = new StubBookingRepository([MakeBooking(status: DomainBookings.BookingStatus.Confirmed)]);
         var sut = new BookingCommandService(repository, new StubEnterpriseContext());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Completed));
+        var updated = await sut.UpdateBookingStatusAsync("booking-1", BookingStatus.Completed);
+
+        Assert.Equal(BookingStatus.Completed, updated.Status);
+        Assert.Equal(DomainBookings.BookingStatus.Completed, Assert.Single(repository.Bookings).Status);
     }
 
     [Fact]

@@ -126,12 +126,21 @@ public sealed partial class BookingPageViewModel : ViewModelBase
             _ => ChangeStatusAsync(BookingStatus.InProgress),
             _ => _commandService.SupportsInProgressAndNoShowStatuses
                 && SelectedBooking is { Status: BookingStatus.Pending or BookingStatus.Confirmed });
-        // Completed is only reachable via InProgress (see BookingRules) - this CanExecute used to
-        // read Status == Confirmed, which let the button call UpdateBookingStatusAsync with an
-        // illegal Confirmed -> Completed transition and throw at runtime (Sprint 3 Commit 3 fix).
+        // Desktop Booking Lifecycle Contract Fix: which status directly precedes Completed depends
+        // on SupportsInProgressAndNoShowStatuses, same gate StartBookingCommand/NoShowBookingCommand
+        // already use. When true (Fake/Ef - InProgress/NoShow modeled), Completed is only reachable
+        // via InProgress (see BookingRules) - this used to read Status == Confirmed unconditionally,
+        // which let the button call UpdateBookingStatusAsync with an illegal Confirmed -> Completed
+        // transition and throw at runtime (Sprint 3 Commit 3 fix). When false (backend-connected -
+        // ROJAN_Backend's BookingStatus has no InProgress), InProgress is never reachable at all
+        // (Start is disabled), so Completed must be directly reachable from Confirmed instead -
+        // BookingRules now permits that transition, and BackendBookingRepository's PATCH /complete
+        // call was already correct; only this gate and BookingRules were stale.
         CompleteBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.Completed),
-            _ => SelectedBooking?.Status == BookingStatus.InProgress);
+            _ => _commandService.SupportsInProgressAndNoShowStatuses
+                ? SelectedBooking?.Status == BookingStatus.InProgress
+                : SelectedBooking?.Status == BookingStatus.Confirmed);
         NoShowBookingCommand = new AsyncRelayCommand(
             _ => ChangeStatusAsync(BookingStatus.NoShow),
             _ => _commandService.SupportsInProgressAndNoShowStatuses

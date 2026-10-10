@@ -12,10 +12,25 @@ public static class BookingRules
     // Sprint 3 Commit 3: Pending -> InProgress added so a walk-in/early
     // arrival can start service without first being explicitly Confirmed -
     // every other transition here is unchanged from Phase 15.
+    //
+    // Desktop Booking Lifecycle Contract Fix: Confirmed -> Completed added.
+    // ROJAN_Backend's BookingStatus (the authoritative contract - domain
+    // Booking.kt) has only Pending/Confirmed/Cancelled/Completed - no
+    // InProgress/NoShow equivalent, and its own complete() guards only
+    // `status == Confirmed`. A backend-connected session always has
+    // IBookingRepository.SupportsInProgressAndNoShowStatuses == false, so
+    // InProgress is never reachable there (Start is disabled) - without this
+    // entry, a real, correctly-authorized backend booking could be
+    // Confirmed but could never be marked Completed through this app, even
+    // though BackendBookingRepository's PATCH /complete call was already
+    // correct. Modes that do support InProgress/NoShow (Fake/Ef
+    // repositories) are unaffected - they still reach Completed only via
+    // InProgress, per BookingPageViewModel.CompleteBookingCommand's own
+    // SupportsInProgressAndNoShowStatuses-gated CanExecute.
     private static readonly Dictionary<BookingStatus, BookingStatus[]> ValidTransitions = new()
     {
         [BookingStatus.Pending] = [BookingStatus.Confirmed, BookingStatus.InProgress, BookingStatus.Cancelled],
-        [BookingStatus.Confirmed] = [BookingStatus.InProgress, BookingStatus.Cancelled, BookingStatus.NoShow],
+        [BookingStatus.Confirmed] = [BookingStatus.InProgress, BookingStatus.Cancelled, BookingStatus.NoShow, BookingStatus.Completed],
         [BookingStatus.InProgress] = [BookingStatus.Completed, BookingStatus.Cancelled],
         [BookingStatus.Completed] = [],
         [BookingStatus.Cancelled] = [],
