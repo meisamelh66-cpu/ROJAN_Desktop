@@ -48,10 +48,13 @@ namespace Rojan.Desktop.Infrastructure.Bookings;
 /// <c>Customers.BackendCustomerRepository</c> already populates
 /// <see cref="DomainBookings.Booking.CustomerId"/> with via
 /// <c>WorkflowCustomerOptionDto.Id</c>, so no extra resolution is needed
-/// here. The backend rejects the call with 409 if that customer has no
-/// linked account yet (see <c>ROJAN_Team1_Integration_Verification_Report_v1.md</c>'s
-/// walk-in-customer finding) - surfaced as an <see cref="ApiException"/>
-/// like every other non-2xx response, not specially handled.
+/// here.
+/// TASK-003 (Walk-in Customer Booking): the backend no longer rejects
+/// this call with 409 for a customer with no linked account - it creates
+/// a real walk-in booking instead (response <see cref="BookingResponse.CustomerId"/>
+/// null, <see cref="BookingResponse.CrmCustomerId"/> set). <see cref="MapBooking"/>
+/// falls back to <see cref="BookingResponse.CrmCustomerId"/> so
+/// <see cref="DomainBookings.Booking.CustomerId"/> stays non-null either way.
 /// <see cref="SupportsInProgressAndNoShowStatuses"/> is <see langword="false"/> -
 /// ROJAN_Backend's <c>BookingStatus</c> has only 4 states, no equivalent
 /// for <see cref="DomainBookings.BookingStatus.InProgress"/>/<see cref="DomainBookings.BookingStatus.NoShow"/>.
@@ -108,8 +111,8 @@ public sealed class BackendBookingRepository(
     /// <c>POST /api/v1/bookings</c> (which always attributes the new
     /// booking to the caller as its own customer and has no field for a
     /// different one). See this class's own doc comment for the
-    /// <see cref="DomainBookings.Booking.CustomerId"/> mapping note and the
-    /// 409-if-unlinked business rule.
+    /// <see cref="DomainBookings.Booking.CustomerId"/> mapping note, including
+    /// the TASK-003 walk-in-booking update.
     /// </summary>
     public async Task<DomainBookings.Booking> CreateBookingAsync(DomainBookings.Booking booking, CancellationToken cancellationToken = default)
     {
@@ -278,11 +281,15 @@ public sealed class BackendBookingRepository(
     {
         var hasService = servicesById.TryGetValue(response.ServiceId, out var service);
         var durationMinutes = (int)Math.Round((response.EndTime - response.StartTime).TotalMinutes);
+        // TASK-003 (Walk-in Customer Booking): exactly one of CustomerId/CrmCustomerId is ever
+        // non-null on the wire - fall back to CrmCustomerId for a walk-in booking so
+        // DomainBookings.Booking.CustomerId stays non-null for every existing consumer, unchanged.
+        var customerId = response.CustomerId ?? response.CrmCustomerId ?? string.Empty;
 
         return new DomainBookings.Booking(
             response.Id,
-            response.CustomerId,
-            response.CustomerId, // CustomerName: unresolved - no backend endpoint exists yet (see this class's own doc comment).
+            customerId,
+            customerId, // CustomerName: unresolved - no backend endpoint exists yet (see this class's own doc comment).
             response.ServiceId,
             hasService ? service!.Name : response.ServiceId,
             response.SpecialistId,

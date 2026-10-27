@@ -185,13 +185,55 @@ public sealed class BackendBookingRepositoryTests
     [Fact]
     public async Task CreateBookingAsync_BackendRejects_ThrowsApiException()
     {
-        // e.g. the customer has no linked account yet (409) - see SalonBookingController's own doc comment.
-        var apiClient = new StubApiClient { PostFailure = (409, "Customer has no linked account") };
+        // e.g. the specialist already has an overlapping active booking (409 BOOKING_CONFLICT) - see
+        // SalonBookingController's own doc comment. (TASK-003: an unlinked customer no longer 409s -
+        // see CreateBookingAsync_WalkInCustomer_SucceedsAndMapsCrmCustomerId below.)
+        var apiClient = new StubApiClient { PostFailure = (409, "The specialist already has an overlapping active booking") };
         var repository = CreateRepository(apiClient, SalonId);
         var booking = new Booking("client-temp-id", "customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
             DateTimeOffset.Now, 30, "0", BookingStatus.Pending, string.Empty, "org-1", "branch-1");
 
         await Assert.ThrowsAsync<ApiException>(() => repository.CreateBookingAsync(booking));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_WalkInCustomer_SucceedsAndMapsCrmCustomerId()
+    {
+        // TASK-003 (Walk-in Customer Booking): a customer with no linked account no longer 409s -
+        // the backend creates a real walk-in booking instead (response CustomerId null, CrmCustomerId
+        // set). MapBooking must fall back to CrmCustomerId rather than crashing or leaving it empty.
+        var apiClient = new StubApiClient
+        {
+            PostResponse = SampleBooking("booking-new") with { CustomerId = null, CrmCustomerId = "crm-customer-1" },
+        };
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse>();
+        EmptySpecialistLookupFallback(apiClient);
+        var repository = CreateRepository(apiClient, SalonId);
+        var booking = new Booking("client-temp-id", "crm-customer-1", "Customer", "service-1", "Service", "specialist-1", "Specialist",
+            DateTimeOffset.Now, 30, "0", BookingStatus.Pending, "Walk-in", "org-1", "branch-1");
+
+        var created = await repository.CreateBookingAsync(booking);
+
+        Assert.Equal("crm-customer-1", created.CustomerId);
+    }
+
+    [Fact]
+    public async Task GetBookingsAsync_WalkInBooking_MapsWithoutCrashing()
+    {
+        // TASK-003 (Walk-in Customer Booking): a salon's booking list can now contain a walk-in
+        // booking (CustomerId null, CrmCustomerId set) - must deserialize and map without throwing.
+        var apiClient = new StubApiClient();
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/bookings?page=0&size=100"] =
+            new PagedResponse<BookingResponse>([SampleBooking("booking-1") with { CustomerId = null, CrmCustomerId = "crm-customer-1" }], 0, 100, 1, 1);
+        apiClient.GetResponses[$"/api/v1/salons/{SalonId}/categories"] = new List<ServiceCategoryResponse>();
+        EmptySpecialistLookupFallback(apiClient);
+
+        var repository = CreateRepository(apiClient, SalonId);
+
+        var bookings = await repository.GetBookingsAsync();
+
+        var booking = Assert.Single(bookings);
+        Assert.Equal("crm-customer-1", booking.CustomerId);
     }
 
     [Theory]
