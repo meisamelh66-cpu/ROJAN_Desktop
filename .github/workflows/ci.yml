@@ -4,14 +4,23 @@ name: CI
 # build and pass the architecture tests" from a manual pre-merge check
 # into an automatic one. Never publishes anything - see release.yml for
 # the tag-triggered packaging pipeline.
+#
+# Post-merge CI gap fix (Pass 39): `main` was missing from the push trigger's branch list, so a
+# merge into `main` - including every PR merge in this repo - produced zero CI evidence on the
+# resulting merge commit itself; only the PR's own pre-merge head was ever checked. `main` is
+# added below so a push there runs the identical build-and-test job (still no publish step -
+# that stays exclusively in release.yml, tag-triggered only). A `workflow_dispatch` trigger is
+# added too, for an on-demand, non-publishing re-verification of any specific commit.
 on:
   pull_request:
     branches: [main]
   push:
     branches:
+      - main
       - 'phase/**'
       - 'feature/**'
       - 'fix/**'
+  workflow_dispatch: {}
 
 jobs:
   build-and-test:
